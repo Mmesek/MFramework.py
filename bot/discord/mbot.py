@@ -28,11 +28,11 @@ class Bot:
         self.keepConnection = True
         self.state = True
         self.stayConnected = True
-        self.presence = "How the world burns."
-        self.sub    = False
-        self.presenceType = 3
+        self.presence = config.bot['presence']
+        self.sub    = config.bot['guildSubscription']
+        self.presenceType = config.bot['presenceType']
         self.shards = None #[shard,total]
-        self.db = db.Database('Mbot')
+        self.db = db.Database(config.bot['Database'])
         self.cache = db.Cache(self.db)
         self.endpoints = endpoints.Endpoints(self.api_call)
         self.op = {
