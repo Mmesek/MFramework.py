@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#Tokens and stuff
+.ini
+bot/data/secrets.ini
