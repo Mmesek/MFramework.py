@@ -1,11 +1,11 @@
 import requests, json, operator, time, datetime, asyncio, aiohttp
-import config
+from config import cfg as config
 class Spotify:
     def __init__(self):
-        self.rToken  = config.spotify['Token']
-        self.client  = config.spotify['client']
-        self.secret  = config.spotify['Secret']
-        self.auth    = config.spotify['Auth']
+        self.rToken  = config['Tokens']['spotify']
+        self.client  = config['Spotify']['client']
+        self.secret  = config['Spotify']['secret']
+        self.auth    = config['Spotify']['auth']
         self.token   = self.refresh(self.rToken)
         self.date    = str(datetime.datetime.now())
 
@@ -117,7 +117,7 @@ class Spotify:
 
 class Steam:
     #def __init__(self):
-    token = config.tokens['Steam']
+    token = config['Tokens']['steam']
     steam = 'http://api.steampowered.com/'
     store = 'https://store.steampowered.com/api/'
     async def api_call(self, path, querry='', method="GET", api="http://api.steampowered.com/", **kwargs):
@@ -150,11 +150,10 @@ class Steam:
 from objects import Embed
 class Twitter:
     def __init__(self):
-        self.rToken = config.twitter['rToken']
-        self.client = config.twitter['Client']
-        self.secret = config.twitter['Secret']
-        self.auth   = config.twitter['Auth']
-        self.token  = config.twitter['Token']
+        self.token  = config['Tokens']['twitter']
+        self.client = config['Twitter']['Client']
+        self.secret = config['Twitter']['Secret']
+        self.auth   = config['Twitter']['Auth']
     async def twitter_call(self, path,querry,method="GET", **kwargs):
         defaults = {"headers":{"Authorization": f"Bearer {self.token}", "Accept": "application/json", "Content-Type": "application/json"}}
         kwargs = dict(defaults,**kwargs)

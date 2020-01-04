@@ -12,6 +12,11 @@ $ pip install -r requirements.txt
 [Twitter](https://developer.twitter.com/en/apps)
 [Twitch](https://dev.twitch.tv/console)
 
+Run 
+```
+$ python config.py
+```
+
 Configure tokens in `/bot/data/secrets.ini`
 
 ### Start bot:
