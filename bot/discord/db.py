@@ -66,9 +66,8 @@ class Cache:
         return 5
 
 import pymongo
-import config
 
 class Database:
-    def __init__(self, database):
-        self.client = pymongo.MongoClient(config.bot['dbLocation'])
-        self.db = self.client[database]
+    def __init__(self, databaseLocation, databaseName):
+        self.client = pymongo.MongoClient(databaseLocation)
+        self.db = self.client[databaseName]

@@ -1,25 +1,42 @@
 import configparser
-path="data/secrets.ini"
+path="data/secrets2.ini"
 
-def ConfigSectionMap(section):
-    print('Executing ConfigSectionMap!')
-    dict1={}
+def ConfigToDict():
+    dictonary = {}
     config = configparser.ConfigParser()
     config.read(path)
-    config.sections()
-    options = config.options(section)
-    for option in options:
-        try:
-            dict1[option] = config.get(section, option)
-            if dict1[option] == -1:
-                DebugPrint("skip: %s" % option)
-        except:
-            print("exception on %s!" % option)
-            dict1[option] = None
-    return dict1
+    sections = config.sections()
+    if sections == []:
+        GenerateConfig()
+        exit()
+    for section in sections:
+        dictonary[section] = {}
+        for option in config.options(section):
+            try:
+                value = config.get(section, option)
+                if value.isdigit():
+                    value = config.getint(section, option)
+                elif value.lower() in ['true','false','yes','no','on','off'] :
+                    value = config.getboolean(section, option)
+                dictonary[section][option]=value
+            except Exception as ex:
+                print("Exception during reading from config file: ",ex)
+                dictonary[section][option] = None
+    print(dictonary)
+    return dictonary
 
-tokens=ConfigSectionMap('Tokens')
-spotify=ConfigSectionMap('Spotify')
-twitter=ConfigSectionMap('Twitter')
-twitch=ConfigSectionMap('Twitch')
-bot=ConfigSectionMap('Bot')
+    
+def GenerateConfig():
+    config = configparser.ConfigParser()
+    config.read_dict({
+        "Tokens":{'discord':'','steam':'','spotify':'','twitter':'','twitch':''},
+        "Discord":{'presence':'','subscription':False,'presence_type':3},
+        "Spotify":{'client':'','secret':'','auth':''},
+        "Twitter":{'client':'','secret':'','auth':''},
+        "Database":{'location':'raspberry','name':'MBot'}
+    })
+    with open(path,'w') as file:
+        config.write(file)
+    print('Generated config file, edit it and restart')
+
+cfg = ConfigToDict()

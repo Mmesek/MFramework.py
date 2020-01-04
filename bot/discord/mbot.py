@@ -17,22 +17,22 @@ def onDispatch():
         return inn
     return inner
 
-import config
+from config import cfg as config
 
 class Bot:
     def __init__(self):
-        self.token = config.tokens['discord']
+        self.token = config['Tokens']['discord']
         self.session_id = 0
         self.user_id    = 0
         self.sequence   = 0
         self.keepConnection = True
         self.state = True
         self.stayConnected = True
-        self.presence = config.bot['presence']
-        self.sub    = config.bot['guildSubscription']
-        self.presenceType = config.bot['presenceType']
+        self.presence = config['Discord']['presence']
+        self.sub    = config['Discord']['subscription']
+        self.presenceType = config['Discord']['presence_type']
         self.shards = None #[shard,total]
-        self.db = db.Database(config.bot['Database'])
+        self.db = db.Database(config['Database']['location'],config['Database']['name'])
         self.cache = db.Cache(self.db)
         self.endpoints = endpoints.Endpoints(self.api_call)
         self.op = {
