@@ -12,7 +12,7 @@ $ pip install -r requirements.txt
 [Twitter](https://developer.twitter.com/en/apps)
 [Twitch](https://dev.twitch.tv/console)
 
-Run 
+Generate config file:
 ```
 $ python config.py
 ```
