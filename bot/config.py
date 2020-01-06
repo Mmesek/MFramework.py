@@ -1,5 +1,5 @@
 import configparser
-path="data/secrets2.ini"
+path="data/secrets.ini"
 
 def ConfigToDict():
     dictonary = {}
