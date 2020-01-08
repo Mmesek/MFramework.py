@@ -3,7 +3,7 @@ import asyncio, re
 from utils import timed
 
 
-async def Invalid(data):
+async def Invalid(self, data):
     return 0
 
 
