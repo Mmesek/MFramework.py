@@ -1,5 +1,5 @@
 import requests, json, operator, time, datetime, asyncio, aiohttp
-from config import cfg as config
+from bot.config import cfg as config
 class Spotify:
     def __init__(self):
         self.rToken  = config['Tokens']['spotify']
@@ -147,7 +147,7 @@ class Steam:
     async def appDetails(appid):
         return await Steam.api_call('appdetails/',f'?appids={appid}&l=polish', api=Steam.store)
     
-from utils import Embed
+from bot.utils import Embed
 class Twitter:
     def __init__(self):
         self.token  = config['Tokens']['twitter']

@@ -1,5 +1,5 @@
 import configparser
-path="data/secrets.ini"
+path="bot/data/secrets.ini"
 
 def ConfigToDict():
     dictonary = {}
@@ -20,9 +20,8 @@ def ConfigToDict():
                     value = config.getboolean(section, option)
                 dictonary[section][option]=value
             except Exception as ex:
-                print("Exception during reading from config file: ",ex)
+                print("Exception while reading from config file: ",ex)
                 dictonary[section][option] = None
-    print(dictonary)
     return dictonary
 
     
