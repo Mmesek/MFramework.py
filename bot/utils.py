@@ -37,11 +37,14 @@ async def created(snowflake):
 
 def log(msg=""):
     try:
-        with open('logs/log.log','a') as logf:
+        with open('bot/data/log.log','a') as logf:
             logf.write(str(time.strftime("%Y-%m-%d %H:%M:%S",time.gmtime())) + f': {msg}\n')
         return
+    except IOError:
+        with open('bot/data/log.log','a+') as logf:
+            logf.write(str(time.strftime("%Y-%m-%d %H:%M:%S",time.gmtime())) + f': Created log file.\n')
     except Exception as ex:
-        with open('logs/log.log','a') as logf:
+        with open('bot/data/log.log','a') as logf:
             logf.write(str(time.strftime("%Y-%m-%d %H:%M:%S",time.gmtime())) + f': Exception with log: {ex}\n')
         return
     return
@@ -68,5 +71,27 @@ def replaceMultiple(mainString, toBeReplaces, newString):
     
     return  mainString
 
+def parseMention(message):
+    return replaceMultiple(message,['<:','@!','#','&','<',':>','>','@'],'')
+
 def param(message):
-    return replaceMultiple(message,['<:','@','#','&','<',':>','>','!'],'').split(' ')[1:]
+    return replaceMultiple(message,['<:','@!','#','&','<',':>','>','@'],'').split(' ')[1:]
+
+
+import time, datetime
+#@register(help="[link] - Quotes message")
+async def quote(self, data):
+    url = data['content'].split(' ')
+    if len(url) > 1:
+        url = url[1]
+    else:
+        url = url[0]
+    mid = url.split('channels/')[1].split('/')
+    message = await self.endpoints.get_message(mid[1],mid[2])
+    embed = Embed().setDescription('>>> '+message['content']).setTimestamp(message['timestamp'])
+    embed.setAuthor(message['author']['username']+'#'+message['author']['discriminator'],url,f"https://cdn.discordapp.com/avatars/{message['author']['id']}/{message['author']['avatar']}")
+    embed.addField("Channel",f"<#{mid[1]}>",True).addField("Quoted by",f"<@{data['author']['id']}>",True)
+    if message['edited_timestamp'] != None:
+        embed.addField("Edited at",str(time.strftime("%Y-%m-%d %H:%M:%S",datetime.datetime.fromisoformat(message['edited_timestamp']).timetuple())), True)
+    await self.endpoints.embed(data['channel_id'],'',embed.embed)
+    await self.endpoints.delete(data['channel_id'],data['id'])
