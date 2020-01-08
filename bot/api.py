@@ -147,7 +147,7 @@ class Steam:
     async def appDetails(appid):
         return await Steam.api_call('appdetails/',f'?appids={appid}&l=polish', api=Steam.store)
     
-from objects import Embed
+from utils import Embed
 class Twitter:
     def __init__(self):
         self.token  = config['Tokens']['twitter']
