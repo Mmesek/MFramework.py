@@ -78,7 +78,6 @@ def param(message):
     return replaceMultiple(message,['<:','@!','#','&','<',':>','>','@'],'').split(' ')[1:]
 
 
-import time, datetime
 #@register(help="[link] - Quotes message")
 async def quote(self, data):
     url = data['content'].split(' ')
