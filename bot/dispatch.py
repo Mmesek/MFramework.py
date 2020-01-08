@@ -53,7 +53,7 @@ async def presence_update(self, data):
 async def message_update(self, data):
     if 'guild_id' not in data or 'webhook_id' in data or 'content' not in data:
         return
-    c = await self.cache.cachedMessage(data)
+    c = self.cache.cachedMessage(data)
     embed = {"title":f"Message edited in <#{data['channel_id']}>\nBefore:","footer":{},"author":{},"fields":[]}
     if c != None:
         embed["description"]       =f"{c['content']}"
@@ -68,7 +68,7 @@ async def message_update(self, data):
             embed["fields"]    +=[{"name":"Attachments:","value":c['attachments'][0]['filename']}]
         except:
             pass
-    await self.cache.message(data)
+    self.cache.message(data)
     if 'description' in embed and (embed['description'] == "" or embed['description'] == data['content']):
         return
     webhook = self.cache.cache[data['guild_id']]['logging']['message_update']
@@ -109,7 +109,9 @@ async def channel_pins_update(self, data):
 
 @onDispatch()
 async def guild_create(self, data):
-    self.db[data['id']] = {}
+    print(data['id'],data['name'],data['owner_id'],data['joined_at'],data['large'],data['unavailable'],data['member_count'],data['voice_states'])
+    print(data['members'][0],data['channels'][0],data['presences'][0])
+#    self.db[data['id']].insert_one({})
     self.cache.server_data(data)
 #    if database.checkGuild(data['id']) == []:
 #        database.initGuild(data['id'])
@@ -170,7 +172,7 @@ async def guild_role_delete(self, data):
 async def message_delete(self, data):
     if 'guild_id' not in data or 'webhook_id' in data:
         return
-    c = await self.cache.cachedMessage(data)
+    c = self.cache.cachedMessage(data)
     embed = {"title":f"Message deleted in <#{data['channel_id']}>","footer":{},"author":{},"fields":[]}
     if c != None:
         embed["description"]       =c['content']
