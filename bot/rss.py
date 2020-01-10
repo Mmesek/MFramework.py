@@ -1,9 +1,11 @@
 import feedparser, re, requests, asyncio, time, html2text
 from bs4 import BeautifulSoup as bs
 import bot.utils as utils
+
+
 def parseEntry(self, entry, last, source):
     desc = bs(entry['description'],'html.parser')
-    fields = []
+    embed = utils.Embed().setTitle(entry['title']).setColor(source[3]).setTimestamp(time.strftime("%Y-%m-%dT%H:%M:%S",entry['published_parsed'])).setUrl(entry['link'])
     if '//steam' in source[1]:
         h2t = html2text.HTML2Text()
         h2tl = h2t.handle(desc.prettify()).replace('\n [','[').replace('\n]',']').replace('[ ','[').replace("{LINK REMOVED}",'').replace('\n\n','\n')
@@ -11,11 +13,11 @@ def parseEntry(self, entry, last, source):
         h2tl = desc.text
     try:
         imag = ''
-        #if desc.img['src'][-3:] == '.gif':
-        if '//steam' in source[1]:
-            imag = desc.img['src']
-        else:
-            imag=desc.find('img')['src']
+        if desc.img['src'][-4:] != '.gif':
+            if '//steam' in source[1]:
+                imag = desc.img['src']
+            else:
+                imag=desc.find('img')['src']
     except:
         pass
     try:
@@ -26,7 +28,7 @@ def parseEntry(self, entry, last, source):
     for link in links_all:
         s = link.split('/')[-2].replace('_',' ')
         h2tl=h2tl.replace(f"({s})[{link}]","")
-        fields += [{"name":"Steam Store","value":f"[{s}]({link})"}]
+        embed.addField("Steam Store",f"[{s}]({link})")
     images = re.findall(r'\!\[\]\(\S*\)',h2tl)
     for image in images:
         h2tl=h2tl.replace(f"{image}",'')
@@ -39,21 +41,15 @@ def parseEntry(self, entry, last, source):
         ftext = f"{entry['author']} @ {source[0]}"
     else:
         ftext = source[0]
-    embed = utils.Embed().setTitle(entry['title']).setColor(source[3]).setTimestamp(time.strftime("%Y-%m-%dT%H:%M:%S",entry['published_parsed'])).setFooter('',ftext).setDescription(desc.replace(' * ','\n')).embed
-#    embed = {
-#        "url":entry['link'],
-#        "image":{"url":''},
-#        "thumbnail":{"url":''},
-#        "fields":fields
-#    }
+    embed.setFooter('',ftext).setDescription(desc.replace(' * ','\n'))
     if '//steam' in source[1]:
-        embed['image']['url']=imag
+        embed.setImage(imag)
     else:
-        embed['thumbnail']['url'] =imag
-    print(embed)
-    return embed
+        embed.setThumbnail(imag)
+    print(embed.embed)
+    return embed.embed
 
-async def rss(self, language): #that definitly needs to be cleaned lol
+async def rss(self, language):
     feeds = self.db.RSSGetSources(language)
     embeds = []
     for source in feeds:
@@ -88,4 +84,3 @@ async def rss(self, language): #that definitly needs to be cleaned lol
                     await self.endpoints.webhook([embed], webhook[1],webhook[0],'RSS')
                     await asyncio.sleep(1)
             await asyncio.sleep(0.5)
-#            await endpoints.e.webhook(embeds,webhook[1],webhook[0])
