@@ -12,6 +12,9 @@ class Embed:
     def setColor(self, color):
         self.embed['color'] = color
         return self
+    def setUrl(self, url):
+        self.embed['url'] = url
+        return self
     def setImage(self, url):
         self.embed['image'] = {"url":url}
         return self
