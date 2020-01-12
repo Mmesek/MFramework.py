@@ -1,8 +1,8 @@
 import feedparser, re, requests, asyncio, time, html2text
 from bs4 import BeautifulSoup as bs
 from math import ceil
-#import bot.utils as utils
-import utils
+import bot.utils as utils
+#import utils
 
 def parseEntry(self, entry, last, source, feed):
     desc = bs(entry['description'],'html.parser')
@@ -145,8 +145,9 @@ class Test():
     async def run(self):
         await rss(self, 'pl')
 
-test = Test()
+if __name__ == "__main__":
+    test = Test()
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(test.run())
-loop.close()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(test.run())
+    loop.close()
