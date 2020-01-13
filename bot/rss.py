@@ -4,6 +4,8 @@ from math import ceil
 import bot.utils as utils
 #import utils
 
+#TODO: Sort embeds from oldest
+
 def parseEntry(self, entry, last, source, feed):
     desc = bs(entry['description'],'html.parser')
     embed = utils.Embed().setColor(source[3]).setTimestamp(time.strftime("%Y-%m-%dT%H:%M:%S",entry['published_parsed']))
