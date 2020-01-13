@@ -60,7 +60,7 @@ class Endpoints:
         return await self.api_call(f"/guilds/{guild}/members/@me/nick","PATCH",json={"nick": nick})
     async def create_webhook(self, channel, name):
         return await self.api_call(f"/channels/{channel}/webhooks","POST",json={"name":name})
-    async def webhook(self, embeds, content='', webhook_url='641434571384160278/9W5TsFUrLRi0ULfvgkoviWl5t3SWtqZQO7R4fC5FVsERYj0msopjTELOsFmk1-F8Bg3z', username=''):
-        return await self.api_call(f"/webhooks/{webhook_url}","POST",json={"content":content,"embeds":embeds,"username":username})
+    async def webhook(self, embeds, content='', webhook_url='641434571384160278/9W5TsFUrLRi0ULfvgkoviWl5t3SWtqZQO7R4fC5FVsERYj0msopjTELOsFmk1-F8Bg3z', username='', avatar_url=''):
+        return await self.api_call(f"/webhooks/{webhook_url}","POST",json={"content":content,"embeds":embeds,"username":username,"avatar_url":avatar_url})
     async def withFile(self, channel, attachment, filename='', content='', embed=''):
         return await self.api_call(f"/channels/{channel}/messages","POST",json={"content":content,"embed":embed},file=(filename,attachment))
