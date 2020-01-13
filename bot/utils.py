@@ -34,7 +34,7 @@ class Embed:
         self.embed['fields'] += [{"name":name, "value":value, "inline":inline}]
         return self
 
-async def created(snowflake):
+async def created(snowflake: int) -> datetime.datetime:
     ms = ((int(snowflake) >> 22)+1420070400000)
     return datetime.datetime.utcfromtimestamp(ms//1000.0).replace(microsecond=ms%1000*1000)
 
@@ -64,7 +64,7 @@ def timed(func):
         return result
     return inner
 
-def replaceMultiple(mainString, toBeReplaces, newString):
+def replaceMultiple(mainString: str, toBeReplaces: list, newString: str) -> str:
     # Iterate over the strings to be replaced
     for elem in toBeReplaces :
         # Check if string is in the main string
@@ -74,10 +74,10 @@ def replaceMultiple(mainString, toBeReplaces, newString):
     
     return  mainString
 
-def parseMention(message):
+def parseMention(message: str) -> list:
     return replaceMultiple(message,['<:','@!','#','&','<',':>','>','@'],'')
 
-def param(message):
+def param(message: str) -> str:
     return replaceMultiple(message,['<:','@!','#','&','<',':>','>','@'],'').split(' ')[1:]
 
 
