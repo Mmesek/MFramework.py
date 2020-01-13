@@ -1,10 +1,8 @@
 import asyncio, json, datetime, time
 
-from utils import timed
-from discord.mbot import onDispatch
-from discord.commands import execute
-
-import funcs
+from bot.utils import timed, quote
+from bot.discord.mbot import onDispatch
+from bot.discord.commands import execute
 
 @onDispatch()
 async def ready(self, data):
@@ -20,11 +18,11 @@ async def message_create(self, data):
     try:
 #        print(data)
         if 'webhook_id' not in data and 'bot' not in data['author'] and 'guild_id' in data:
-            if '!' in data['content'] and await execute(self, data) != 0:
+            if ('!' in data['content'] or self.user_id in data['content']) and await execute(self, data) != 0:
                 return
             elif 'discordapp.com/channels/' in data['content']:
                 pass
-                return await funcs.quote(self, data)
+                return await quote(self, data)
             return
         #    await cache(data)
         #    database.AddExp(data['guild_id'],data['author']['id'],int(datetime.datetime.fromisoformat(data['timestamp']).timestamp()))

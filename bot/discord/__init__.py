@@ -1,2 +1,2 @@
-import discord.mbot
-import discord.commands
+import bot.discord.mbot
+import bot.discord.commands
