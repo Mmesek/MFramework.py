@@ -1,9 +1,10 @@
 import asyncio, json, aiohttp
-import discord.endpoints as endpoints
-import discord.db as db
-async def Invalid(*args):
-    #print(f"Invalid Package: {args[0]}")
-    pass
+import bot.discord.endpoints as endpoints
+import bot.discord.db as db
+
+from bot.discord.commands import Invalid
+from bot.config import cfg as config
+from bot.utils import log
 
 mtypes={}
 
@@ -16,8 +17,6 @@ def onDispatch():
             return r
         return inn
     return inner
-
-from config import cfg as config
 
 class Bot:
     def __init__(self):
@@ -65,20 +64,25 @@ class Bot:
             await self.close()
         gate = await self.api_call("/gateway")
         self.ws = await self.csession.ws_connect(f"{gate['url']}?v=6&encoding=json")
+#       async for msg in self.ws:
+#           await self.opcode(json.loads(msg.data))
     async def msg(self):
 #        msg = await self.ws.receive()
 #        print('Type:',msg.type,'\nExtra: ',msg.extra)
 #        data = json.loads(msg.data)
-        try:
-            data = await self.ws.receive_json()
-        except:
-            data = None
-        return data
+        while self.keepConnection:
+            try:
+                data = await self.ws.receive_json()
+            except Exception as ex:
+                print('Msg Error: ', ex)
+            if data != None:
+                asyncio.create_task(self.opcode(data))
     async def heartbeat(self, interval):
         while self.keepConnection:
             await asyncio.sleep(interval/1000)
             await self.ws.send_json({"op":1, "d":self.sequence})
     async def close(self):
+        self.keepConnection = False
         print('Closing')
         self.heartbeating.cancel() #pylint: disable=no-member
         await self.ws.close()
@@ -176,21 +180,59 @@ class Bot:
     async def heartbeat_ack(self, data):
         pass
 
+async def cancelTasks():
+    tasks = [t for t in asyncio.all_tasks() if t is not
+             asyncio.current_task()]
+    [print(task.get_stack()) for task in tasks]
+    [task.cancel() for task in tasks]
+    print(f"Cancelling {len(tasks)} tasks")
+    await asyncio.gather(*tasks, return_exceptions=True)
+
+async def shutdown(loop, bot=None):
+    if bot:
+        bot.keepConnection = False
+        await bot.close()
+        await asyncio.sleep(0)
+    tasks = [t for t in asyncio.all_tasks() if t is not
+             asyncio.current_task()]
+    [print(task.get_stack()) for task in tasks]
+    [task.cancel() for task in tasks]
+    print(f"Cancelling {len(tasks)} tasks")
+    await asyncio.gather(*tasks, return_exceptions=True)
+    loop.stop()
+
+async def handle_exception(loop, context):
+    msg = context.get("exception", context["message"])
+    print(f"Handling exception: {msg}")
+    log(f"Caught exception: {msg}")
+    asyncio.create_task(shutdown(loop))
+
+
 
 def run():
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-    loop.run_until_complete(asyncio.sleep(0))
-    loop.close()
-
+    #/Not tested
+    from sys import platform
+    if platform != "win32":
+        import signal
+        loop = asyncio.get_event_loop()
+        loop.add_signal_handler(signal.SIGINT,asyncio.create_task(shutdown(loop)))
+        loop.set_exception_handler(handle_exception)
+        #loop.run_until_complete(main())
+        #loop.close()
+    #Not tested/
+    asyncio.run(main())
 
 async def main():
     b = Bot()
-    while b.stayConnected:
-        await b.connection()
-        while b.state:
-            data = await b.msg()
-            await b.opcode(data)
-        print('SHEEP IS ON FIRE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        break
-#run()
+    await b.connection()
+    try:
+        await b.msg()
+    except Exception as ex:
+        log(f"Main exception: {ex}")
+    finally:
+        try:
+            await asyncio.sleep(1)
+            if b.state:
+                await b.close()
+        except Exception as ex: 
+            log(f"Clean up exception: {ex}")
