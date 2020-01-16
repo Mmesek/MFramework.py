@@ -12,27 +12,20 @@ $ pip install -r requirements.txt
 [Twitter](https://developer.twitter.com/en/apps)
 [Twitch](https://dev.twitch.tv/console)
 
-Generate config file by running bot once or by executing:
-
-```
-$ cd bot
-$ python config.py
-```
+Generate config file by running bot once.
 
 Configure tokens in `/bot/data/secrets.ini`
 
 ### Start bot:
 ```sh
-$ cd bot
-$ python main.py
+$ python __main__.py
 ```
 
 ### Create new commands with:
 ```python
-@register(group='group', help='Short description to use with help command', alias='trigger')
-async def commandTrigger(data):
+@register(group='group', help='Short description to use with help command', alias='trigger', category='Command Category')
+async def commandTrigger(self, data):
 '''Extended description to use with detailed help command'''
-  pass
- ```
- 
- 
+    pass
+```
+
