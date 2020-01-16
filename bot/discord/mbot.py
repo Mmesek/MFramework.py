@@ -42,13 +42,13 @@ class Bot:
             11:self.heartbeat_ack}
         self.message_type = mtypes
         print('Initating Bot with token: ',self.token)
-    async def api_call(self, path, method="GET", **kwargs):
+    async def api_call(self, path, method="GET", reason='', **kwargs):
         if 'file' in kwargs:
             data = aiohttp.FormData()
             data.add_field('payload_json',json.dumps(kwargs['json']))
             data.add_field('file',kwargs['file'][1], filename=kwargs['file'][0],content_type='application/octet-stream')
             return await self.csession.post(url='https://discordapp.com/api'+path,data=data,headers=[('Authorization',f'Bot {self.token}')])
-        defaults = {"headers":{"Authorization": f"Bot {self.token}", "Content-Type": "application/json"}}
+        defaults = {"headers":{"Authorization": f"Bot {self.token}", "Content-Type": "application/json", "X-Audit-Log-Reason":f"{reason}"}}
         kwargs = dict(defaults, **kwargs)
         res = await self.csession.request(method, "https://discordapp.com/api"+path, **kwargs)
         try:
