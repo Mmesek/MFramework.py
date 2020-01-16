@@ -84,6 +84,7 @@ class Bot:
     async def close(self):
         self.keepConnection = False
         print('Closing')
+        self.db.client.close()
         self.heartbeating.cancel() #pylint: disable=no-member
         await self.ws.close()
         await self.csession.close()
