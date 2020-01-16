@@ -26,7 +26,7 @@ import time
 class Cache:
     def __init__(self, db):
         self.cache = {}
-        self.db = db
+        self.db = db.db
     def message(self, data):
         if len(self.cache[data['guild_id']]['msgs']) == 256:
             self.cache[data['guild_id']]['msgs'].pop(list(self.cache[data['guild_id']]['msgs'].keys())[0],None)
@@ -34,8 +34,13 @@ class Cache:
     def cachedMessage(self, data):
         return self.cache[data['guild_id']]['msgs'].pop(data['id'],None)
     def server_data(self, data):
+        self.cache[data['id']] = {'msgs':{},'member_count':data['member_count'],'since':data['joined_at']}
+        print(self.cache[data['id']])
+        #return
         if data['id'] not in self.db.list_collection_names():
             #init guild
+            print(self.db.list_collection_names())
+            self.db[data['id']].insert_one({'reactions':{},'groups':{}})
             return
         self.cache[data['id']] = {
             "msgs":{},
@@ -66,8 +71,42 @@ class Cache:
         return 5
 
 import pymongo
+from influxdb import InfluxDBClient
 
 class Database:
     def __init__(self, databaseLocation, databaseName):
         self.client = pymongo.MongoClient(databaseLocation)
         self.db = self.client[databaseName]
+        self.influx = InfluxDBClient(host='rpi4',database='MFrameworkMemberChanges')
+    def influxMember(self, serverID, userID, joined_or_left, timestamp=''):
+        self.influx.write_points([{
+            "measurement":"MemberChange",
+            "tags":{
+                "server":serverID,
+                "user":userID
+            },
+            "time":timestamp,
+            "fields":{
+                "change":joined_or_left
+        }}])
+    def influxMembers(self, serverID, users: tuple):
+        '''Users = [(UserID, timestamp)]'''
+        jsons = []
+        for user in users:
+            jsons+=[{
+                "measurement":"MemberChange",
+                "tags":{
+                    "server":serverID,
+                    "user":user[0]
+                },
+                "time":user[1],
+                "fields":{
+                    "change":True}}]
+        self.influx.write_points(jsons)
+    def influxGetMember(self, server):
+        return self.influx.query('select change from MemberChange where server=$server;',bind_params={'server':server})
+    def influxPing(self):
+        return self.influx.ping()
+    def mongoPing(self):
+        return self.db.command('ping')
+    
