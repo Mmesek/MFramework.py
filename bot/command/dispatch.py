@@ -140,11 +140,11 @@ async def guild_integrations_update(self, data):
 
 @onDispatch()
 async def guild_member_add(self, data):
-    print(data)
+    self.db.influxMember(data['guild_id'],data['user']['id'],True,data['joined_at'])
 
 @onDispatch()
 async def guild_member_remove(self, data):
-    print(data)
+    self.db.influxMember(data['guild_id'],data['user']['id'],False)
 
 @onDispatch()
 async def guild_member_update(self, data):
