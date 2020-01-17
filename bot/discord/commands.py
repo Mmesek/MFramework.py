@@ -1,5 +1,5 @@
 import asyncio, re
-import inspect
+#import inspect
 
 from bot.utils import timed, parseMention
 
@@ -21,13 +21,13 @@ def register(**kwargs):
     def inner(f, *arg, **kwarg):
 
         #Set Category
-        if 'category' not in kwargs:
+    #    if 'category' not in kwargs:
             #This one should retrieve caller's category based on directory
-            stack = inspect.stack()
-            previous_stack_frame = stack[1]
-            loc = str(previous_stack_frame.filename).split('command\\',1)
-            if len(loc) > 1:
-                category = loc[1].split('\\',1)[0]
+    #        stack = inspect.stack()
+    #        previous_stack_frame = stack[1]
+    #        loc = str(previous_stack_frame.filename).split('command\\',1)
+    #        if len(loc) > 1:
+    #            category = loc[1].split('\\',1)[0]
 #               group = loc[1].split('\\',1)[1]
 
         #Set group
@@ -38,7 +38,6 @@ def register(**kwargs):
             group +=[i]
             if kwargs['group'] == i:
                 break
-        print(kwargs['group'],f.__name__,group)
 
         #Register to command's list
         for g in group:
