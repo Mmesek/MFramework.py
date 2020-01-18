@@ -80,7 +80,7 @@ async def execute(self, data):
     try:
         data['content'] = cmd[1]
     except:
-        data['content'] = cmd[0] #No content, let's pass command for no reason
+        data['content'] = ''#cmd[0] #No content, let's pass command for no reason
     #.split('!',1)[1].split(' ',1)[0]
     group = self.cache.cachedRoles(data['guild_id'],data['member']['roles'])
     group = seed[group]
