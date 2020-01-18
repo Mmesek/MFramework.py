@@ -74,10 +74,10 @@ def replaceMultiple(mainString: str, toBeReplaces: list, newString: str) -> str:
     
     return  mainString
 
-def parseMention(message: str) -> list:
+def parseMention(message: str) -> str:
     return replaceMultiple(message,['<:','@!','#','&','<',':>','>','@'],'')
 
-def param(message: str) -> str:
+def param(message: str) -> list:
     return replaceMultiple(message,['<:','@!','#','&','<',':>','>','@'],'').split(' ')[1:]
 
 
