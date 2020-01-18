@@ -37,7 +37,7 @@ class Endpoints:
     async def modify_emoji(self, guild,emoji,name,roles,audit_reason=''):
         return await self.api_call(f"/guilds/{guild}/emojis/{emoji}","PATCH",json={"name":name,"roles":roles},reason=audit_reason)
     async def get_messages(self, channel, message, limit=2, when="before"):
-        '''channel = Channel ID\nmessage = Message ID\nlimit = How many messages you want\nwhen = If you want messages before message ID or after message ID'''
+        '''channel = Channel ID\nmessage = Message ID\nlimit = How many messages you want\nwhen = "before" | "around" | "after" message ID'''
         return await self.api_call(f"/channels/{channel}/messages", "GET", params={'limit': limit, when: message})
     async def get_message(self, channel, message):
         return await self.api_call(f"/channels/{channel}/messages/{message}","GET")
