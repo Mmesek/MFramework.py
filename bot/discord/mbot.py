@@ -1,6 +1,7 @@
 import asyncio, json, aiohttp
 import bot.discord.endpoints as endpoints
-import bot.discord.db as db
+import bot.discord.database as db
+import bot.discord.cache as cache
 
 from bot.discord.commands import Invalid
 from bot.config import cfg as config
@@ -32,7 +33,7 @@ class Bot:
         self.presenceType = config['Discord']['presence_type']
         self.shards = None #[shard,total]
         self.db = db.Database(config['Database']['location'],config['Database']['name'])
-        self.cache = db.Cache(self.db)
+        self.cache = cache.Cache(self.db)
         self.endpoints = endpoints.Endpoints(self.api_call)
         self.op = {
             0:self.dispatch,
