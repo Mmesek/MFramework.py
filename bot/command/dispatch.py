@@ -110,7 +110,7 @@ async def guild_create(self, data):
     print(data['id'],data['name'],data['owner_id'],data['joined_at'],data['large'],data['unavailable'],data['member_count'],data['voice_states'])
     print(data['members'][0],data['channels'][0],data['presences'][0])
 #    self.db[data['id']].insert_one({})
-    self.cache.server_data(data)
+    await self.cache.server_data(data)
 #    if database.checkGuild(data['id']) == []:
 #        database.initGuild(data['id'])
 
@@ -140,11 +140,11 @@ async def guild_integrations_update(self, data):
 
 @onDispatch()
 async def guild_member_add(self, data):
-    self.db.influxMember(data['guild_id'],data['user']['id'],True,data['joined_at'])
+    await self.db.influxMember(data['guild_id'],data['user']['id'],True,data['joined_at'])
 
 @onDispatch()
 async def guild_member_remove(self, data):
-    self.db.influxMember(data['guild_id'],data['user']['id'],False)
+    await self.db.influxMember(data['guild_id'],data['user']['id'],False)
 
 @onDispatch()
 async def guild_member_update(self, data):

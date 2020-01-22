@@ -33,7 +33,7 @@ class Cache:
         self.cache[data['guild_id']]['msgs'][data['id']] = data
     def cachedMessage(self, data):
         return self.cache[data['guild_id']]['msgs'].pop(data['id'],None)
-    def server_data(self, data):
+    async def server_data(self, data):
         self.cache[data['id']] = {'msgs':{},'member_count':data['member_count'],'since':data['joined_at']}
         print(self.cache[data['id']])
         #return
