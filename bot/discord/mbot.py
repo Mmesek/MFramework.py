@@ -71,13 +71,24 @@ class Bot:
 #        msg = await self.ws.receive()
 #        print('Type:',msg.type,'\nExtra: ',msg.extra)
 #        data = json.loads(msg.data)
-        while self.keepConnection:
+        async for msg in self.ws:
             try:
-                data = await self.ws.receive_json()
+                data = json.loads(msg.data)
+                if data != None:
+                    asyncio.create_task(self.opcode(data))
             except Exception as ex:
-                print('Msg Error: ', ex)
-            if data != None:
-                asyncio.create_task(self.opcode(data))
+                print('Error:', ex)
+#        while self.keepConnection:
+#            try:
+#                data = await self.ws.receive_json()
+#            except Exception:
+#                data = await self.ws.receive()
+#                print('Msg Error: ', data.type, data.extra, data.data)
+#                self.keepConnection = False
+#                data = None
+#            if data != None:
+#                asyncio.create_task(self.opcode(data))
+        await self.close()
     async def heartbeat(self, interval):
         while self.keepConnection:
             await asyncio.sleep(interval/1000)
@@ -85,7 +96,7 @@ class Bot:
     async def close(self):
         self.keepConnection = False
         print('Closing')
-        self.db.client.close()
+#        self.db.client.close()
         self.heartbeating.cancel() #pylint: disable=no-member
         await self.ws.close()
         await self.csession.close()
