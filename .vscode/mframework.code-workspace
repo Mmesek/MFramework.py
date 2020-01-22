@@ -15,7 +15,7 @@
                 "name": "MFramework.py",
                 "type": "python",
                 "request": "launch",
-                "program": "${workspaceFolder}/__main__.py",
+                "program": "${workspaceFolder:MFramework}/__main__.py",
                 "console": "integratedTerminal"
             },{
                 "name": "Python: Current File (Integrated Terminal)",
