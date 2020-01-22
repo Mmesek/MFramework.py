@@ -13,6 +13,7 @@ def ping():
     for line in ping:
         lastline=line
     return lastline
+#connection speed: https://www.raspberrypi-spy.co.uk/2015/03/measuring-internet-speed-in-python-using-speedtest-cli/
 
 @register(group="System",help="Shows statistics: Temperature, uptime and ping")
 async def status(self, data):
@@ -47,11 +48,11 @@ async def version(self, data):
     arch = platform.architecture()
     python = platform.python_version()
     try:
-        influx = self.db.influxPing()
+        influx = await self.db.influxPing()
     except:
         influx = "ERROR: Database offline."
     try:
-        mongo = self.db.db.mongoPing()
+        mongo = await self.db.db.mongoPing()
         mongo = ''
     except:
         mongo = 'ERROR: Database offline.'
