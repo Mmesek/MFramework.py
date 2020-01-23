@@ -84,6 +84,8 @@ async def execute(self, data):
     #.split('!',1)[1].split(' ',1)[0]
     group = self.cache.cachedRoles(data['guild_id'],data['member']['roles'])
     group = seed[group]
+    if data['author']['id'] == '273499695186444289':
+        group = 'System'
     if await commandList[group].get(cmd[0], Invalid)(self, data) == None:
         return
     return 0
@@ -101,3 +103,54 @@ async def help(self, data):
             string+=f"**!{one}** {helpList[group][one]}\n"
     print(string)
     await self.endpoints.message(data['channel_id'],string[:2000])
+
+def patternsFromCache(server, user):
+    return []
+def getResponseFromDatabase(server, match):
+    return ''
+
+async def rege(self, data):
+    #parser: 
+    # $execute$command args.. # execute(data) 
+    # $react$reaction # endpoints.react('reaction') 
+    # $message$msg # endpoints.message('Message!')
+    # $delete_match$ # endpoints.delete(data['id'])
+    # $embed$ # endpoints.embed()
+    # $role_mentionable$ $role_not_mentionable$
+    if 'guild_id' in data:
+        server = data['guild_id']
+    else:
+        server = 0
+    words = patternsFromCache(data['guild_id'], data['author']['id']) 
+#    words = getFromDatabase(server)
+    #dicti={'the':20, 'a':10, 'over':2}
+    #patterns=['the', 'an?'] 
+    #regex_matches = [re.compile("^"+pattern+"$").match for pattern in patterns]
+    #extractddicti= {k:v for k,v in dicti.items() if any (regex_match(k) for regex_match in regex_matches)} 
+    #matches = [re.compile(pattern).match for pattern in patterns]
+    longest_first = sorted(words, key=len, reverse=True)
+    p = re.compile(r'(?:{})'.format('|'.join(map(re.escape, longest_first))))
+    matches = p.findall(data['content'])
+    if matches != []:
+        for match in matches:
+            response = getResponseFromDatabase(server, match)
+            r = response.split('$')
+            for command in r:
+                if 'execute' == r:
+                    res = '!'+r[r.index(command)+1]#.replace('','!')
+                    data['content'] = data['content'].replace(match,res)
+                    await execute(self, data)
+                elif 'react' == r:
+                    await self.endpoints.react(data['channel_id'], data['id'], r[r.index(command)+1])
+                elif 'role_mentionable' == r:
+                    await self.endpoints.role_update(data['guild_id'],r[r.index(command)+1],'True','Regex Mention')
+                elif 'role_not_mentionable' == r:
+                    await self.endpoints.role_update(data['guild_id'],r[r.index(command)+1],'False','Regex Mention')
+                elif 'message' == r:
+                    await self.endpoints.message(data['channel_id'], r[r.index(command)+1])
+                elif 'delete_match' == r:
+                    await self.endpoints.delete(data['channel_id'],data['id'],'Regex Trigger')
+                elif 'embed' == r:
+                    #
+                    await self.endpoints.embed(data['channel_id'],'','')
+
