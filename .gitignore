@@ -133,3 +133,5 @@ dmypy.json
 bot/data/secrets.ini
 .vscode/settings.json
 .vscode/mframework-local.code-workspace
+*.db
+bot/command/misc/local.py
