@@ -33,6 +33,7 @@ class Bot:
         self.presenceType = config['Discord']['presence_type']
         self.shards = None #[shard,total]
         self.db = db.Database(config['Database']['location'],config['Database']['name'])
+        asyncio.create_task(self.db.createTables())
         self.cache = cache.Cache(self.db)
         self.endpoints = endpoints.Endpoints(self.api_call)
         self.op = {
