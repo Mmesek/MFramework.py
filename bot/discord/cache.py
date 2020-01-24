@@ -1,6 +1,6 @@
 #cache = { 
 # "server": {
-#   "message":{
+#   "msgs":{
 #       "id":{}},
 #   "reactions":{
 #       "message_id":{
@@ -22,11 +22,11 @@
 #       "logChannel":"webhook"}
 #   }
 # }
-import time
+import time, json, re
 class Cache:
     def __init__(self, db):
         self.cache = {}
-        self.db = db.db
+        self.db = db
     def message(self, data):
         if len(self.cache[data['guild_id']]['msgs']) == 256:
             self.cache[data['guild_id']]['msgs'].pop(list(self.cache[data['guild_id']]['msgs'].keys())[0],None)
@@ -34,29 +34,68 @@ class Cache:
     def cachedMessage(self, data):
         return self.cache[data['guild_id']]['msgs'].pop(data['id'],None)
     async def server_data(self, data):
-        self.cache[data['id']] = {'msgs':{},'member_count':data['member_count'],'since':data['joined_at']}
-        print(self.cache[data['id']])
-        #return
-        if data['id'] not in self.db.list_collection_names():
-            #init guild
-            print(self.db.list_collection_names())
-            self.db[data['id']].insert_one({'reactions':{},'groups':{}})
-            return
+        db = await self.db.selectOne('Servers','AdminIDs, ModIDs, VipIDs, NitroIDs, MutedIDs, NoExpRoles, NoExpChannels', 'WHERE GuildID=?',[data['id']])
+        if db == None:
+            admin, mod, vip, nitro, muted, rnoexp, cnoexp = [], [], [], [], [], [], []
+            for role in data['roles']:
+                if role['name'] == 'Admin' or role['name'] == 'Administrator':
+                    admin+=[role['id']]
+                elif role['name'] == 'Moderator':
+                    mod+=[role['id']]
+                elif role['name'] == 'Nitro Booster' and role['managed'] == True:
+                    nitro += [role['id']]
+                elif role['name'] == 'Muted':
+                    muted+=[role['id']]
+                elif role['name'].lower() in {'VIP','Contributor'}:
+                    vip +=[role['id']]
+                elif role['name'] == 'No Exp':
+                    rnoexp += [role['id']]
+            for channel in data['channels']:
+                if 'bot' in channel['name']:
+                    cnoexp += [channel['id']]
+            await self.db.insert('Servers','GuildID, AdminIDs, ModIDs, VipIDs, NitroIDs, MutedIDs, NoExpRoles, NoExpChannels',[data['id'],json.dumps(admin),json.dumps(mod),json.dumps(vip),json.dumps(nitro),json.dumps(muted),json.dumps(rnoexp),json.dumps(cnoexp)])
+            db = await self.db.selectOne('Servers','AdminIDs, ModIDs, VipIDs, NitroIDs, MutedIDs, NoExpRoles, NoExpChannels', 'WHERE GuildID=?',[data['id']])
+        reg = await self.db.selectMultiple('Regex','ReqRole, Trigger','WHERE GuildID=?',[data['id']])
+        logging = await self.db.selectMultiple('Webhooks','Webhook','WHERE GuildID=? AND Source=?',[data['id'],'Log'])
+        rroles = await self.db.selectMultiple('ReactionRoles','MessageID, RoleID, Reaction, RoleGroup','WHERE GuildID=?',[data['id']])
+        rr, responses, triggers = {}, {}, {}
+        for r in rroles:
+            rr[r[0]] = {r[2]: (r[1], r[3])}
+        for res in reg:
+            if res[0] not in responses:
+                responses[res[0]] = []
+            responses[res[0]] += [res[1]]
+        for r in responses:
+            longest_first = sorted(r, key=len, reverse=True)
+            p = re.compile(r'(?:{})'.format('|'.join(map(re.escape, longest_first))))
+            triggers[r] = p
+        users = {}
+        for presence in data['presences']:
+            if 'nickname' in presence:
+                users[presence['nickname']] = presence['user']['id']
         self.cache[data['id']] = {
             "msgs":{},
             "member_count": data['member_count'],
             "since": data['joined_at'],
-            "voice": {},
-            "channels":[],
-            "reactions": self.db[data['id']]['reactions'],
-            "roles": self.db[data['id']]['roles'],
-            "disabled_channels": self.db[data['id']]['disabled']['channels'],
-            "disabled_roles": self.db[data['id']]['disabled']['roles'],
-            "muted": self.db[data['id']]['muted'],
-            "groups":self.db[data['id']]['groups'],
-            "responses":self.db[data['id']]['CustomResponses'],
-            "logging":self.db[data['id']]['logging']
+            "voice": data['voice_states'],
+            "channels":data['channels'],
+            "members":data['presences'],
+            "roles": data['roles'],
+            "reactions": data['emojis'],
+            "disabled_channels": db[6],
+            "disabled_roles": db[5],
+            "groups":{
+                "admin":db[0],
+                "mod":db[1],
+                "vip":db[2],
+                "nitro":db[3],
+                "muted": db[4],
+            },
+            "reactionRoles":rr,
+            "responses":triggers,
+            "logging":logging
         }
+        return
     def voice(self, data):
         if data['user_id'] not in self.cache[data['id']]['voice']:
             self.cache[data['id']]['voice'][data['user_id']] = time.time()
