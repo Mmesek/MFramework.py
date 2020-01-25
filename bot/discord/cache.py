@@ -85,11 +85,11 @@ class Cache:
             "disabled_channels": db[6],
             "disabled_roles": db[5],
             "groups":{
-                "admin":db[0],
-                "mod":db[1],
-                "vip":db[2],
-                "nitro":db[3],
-                "muted": db[4],
+                "Admin":db[0],
+                "Mod":db[1],
+                "Vip":db[2],
+                "Nitro":db[3],
+                "Muted": db[4],
             },
             "reactionRoles":rr,
             "responses":triggers,
@@ -107,4 +107,9 @@ class Cache:
             return now-join
         return 0
     def cachedRoles(self, guild, roles):
-        return 5
+        groups = self.cache[guild]['groups']
+        for role in roles:
+            for group in groups:
+                if role in groups[group]:
+                    return group
+        return 'Global'
