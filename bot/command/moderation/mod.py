@@ -8,34 +8,96 @@ from bot.utils import Embed, created, parseMention, datetime, time
 from PIL import Image
 from io import BytesIO
 
+async def handleInfraction(self,data,infraction):
+    params = data['content'].split(' ',1)
+    uid = params[0]
+    reason = params[1]
+    if infraction[0] == 'Warn':
+        duration = 0
+    else:
+        duration = 0 #There is some need of handling it tho.
+    await self.db.insert('Infractions','GuildID,UserID,Timestamp,Reason,ModeratorID,Duration,InfractionType',[data['guild_id'],uid,data['timestamp'],reason,data['author']['id'],duration,infraction[0]])
+    guild = await self.endpoints.get_guild(data['guild_id'])
+    guild= guild['name']
+    cid = await self.endpoints.make_dm(uid)
+    result = await self.endpoints.message(cid['id'], f"You've been {infraction[1]} in {guild} server for {reason}")
+    if 'code' in result:
+        await self.endpoints.message(data['channel_id'],f"Couldn't deliver {infraction[2]} to user <@{uid}> due to: {result['message']}")
+    else:
+        await self.endpoints.message(data['channel_id'],f"Delivered {infraction[2]} to user <@{uid}> for: {reason}")
+    if uid == '273499695186444289':
+        await self.endpoints.message(data['channel_id'],'No.')
+        return
+    if infraction[0] in {'Mute','Kick','Ban'}:
+        delete = 0
+        g = self.cache.cachedRoles(data['guild_id'],data['mentions'][0]['member']['roles'])
+        if g not in {'Global','Vip','Nitro'}:
+            await self.endpoints.message(data['channel_id'],f"{infraction[1].capitalize()} 🔨... Can not ban <@{uid}> because CAN NOT BAN MODERATOR OR ADMINISTRATOR REEEEEEE")
+        else:
+            if infraction[0] == 'Mute':
+                try:
+                    role = self.cache.cache[data['guild_id']]['groups']['Muted'][0]
+                    r = await self.endpoints.role_add(data['guild_id'],uid, role, f"Requested by {data['author']['username']}")
+                except:
+                    await self.endpoints.message(data['channel_id'],f"Couldn't perform operation. Muted role or permission is missing.")
+            elif infraction[0] == 'Kick':
+                r = await self.endpoints.kick_user(data['guild_id'],uid,reason,f"Requested by {data['author']['username']}")
+            elif infraction[0] == 'Ban':
+                r = await self.endpoints.ban_user(data['guild_id'],uid,reason,delete,f"Requested by {data['author']['username']}")
+            if 'code' in r:
+                await self.endpoints.message(data['channel_id'],f"Couldn't perform operation. Missing Permission. (Attempted action: {infraction[0]})")
+            else:
+                await self.endpoints.message(data['channel_id'],f"{infraction[1].capitalize()} 🔨 <@{uid}> for {reason}")
+
 @register(group='Mod',category='Moderation',help='[user] [reason] - Warns user.')
 async def warn(self, data):
-    uid = data['mentions'][0]['id']
-    reason = data['content'].split(' ',1)
-    guild = await self.endpoints.get_guild(data['guild_id'])['name']
-    cid = await self.endpoints.make_dm(uid)
-    result = await self.endpoints.message(cid['id'], f"You've been warned in {guild} server for {reason[1]}")
-    if 'code' in result:
-        return await self.endpoints.message(data['channel_id'],f"Couldn't deliver Warning to user <@{uid}> due to: {result['message']}")
-    return await self.endpoints.message(data['channel_id'],f"Delivered Warning to user <@{uid}> for: {reason[1]}")
+    await handleInfraction(self, data, ["Warn","warned","Warning"])
 
 @register(group='Mod',category='Moderation',help='[user] (time) [reason] - Mutes user.')
 async def mute(self, data):
-    uid = data['mentions'][0]['id']
-    reason = data['content'].split(' ',1)
-    guild = await self.endpoints.get_guild(data['guild_id'])['name']
-    cid = await self.endpoints.make_dm(uid)
-    result = await self.endpoints.message(cid['id'], f"You've been muted in {guild} for {reason[1]}")
-    if 'code' in result:
-        return await self.endpoints.message(data['channel_id'],f"Couldn't deliver mute reason to user <@{uid}> due to: {result['message']}")
-    return await self.endpoints.message(data['channel_id'],f"Delivered mute reason to user <@{uid}> for: {reason[1]}")
+    await handleInfraction(self, data, ["Mute","muted","mute reason"])
+
+@register(group='Mod',category='Moderation',help='[user] [reason] - Kicks user.')
+async def kick(self, data):
+    await handleInfraction(self, data, ["Kick","kicked","kick reason"])
 
 @register(group='Mod',category='Moderation',help='[user] (time) [reason] - Bans user.')
 async def ban(self, data):
-    uid = utils.param(data['content'])[0]
-    if data['mentions'] != []:
-        uid=f"<@{uid}>"
-    await self.endpoints.message(data['channel_id'],f"<:pege:644033864704196649> 🔨 {uid}")
+    await handleInfraction(self, data, ["Ban","banned","ban reason"])
+
+
+
+@register(group='Mod',category='Moderation',help='[user] - Shows Infractions of user.')
+async def infractions(self, data):
+    uids = data['content'].split('!',1)[0].split(' ')
+    if uids == ['']:
+        uids = [data['author']['id']]
+    for uid in uids:
+        member = await self.endpoints.get_member(data['guild_id'], uid)
+        avatar = member['user']['avatar']        
+        embed=Embed().setAuthor(f"{member['user']['username']}#{member['user']['discriminator']}",'',f"https://cdn.discordapp.com/avatars/{member['user']['id']}/{avatar}")
+        joined = str(time.strftime("%Y-%m-%d %H:%M:%S",datetime.datetime.fromisoformat(member['joined_at']).timetuple()))
+        embed.setTimestamp(joined).setTitle("Infractions")
+        embed.setFooter('',f"User ID: {member['user']['id']}. Joined Server ")
+        infractions = await self.db.selectMultiple('Infractions','Timestamp,Reason,ModeratorID,Duration,InfractionType','WHERE GuildID=? AND UserID=?',[data['guild_id'],member['user']['id']])
+        infractions = reversed(infractions)
+        if infractions != []:
+            w,m,b = 0,0,0
+            inf_total = ''
+            for i in infractions:
+                if i[4] == 'Warn':
+                    w+=1
+                elif i[4] == 'Mute':
+                    m+=1
+                elif i[4] == 'Ban':
+                    b+=1                    
+                f = f"[{i[0][0:16].replace('T',' ')}] [{i[4]}] **{i[1]}** by <@{i[2]}>\n"
+                if len(inf_total+f) < 2048:
+                    inf_total += f
+            infractions = inf_total
+            total = f'Warns: [{w}]\nMutes: [{m}]\nBans: [{b}]'
+            embed.setDescription(f"{infractions}").addField('Total Infractions',total,True)    
+    await self.endpoints.embed(data['channel_id'],"",embed.embed)
 
 @register(group='Mod',category='Moderation',help='[user] - Shows information about user.')
 async def userInfo(self, data):
@@ -78,12 +140,24 @@ async def userInfo(self, data):
                 res = names.get(key)
                 if res != None:
                     embed.addField(f"{res[0]}",f"{res[1]}", res[2])
-        try:
-            infractions = db.getInfractions(data['guild_id'],member['user']['id'])[0][0]
-        except:
-            infractions = None
-        if infractions != None:
-            embed.addField('Infractions',f"{infractions}",True)
+        infractions = await self.db.selectMultiple('Infractions','Timestamp,Reason,ModeratorID,Duration,InfractionType','WHERE GuildID=? AND UserID=?',[data['guild_id'],member['user']['id']])
+        if infractions != []:
+            infractions = reversed(infractions)
+            w,m,b = 0,0,0
+            inf_total = ''
+            for i in infractions:
+                if i[4] == 'Warn':
+                    w+=1
+                elif i[4] == 'Mute':
+                    m+=1
+                elif i[4] == 'Ban':
+                    b+=1                    
+                f = f"[{i[0][0:16].replace('T',' ')}] [{i[4]}] **{i[1]}** by <@{i[2]}>\n"
+                if len(inf_total+f) < 1024:
+                    inf_total += f
+            infractions = inf_total
+            total = f'Warns: [{w}]\nMutes: [{m}]\nBans: [{b}]'
+            embed.addField('Infractions',f"{infractions}").addField('Total Infractions',total,True)
         embed.setDescription(f"Requested by <@{data['author']['id']}> for user <@{member['user']['id']}>")
         await self.endpoints.embed(data['channel_id'],"",embed.embed)
 
