@@ -23,6 +23,7 @@
 #   }
 # }
 import time, json, re
+from bot.utils import replaceMultiple
 class Cache:
     def __init__(self, db):
         self.cache = {}
@@ -82,20 +83,19 @@ class Cache:
             "members":data['presences'],
             "roles": data['roles'],
             "reactions": data['emojis'],
-            "disabled_channels": db[6],
-            "disabled_roles": db[5],
-            "groups":{
-                "Admin":db[0],
-                "Mod":db[1],
-                "Vip":db[2],
-                "Nitro":db[3],
-                "Muted": db[4],
+            "disabled_channels": replaceMultiple(db[6],['[',']','"'],'').split(', '),
+            "disabled_roles": replaceMultiple(db[5],['[',']','"'],'').split(', '),
+            "groups":{ 
+                "Admin": replaceMultiple(db[0],['[',']','"'],'').split(', '),
+                "Mod": replaceMultiple(db[1],['[',']','"'],'').split(', '),
+                "Vip": replaceMultiple(db[2],['[',']','"'],'').split(', '),
+                "Nitro": replaceMultiple(db[3],['[',']','"'],'').split(', '),
+                "Muted": replaceMultiple(db[4],['[',']','"'],'').split(', '),
             },
             "reactionRoles":rr,
             "responses":triggers,
             "logging":logging
         }
-        return
     def voice(self, data):
         if data['user_id'] not in self.cache[data['id']]['voice']:
             self.cache[data['id']]['voice'][data['user_id']] = time.time()
