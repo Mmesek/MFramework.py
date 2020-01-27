@@ -113,7 +113,7 @@ class Bot:
             await self.message_type[data['t']](self, data['d'])
         elif data['t'] != 'PRESENCE_UPDATE':
             try:
-                asyncio.create_task(self.message_type.get(data['t'], Invalid)(self, data['d']))
+                asyncio.create_task(self.message_type.get(data['t'], Invalid)(self, data['d']), name='Message Handler')
             except Exception as ex:
                 print('Dispatch Error:', ex)
         elif data['t'] == 'PRESENCE_UPDATE':
@@ -189,7 +189,7 @@ class Bot:
         else:
             self.identify()
     async def hello(self, data):
-        self.heartbeating = asyncio.create_task(self.heartbeat(data['d']['heartbeat_interval']))
+        self.heartbeating = asyncio.create_task(self.heartbeat(data['d']['heartbeat_interval']), name='Heartbeat')
         await self.identify()
     async def heartbeat_ack(self, data):
         pass
