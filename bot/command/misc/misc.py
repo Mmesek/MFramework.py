@@ -1,7 +1,4 @@
 from bot.discord.commands import register
-
-import bot.utils as utils
-import asyncio
 import re, random
 
 @register(help="(number) - Rolls Random Number")
@@ -76,3 +73,66 @@ async def morse(self, data):
         org = data['content']
         t = "Normal -> Morse"
     await self.endpoints.embed(data['channel_id'], 'Orginal: '+org, {"title":t,"description":reward})
+
+
+@register(group='System', help='name, url, language, color - Add RSS to watchlist')
+async def add_rss(self, data):
+    params = data['content'].split(',')
+    src = params[0]
+    url = params[1]
+    language = params[2]
+    color = params[3]
+    await self.db.insert('RSS','Source, Last, URL, Language, Color',[src, 0, url, language, color])
+
+@register(group='System', help='channel, name, [content] - Sub current channel to a RSS source')
+async def sub_rss(self, data):
+    params = data['content'].split(',')
+    if '/' in params[0]:
+        webhook = params[0]
+    else:
+        channel = params[0]
+        webhooks = await self.endpoints.get_webhooks(channel)
+        for wh in webhooks:
+            if 'user' in wh and wh['user'] == self.user_id:
+                webhook = f"{wh['id']}/{wh['token']}"
+                break
+            elif 'RSS' in wh['name']:
+                webhook = f"{wh['id']}/{wh['token']}"
+                break
+    if webhook is None:
+        await self.endpoints.create_webhook(channel, 'RSS', f"Requested by {data['author']['username']}")
+    src = params[1]
+    if len(params) > 2:
+        content = params[2]
+    else:
+        content = ''
+    await self.db.insert('Webhooks','GuildID, Webhook, Source, Content, AddedBy',
+                            [data['guild_id'],webhook, src, content, data['author']['id']])
+
+
+@register(group='System',help='spotifyID artist - Add Artist to tracking new releases')
+async def addSpotify(self, data):
+    s = data['content'].split(' ',1)
+    sid = s[0]
+    artist = s[1]
+    await self.db.insert('Spotify','SpotifyID, Artist, AddedBy',[sid, artist, data['author']['id']])
+from bot.api import Spotify
+@register(group='System',help='Fetch new spotify releases')
+async def spotify(self, data):
+    s = Spotify()
+    await s.connect()
+    try:
+        embed = await s.makeList(db=self.db)
+    finally:
+        await s.disconnect()
+    if '-w' not in data['content']:
+        await self.endpoints.embed(data['channel_id'],'',embed)
+    elif '-w' in data['content']:
+        w = await self.db.selectMultiple('Webhooks','webhook, content', 'WHERE Source=?',['Spotify'])
+        for one in w:
+            await self.endpoints.webhook([embed], one[1], one[0], "Spotify", "https://images-eu.ssl-images-amazon.com/images/I/51rttY7a%2B9L.png")
+
+from bot.rss import rss
+@register(group='System', help='Fetch RSS manually')
+async def fetch_rss(self, data):
+    await rss(self, 'pl')
