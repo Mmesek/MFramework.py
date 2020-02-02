@@ -63,4 +63,9 @@ async def main():
             log(f"Clean up exception: {ex}")
 
 
-run()
+try:
+    while True:
+        run()
+except KeyboardInterrupt:
+    print("KeyboardInterrupt. Job done.")
+
