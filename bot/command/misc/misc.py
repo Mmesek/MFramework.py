@@ -87,6 +87,7 @@ async def add_rss(self, data):
 @register(group='System', help='channel, name, [content] - Sub current channel to a RSS source')
 async def sub_rss(self, data):
     params = data['content'].split(',')
+    webhook = None
     if '/' in params[0]:
         webhook = params[0]
     else:
@@ -96,11 +97,18 @@ async def sub_rss(self, data):
             if 'user' in wh and wh['user'] == self.user_id:
                 webhook = f"{wh['id']}/{wh['token']}"
                 break
-            elif 'RSS' in wh['name']:
+            elif any(s in wh['name'] for s in ['RSS','DM']):
                 webhook = f"{wh['id']}/{wh['token']}"
                 break
     if webhook is None:
-        await self.endpoints.create_webhook(channel, 'RSS', f"Requested by {data['author']['username']}")
+        if 'dm' not in data['content'].casefold():
+            name = 'RSS'
+        elif 'log' not in data['content'].casefold():
+            name = 'Logging'
+        else:
+            name = 'DM Inbox'
+        wh = await self.endpoints.create_webhook(channel, name, f"Requested by {data['author']['username']}")
+        webhook = f"{wh['id']}/{wh['token']}"
     src = params[1]
     if len(params) > 2:
         content = params[2]
