@@ -1,0 +1,17 @@
+{
+	// If scope is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	"Register new command":{
+		"scope":"python",
+		"prefix":"@register",
+		"body":[
+			"@register(group='$1', help='${2:Short description to use with help command}', alias='$3', category='$4')",
+			"async def ${5:commandTrigger}(self, data):",
+			"'''${6:Extended description to use with detailed help command}'''",
+			"    ${7:pass}"
+		],
+		"description": "Snippet for creating and registering new command in MFramework"
+	}
+}
