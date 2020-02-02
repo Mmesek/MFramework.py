@@ -8,13 +8,14 @@ async def send_dm(self, data):
     if "mentions" in data != []:
         uid = data["mentions"][0]["id"]
     else:
-        uid = con[1].replace("<", "").replace("@", "").replace(">", "").replace("&", "")
-    if "\\" in con[2]:
-        con[2] = con[2].replace("\\", "")
-    if "a:" in con[2]:
-        con[2] = con[2].replace("a:", "<a:")
+        uid = con[0].replace("<", "").replace("@", "").replace(">", "").replace("&", "")
+    if "\\" in con[1]:
+        con[1] = con[1].replace("\\", "")
+    if "a:" in con[1]:
+        con[1] = con[1].replace("a:", "<a:")
     dm = await self.endpoints.make_dm(uid)
     await self.endpoints.message(dm["id"], con[1])
+    return await self.endpoints.react(data["channel_id"], data["id"], "tipping:517814432806600704")
 
 
 @register(group="Admin", help="(channel) [message] - Sends message to a channel as a bot")
@@ -168,3 +169,19 @@ async def update_rr(self, data):
  for update cause, honestly: what exactly do you want to update? Add a group? Change Role? Reaction? Bro, come\
  on, be serious. !remove_rr and then !add_rr, you can do it",
     )
+
+
+@register(group="Admin", help="[name];[trigger];[response];[group] - Creates custom command/reaction", alias="", category="")
+async def add_cc(self, data):
+    """$execute$command\n$$"""
+    params = data["content"].split(";")
+    name = params[0]
+    trigger = params[1]
+    response = params[2]
+    req = params[3]
+    await self.db.insert(
+        "Regex",
+        "GuildID, UserID, Name, Trigger, Response, ReqRole",
+        [data["guild_id"], data["author"]["id"], name, trigger, response, req],
+    )
+    await self.cache.recompileTriggers(data)
