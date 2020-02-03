@@ -103,7 +103,7 @@ async def sub_rss(self, data):
     if webhook is None:
         if 'dm' not in data['content'].casefold():
             name = 'RSS'
-        elif 'log' not in data['content'].casefold():
+        elif 'log' in data['content'].casefold():
             name = 'Logging'
         else:
             name = 'DM Inbox'

@@ -122,6 +122,8 @@ async def parse(self, data):
     else:
         server = 0
     group = self.cache.cachedRoles(data["guild_id"], data["member"]["roles"])
+    if group not in self.cache.cache[server]['responses']:
+        return
     words = self.cache.cache[server]["responses"][group]
     #    matches = words.findall(data['content'])
     for mo in words.finditer(data["content"]):
