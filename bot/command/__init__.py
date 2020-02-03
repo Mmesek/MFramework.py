@@ -9,7 +9,7 @@ for one in sub_modules:
     if '__' in one:
         continue
     p = dirname(__file__)
-    o = one.replace(f'{p}\\','').replace('\\','.').replace('.py','')
+    o = one.replace(f'{p}\\','').replace(f'{p}/','').replace('\\','.').replace('.py','').replace('/','.')
     importlib.import_module(f'bot.command.{o}')
     fm+=[o]
 print(fm)
