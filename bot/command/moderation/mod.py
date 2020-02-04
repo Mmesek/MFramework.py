@@ -1,10 +1,42 @@
 from bot.discord.commands import register
-
-
+import asyncio
 from bot.utils.utils import Embed, created, datetime, time
 
 from PIL import Image
 from io import BytesIO
+
+@register(group="Mod", alias='dm', help="[user] [message] - Sends user DM as a bot")
+async def send_dm(self, data):
+    con = data["content"].split(" ", 1)
+    if "mentions" in data != []:
+        uid = data["mentions"][0]["id"]
+    else:
+        uid = con[0].replace("<", "").replace("@", "").replace(">", "").replace("&", "")
+    if "\\" in con[1]:
+        con[1] = con[1].replace("\\", "")
+    if "a:" in con[1]:
+        con[1] = con[1].replace("a:", "<a:")
+    dm = await self.endpoints.make_dm(uid)
+    await self.endpoints.message(dm["id"], con[1])
+    return await self.endpoints.react(data["channel_id"], data["id"], "tipping:517814432806600704")
+
+
+@register(group="Mod", help="(channel) [message] - Sends message to a channel as a bot")
+async def send_message(self, data):
+    part = data["content"].split(" ", 1)
+    channel = part[0].replace("<", "").replace("#", "").replace(">", "")
+    print(channel, part)
+    await self.endpoints.message(channel, part[1])
+
+
+@register(group="Mod", help="(channel) [messageID] [reaction] - Reacts to a message with emoji as a bot")
+async def react(self, data):
+    print("Reeeeact")
+    part = data["content"].split(" ", 1)
+    chap = part[1].split(" ")
+    for each in chap:
+        await self.endpoints.react(data["channel_id"], part[0], each.replace("<:", "").replace(">", ""))
+        await asyncio.sleep(0.3)
 
 
 async def handleInfraction(self, data, infraction):
