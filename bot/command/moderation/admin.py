@@ -2,40 +2,6 @@ from bot.discord.commands import register
 import asyncio
 
 
-@register(group="Admin", help="[user] [message] - Sends user DM as a bot")
-async def send_dm(self, data):
-    con = data["content"].split(" ", 1)
-    if "mentions" in data != []:
-        uid = data["mentions"][0]["id"]
-    else:
-        uid = con[0].replace("<", "").replace("@", "").replace(">", "").replace("&", "")
-    if "\\" in con[1]:
-        con[1] = con[1].replace("\\", "")
-    if "a:" in con[1]:
-        con[1] = con[1].replace("a:", "<a:")
-    dm = await self.endpoints.make_dm(uid)
-    await self.endpoints.message(dm["id"], con[1])
-    return await self.endpoints.react(data["channel_id"], data["id"], "tipping:517814432806600704")
-
-
-@register(group="Admin", help="(channel) [message] - Sends message to a channel as a bot")
-async def send_message(self, data):
-    part = data["content"].split(" ", 1)
-    channel = part[0].replace("<", "").replace("#", "").replace(">", "")
-    print(channel, part)
-    await self.endpoints.message(channel, part[1])
-
-
-@register(group="Admin", help="(channel) [messageID] [reaction] - Reacts to a message with emoji as a bot")
-async def react(self, data):
-    print("Reeeeact")
-    part = data["content"].split(" ", 1)
-    chap = part[1].split(" ")
-    for each in chap:
-        await self.endpoints.react(data["channel_id"], part[0], each.replace("<:", "").replace(">", ""))
-        await asyncio.sleep(0.3)
-
-
 @register(group="Admin", help="(channel) [messageID] [newMessage] - Edits bot's message")
 async def edit_message(self, data):
     part = data["content"].replace("<", "").replace("#", "").replace(">", "").split(" ", 3)
@@ -171,7 +137,7 @@ async def update_rr(self, data):
     )
 
 
-@register(group="Admin", help="[name];[trigger];[response];[group] - Creates custom command/reaction", alias="", category="")
+@register(group="Admin", help="[name];[trigger];[response];[group] - Creates custom command/reaction", category="")
 async def add_cc(self, data):
     """$execute$command\n$$"""
     params = data["content"].split(";")
@@ -184,4 +150,13 @@ async def add_cc(self, data):
         "GuildID, UserID, Name, Trigger, Response, ReqRole",
         [data["guild_id"], data["author"]["id"], name, trigger, response, req],
     )
+    await self.cache.recompileTriggers(data)
+
+@register(group='Admin', help='[name];[trigger] - Removes custom command/reaction', category='')
+async def remove_cc(self, data):
+    '''Extended description to use with detailed help command'''
+    params = data["content"].split(';')
+    name = params[0]
+    trigger = params[1]
+    await self.db.delete('Regex','GuildID=? AND Name=? AND Trigger=?',[data['guild_id'],name, trigger])
     await self.cache.recompileTriggers(data)
