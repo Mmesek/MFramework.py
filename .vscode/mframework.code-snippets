@@ -9,7 +9,7 @@
 		"body":[
 			"@register(group='$1', help='${2:Short description to use with help command}', alias='$3', category='$4')",
 			"async def ${5:commandTrigger}(self, data):",
-			"'''${6:Extended description to use with detailed help command}'''",
+			"    '''${6:Extended description to use with detailed help command}'''",
 			"    ${7:pass}"
 		],
 		"description": "Snippet for creating and registering new command in MFramework"
