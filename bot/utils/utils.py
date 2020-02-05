@@ -30,8 +30,8 @@ class Embed:
         self.embed['thumbnail'] = {"url": url}
         return self
 
-    def setFooter(self, url, text):
-        self.embed['footer'] = {"icon_url": url, "text": text}
+    def setFooter(self, icon, text):
+        self.embed['footer'] = {"icon_url": icon, "text": text}
         return self
 
     def setTimestamp(self, timestamp):
