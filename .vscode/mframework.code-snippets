@@ -13,5 +13,16 @@
 			"    ${7:pass}"
 		],
 		"description": "Snippet for creating and registering new command in MFramework"
+	},
+	"Virtual File":{
+		"scope":"python",
+		"prefix":"buffer",
+		"body":[
+			"from io import BytesIO",
+			"buffered = BytesIO()",
+			"${1:fig}.save$2(buffered) #Example: For saving figure from plot: savefig, for saving image from PIL: save(), when in doubt: consult library you use",
+			"img_str = buffered.getvalue()"
+		],
+		"description": "Snippet for creating a virtual file"
 	}
 }
