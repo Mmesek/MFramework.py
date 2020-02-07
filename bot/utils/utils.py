@@ -123,3 +123,8 @@ async def quote(self, data):
                                                       datetime.datetime.fromisoformat(message['edited_timestamp']).timetuple())), True)
     await self.endpoints.embed(data['channel_id'], '', embed.embed)
     await self.endpoints.delete(data['channel_id'], data['id'])
+
+
+def truncate(n, decimals=0):
+    m = 10**decimals
+    return int(n*m)/m
