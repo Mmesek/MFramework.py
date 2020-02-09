@@ -1,5 +1,3 @@
-import asyncio, re
-
 # import inspect
 from bot.utils.utils import timed, parseMention
 
@@ -67,19 +65,23 @@ def register(**kwargs):
 
 async def execute(self, data):
     data["content"] = parseMention(data["content"])
-    if "!" not in data["content"] and self.user_id not in data["content"] and self.username not in data["content"]:
+    if self.alias not in data["content"] and self.user_id not in data["content"] and self.username not in data["content"]:
         return 0
     if self.user_id in data["content"]:
         # NICETOHAVE: "text !command args !command2 args2". Currently works: "text !command args" (Although "text !command args text" works only partially. OPTIONAL if anyone cares)
-        command = data["content"].split(f"{self.user_id} ", 1)[1]
+        command = data["content"].split(f"{self.user_id} ", 1)
         for mention in data["mentions"]:
             if mention["id"] == self.user_id:
                 data["mentions"].remove(mention)
     elif self.username in data["content"]:
-        command = data["content"].split(f"{self.username} ", 1)[1]
-    elif "!" in data["content"]:
-        command = data["content"].split(f"!", 1)[1]
-    cmd = command.split(" ", 1)
+        command = data["content"].split(f"{self.username} ", 1)
+    elif self.alias in data["content"]:
+        command = data["content"].split(self.alias, 1)
+    try:
+        cmd = command[1].split(" ", 1)
+    except IndexError:
+        print('Index Error :(',data['content'])
+        return
     try:
         data["content"] = cmd[1]
     except:

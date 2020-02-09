@@ -30,7 +30,7 @@ def GenerateConfig():
     config = configparser.ConfigParser()
     config.read_dict({
         "Tokens": {'discord': '', 'steam': '', 'spotify': '', 'twitter': '', 'twitch': ''},
-        "Discord": {'presence': '', 'subscription': False, 'presence_type': 3},
+        "Discord": {'presence': '', 'subscription': False, 'presence_type': 3, 'alias': '!'},
         "Spotify": {'client': '', 'secret': '', 'auth': ''},
         "Twitter": {'client': '', 'secret': '', 'auth': ''},
         "Database": {'location': 'raspberry', 'name': 'MBot'}
