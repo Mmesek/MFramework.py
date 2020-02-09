@@ -62,7 +62,6 @@ class Cache:
                 "WHERE GuildID=?",
                 [data["id"]],
             )
-        reg = await self.db.selectMultiple("Regex", "ReqRole, Name, Trigger", "WHERE GuildID=?", [data["id"]])
         logging = await self.db.selectMultiple(
             "Webhooks", "Webhook", "WHERE GuildID=? AND Source=?", [data["id"], "Log"]
         )
@@ -70,8 +69,10 @@ class Cache:
             "ReactionRoles", "MessageID, RoleID, Reaction, RoleGroup", "WHERE GuildID=?", [data["id"]]
         )
         rr, responses, triggers = {}, {}, {}
+        
         if logging != []:
             logging = logging[0]
+        
         for r in rroles:
             if r[3] == "":
                 gr = "None"
@@ -82,23 +83,14 @@ class Cache:
             if str(r[0]) not in rr[gr]:
                 rr[gr][str(r[0])] = {}
             rr[gr][str(r[0])][r[2]] = str(r[1])
-        for res in reg:
-            if res[0] not in responses:
-                responses[res[0]] = {}
-            if res[1] not in responses:
-                responses[res[0]][res[1]] = res[2]
-            else:
-                responses[res[0]] = {res[1]: res[2]}
-        for r in responses:
-            p = re.compile((r"(?:{})".format(("|".join("(?P<{}>{})".format(k, f) for k, f in responses[r].items())))))
-            # p = re.compile(r'(?:{})'.format('|'.join(map(re.escape, longest_first))))
-            triggers[r] = p
+        
         users = {}
         for presence in data["presences"]:
             if "nickname" in presence:
                 users[presence["nickname"]] = presence["user"]["id"]
         self.cache[data["id"]] = {
             "msgs": {},
+            "joined":[],
             "name": data["name"],
             "member_count": data["member_count"],
             "since": data["joined_at"],
@@ -120,6 +112,7 @@ class Cache:
             "responses": triggers,
             "logging": {"all": logging},
         }
+        await self.recompileTriggers(data['id'])
 
     def update_server_data(self, data):
         self.cache[data["id"]]["name"] = data["name"]
@@ -147,8 +140,8 @@ class Cache:
                     return group
         return "Global"
 
-    async def recompileTriggers(self, data):
-        reg = await self.db.selectMultiple("Regex", "ReqRole, Name, Trigger", "WHERE GuildID=?", [data["guild_id"]])
+    async def recompileTriggers(self, server):
+        reg = await self.db.selectMultiple("Regex", "ReqRole, Name, Trigger", "WHERE GuildID=?", [server])
         responses, triggers = {}, {}
         for trig in reg:
             if trig[0] not in responses:
@@ -158,6 +151,10 @@ class Cache:
             else:
                 responses[trig[0]] = {trig[1]: trig[2]}
         for r in responses:
+            for response in responses[r]:
+                if response[0] == 'r':
+                    responses[r][response[0]] = re.escape(response[1])
             p = re.compile(r"(?:{})".format("|".join("(?P<{}>{})".format(k, f) for k, f in responses[r].items())))
+            # p = re.compile(r'(?:{})'.format('|'.join(map(re.escape, longest_first))))
             triggers[r] = p
-        self.cache[data["guild_id"]]["responses"] = triggers
+        self.cache[server]["responses"] = triggers
