@@ -8,7 +8,7 @@
 		"prefix":"@register",
 		"body":[
 			"@register(group='$1', help='${2:Short description to use with help command}', alias='$3', category='$4')",
-			"async def ${5:commandTrigger}(self, data):",
+			"async def ${5:commandTrigger}(self, *args, data, **kwargs):",
 			"    '''${6:Extended description to use with detailed help command}'''",
 			"    ${7:pass}"
 		],
