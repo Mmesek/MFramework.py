@@ -34,6 +34,7 @@ class Bot:
         self.keepConnection = True
         self.state = True
         self.stayConnected = True
+        self.alias = config['Discord']['alias']
         self.presence = config["Discord"]["presence"]
         self.sub = config["Discord"]["subscription"]
         self.presenceType = config["Discord"]["presence_type"]
@@ -89,7 +90,7 @@ class Bot:
                 if data is not None:
                     if data["op"] != 11:
                         self.last_sequence = data["s"]
-                    asyncio.create_task(self.opcodes.get(data["op"], Invalid)(data), name="Dispatch")
+                    asyncio.create_task(self.opcodes.get(data["op"], Invalid)(data))#, name="Dispatch")
             except Exception as ex:
                 print(f"Exception! {ex}\nType: {msg.type}\nData: {msg.data}\nExtra: {msg.extra}")
         await self.close()
@@ -101,6 +102,7 @@ class Bot:
 
     async def close(self):
         self.keepConnection = False
+       # self.db.close()
         print("Closing")
         self.heartbeating.cancel()
         await self.ws.close()
@@ -112,7 +114,7 @@ class Bot:
             await self.message_type[data["t"]](self, data["d"])
         elif data["t"] != "PRESENCE_UPDATE":
             try:
-                asyncio.create_task(self.message_type.get(data["t"], Invalid)(self, data["d"]), name="Message Handler")
+                asyncio.create_task(self.message_type.get(data["t"], Invalid)(self, data["d"]))#, name="Message Handler")
             except Exception as ex:
                 print("Dispatch Error:", ex)
         elif data["t"] == "PRESENCE_UPDATE":
@@ -146,8 +148,8 @@ class Bot:
             {"op": 6, "d": {"token": self.token, "session_id": self.session_id, "seq": self.last_sequence}}
         )
 
-    async def request_guild_members(self, data):
-        await self.ws.send_json({"op": 8, "d": {"guild_id": data["d"]["guild_id"], "query": "", "limit": 0}})
+    async def request_guild_members(self, server, query="", limit=0, presences=False, user_ids=None):
+        await self.ws.send_json({"op": 8, "d": {"guild_id": server, "query": query, "limit": limit, "presences":presences}})
 
     async def voice_state_update(self, data, channel_id, mute=False, deaf=True):
         print("Updating Voice State", data, channel_id, mute, deaf)
@@ -165,8 +167,19 @@ class Bot:
 
     async def status_update(self, data, status="Online", status_name="How the World Burns", status_type=3):
         """Status type: 0 - Playing, 1 - Streaming, 2 - Listening, 3 - Watching"""
+        print(status, status_name, status_type)
         await self.ws.send_json(
-            {"op": 3, "d": {"game": {"name": status_name, "type": status_type}, "status": status, "afk": False}}
+            {
+                "op": 3, 
+                "d": {
+                    "game": {
+                        "name": status_name.strip(), 
+                        "type": int(status_type)
+                    }, 
+                    "status": status.strip().lower(), 
+                    "afk": False
+                }
+            }
         )
 
     ############
@@ -183,7 +196,7 @@ class Bot:
             self.identify()
 
     async def hello(self, data):
-        self.heartbeating = asyncio.create_task(self.heartbeat(data["d"]["heartbeat_interval"]), name="Heartbeat")
+        self.heartbeating = asyncio.create_task(self.heartbeat(data["d"]["heartbeat_interval"]))#, name="Heartbeat")
         await self.identify()
 
     async def heartbeat_ack(self, data):
