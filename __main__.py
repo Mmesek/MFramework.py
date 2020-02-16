@@ -32,20 +32,7 @@ async def handle_exception(loop, context):
 
 
 def run():
-    # /Not tested
-    from sys import platform
-
-    if platform != "win32":
-        import signal
-
-        loop = asyncio.get_event_loop()
-        loop.add_signal_handler(signal.SIGINT, asyncio.create_task(shutdown(loop)))
-        loop.set_exception_handler(handle_exception)
-        # loop.run_until_complete(main())
-        # loop.close()
-    # Not tested/
     asyncio.run(main())
-
 
 async def main():
     b = Bot()

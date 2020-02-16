@@ -5,7 +5,7 @@ class Endpoints:
     async def message(self, channel, content):
         return await self.api_call(f"/channels/{channel}/messages", "POST", json={"content": content})
 
-    async def edit(self, channel, message, content, sequence):
+    async def edit(self, channel, message, content):
         return await self.api_call(f"/channels/{channel}/messages/{message}", "PATCH", json={"content": content})
 
     async def react(self, channel, message, emoji):
