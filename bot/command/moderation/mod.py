@@ -5,8 +5,8 @@ from bot.utils.utils import Embed, created, datetime, time
 from PIL import Image
 from io import BytesIO
 
-@register(group="Mod", alias='dm', help="[user] [message] - Sends user DM as a bot")
-async def send_dm(self, data):
+@register(group="Mod", alias='dm', help="Sends user DM as a bot")
+async def send_dm(self, user, *message, data, **kwargs):
     con = data["content"].split(" ", 1)
     if "mentions" in data != []:
         uid = data["mentions"][0]["id"]
@@ -21,16 +21,16 @@ async def send_dm(self, data):
     return await self.endpoints.react(data["channel_id"], data["id"], "tipping:517814432806600704")
 
 
-@register(group="Mod", help="(channel) [message] - Sends message to a channel as a bot")
-async def send_message(self, data):
+@register(group="Mod", help="Sends message to a channel as a bot")
+async def send_message(self, channel, *message, data, **kwargs):
     part = data["content"].split(" ", 1)
     channel = part[0].replace("<", "").replace("#", "").replace(">", "")
     print(channel, part)
     await self.endpoints.message(channel, part[1])
 
 
-@register(group="Mod", help="(channel) [messageID] [reaction] - Reacts to a message with emoji as a bot")
-async def react(self, data):
+@register(group="Mod", help="Reacts to a message with emoji as a bot")
+async def react(self, channel, messageID, reaction, *args, data, **kwargs):
     print("Reeeeact")
     part = data["content"].split(" ", 1)
     chap = part[1].split(" ")
@@ -103,28 +103,28 @@ async def handleInfraction(self, data, infraction):
                 )
 
 
-@register(group="Mod", category="Moderation", help="[user] [reason] - Warns user.")
-async def warn(self, data):
+@register(group="Mod", category="Moderation", help="Warns user.")
+async def warn(self, user, *reason, data, **kwargs):
     await handleInfraction(self, data, ["Warn", "warned", "Warning"])
 
 
-@register(group="Mod", category="Moderation", help="[user] (time) [reason] - Mutes user.")
-async def mute(self, data):
+@register(group="Mod", category="Moderation", help="Mutes user.")
+async def mute(self, user, time=0, *reason, data, **kwargs):
     await handleInfraction(self, data, ["Mute", "muted", "mute reason"])
 
 
-@register(group="Mod", category="Moderation", help="[user] [reason] - Kicks user.")
-async def kick(self, data):
+@register(group="Mod", category="Moderation", help="Kicks user.")
+async def kick(self, user, *reason, data, **kwargs):
     await handleInfraction(self, data, ["Kick", "kicked", "kick reason"])
 
 
-@register(group="Mod", category="Moderation", help="[user] (time) [reason] - Bans user.")
-async def ban(self, data):
+@register(group="Mod", category="Moderation", help="Bans user.")
+async def ban(self, user, time=0, *reason, data, **kwargs):
     await handleInfraction(self, data, ["Ban", "banned", "ban reason"])
 
 
-@register(group="Mod", category="Moderation", help="[user] - Shows Infractions of user.")
-async def infractions(self, data):
+@register(group="Mod", category="Moderation", help="Shows Infractions of user.")
+async def infractions(self, user, *args, data, **kwargs):
     uids = data["content"].split("!", 1)[0].split(" ")
     if uids == [""]:
         uids = [data["author"]["id"]]
@@ -171,8 +171,8 @@ async def infractions(self, data):
     await self.endpoints.embed(data["channel_id"], "", embed.embed)
 
 
-@register(group="Mod", category="Moderation", help="[user] - Shows information about user.")
-async def userInfo(self, data):
+@register(group="Mod", category="Moderation", help="Shows information about user.")
+async def userInfo(self, user, *args, data, **kwargs):
     uids = data["content"].split("!", 1)[0].split(" ")
     if uids == [""]:
         uids = [data["author"]["id"]]
@@ -251,8 +251,8 @@ async def userInfo(self, data):
         await self.endpoints.embed(data["channel_id"], "", embed.embed)
 
 
-@register(group="Mod", category="Moderation", help="- Shows information about server.")
-async def serverInfo(self, data):
+@register(group="Mod", category="Moderation", help="Shows information about server.")
+async def serverInfo(self, *args, data, **kwargs):
     server = await self.endpoints.get_guild(data["guild_id"])
     icon = server["icon"]
     if icon[0:2] == "a_":
@@ -265,9 +265,9 @@ async def serverInfo(self, data):
             features += ", "
         features += feature.lower().capitalize().replace("_", " ")
     names = {
-        "owner_id": ("Owner", f"<@{server['owner_id']}>", False),
+        "owner_id": ("Owner", f"<@{server['owner_id']}>", True),
         "features": ("VIP Perks", f"{features}", False),
-        "region": ("Region", f"Voice: {server['region']}\nLanguage: {server['preferred_locale']}", True),
+        "region": ("Region", f"Voice: {server['region']}\nLanguage: {server['preferred_locale']}", False),
         "afk_channel_id": (
             "AFK",
             f"Timeout: {server['afk_timeout']/60}minutes\nChannel: <#{server['afk_channel_id']}>",
@@ -291,37 +291,39 @@ async def serverInfo(self, data):
         "explicit_content_filter": ("Content Filter", f"{server['explicit_content_filter']}", True),
         "embed_enabled": (
             "Embed",
-            f"Enabled: {server['embed_enabled']}\nChannel: <#{server['embed_channel_id']}>",
+            f"<#{server['embed_channel_id']}>",
             True,
         ),
         "widget_enabled": (
             "Widget",
-            f"Enabled: {server['widget_enabled']}\nChannel: <#{server['widget_channel_id']}>",
+            f"<#{server['widget_channel_id']}>",
             True,
         ),
         "system_channel_id": (
             "System",
-            f"Channel: <#{server['system_channel_id']}>\nFlags: {server['system_channel_flags']}",
+            f"<#{server['system_channel_id']}>\nFlags: {server['system_channel_flags']}",
             True,
         ),
         "application_id": ("Application ID", f"{server['application_id']}"),
+        "max_members":("Members", f"{self.cache.cache[data['guild_id']]['member_count']}", True)
     }
     order = [
         "owner_id",
-        "features",
+        "vanity_url_code",
         "region",
+        "roles",
+        "emojis",
+        "max_members",
+        "features",
         "afk_channel_id",
-        "premium_subscription_count",
         "embed_enabled",
         "widget_enabled",
         "system_channel_id",
-        "vanity_url_code",
-        "roles",
-        "emojis",
         "verification_level",
         "mfa_level",
         "explicit_content_filter",
         "default_message_notifications",
+        "premium_subscription_count",
     ]
     embed = (
         Embed()
@@ -339,7 +341,7 @@ async def serverInfo(self, data):
             and server[key] != []
             and server[key] != False
             and server[key] != 0
-            and key not in ["icon", "name", "id", "splash", "banner", "max_members"]
+            and key not in ["icon", "name", "id", "splash", "banner"]
         ):
             res = names.get(key)
             if res != None:
@@ -347,8 +349,8 @@ async def serverInfo(self, data):
     await self.endpoints.embed(data["channel_id"], "", embed.embed)
 
 
-@register(group="Mod", category="Moderation", help="[role] - Shows information about role.")
-async def roleInfo(self, data):
+@register(group="Mod", category="Moderation", help="Shows information about role.")
+async def roleInfo(self, role, *args, data, **kwargs):
     rid = data["content"].split("!", 1)[0].split(" ")
     if rid == [""]:
         rid = [data["member"]["roles"][0]]

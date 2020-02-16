@@ -24,7 +24,7 @@ $ python __main__.py
 ### Create new commands with:
 ```python
 @register(group='group', help='Short description to use with help command', alias='trigger', category='Command Category')
-async def commandTrigger(self, data):
+async def commandTrigger(self, *args, data, **kwargs):
 '''Extended description to use with detailed help command'''
     pass
 ```

@@ -1,14 +1,13 @@
 from bot.discord.commands import register
-import re, random
+import random
 
-@register(help="(number) - Rolls Random Number")
-async def rd(self, data):
-    reg = re.search(r'\d+',data['content'])
-    await self.endpoints.message(data['channel_id'],str(reg.group(0))+': '+str(random.randrange(int(reg.group(0)))+1))
+@register(help="Rolls Random Number")
+async def rd(self, number=20, *args, data, **kwargs):
+    await self.endpoints.message(data['channel_id'],str(number)+': '+str(random.randrange(int(number))+1))
 
 
-@register(help='(decode) [message] - Decodes or Encodes message in Morse')
-async def morse(self, data):
+@register(help='Decodes or Encodes message in Morse')
+async def morse(self, decode=False, *message, data, **kwargs):
     morse_dict = {
         'A':'.-', 'B':'-...', 'C':'-.-.', 'D':'-..', 'E':'.', 
         'F':'..-.', 'G':'--.', 'H':'....', 'I':'..', 'J':'.---', 
@@ -36,7 +35,7 @@ async def morse(self, data):
         for letter in message.upper():
             if letter == ' ':
                 cipher+='/'
-#                cipher+=morse_dict['-']+' '
+                #cipher+=morse_dict['-']+' '
                 continue
             elif letter not in morse_dict:
                 cipher+=letter+' '
@@ -75,8 +74,8 @@ async def morse(self, data):
     await self.endpoints.embed(data['channel_id'], 'Orginal: '+org, {"title":t,"description":reward})
 
 
-@register(group='System', help='name, url, language, color - Add RSS to watchlist')
-async def add_rss(self, data):
+@register(group='System', help='Add RSS to watchlist')
+async def add_rss(self, name, url, language, color, *args, data, **kwargs):
     params = data['content'].split(',')
     src = params[0]
     url = params[1]
@@ -84,10 +83,12 @@ async def add_rss(self, data):
     color = params[3]
     await self.db.insert('RSS','Source, Last, URL, Language, Color',[src, 0, url, language, color])
 
-@register(group='System', help='channel, name, [content] - Sub current channel to a RSS source')
-async def sub_rss(self, data):
+@register(group='System', help='Sub current channel to a RSS source')
+async def sub_rss(self, name, content='', *args, channel, data, **kwargs):
+    print('Got:', channel, name, content)
     params = data['content'].split(',')
     webhook = None
+    print(params)
     if '/' in params[0]:
         webhook = params[0]
     else:
@@ -118,15 +119,16 @@ async def sub_rss(self, data):
                             [data['guild_id'],webhook, src, content, data['author']['id']])
 
 
-@register(group='System',help='spotifyID artist - Add Artist to tracking new releases')
-async def addSpotify(self, data):
+@register(group='System',help='Add Artist to tracking new releases')
+async def addSpotify(self, spotifyID, artist, *args, data, **kwargs):
     s = data['content'].split(' ',1)
     sid = s[0]
     artist = s[1]
     await self.db.insert('Spotify','SpotifyID, Artist, AddedBy',[sid, artist, data['author']['id']])
+
 from bot.api import Spotify
 @register(group='System',help='Fetch new spotify releases')
-async def spotify(self, data):
+async def spotify(self, *args, data, **kwargs):
     s = Spotify()
     await s.connect()
     try:
@@ -142,5 +144,8 @@ async def spotify(self, data):
 
 from bot.rss import rss
 @register(group='System', help='Fetch RSS manually')
-async def fetch_rss(self, data):
-    await rss(self, 'pl')
+async def fetch_rss(self, *args, data, **kwargs):
+    try:
+        await rss(self, 'pl')
+    except:
+        await rss(self, 'en')

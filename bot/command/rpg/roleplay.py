@@ -1,8 +1,8 @@
 from bot.discord.commands import register
 
 
-@register(group="Vip", help="[campaign] - Mention your players")
-async def session(self, data):
+@register(group="Vip", help="Mention your players")
+async def session(self, campaing='', *args, data, **kwargs):
     if data["content"] != "":
         campaigns = data["content"].split(",")
     else:
@@ -37,8 +37,8 @@ def getCampaign(data):
     return campaign
 
 
-@register(group="Vip", alias="addplay", help="[@players], [campaign] - Adds player to a campaign")
-async def addPlayer(self, data):
+@register(group="Vip", alias="addplay", help="Adds player to a campaign")
+async def addPlayer(self, campaign='', *players, data, **kwargs):
     campaign = getCampaign(data)
     for mention in data["mentions"]:
         await self.db.insert(
@@ -48,8 +48,8 @@ async def addPlayer(self, data):
         )
 
 
-@register(group="Vip", alias="delplay", help="[@players], [campaign] - Adds player to a campaign")
-async def removePlayer(self, data):
+@register(group="Vip", alias="delplay", help="Removes player from a campaign")
+async def removePlayer(self, campaign="", *players, data, **kwargs):
     campaign = getCampaign(data)
     for mention in data["mentions"]:
         await self.db.delete(
