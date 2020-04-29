@@ -1,12 +1,12 @@
 import feedparser, re, asyncio, time, html2text
 from bs4 import BeautifulSoup as bs
 from math import ceil
-import bot.utils.utils as utils
+from . import utils
 
 # TODO: Sort embeds from oldest
 
 
-def parseEntry(self, entry, last, source, feed):
+def parseEntry(entry, last, source, feed):
     desc = bs(entry["description"], "html.parser")
     embed = (
         utils.Embed().setColor(source[3]).setTimestamp(time.strftime("%Y-%m-%dT%H:%M:%S", entry["published_parsed"]))
@@ -93,7 +93,7 @@ async def rss(self, language):
                 await RSSUpdateLastEntry(self, source[0], highest)
                 break
             elif current != last and current > last:
-                embed = parseEntry(self, entry, last, source, feed["feed"])
+                embed = parseEntry(entry, last, source, feed["feed"])
                 if embed != []:
                     embeds += embed
             elif current == last:
@@ -109,7 +109,7 @@ async def rss(self, language):
                 except:
                     av = ""
                 await self.endpoints.webhook(embeds, sub[1], sub[0], f"{source[0]}", av)
-    if embeds is not None:
+    if embeds != []:
         webhooks = await subbedWebhooks(self, "all")
         for webhook in webhooks:
             if len(embeds) < 11:

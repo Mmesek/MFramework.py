@@ -1,5 +1,6 @@
 import configparser
-path = "bot/data/secrets.ini"
+from os.path import dirname
+path = dirname(__file__)+"/../.././data/secrets.ini"
 
 
 def ConfigToDict():
@@ -30,10 +31,12 @@ def GenerateConfig():
     config = configparser.ConfigParser()
     config.read_dict({
         "Tokens": {'discord': '', 'steam': '', 'spotify': '', 'twitter': '', 'twitch': ''},
-        "Discord": {'presence': '', 'subscription': False, 'presence_type': 3},
+        "Discord": {'presence': '', 'subscription': False, 'presence_type': 3, 'status': 'dnd', 'alias': '!'},
         "Spotify": {'client': '', 'secret': '', 'auth': ''},
         "Twitter": {'client': '', 'secret': '', 'auth': ''},
-        "Database": {'location': 'raspberry', 'name': 'MBot'}
+        "Database": {'db': 'sqlite', 'user': '', 'password': '', 'location': 'raspberry', 'port': '', 'name': 'MBot', 'echo': True},
+        "Influx": {'db': 'MFramework', 'host': 'raspberry'},
+        "Defaults": {"locale":"en_GB", "owner": 273499695186444289}
     })
     with open(path, 'w') as file:
         config.write(file)

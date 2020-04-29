@@ -1,8 +1,8 @@
-from bot.utils.utils import Embed
+from .utils import Embed
 import requests
 import datetime
 import aiohttp
-from bot.utils.config import cfg as config
+from .config import cfg as config
 
 
 class Spotify:
@@ -150,14 +150,13 @@ class Steam:
     steam = "http://api.steampowered.com/"
     store = "https://store.steampowered.com/api/"
 
-    async def api_call(self, path, querry="", method="GET", api="http://api.steampowered.com/", **kwargs):
+    async def api_call(self=None, path="", querry="", method="GET", api="http://api.steampowered.com/", **kwargs):
         async with aiohttp.ClientSession() as session:
             request = await session.request(method, api + path + querry, **kwargs)
-            # print(await request.json())
             try:
                 return await request.json()
             except:
-                return await request.reason()
+                return request.reason
 
     async def OwnedGames(self, steamid):
         return await self.api_call(
@@ -177,7 +176,7 @@ class Steam:
 
     @staticmethod
     async def CurrentPlayers(appid):
-        return await Steam.api_call("ISteamUserStats/GetNumberOfCurrentPlayers/v1/", f"?appid={appid}")
+        return await Steam.api_call(path="ISteamUserStats/GetNumberOfCurrentPlayers/v1/", querry=f"?appid={appid}")
 
     async def AppList(self):
         return await self.api_call("ISteamApps/GetAppList/v2")
@@ -187,7 +186,7 @@ class Steam:
 
     @staticmethod
     async def appDetails(appid):
-        return await Steam.api_call("appdetails/", f"?appids={appid}&l=polish", api=Steam.store)
+        return await Steam.api_call(path="appdetails/", querry=f"?appids={appid}&l=english&cc=us", api=Steam.store)
 
 
 class Twitter:
