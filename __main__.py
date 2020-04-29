@@ -1,71 +1,59 @@
-from bot.discord.mbot import Bot
-from bot.utils.utils import log
 import asyncio
+import MFramework
+#from os.path import dirname
+#import glob, time, importlib
+#__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
+#t = time.time()
+#sub_modules = glob.glob(''.join((dirname(__file__)+'/commands', '/**/*.py')), recursive=True)
+#fm = [one.replace(dirname(__file__)+'/commands','').replace('/','.').replace('\\','.')[:-3] for one in sub_modules if '__' not in one]
+#for o in fm:
+#    importlib.import_module(''.join(['commands', o]))
+#f = time.time()
+#print("Loaded in:",f-t)
+#print(fm)
+MFramework.import_from('commands')
 
+# Permission management with bit shifting?
+# Bit shifting for permission calculation of Discord roles
+# Better handling of starting multiple bots
+# Roleplay character management
+# Split Listener with Backend (Backend being sort of server and Listener being sort of a proxy)
 
-async def cancelTasks():
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    [print(task.get_stack()) for task in tasks]
-    [task.cancel() for task in tasks]
-    print(f"Cancelling {len(tasks)} tasks")
-    await asyncio.gather(*tasks, return_exceptions=True)
+def run(token):
+    asyncio.run(main(token))
 
-
-async def shutdown(loop, bot=None):
-    if bot:
-        bot.keepConnection = False
-        await bot.close()
-        await asyncio.sleep(0)
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    [print(task.get_stack()) for task in tasks]
-    [task.cancel() for task in tasks]
-    print(f"Cancelling {len(tasks)} tasks")
-    await asyncio.gather(*tasks, return_exceptions=True)
-    loop.stop()
-
-
-async def handle_exception(loop, context):
-    msg = context.get("exception", context["message"])
-    print(f"Handling exception: {msg}")
-    log(f"Caught exception: {msg}")
-    asyncio.create_task(shutdown(loop))
-
-
-def run():
-    # /Not tested
-    from sys import platform
-
-    if platform != "win32":
-        import signal
-
-        loop = asyncio.get_event_loop()
-        loop.add_signal_handler(signal.SIGINT, asyncio.create_task(shutdown(loop)))
-        loop.set_exception_handler(handle_exception)
-        # loop.run_until_complete(main())
-        # loop.close()
-    # Not tested/
-    asyncio.run(main())
-
-
-async def main():
-    b = Bot()
-    await b.connection()
+async def main(token):
+    b = MFramework.Bot(token)
     try:
-        await b.msg()
+        while True:
+            await b.connection()
+            try:
+                await b.msg()
+                await asyncio.sleep(1)
+                if b.state:
+                    await b.close()
+            except Exception as ex:
+                print(ex)
+    except KeyboardInterrupt:
+        return
     except Exception as ex:
-        log(f"Main exception: {ex}")
+        MFramework.log(f"Main exception: {ex}")
     finally:
         try:
             await asyncio.sleep(1)
             if b.state:
                 await b.close()
         except Exception as ex:
-            log(f"Clean up exception: {ex}")
-
+            MFramework.log(f"Clean up exception: {ex}")
+from multiprocessing.dummy import Pool
+pool = Pool(2)
+from MFramework.utils.config import cfg
+tokens = []
+for token in cfg['DiscordTokens']:
+    tokens += [cfg['DiscordTokens'][token]]
 
 try:
     while True:
-        run()
+        pool.map(run, tokens)
 except KeyboardInterrupt:
     print("KeyboardInterrupt. Job done.")
-
