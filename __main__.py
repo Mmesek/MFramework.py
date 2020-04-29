@@ -50,7 +50,7 @@ pool = Pool(2)
 from MFramework.utils.config import cfg
 tokens = []
 for token in cfg['DiscordTokens']:
-    tokens += [cfg['DiscordTokens'][token]]
+    tokens += [token]
 
 try:
     while True:

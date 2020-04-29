@@ -32,11 +32,13 @@ def GenerateConfig():
     config.read_dict({
         "Tokens": {'discord': '', 'steam': '', 'spotify': '', 'twitter': '', 'twitch': ''},
         "Discord": {'presence': '', 'subscription': False, 'presence_type': 3, 'status': 'dnd', 'alias': '!'},
+        "DiscordTokens":{'bot':''},
         "Spotify": {'client': '', 'secret': '', 'auth': ''},
         "Twitter": {'client': '', 'secret': '', 'auth': ''},
         "Database": {'db': 'sqlite', 'user': '', 'password': '', 'location': 'raspberry', 'port': '', 'name': 'MBot', 'echo': True},
         "Influx": {'db': 'MFramework', 'host': 'raspberry'},
-        "Defaults": {"locale":"en_GB", "owner": 273499695186444289}
+        "Defaults": {"locale":"en_GB", "owner": 273499695186444289},
+        "Emoji":{"success":"✅","failure":"❎"}
     })
     with open(path, 'w') as file:
         config.write(file)

@@ -67,7 +67,7 @@ class Opcodes:
 
 class Bot(EndpointWrappers, Endpoints):
     __slots__ = ('token', 'startTime', 'patterns', 'session_id', 'user_id', 'keepConnection', 'state', 'stayConnected', 'alias', 'presence', 'sub', 'presenceType', 'shards', 'db', 'cache', 'csession', 'ws',
-    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords')
+    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild')
     opcodes = {
         0: Opcodes.dispatch,
         7: Opcodes.reconnect,
@@ -76,7 +76,7 @@ class Bot(EndpointWrappers, Endpoints):
         11: Opcodes.heartbeat_ack,
     }
     def __init__(self, token=config["Tokens"]["discord"], shard=0, total_shards=1, servers={}):
-        self.token = token
+        self.token = config['DiscordTokens'][token]
         self.keepConnection = True
         self.state = True
         self.stayConnected = True
@@ -86,6 +86,19 @@ class Bot(EndpointWrappers, Endpoints):
         self.sub = config["Discord"]["subscription"]
         self.presenceType = config["Discord"]["presence_type"]
         self.status = config["Discord"]["status"]
+        if token in config:
+            c = config[token]
+            if 'status' in c:
+                self.status = c['status']
+            if 'presence' in c:
+                self.presence = c['presence']
+            if 'presence_type' in c:
+                self.presenceType = c['presence_type']
+            #await self.status_update(self.status, self.presence, self.presence_type)
+            if 'alias' in c:
+                self.alias = c['alias']
+            if 'primary_guild' in c:
+                self.primary_guild = c['primary_guild']
         self.shards = [shard, total_shards]
         self.db = db.Database(config)
         self.db.sql.create_tables()
