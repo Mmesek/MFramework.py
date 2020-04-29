@@ -8,10 +8,21 @@
 		"prefix":"@register",
 		"body":[
 			"@register(group='$1', help='${2:Short description to use with help command}', alias='$3', category='$4')",
-			"async def ${5:commandTrigger}(self, data):",
-			"'''${6:Extended description to use with detailed help command}'''",
+			"async def ${5:commandTrigger}(self, *args, data, language, **kwargs):",
+			"    '''${6:Extended description to use with detailed help command}'''",
 			"    ${7:pass}"
 		],
 		"description": "Snippet for creating and registering new command in MFramework"
+	},
+	"Virtual File":{
+		"scope":"python",
+		"prefix":"buffer",
+		"body":[
+			"from io import BytesIO",
+			"buffered = BytesIO()",
+			"${1:fig}.save$2(buffered) #Example: For saving figure from plot: savefig, for saving image from PIL: save(), when in doubt: consult library you use",
+			"img_str = buffered.getvalue()"
+		],
+		"description": "Snippet for creating a virtual file"
 	}
 }
