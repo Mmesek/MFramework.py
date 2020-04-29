@@ -1,4 +1,3 @@
-import pickle
 from collections import namedtuple
 import numpy as np
 from MFramework.utils.utils import timed
@@ -8,6 +7,7 @@ Scores = namedtuple("Scores", ["toxic", "severe_toxic", "obscence", "insult", "i
 
 @timed
 async def warm(model_path):
+    import pickle
     global _model
     if _model is None:
         with open("data/pipeline.dat", "rb") as fp:
