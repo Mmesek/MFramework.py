@@ -1,6 +1,7 @@
 ### Before starting bot:
 Install dependecies:
 ```sh
+$ sudo apt install python3-numpy python3-sklearn python3-scipy python3-scikit-learn python3-pandas
 $ pip install -r requirements.txt
 ```
 
@@ -14,7 +15,7 @@ $ pip install -r requirements.txt
 
 Generate config file by running bot once.
 
-Configure tokens in `/bot/data/secrets.ini`
+Configure tokens in `data/secrets.ini`
 
 ### Start bot:
 ```sh
@@ -24,8 +25,7 @@ $ python __main__.py
 ### Create new commands with:
 ```python
 @register(group='group', help='Short description to use with help command', alias='trigger', category='Command Category')
-async def commandTrigger(self, data):
+async def commandTrigger(self, *args, data, language, **kwargs):
 '''Extended description to use with detailed help command'''
-    pass
+    await self.create_message(channel_id, content, embed, allowed_mentions)
 ```
-
