@@ -1,6 +1,6 @@
 from math import cos, sin, acos, asin, tan
 from math import degrees as deg, radians as rad
-from datetime import date, datetime, time
+from datetime import datetime, time
 
 # this module is not provided here. See text.
 #from timezone import LocalTimezone
