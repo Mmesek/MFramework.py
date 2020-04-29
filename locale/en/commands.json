@@ -1,0 +1,298 @@
+{
+    "help":{
+        "cmd_trigger":"help",
+        "command":"command",
+        "category":"category",
+        "categories":"categories",
+        "help":"Sends list of commands",
+        "extHelp":"Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage./nParameters: :command: - Command to show detailed help info for - Example: command/n:category: - Categories to show commands for - Example: Category another.../n:categories: - Shows list of categories - Example: -categories",
+		"title":"Help details for: %{command}",
+		"reqPerm":"Required Permission",
+		"category_":"Category",
+		"alias_":"Alias",
+		"alias_message":" - Alias: `%{alias}`",
+		"msg":" - %{msg}",
+		"noPerm":"You do not have permission to access this command.",
+		"yourPerm":"Your Permission Group",
+		"example_usage":"Example Usage",
+		"parameters":"Parameters",
+		"short_desc":"Short Description",
+		"available_categories":"Available Categories"
+    },
+    "morse":{
+        "cmd_trigger":"morse",
+        "message":"message",
+        "decode":"decode",
+        "help":"Decodes or Encodes message in Morse"
+    },
+    "graph":{
+        "cmd_trigger":"graph",
+        "help":"Shows graph of member count change and years of account creations.",
+        "extHelp":"Possible arguments: graph=all/joined/created/boosters\nresample=W-MON/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth",
+        "joined":"Joined",
+        "created":"Created",
+        "boosters":"Boosters",
+        "growth":"Growth",
+        "memberCount":"Member Count",
+        "dates":"Dates (M/Y)",
+        "stats":"Plotting: %{total}s\nGathering: %{gather}s\nSorting: %{sort}s\nConverting: %{convert}s\nImporting: %{imp}s"
+    },
+    "rd":{
+        "cmd_trigger":"rd",
+        "number":"number",
+        "help":"Rolls Random Number"
+    },
+    "randomquote":{
+        "cmd_trigger":"randomquote",
+        "help":"Sends random quote"
+    },
+    "anagram":{
+        "cmd_trigger":"anagram",
+        "help":"Assembles english words from provided letters/solves anagrams"
+    },
+    "word":{
+        "cmd_trigger":"word",
+        "word":"word",
+        "letter_count":"letter_count",
+        "help":"Checks if provided word exists"
+    },
+    "how":{
+        "cmd_trigger":"how",
+        "query":"query"
+    },
+    "today":{
+        "cmd_trigger":"today",
+        "help":"Summary of what is today",
+        "sun":"Sun",
+        "sunStates":"Rise: %{rise}\nNoon: %{noon}\nSet: %{set}",
+        "moon":"Moon",
+        "moonStates":"Rise: %{rise}\nIllumination: %{illumination}\nSet: %{set}",
+        "lunarPhase":"Lunar Phase",
+        "color":"Color",
+        "quote":"Quote for today"
+    },
+    "refreshAppIndex":{
+        "cmd_trigger":"refreshAppIndex",
+        "help":"Updates Index of Steam Games"
+    },
+    "playercount":{
+        "cmd_trigger":"playercount",
+        "game":"game",
+        "help":"Fetches playercount for specified game(s). Separate with `,`"
+    },
+    "gameDetails":{
+        "cmd_trigger":"gameDetails",
+        "game":"game",
+        "help":"Shows game details"
+    },
+    "edit_message":{
+        "cmd_trigger":"edit_message",
+        "messageID":"messageID",
+        "newMessage":"newMessage",
+        "channel":"channel",
+        "help":"Edits bot's message"
+    },
+    "edit_emoji":{
+        "cmd_trigger":"edit_emoji",
+        "emojis":"emojis",
+        "roles":"roles",
+        "help":"Allows only specific roles access to emoji's"
+    },
+    "aemoji":{
+        "cmd_trigger":"aemoji",
+        "emoji_name":"emoji_name",
+        "help":"Sends animated emoji"
+    },
+    "list_emoji":{
+        "cmd_trigger":"list_emoji",
+        "help":"Lists all available emoji's in guild"
+    },
+    "delete":{
+        "cmd_trigger":"delete",
+        "channel":"channel",
+        "message":"message",
+        "help":"Delete's message"
+    },
+    "getmessagesfromdm":{
+        "cmd_trigger":"getmessagesfromdm",
+        "user":"user",
+        "help":"Retrives messages from DM"
+    },
+    "send_dm":{
+        "cmd_trigger":"send_dm",
+        "user":"user",
+        "message":"message",
+        "alias":"dm",
+        "help":"Sends user DM as a bot"
+    },
+    "send_message":{
+        "cmd_trigger":"send_message",
+        "channel":"channel",
+        "message":"message",
+        "help":"Sends message to a channel as a bot"
+    },
+    "react":{
+        "cmd_trigger":"react",
+        "channel":"channel",
+        "messageID":"messageID",
+        "reactions":"reactions",
+        "help":"Reacts to a message with emoji as a bot"
+    },
+    "warn":{
+        "cmd_trigger":"warn",
+        "user":"user",
+        "reason":"reason",
+        "help":"Warns user."
+    },
+    "mute":{
+        "cmd_trigger":"mute",
+        "user":"user",
+        "time":"time",
+        "reason":"reason",
+        "help":"Mutes user."
+    },
+    "kick":{
+        "cmd_trigger":"kick",
+        "user":"user",
+        "reason":"reason",
+        "help":"Kicks user."
+    },
+    "ban":{
+        "cmd_trigger":"ban",
+        "user":"user",
+        "time":"time",
+        "reason":"reason",
+        "help":"Bans user."
+    },
+    "infractions":{
+        "cmd_trigger":"infractions",
+        "users":"users",
+        "help":"Shows Infractions of user."
+    },
+    "userInfo":{
+        "cmd_trigger":"userInfo",
+        "users":"users",
+        "help":"Shows information about user."
+    },
+    "serverInfo":{
+        "cmd_trigger":"serverInfo",
+        "help":"Shows information about server."
+    },
+    "roleInfo":{
+        "cmd_trigger":"roleInfo",
+        "roles":"roles",
+        "help":"Shows information about role."
+    },
+    "creationdate":{
+        "cmd_trigger":"creationdate",
+        "snowflake":"snowflake",
+        "help":"Shows creation date based on provided snowflakes"
+    },
+    "create_rr":{
+        "cmd_trigger":"create_rr",
+        "channel_slash_message":"channel_slash_message",
+        "role":"role",
+        "reaction":"reaction",
+        "":"",
+        "help":"Create reaction role"
+    },
+    "remove_rr":{
+        "cmd_trigger":"remove_rr",
+        "channel":"channel",
+        "message":"message",
+        "reaction":"reaction",
+        "help":"Remove reaction role"
+    },
+    "update_rr":{
+        "cmd_trigger":"update_rr",
+        "help":"Update reaction role"
+    },
+    "add_cc":{
+        "cmd_trigger":"add_cc",
+        "name":"name",
+        "trigger":"trigger",
+        "response":"response",
+        "help":"Creates custom command/reaction",
+        "extHelp":"$execute$command/n$$"
+    },
+    "remove_cc":{
+        "cmd_trigger":"remove_cc",
+        "name":"name",
+        "trigger":"trigger",
+        "help":"Removes custom command/reaction"
+    },
+    "customEmbed":{
+        "cmd_trigger":"customEmbed",
+        "embedName":"embedName",
+        "help":"Creates message with custom embed"
+    },
+    "rtd":{
+        "cmd_trigger":"rtd",
+        "help":"Roll the Die"
+    },
+    "status":{
+        "cmd_trigger":"status",
+        "no_ping":"no_ping",
+        "help":"Shows statistics related to bot and system"
+    },
+    "version":{
+        "cmd_trigger":"version",
+        "help":"Shows bot information"
+    },
+    "remaining":{
+        "cmd_trigger":"remaining",
+        "help":"Short description to use with help command",
+        "extHelp":"Extended description to use with detailed help command"
+    },
+    "shutdown":{
+        "cmd_trigger":"shutdown",
+        "help":"Shuts bot down."
+    },
+    "updateStatus":{
+        "cmd_trigger":"updateStatus",
+        "status":"status",
+        "status_kind":"status_kind",
+        "status_type":"status_type",
+        "afk":"afk",
+        "help":"Changes Bot's status",
+        "extHelp":"Kind - Online/dnd/idle/invisible/offline/nType - 0 - Playing, 1 - Streaming, 2 - Listening, 3 - Watching"
+    },
+    "reloadCommands":{
+        "cmd_trigger":"reloadCommands",
+        "help":"Reloads commands files.",
+        "extHelp":"This probably needs to be placed in another file but well, it's here currently FOR SCIENCE."
+    },
+    "add_rss":{
+        "cmd_trigger":"add_rss",
+        "name":"name",
+        "url":"url",
+        "language":"language",
+        "color":"color",
+        "avatar_url":"avatar_url",
+        "help":"Add RSS to watchlist"
+    },
+    "sub_rss":{
+        "cmd_trigger":"sub_rss",
+        "name":"name",
+        "webhook":"webhook",
+        "content":"content",
+        "regex":"regex",
+        "channel":"channel",
+        "help":"Sub current channel to a RSS source"
+    },
+    "addSpotify":{
+        "cmd_trigger":"addSpotify",
+        "spotifyID":"spotifyID",
+        "artist":"artist",
+        "help":"Add Artist to tracking new releases"
+    },
+    "spotify":{
+        "cmd_trigger":"spotify",
+        "webhook":"webhook",
+        "help":"Fetch new spotify releases"
+    },
+    "fetch_rss":{
+        "cmd_trigger":"fetch_rss",
+        "help":"Fetch RSS manually"
+    }
+}
