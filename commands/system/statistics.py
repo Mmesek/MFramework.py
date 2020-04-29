@@ -1,7 +1,6 @@
 from MFramework.commands import register
 from MFramework.utils.utils import Embed, convert_bytes, getsize, file_size, secondsToText, bytes2human
-import psutil
-import asyncio, time, platform
+import asyncio, time
 
 
 def ping(endpoint=''):
@@ -9,9 +8,8 @@ def ping(endpoint=''):
 
 
 @register(group="System", help="Shows statistics related to bot and system")
-async def status(self, *args, data, no_ping=False, **kwargs):
-    lang = "EN"
-
+async def status(self, *args, data, no_ping=False, language, **kwargs):
+    import psutil
     self_size = getsize(self)
     embed = Embed()
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
@@ -22,9 +20,9 @@ async def status(self, *args, data, no_ping=False, **kwargs):
     sys_uptime = int(time.time() - psutil.boot_time())
     proc_uptime = int(time.time() - proc.create_time())
 
-    embed.addField("Uptime", secondsToText(sys_uptime, lang), True)
-    embed.addField("Bot Uptime", secondsToText(proc_uptime, lang), True)
-    embed.addField("Session", secondsToText(int(time.time() - self.startTime), lang), True)
+    embed.addField("Uptime", secondsToText(sys_uptime, language), True)
+    embed.addField("Bot Uptime", secondsToText(proc_uptime, language), True)
+    embed.addField("Session", secondsToText(int(time.time() - self.startTime), language), True)
     if not no_ping:
         discord = ping()
         api = ping("")
@@ -70,7 +68,10 @@ async def status(self, *args, data, no_ping=False, **kwargs):
         bot_size = convert_bytes(self_size - cache_size - idx)
         idx = "File: " + file_size("data/steamstoreindex.json") + "\nLoaded: " + convert_bytes(idx)
     else:
-        idx = file_size("data/steamstoreindex.json")
+        try:
+            idx = file_size("data/steamstoreindex.json")
+        except:
+            idx = 0
         bot_size = convert_bytes(self_size - cache_size)
 
     embed.addField("Bot Usage", bot_size, True)
@@ -84,6 +85,7 @@ async def status(self, *args, data, no_ping=False, **kwargs):
 
 @register(group="System", help="Shows bot information")
 async def version(self, *args, data, **kwargs):
+    import platform
     system = platform.system()
     release = platform.release()
     machine = platform.machine()
