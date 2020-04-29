@@ -31,31 +31,34 @@ def MessageUpdated(self, message):
     return embed
 from ..database import alchemy as db
 async def DirectMessage(self, data):
-    gid = 289739584546275339
+    if hasattr(self, 'primary_guild'):
+        gid = self.primary_guild
+    else:
+        gid = 463433273620824104#289739584546275339
     
     s = self.db.sql.session()
     webhook = s.query(db.Webhooks).filter(db.Webhooks.GuildID == gid).filter(db.Webhooks.Source == 'DM').first()
     if webhook == None:
         return
 
-    embed = Embed().setDescription(f"From: <@{data.author.id}>")
+    embed = Embed().addField("From",f"<@{data.author.id}>", True).setDescription(data.content)#setDescription(f"From: <@{data.author.id}>")
     embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png", f"{data.author.id}")
     try:
-        embed.setImage(data.attachments[0]["url"])
-        filename = data.attachments[0]["filename"]
+        embed.setImage(data.attachments[0].url)
+        filename = data.attachments[0].filename
     except:
         filename = ""
     
     
-    color = self.cache[gid].Color
+    color = self.cache[gid].color
     embed.setColor(color)
 
     if filename != "":
-        embed.embed['description'] += f"\nAttachment: {filename}"
+        embed.addField("Attachment",filename, True)#embed.embed['description'] += f"\nAttachment: {filename}"
     await self.webhook(
         [embed.embed],
-        data.content,
-        webhook,
+        "",#data.content,
+        webhook.Webhook,
         f"{data.author.username}#{data.author.discriminator}",
         f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png",
     )
