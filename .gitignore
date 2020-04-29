@@ -130,8 +130,18 @@ dmypy.json
 
 #Tokens and stuff
 .ini
-bot/data/secrets.ini
+data/secrets.ini
 .vscode/settings.json
 .vscode/mframework-local.code-workspace
 *.db
-bot/command/misc/local.py
+command/misc/local.py
+.vscode/launch.json
+data/log.log
+data/quotes.json
+data/steamstoreindex.json
+data/words.txt
+tools/*
+data/tf2/*
+old/*
+lyrics/*
+MFrameworkRework/*
