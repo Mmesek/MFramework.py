@@ -19,9 +19,9 @@ async def rd(self, number=20, *args, data, **kwargs):
 
 @register(group="Global", help="Sends random quote", alias="", category="")
 async def randomquote(self, *args, data, **kwargs):
-    if not path.isfile("bot/data/quotes.json"):
+    if not path.isfile("data/quotes.json"):
         raw = requests.get("https://raw.githubusercontent.com/dwyl/quotes/master/quotes.json")
-        with open("data/quotes.json", "wb", newline="", encoding="utf-8") as file:
+        with open("data/quotes.json", "wb") as file:
             file.write(raw.content)
     with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
         q = json.load(file)
