@@ -6,3 +6,10 @@ General usage bot's framework, originally made to use with Discord API
 Reference:
 - [Discord API](https://discordapp.com/developers/docs/intro)
 - [Python Documentation](https://docs.python.org/3/)
+
+
+Set crontab:
+```sh
+crontab -e
+@reboot sleep 40 && /home/pi/mframework.sh
+```
