@@ -260,3 +260,23 @@ class RPSessionPlayers(Base):
         self.HostID = HostID
         self.PlayerID = PlayerID
         self.Campaign = Campaign
+
+class Snippets(Base):
+    __tablename__ = 'Snippets'
+    GuildID = Column(BigInteger, primary_key=True)
+    UserID = Column(BigInteger, primary_key=True)
+    Name = Column(String, primary_key=True)
+    Response = Column(String)
+    Image = Column(String)
+    Filename = Column(String)
+    Type = Column(String)
+    
+    def __init__(self, GuildID=None, UserID=None, Name=None, Response=None, Image=None, Filename=None, Type=None):
+        self.GuildID = GuildID
+        self.UserID = UserID
+        self.Name = Name
+        self.Response = Response
+        self.Image = Image
+        self.Filename = Filename
+        self.Type = Type
+        
