@@ -104,7 +104,7 @@ class Bot(EndpointWrappers, Endpoints):
         self.db.sql.create_tables()
         self.cache = {"dm": {}}
         self.servers = servers
-        self.emoji = {'success':config['Emoji']['success']}
+        self.emoji = config['Emoji']
         self.lock = {"global": False}
         self._buffer = bytearray()
         self._zlib = zlib.decompressobj()
