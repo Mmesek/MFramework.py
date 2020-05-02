@@ -39,6 +39,7 @@ async def DirectMessage(self, data):
     s = self.db.sql.session()
     webhook = s.query(db.Webhooks).filter(db.Webhooks.GuildID == gid).filter(db.Webhooks.Source == 'DM').first()
     if webhook == None:
+        self.message(data.channel_id, "Hey, it looks like no channel was specified to send a DM to therefore the whole DM forwarding is disabled")
         return
 
     embed = Embed().addField("From",f"<@{data.author.id}>", True).setDescription(data.content)#setDescription(f"From: <@{data.author.id}>")
@@ -54,7 +55,15 @@ async def DirectMessage(self, data):
     embed.setColor(color)
 
     if filename != "":
-        embed.addField("Attachment",filename, True)#embed.embed['description'] += f"\nAttachment: {filename}"
+        embed.addField("Attachment", filename, True)  #embed.embed['description'] += f"\nAttachment: {filename}"
+    if len(set(data.content.lower().split(' '))) < 2:
+        await self.message(data.channel_id, f"Hey, it appears your message consist of mostly single word, therefore I'm not going to forward it. I'm forwarding your messages here automatically and <:{self.emoji['success']}> under message means it was successfully delivered to mod team. Please form a sentence and try again. Cheers mate.")
+        return
+    if data.channel_id in self.cache['dm']:
+        s = list(self.cache['dm'][data.channel_id].messages.keys())
+        if self.cache['dm'][data.channel_id].messages[s[-1]].content == data.content:
+            await self.message(data.channel_id, "Please do not send same message multiple times in a row, thanks.")
+            return
     await self.webhook(
         [embed.embed],
         "",#data.content,
