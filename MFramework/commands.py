@@ -188,17 +188,16 @@ async def execute(self, data):
         print('Cmd:   ', cmd[0].lower())
         print('args:  ',args)
         print('kwargs:', kwargs)
-        try:
-
-            if await commandList[group].get(cmd[0].lower(), Invalid)(self, *args, **kwargs) == None:
-                r = None
-            elif await parse(self, data) == None:
-                r = None
-        except Exception as ex:
-            import sys, traceback
-            print('REEEE', ex)
-            print(sys.exc_info())
-            print(traceback.extract_tb(sys.exc_info()[1], limit=-1))
+        #try:
+        if await commandList[group].get(cmd[0].lower(), Invalid)(self, *args, **kwargs) == None:
+            r = None
+        elif await parse(self, data) == None:
+            r = None
+        #except Exception as ex:
+            #import sys, traceback
+            #print('REEEE', ex)
+            #print(sys.exc_info())
+            #print(traceback.extract_tb(sys.exc_info()[1], limit=-1))
     return r
 
 Groups = {
