@@ -78,6 +78,17 @@ async def add(self, typeof, name, *response, data, language, **kwargs):
     self.db.sql.add(r)
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
+@register(group='Mod', help='Adds a canned response', alias='', category='')
+async def addcr(self, name, trigger, *response, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    r = db.Snippets(data.guild_id, data.author.id, name, ' '.join(response), Type='cannedresponse', Trigger=trigger)
+    if data.attachments != []:
+        r.Image = data.attachments[0].url
+        r.Filename = data.attachments[0].filename
+    self.db.sql.add(r)
+    self.cache[data.guild_id].recompileCanned(self.db, data.guild_id)
+    await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
+
 #Embeds, Modernise memes above, fix sending DMs, perhaps store Quotes in database? Also dockets as a sort of generic data, in Influx maybe? 
 @register(group='Mod', help='Deletes a Snippet', alias='del', category='')
 async def delete(self, typeof='snippet', *name, data, language, **kwargs):

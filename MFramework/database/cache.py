@@ -6,7 +6,7 @@ class Cache:
     __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language',
     'alias', 'reactionRoles', 'levels', 'webhooks', 'responses',
     'name', 'color', 'joined', 'member_count',
-    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles')
+    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned')
     groups: dict
     disabled_channels: tuple
     disabled_roles: tuple
@@ -53,6 +53,8 @@ class Cache:
         self.logging = {}  #g.Logging
         self.trackPresence = g.TrackPresence
         self.language = g.Language
+        self.canned = {}
+        self.recompileCanned(datab, guildID)
 
         self.alias = g.Alias
         #self.reactionRoles = {i.RoleGroup:{i.MessageID:{i.Reaction:i.RoleID}} for i in session.query(db.ReactionRoles).filter(db.Servers.GuildID == guildID).all()}
@@ -192,6 +194,11 @@ class Cache:
             # p = re.compile(r'(?:{})'.format('|'.join(map(re.escape, longest_first))))
             triggers[r] = p
         self.cache[server].responses = triggers
+    def recompileCanned(self, datab, guildID):
+        session = datab.sql.session()
+        s = session.query(db.Snippets).filter(db.Snippets.GuildID == guildID).filter(db.Snippets.Type == 'cannedresponse')
+        self.canned['patterns'] = re.compile('|'.join([f'(?P<{re.escape(i.Name)}>{i.Trigger})' for i in s]))
+        self.canned['responses'] = {re.escape(i.Name):i.Response for i in s}
 
 
 class CacheDM:

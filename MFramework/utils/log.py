@@ -30,6 +30,7 @@ def MessageUpdated(self, message):
         embed.addField("\u200b", message.content[1023:])
     return embed
 from ..database import alchemy as db
+import re
 async def DirectMessage(self, data):
     if hasattr(self, 'primary_guild'):
         gid = self.primary_guild
@@ -49,11 +50,11 @@ async def DirectMessage(self, data):
         filename = data.attachments[0].filename
     except:
         filename = ""
-    
+    content = ''
     
     color = self.cache[gid].color
     embed.setColor(color)
-
+    canned = self.cache[gid].canned
     if filename != "":
         embed.addField("Attachment", filename, True)  #embed.embed['description'] += f"\nAttachment: {filename}"
     if len(set(data.content.lower().split(' '))) < 2:
@@ -64,9 +65,13 @@ async def DirectMessage(self, data):
         if self.cache['dm'][data.channel_id].messages[s[-1]].content == data.content:
             await self.message(data.channel_id, "Please do not send same message multiple times in a row, thanks.")
             return
+    reg = re.search(canned['patterns'], data.content)
+    if reg and reg.lastgroup is not None:
+        await self.message(data.channel_id, canned['responses'][reg.lastgroup])
+        content = f"Canned response `{reg.lastgroup}` has been sent in return."
     await self.webhook(
         [embed.embed],
-        "",#data.content,
+        content,#data.content,
         webhook.Webhook,
         f"{data.author.username}#{data.author.discriminator}",
         f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png",
