@@ -270,8 +270,9 @@ class Snippets(Base):
     Image = Column(String)
     Filename = Column(String)
     Type = Column(String)
+    Trigger = Column(String)
     
-    def __init__(self, GuildID=None, UserID=None, Name=None, Response=None, Image=None, Filename=None, Type=None):
+    def __init__(self, GuildID=None, UserID=None, Name=None, Response=None, Image=None, Filename=None, Type=None, Trigger=None):
         self.GuildID = GuildID
         self.UserID = UserID
         self.Name = Name
@@ -279,4 +280,5 @@ class Snippets(Base):
         self.Image = Image
         self.Filename = Filename
         self.Type = Type
+        self.Trigger = Trigger
         
