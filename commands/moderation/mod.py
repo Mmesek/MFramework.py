@@ -4,23 +4,14 @@ from MFramework.utils.utils import Embed, created, datetime, time
 
 from PIL import Image
 from io import BytesIO
-
+import re
 @register(group="Mod", alias='dm', help="Sends user DM as a bot")
-async def send_dm(self, user, *message, data, **kwargs):
-    con = data.content.split(" ", 1)
-    print(con)
-    if "mentions" in data != []:
-        uid = data.mentions[0].id
-    else:
-        uid = con[0].replace("<", "").replace("@", "").replace(">", "").replace("&", "")
-    if "\\" in con[1]:
-        con[1] = con[1].replace("\\", "")
-    if "a:" in con[1]:
-        con[1] = con[1].replace("a:", "<a:")
-    dm = await self.create_dm(uid)
-    await self.message(dm.id, con[1])
-    return await self.create_reaction(data.channel_id, data.id, "tipping:517814432806600704")
-
+async def send_dm(self, user, *message, data, language, **kwargs):
+    dm = await self.create_dm(re.findall(r'\d+', user)[0])
+    if await self.message(dm.id, ' '.join(message)) == []:
+        await self.message(data.channel_id, "Couldn't Deliver message to specified user.")
+        return await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+    return await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
 @register(group="Mod", help="Sends message to a channel as a bot")
 async def send_message(self, channel, *message, data, **kwargs):
