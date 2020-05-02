@@ -132,16 +132,12 @@ class Dispatch:
         mt = message_type.get('message_create', None)
         try:
             await mt[0](self, mt[1](data)) if mt is not None else None
-        except TypeError as ex:
-            error = ''
-            t = traceback.extract_tb(sys.exc_info()[2], limit=-1)
-            if 'missing' in str(ex):
-                error = str(ex).split(' ', 1)[1]
-                err = f'{sys.exc_info()}'
-                print(error)
-                await self.message(data['channel_id'], error.capitalize().replace("'",'`'))
         except Exception as ex:
-            print('Exception:',ex)
+            t = traceback.extract_tb(sys.exc_info()[2], limit=-1)
+            line = t[0].lineno
+            fn = t[0].filename.replace('/',' ').replace('\\',' ').split(' ')[-1].split('.')[0]
+            await self.message(data['channel_id'], 'Exception: ' + str(ex).capitalize().replace("'", '`') + f' at {fn}@{line}')
+            print('Exception:',ex,'at',fn,'@',line)
             print(data)
         return 
 
