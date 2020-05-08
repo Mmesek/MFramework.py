@@ -37,6 +37,9 @@ class Influx:
             "select change from MemberChange where server=$server;", bind_params={"server": server}
         )
 
+    def commitVoiceSession(self, server, channel, user, delta, timestamp=datetime.datetime.now()):
+        self.influx.write_points([{"measurement": "VoiceSession","tags":{"server": server, "channel": channel, "user": user},"time":timestamp, "fields": {"session":delta}}])
+
     async def influxPing(self):
         return self.influx.ping()
 
