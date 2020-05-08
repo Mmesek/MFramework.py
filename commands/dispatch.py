@@ -4,7 +4,7 @@ from MFramework.discord.objects import *
 from MFramework.database.cache import Cache, CacheDM
 from MFramework.utils import log
 
-import time
+import time, datetime
 
 
 @onDispatch(Ready)
@@ -26,7 +26,7 @@ def isDM(data) -> bool:
         and data.content != ""
     )
 
-
+import re, random
 @onDispatch(Message)
 async def message_create(self, data: Message):
     if (
@@ -46,7 +46,32 @@ async def message_create(self, data: Message):
             return  # await quote(self, data)
         elif await parse(self, data) == None:
             return
+        if data.channel_id == 463437626515652618:
+            reg = re.findall(r"\*.+\*", data.content)
+            if reg:
+                v = random.randint(1, 700)
+                reactions = {
+                    1:'1️⃣',2:'2️⃣',3:'3️⃣',
+                    4:'4️⃣',5:'5️⃣',6:'6️⃣'
+                }
+                await self.create_reaction(data.channel_id, data.id, reactions.get(int(v)))
         self.cache[data.guild_id].message(data.id, data)
+        if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
+            session = self.db.sql.session()
+            last = self.cache[data.guild_id].exp.get(data.author.id, 0)
+            timestamp = datetime.datetime.fromisoformat(data.timestamp)
+            if last == 0:
+                e = db.UserLevels(data.guild_id, data.author.id, 1, 0, timestamp)
+                self.cache[data.guild_id].exp[data.author.id] = timestamp
+                self.db.sql.add(e)
+            elif (last == None or (timestamp - last).total_seconds() > 60) and (len(set(data.content.split(' '))) >= 2):
+                #if (len(self.cache[data.guild_id].messages) > 1) and (self.cache[data.guild_id].messages[list(self.cache[data.guild_id].messages.keys())[-1]].content == data.content):
+                #    return
+                e = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).filter(db.UserLevels.UserID == data.author.id).first()
+                e.EXP += 1
+                e.LastMessage = timestamp
+                self.cache[data.guild_id].exp[data.author.id] = timestamp
+                session.commit()
     elif data.author.bot is False and data.guild_id == 0:
         await log.DirectMessage(self, data)
         if data.channel_id not in self.cache["dm"]:
@@ -77,17 +102,18 @@ async def message_update(self, data):
 
 @onDispatch(Guild)
 async def guild_create(self, guild):
-    self.cache[guild.id] = Cache(guild, self.db, self.user_id, self.alias)
+    if guild.id not in self.cache:
+        self.cache[guild.id] = Cache(guild, self.db, self.user_id, self.alias)
 
 
 @onDispatch(Guild_Member)
 async def guild_member_add(self, data):
-    await self.db.influxMember(data.guild_id, data.user.id, True, data.joined_at)
+    await self.db.influx.influxMember(data.guild_id, data.user.id, True, data.joined_at)
 
 
 @onDispatch(Guild_Member_Remove)
 async def guild_member_remove(self, data):
-    await self.db.influxMember(data.guild_id, data.user.id, False)
+    await self.db.influx.influxMember(data.guild_id, data.user.id, False)
 
 
 @onDispatch(Guild_Members_Chunk)
@@ -193,3 +219,77 @@ async def presence_update(self, data):
                     return
                 break
     return await self.add_guild_member_role(data.guild_id, data.user.id, role, "Presence Role")
+
+from MFramework.utils.timers import *
+@onDispatch(Voice_State)
+async def voice_state_update(self, data):
+    if data.member.user.bot: #or not self.cache[data.guild_id].trackVoice:
+        return
+    if data.channel_id in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
+        data.channel_id = 0
+
+    if self.cache[data.guild_id].VoiceLink:
+        r = self.cache[data.guild_id].VoiceLink
+        if data.channel_id != 0 and r not in data.member.roles:
+            await self.add_guild_member_role(data.guild_id, data.user_id, r, "Voice Role")
+        elif data.channel_id == 0 and r in data.member.roles:
+            await self.remove_guild_member_role(data.guild_id, data.user_id, r, "Voice Role")
+
+    if self.cache[data.guild_id].trackVoice:
+        v = self.cache[data.guild_id].voice
+        if data.channel_id != 0: #User is on the Voice Channel
+            for channel in v:
+                if data.user_id in v[channel]: #User is in cached channel
+                    if channel != data.channel_id: #Moved to another channel
+                        print('Moved')
+                        finalize(self, data.guild_id, channel, data.user_id)
+                    else:  #Channel is same as before
+                        if data.self_deaf:  #User is now muted
+                            print('Muted')
+                            restartTimer(self, data.guild_id, data.channel_id, data.user_id, -1)
+                        elif not data.self_deaf and v[data.channel_id][data.user_id] == -1:  #User is not muted anymore
+                            #log(f'User {data.user_id} is unmuted')
+                            if len(v[data.channel_id]) > 1:
+                                print('Unmuted')
+                                startTimer(self, data.guild_id, data.channel_id, data.user_id) #Unmuted
+                            else:
+                                print('Unmuted, Alone')
+                                restartTimer(self, data.guild_id, data.channel_id, data.user_id) #Unmuted Alone
+                        return
+
+            if data.channel_id not in v: #Init channel
+                v[data.channel_id] = {}
+
+            if len(v[data.channel_id]) >= 1 and data.user_id not in v[data.channel_id]:  #New person Joined channel
+                if data.self_deaf:
+                    print('Joined Muted')
+                    restartTimer(self, data.guild_id, data.channel_id, data.user_id, -1) #Muted Joined
+                else:
+                    print('Joined')
+                    startTimer(self, data.guild_id, data.channel_id, data.user_id) #Unmuted Joined
+                for u in v[data.channel_id]:
+                    if v[data.channel_id][u] == 0:  #There was someone on VC without Timer 
+                        print('Alone is not alone anymore')
+                        startTimer(self, data.guild_id, data.channel_id, u)
+
+            elif len(v[data.channel_id]) == 0:  #Joined empty channel
+                if data.self_deaf:
+                    print('Joined Empty Muted')
+                    restartTimer(self, data.guild_id, data.channel_id, data.user_id, -1) #Joined Empty Channel Muted
+                else:
+                    print('Joined Empty')
+                    restartTimer(self, data.guild_id, data.channel_id, data.user_id) #Joined Empty Channel unmuted
+
+            else: #Not a channel switch event
+                print('???')
+
+        else:  #User is not on Voice channel anymore
+            for channel in v:
+                if data.user_id in v[channel]:
+                    print('Left')
+                    finalize(self, data.guild_id, channel, data.user_id)
+                    #if len(v[channel]) == 1: #Someone is now left alone
+                    #    u = list(v[channel].keys())[0]
+                    #    print('Alone')
+                    #    restartTimer(self, data.guild_id, channel, u) #Alone on channel
+                    return

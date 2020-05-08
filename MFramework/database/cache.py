@@ -4,8 +4,8 @@ from ..discord.objects import *
 
 class Cache:
     __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language',
-    'alias', 'reactionRoles', 'levels', 'webhooks', 'responses',
-    'name', 'color', 'joined', 'member_count',
+    'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice',
+    'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink',
     'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned')
     groups: dict
     disabled_channels: tuple
@@ -55,6 +55,9 @@ class Cache:
         self.language = g.Language
         self.canned = {}
         self.recompileCanned(datab, guildID)
+        self.VoiceLink = g.VoiceLink
+        self.trackVoice = g.TrackVoice
+        self.quoteWebhook = '706282832477028403/eZVXx3-iPfyrjQgJt3kZOfJVSt98ZRGI5VJe0t5SN32cNsgPOugZK8-AxUm0tKhD2dfJ'
 
         self.alias = g.Alias
         #self.reactionRoles = {i.RoleGroup:{i.MessageID:{i.Reaction:i.RoleID}} for i in session.query(db.ReactionRoles).filter(db.Servers.GuildID == guildID).all()}
@@ -75,7 +78,7 @@ class Cache:
         self.responses = session.query(db.Regex).filter(db.Servers.GuildID == guildID).all()
 
         self.color = g.Color
-        self.fillCache(data)
+        self.fillCache(data, datab)
         self.messages = {}
     def setBot(self, data, user_id):
         for member in data.members:
@@ -121,13 +124,41 @@ class Cache:
         session.commit()
 
         
-    def fillCache(self, data: Guild):
+    def fillCache(self, data: Guild, datab):
         self.name = data.name#['name']
         self.joined = data.joined_at#['joined_at']
-        self.member_count = data.member_count#['member_count']
-        self.voice = []
+        self.member_count = data.member_count  #['member_count']
+        if getattr(self, 'voice', 0) == 0:
+            self.voice = {}  #[]
+        self.members = {}
+        self.exp = {}
+        session = datab.sql.session()
+        r = session.query(db.UserLevels.UserID, db.UserLevels.LastMessage).filter(db.UserLevels.GuildID == data.id).all()
+        for member in r:
+            self.exp[member[0]] = member[1]
+        for member in data.members:
+            self.members[member.user.id] = member
         for vc in data.voice_states:
-            self.voice += [vc]
+            if self.members[vc.user_id].user.bot or not self.trackVoice:
+                continue
+            if vc.channel_id not in self.voice:
+                self.voice[vc.channel_id] = {}
+            if vc.user_id not in self.voice[vc.channel_id]:
+                import time
+                print(time.ctime(), 'init of user', vc.user_id)
+                if vc.self_deaf:
+                    i = -1
+                elif len(self.voice[vc.channel_id]) > 0:
+                    i = time.time()
+                else:
+                    i = 0
+                self.voice[vc.channel_id][vc.user_id] = i
+        for c in self.voice:
+            u = list(self.voice[c].keys())[0]
+            if len(self.voice[c]) == 1 and u > 0:
+                self.voice[c][u] = 0
+            elif len(self.voice[c]) > 1 and u == 0:
+                self.voice[c][u] = time.time()
         #self.voice = data.voice_states
         self.channels = []
         for channel in data.channels:
