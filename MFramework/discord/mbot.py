@@ -67,7 +67,7 @@ class Opcodes:
 
 class Bot(EndpointWrappers, Endpoints):
     __slots__ = ('token', 'startTime', 'patterns', 'session_id', 'user_id', 'keepConnection', 'state', 'stayConnected', 'alias', 'presence', 'sub', 'presenceType', 'shards', 'db', 'cache', 'csession', 'ws',
-    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild')
+    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild', 'url')
     opcodes = {
         0: Opcodes.dispatch,
         7: Opcodes.reconnect,
@@ -156,7 +156,7 @@ class Bot(EndpointWrappers, Endpoints):
                     self.lock[bucket] = False
                 return await self.api_call(path, method, reason, **kwargs)
             elif 'message' in r:
-                print(f"[{res.reason}] [{r['code']}] - {r['message']}")
+                print(f"[{res.reason}] [{r['code']}] - {r['message']}: [{method}] {path}")
                 return []
             else:
                 return r
@@ -244,13 +244,14 @@ class Bot(EndpointWrappers, Endpoints):
                     "presence": {
                         "game": {
                             "name": self.presence,
-                            "type": self.presenceType
+                            "type": self.presenceType,
+                            "url": self.url
                         },
                         "status": self.status,
                         "since": time.time(),
                         "afk": False
                     },
-                    #"intents": 14271
+                    "intents": 14271
                 },
             }
         )
@@ -278,7 +279,7 @@ class Bot(EndpointWrappers, Endpoints):
             }
         )
 
-    async def status_update(self, status="Online", status_name="How the World Burns", status_type=3, afk=False):
+    async def status_update(self, status="Online", status_name="How the World Burns", status_type=3, afk=False, url=""):
         """Status type: 0 - Playing, 1 - Streaming, 2 - Listening, 3 - Watching"""
         print(status, status_name, status_type)
         await self.ws.send_json(
@@ -288,7 +289,8 @@ class Bot(EndpointWrappers, Endpoints):
                     "since": time.time(),
                     "game": {
                         "name": status_name.strip(), 
-                        "type": int(status_type)
+                        "type": int(status_type),
+                        "url": url
                     }, 
                     "status": status.strip().lower(), 
                     "afk": afk
