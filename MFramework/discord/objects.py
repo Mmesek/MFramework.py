@@ -789,7 +789,7 @@ class Guild_Member:
 
     :nick: string - this users guild nickname (if one is set)\n
     :premium_since: ISO8601 timestamp - when the user started [boosting](https:#/support.discordapp.com/hc/en-us/articles/360028038352-Server-Boosting-) the guild\n'''
-    __slots__ = ("user", "roles", "joined_at", "deaf", "mute", "nick", "premium_since")
+    __slots__ = ("user", "roles", "joined_at", "deaf", "mute", "nick", "premium_since", "guild_id")
     user: User
     roles: list
     joined_at: datetime.datetime
@@ -802,6 +802,7 @@ class Guild_Member:
         self.user = User(data.get('user', {}))
         self.roles = [int(i or 0) for i in data.get('roles', [])]
         self.joined_at = data.get('joined_at', None)
+        self.guild_id = int(data.get('guild_id',0))
         self.deaf = data.get('deaf', False)
         self.mute = data.get('mute', False)
         self.nick = data.get('nick', None)
