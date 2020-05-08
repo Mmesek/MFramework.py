@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, JSON, ForeignKey, Boolean, BigInteger, ARRAY#, BLOB, PickleType, Date, create_engine, Table
+from sqlalchemy import Column, String, Integer, JSON, ForeignKey, Boolean, BigInteger, ARRAY, Time#, BLOB, PickleType, Date, create_engine, Table
 from sqlalchemy.ext.declarative import declarative_base
 #from sqlalchemy.orm import relationship, backref
 
@@ -19,8 +19,10 @@ class Servers(Base):
     Color = Column(Integer)
     TrackPresence = Column(Boolean)
     Language = Column(String)
+    VoiceLink = Column(BigInteger)
+    TrackVoice = Column(Boolean)
 
-    def __init__(self, GuildID=None, AdminIDs=None, ModIDs=None, VipIDs=None, NitroIDs=None, MutedIDs=None, NoExpRoles=None, NoExpChannels=None, Alias=None, Color=None, TrackPresence=None, Language=None):
+    def __init__(self, GuildID=None, AdminIDs=None, ModIDs=None, VipIDs=None, NitroIDs=None, MutedIDs=None, NoExpRoles=None, NoExpChannels=None, Alias=None, Color=None, TrackPresence=None, Language=None, VoiceLink=None, TrackVoice=None):
         self.GuildID = GuildID
         self.AdminIDs = AdminIDs
         self.ModIDs = ModIDs
@@ -33,6 +35,8 @@ class Servers(Base):
         self.Color = Color
         self.TrackPresence = TrackPresence
         self.Language = Language
+        self.VoiceLink = VoiceLink
+        self.TrackVoice = TrackVoice
 
 
 class Regex(Base):
@@ -104,7 +108,7 @@ class UserLevels(Base):
     UserID = Column(BigInteger, primary_key=True)
     EXP = Column(Integer)
     vEXP = Column(Integer)
-    LastMessage = Column(Integer)
+    LastMessage = Column(Time)#Integer)
 
     def __init__(self, GuildID=None, UserID=None, EXP=None, vEXP=None, LastMessage=None):
         self.GuildID = GuildID
