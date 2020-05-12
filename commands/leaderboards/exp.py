@@ -33,18 +33,21 @@ import re
 async def exp(self, *user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
+    user = re.search(r'\d+', data.content)
     if user:
-        user = re.search(r'\d+', data.content)
+        user = user[0]
     else:
-        user = data.user_id
-    total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).filter(db.UserLevels.UserID == user).first()
+        user = data.author.id
+    r = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).filter(db.UserLevels.UserID == user).first()
     embed = Embed()
     t = ''
-    for r in total:
+    if r is not None:
         if r.EXP:
             t+= f'\nChat: {r.EXP}'
         if r.vEXP:
             t += f'\nVoice: {secondsToText(r.vEXP, self.cache[data.guild_id].language.upper())}'
+    else:
+        t = "User Not Found or No exp yet"
     embed.setDescription(t).setColor(self.cache[data.guild_id].color)
     await self.embed(data.channel_id, '', embed.embed)
 
