@@ -49,12 +49,12 @@ async def message_create(self, data: Message):
         if data.channel_id == 463437626515652618:
             reg = re.findall(r"\*.+\*", data.content)
             if reg:
-                v = random.randint(1, 700)
+                v = random.randint(1, 600)
                 reactions = {
                     1:'1️⃣',2:'2️⃣',3:'3️⃣',
                     4:'4️⃣',5:'5️⃣',6:'6️⃣'
                 }
-                await self.create_reaction(data.channel_id, data.id, reactions.get(int(v)))
+                await self.create_reaction(data.channel_id, data.id, reactions.get(int(v/100)+1))
         self.cache[data.guild_id].message(data.id, data)
         if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
             session = self.db.sql.session()
