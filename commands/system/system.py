@@ -1,7 +1,12 @@
 from MFramework.commands import register
+from MFramework.utils.timers import *
 
 @register(group="System", help="Shuts bot down.")
 async def shutdown(self, *args, data, **kwargs):
+    if self.cache[data.guild_id].trackVoice:
+        for v in self.cache[data.guild_id].voice:
+            for u in self.cache[data.guild_id][v]:
+                finalize(self, data.guild_id, v, u)
     await self.close()
     print("Received shutdown command. Shutting down.")
 
