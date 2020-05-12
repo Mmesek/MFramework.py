@@ -67,7 +67,7 @@ class Opcodes:
 
 class Bot(EndpointWrappers, Endpoints):
     __slots__ = ('token', 'startTime', 'patterns', 'session_id', 'user_id', 'keepConnection', 'state', 'stayConnected', 'alias', 'presence', 'sub', 'presenceType', 'shards', 'db', 'cache', 'csession', 'ws',
-    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild', 'url')
+    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild', 'url', 'intents', 'errorchannel')
     opcodes = {
         0: Opcodes.dispatch,
         7: Opcodes.reconnect,
@@ -77,10 +77,12 @@ class Bot(EndpointWrappers, Endpoints):
     }
     def __init__(self, token=config["Tokens"]["discord"], shard=0, total_shards=1, servers={}):
         self.token = config['DiscordTokens'][token]
+        self.username = '[NOT CONNTECTED] '+ token
         self.keepConnection = True
         self.state = True
         self.stayConnected = True
         self.latency = None
+        self.url = config['Discord']['url']
         self.alias = config['Discord']['alias']
         self.presence = config["Discord"]["presence"]
         self.sub = config["Discord"]["subscription"]
@@ -94,11 +96,14 @@ class Bot(EndpointWrappers, Endpoints):
                 self.presence = c['presence']
             if 'presence_type' in c:
                 self.presenceType = c['presence_type']
-            #await self.status_update(self.status, self.presence, self.presence_type)
             if 'alias' in c:
                 self.alias = c['alias']
             if 'primary_guild' in c:
                 self.primary_guild = c['primary_guild']
+            if 'intents' in c:
+                self.intents = c['intents']
+            if 'log_dm' in c:
+                self.errorchannel = c['log_dm']
         self.shards = [shard, total_shards]
         self.db = db.Database(config)
         self.db.sql.create_tables()
@@ -225,7 +230,7 @@ class Bot(EndpointWrappers, Endpoints):
 
     # User
     async def identify(self):
-        # https://ziad87.me/intents/
+        # https://ziad87.net/intents/
         print("Identifing")
         await self.ws.send_json(
             {
@@ -251,7 +256,7 @@ class Bot(EndpointWrappers, Endpoints):
                         "since": time.time(),
                         "afk": False
                     },
-                    "intents": 14271
+                    "intents": self.intents
                 },
             }
         )
