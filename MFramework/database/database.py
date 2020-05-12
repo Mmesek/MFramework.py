@@ -37,8 +37,14 @@ class Influx:
             "select change from MemberChange where server=$server;", bind_params={"server": server}
         )
 
-    def commitVoiceSession(self, server, channel, user, delta, timestamp=datetime.datetime.now()):
-        self.influx.write_points([{"measurement": "VoiceSession","tags":{"server": server, "channel": channel, "user": user},"time":timestamp, "fields": {"session":delta}}])
+    def commitVoiceSession(self, server, channel, user, delta, timestamp=datetime.datetime.now().isoformat()):
+        self.influx.write_points([{"measurement":"VoiceSession", "tags":{"server":server, "channel":channel, "user":user}, "time":timestamp, "fields":{"session":delta}}])
+    def commitPresence(self, server, user, game, delta, timestamp=datetime.datetime.now().isoformat()):
+        self.influx.write_points([{"measurement":"GamePresence", "tags":{"server":server, "game":game, "user":user}, "time":timestamp, "fields":{"session":delta}}])
+    def getSession(self, user, interval):
+        return self.influx.query(
+            'SELECT * FROM "MFramework"."autogen"."VoiceSession" WHERE "user"=$user', bind_params={"user": user}
+        )
 
     async def influxPing(self):
         return self.influx.ping()
@@ -70,3 +76,15 @@ class Database:
         influx = config['Influx']
         self.sql = SQL(sql['db'], sql['user'], sql['password'], sql['location'], sql['port'], sql['name'], sql['echo'])
         self.influx = Influx(influx['host'],influx['db'])
+
+
+'''
+Author | Title | Year | Lyrics | Notes
+Author | Title | Year | Type   | Read Date | Notes
+Title | Year | Watched | Notes
+Title | Years | Seasons | Last Episode | Watched Date | Next Episode | Notes
+Developer | Title | Year | Achievements | Played Date | Notes
+Author | Quote | Notes
+
+Author | Title | Year | Type | Notes | Data | Date
+'''

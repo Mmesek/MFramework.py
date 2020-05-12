@@ -198,15 +198,33 @@ async def message_reaction_remove(self, data):
 import MFramework.database.alchemy as db
 @onDispatch(Presence_Update)
 async def presence_update(self, data):
-    if data.guild_id == 0 or data.user.bot:
+    if data.guild_id == 0 or data.user.bot or (len(data.client_status) == 1 and 'web' in data.client_status):
         return
     if self.cache[data.guild_id].trackPresence:
-        session = self.db.sql.session()
-        g = session.query(db.Games).filter(db.Games.UserID == data.user.id).filter(db.Games.Title == data.game.name).first()
-        if g == None:
-            g = db.Games(data.user.id, data.game.name)
-        g.LastPlayed = data.game.created_at
-        session.commit()
+        #session = self.db.sql.session()
+        #g = session.query(db.Games).filter(db.Games.UserID == data.user.id).filter(db.Games.Title == data.game.name).first()
+        #if g == None:
+        #    g = db.Games(data.user.id, data.game.name)
+        #g.LastPlayed = data.game.created_at
+        #session.commit()
+        if data.user.id not in self.cache[data.guild_id].presence and data.game is not None and data.game.type == 0 and data.game.name is not None:
+            self.cache[data.guild_id].presence[data.user.id] = (data.game.name, data.game.created_at)
+            #print('new in cache')
+        elif data.user.id in self.cache[data.guild_id].presence and data.game.name is None:
+            s = self.cache[data.guild_id].presence.pop(data.user.id)
+            #print('removing from cache')
+            e = int(time.time()) - int(s[1]/1000)
+            session = self.db.sql.session()
+            g = session.query(db.Games).filter(db.Games.UserID == data.user.id).filter(db.Games.Title == s[0]).first()
+            if g == None:
+                g = db.Games(data.user.id, s[0], int(time.time()), e)
+                self.db.sql.add(g)
+            else:
+                g.LastPlayed = int(time.time())
+                #g.LastPlayed += e
+                g.TotalPlayed += e
+            session.commit()
+            self.db.influx.commitPresence(data.guild_id, data.user.id, s[0], e)
     roles = self.cache[data.guild_id].presenceRoles
     if roles == None:
         return

@@ -229,11 +229,13 @@ class Games(Base):
     UserID = Column(BigInteger, primary_key=True)
     Title = Column(String, primary_key=True)
     LastPlayed = Column(Integer, primary_key=True)
+    TotalPlayed = Column(Integer)
 
-    def __init__(self, UserID=None, Title=None, LastPlayed=None):
+    def __init__(self, UserID=None, Title=None, LastPlayed=None, TotalPlayed=None):
         self.UserID = UserID
         self.Title = Title
         self.LastPlayed = LastPlayed
+        self.TotalPlayed = TotalPlayed
 
 
 class ActionLog(Base):

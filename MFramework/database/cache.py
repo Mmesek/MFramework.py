@@ -5,7 +5,7 @@ from ..discord.objects import *
 class Cache:
     __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language',
     'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice',
-    'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink',
+    'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence',
     'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned')
     groups: dict
     disabled_channels: tuple
@@ -58,6 +58,7 @@ class Cache:
         self.VoiceLink = g.VoiceLink
         self.trackVoice = g.TrackVoice
         self.quoteWebhook = '706282832477028403/eZVXx3-iPfyrjQgJt3kZOfJVSt98ZRGI5VJe0t5SN32cNsgPOugZK8-AxUm0tKhD2dfJ'
+        self.presence = {}
 
         self.alias = g.Alias
         #self.reactionRoles = {i.RoleGroup:{i.MessageID:{i.Reaction:i.RoleID}} for i in session.query(db.ReactionRoles).filter(db.Servers.GuildID == guildID).all()}
@@ -164,9 +165,16 @@ class Cache:
         for channel in data.channels:
             self.channels += [channel]
         #self.channels = data.channels
-        self.members = []
-        for member in data.presences:
-            self.members += [member]
+        self.presence = {}
+        for presence in data.presences:
+            try:
+                if len(presence['client_status']) == 1 and 'web' in presence['client_status']:
+                    continue
+                elif presence['game'] is not None and presence['game']['type'] == 0:
+                    self.presence[int(presence['user']['id'])] = (presence['game']['name'], presence['game']['created_at'])
+                    print('Init', self.presence[int(presence['user']['id'])])
+            except:
+                print(presence)
         #self.members = data.presences
         self.roles = []
         for role in data.roles:
