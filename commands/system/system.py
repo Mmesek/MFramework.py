@@ -5,7 +5,7 @@ from MFramework.utils.timers import *
 async def shutdown(self, *args, data, **kwargs):
     if self.cache[data.guild_id].trackVoice:
         for v in self.cache[data.guild_id].voice:
-            for u in self.cache[data.guild_id][v]:
+            for u in self.cache[data.guild_id].voice[v]:
                 finalize(self, data.guild_id, v, u)
     await self.close()
     print("Received shutdown command. Shutting down.")
