@@ -29,7 +29,7 @@ async def topvoice(self, *args, data, language, **kwargs):
     await self.embed(data.channel_id, '', embed.embed)
 
 import re
-@register(group='Global', help='Shows exp', alias='', category='')
+@register(group='Global', help='Shows exp of specified user', alias='', category='')
 async def exp(self, *user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
@@ -72,6 +72,84 @@ async def top(self, *args, data, language, **kwargs):
     embed.setDescription(t).setColor(self.cache[data.guild_id].color)
     await self.embed(data.channel_id, '', embed.embed)
 
+@register(group='Global', help='Shows most played games on server', alias='', category='')
+async def topgames(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    session = self.db.sql.session()
+    total = session.query(db.Games.Title, db.Games.TotalPlayed).order_by(db.Games.TotalPlayed.desc()).limit(30).all()
+    embed = Embed()
+    t = ''
+    a = []
+    c = {}
+    for r in total:
+        i = 0
+        if r.Title not in c:
+            c[r.Title] = r.TotalPlayed
+        else:
+            c[r.Title] += r.TotalPlayed
+    for r in c:
+        a+= [(r, c[r])]
+    a = sorted(a, key=lambda x: x[1], reverse=True)
+    for x, i in enumerate(a):
+        t += f'\n{x+1}. {i[0][:32]} - {secondsToText(i[1], self.cache[data.guild_id].language.upper())}'[:67]
+    embed.setDescription(t).setColor(self.cache[data.guild_id].color)
+    await self.embed(data.channel_id, '', embed.embed)
+
+@register(group='Global', help='Shows games played by specified user', alias='', category='')
+async def games(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    session = self.db.sql.session()
+    user = re.search(r'\d+', data.content)
+    if user:
+        user = user[0]
+    else:
+        user = data.author.id
+    total = session.query(db.Games).filter(db.Games.UserID == user).all()
+    embed = Embed()
+    t = ''
+    if total is not None:
+        a = []
+        c = {}
+        i = 0
+        for r in total:
+            if r.Title not in c:
+                c[r.Title] = r.TotalPlayed
+            else:
+                c[r.Title] += r.TotalPlayed
+        for r in c:
+            a+= [(r, c[r])]
+        a = sorted(a, key=lambda x: x[1], reverse=True)
+        for x, i in enumerate(a):
+            l = f'\n{x+1}. {i[0][:32]} - {secondsToText(i[1], self.cache[data.guild_id].language.upper())}'[:67]
+            if len(t+l) < 2024:
+                t += l
+            else:
+                break
+    else:
+        t = "User Not Found or No exp yet"
+    embed.setDescription(t).setColor(self.cache[data.guild_id].color)
+    await self.embed(data.channel_id, '', embed.embed)
+
+@register(group='Global', help='Shows who played specified game', alias='', category='')
+async def whoplayed(self, *game, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    session = self.db.sql.session()
+    r = session.query(db.Games).filter(db.Games.Title == ' '.join(game)).all()
+    embed = Embed()
+    t = ''
+    if r is not None:
+        a = []
+        c = {}
+        i = 0
+        for i in r:
+            a+=[(i.UserID, i.TotalPlayed)]
+        a = sorted(a, key=lambda x: x[1], reverse=True)
+        for x, i in enumerate(a):
+            t += f'\n{x+1}. <@{i[0]}> - {secondsToText(i[1], self.cache[data.guild_id].language.upper())}'
+    else:
+        t = "Game Not Found"
+    embed.setDescription(t).setColor(self.cache[data.guild_id].color)
+    await self.embed(data.channel_id, '', embed.embed)
 
 '''
 1 - 10
