@@ -2,7 +2,7 @@ from MFramework.discord.mbot import onDispatch
 from MFramework.commands import execute, parse, compilePatterns
 from MFramework.discord.objects import *
 from MFramework.database.cache import Cache, CacheDM
-from MFramework.utils import log
+from MFramework.utils import log, utils
 
 import time, datetime
 
@@ -54,7 +54,10 @@ async def message_create(self, data: Message):
                     1:'1️⃣',2:'2️⃣',3:'3️⃣',
                     4:'4️⃣',5:'5️⃣',6:'6️⃣'
                 }
-                await self.create_reaction(data.channel_id, data.id, reactions.get(int(v/100)+1))
+                await self.create_reaction(data.channel_id, data.id, reactions.get(int(v / 100) + 1))
+        elif data.channel_id == 466643151470198786:
+            embed = utils.Embed().setDescription(data.content)
+            await self.webhook([embed.embed],'','569802933227618318/6AJW6rQjG0mlGvTFNZDfGiUqJCkd3EHDkAIDyJ7rwx-SA9uXP2xITwV9OGHg2YLwzgTS', data.author.username, f'https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png')
         self.cache[data.guild_id].message(data.id, data)
         if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
             session = self.db.sql.session()
@@ -84,6 +87,9 @@ async def message_create(self, data: Message):
 async def message_update(self, data):
     if data.guild_id == 0 or data.webhook_id != 0 or data.content == None:
         return
+    elif data.channel_id == 466643151470198786:
+        embed = utils.Embed().setDescription(data.content).setTitle("MESSAGE UPDATE")
+        await self.webhook([embed.embed],'','569802933227618318/6AJW6rQjG0mlGvTFNZDfGiUqJCkd3EHDkAIDyJ7rwx-SA9uXP2xITwV9OGHg2YLwzgTS', data.author.username, f'https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png')
     webhook = self.cache[data.guild_id].logging
     if not any(i in webhook for i in ["all", "message_update"]):
         return
