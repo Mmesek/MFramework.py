@@ -390,7 +390,7 @@ async def parse(self, data):
             match = matches.lastgroup
             session = self.db.sql.session()
             response = session.query(db.Regex).filter(db.Regex.GuildID == server).filter(db.Regex.Name == match).first()
-            r = response[0].split('$')
+            r = response.Response.split('$')
             for command in r:
                 if "execute" == command:
                     res = self.alias + r[r.index(command) + 1]

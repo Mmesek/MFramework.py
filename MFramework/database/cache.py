@@ -77,6 +77,7 @@ class Cache:
         self.levels = session.query(db.LevelRoles).filter(db.Servers.GuildID == guildID).all()
         self.webhooks = session.query(db.Webhooks).filter(db.Servers.GuildID == guildID).all()
         self.responses = session.query(db.Regex).filter(db.Servers.GuildID == guildID).all()
+        self.recompileTriggers(datab, guildID)
 
         self.color = g.Color
         self.fillCache(data, datab)
@@ -215,16 +216,18 @@ class Cache:
                 return group
         return "Global"
 
-    async def recompileTriggers(self, server):
-        reg = await self.db.selectMultiple("Regex", "ReqRole, Name, Trigger", "WHERE GuildID=?", [server])
+    def recompileTriggers(self, datab, server):
+        session = datab.sql.session()
+        reg = session.query(db.Regex).filter(db.Regex.GuildID == server).all()
+        #reg = await self.db.selectMultiple("Regex", "ReqRole, Name, Trigger", "WHERE GuildID=?", [server])
         responses, triggers = {}, {}
         for trig in reg:
-            if trig[0] not in responses:
-                responses[trig[0]] = {}
-            if trig[1] not in responses[trig[0]]:
-                responses[trig[0]][trig[1]] = trig[2]
+            if trig.ReqRole not in responses:
+                responses[trig.ReqRole] = {}
+            if trig.Name not in responses[trig.ReqRole]:
+                responses[trig.ReqRole][trig.Name] = trig.Trigger
             else:
-                responses[trig[0]] = {trig[1]: trig[2]}
+                responses[trig.ReqRole] = {trig.Name: trig.Trigger}
         for r in responses:
             #for response in responses[r]:
 #                if response[0] == 'r':
@@ -232,7 +235,7 @@ class Cache:
             p = re.compile(r"(?:{})".format("|".join("(?P<{}>{})".format(k, f) for k, f in responses[r].items())))
             # p = re.compile(r'(?:{})'.format('|'.join(map(re.escape, longest_first))))
             triggers[r] = p
-        self.cache[server].responses = triggers
+        self.responses = triggers
     def recompileCanned(self, datab, guildID):
         session = datab.sql.session()
         s = session.query(db.Snippets).filter(db.Snippets.GuildID == guildID).filter(db.Snippets.Type == 'cannedresponse')
