@@ -381,7 +381,7 @@ async def parse(self, data):
         if Groups[each] > Groups[group]:
             break
         #print('Group', Groups[each],'<=', group,'(',Groups[group],')','=',each)
-        if group not in self.cache[server].responses:
+        if each not in self.cache[server].responses:
             continue
         words = self.cache[server].responses[each]
         #words = self.cache[server].responses[group]
