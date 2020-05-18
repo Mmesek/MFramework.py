@@ -191,8 +191,8 @@ async def execute(self, data):
         #try:
         if await commandList[group].get(cmd[0].lower(), Invalid)(self, *args, **kwargs) == None:
             r = None
-        elif await parse(self, data) == None:
-            r = None
+        #elif await parse(self, data) == None:
+            #r = None
         #except Exception as ex:
             #import sys, traceback
             #print('REEEE', ex)
