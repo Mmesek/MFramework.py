@@ -4,8 +4,8 @@ from ..discord.objects import *
 
 class Cache:
     __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language',
-    'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice',
-    'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence',
+    'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice', 'afk', 'afk_channel',
+    'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence', 'dynamic_channels',
     'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned')
     groups: dict
     disabled_channels: tuple
@@ -50,7 +50,8 @@ class Cache:
         self.groups['Muted'] = g.MutedIDs
         self.disabled_channels = g.NoExpChannels
         self.disabled_roles = g.NoExpRoles
-        self.logging = {}  #g.Logging
+        l = session.query(db.Webhooks.Source, db.Webhooks.Webhook).filter(db.Webhooks.GuildID == guildID).filter(db.Webhooks.Source.contains('logging-')).all()
+        self.logging = {i.Source.replace('logging-',''): i.Webhook for i in l}  #g.Logging
         self.trackPresence = g.TrackPresence
         self.language = g.Language
         self.canned = {}
@@ -59,6 +60,11 @@ class Cache:
         self.trackVoice = g.TrackVoice
         self.quoteWebhook = '706282832477028403/eZVXx3-iPfyrjQgJt3kZOfJVSt98ZRGI5VJe0t5SN32cNsgPOugZK8-AxUm0tKhD2dfJ'
         self.presence = {}
+        self.afk = {}
+        if guildID == 463433273620824104:
+            self.dynamic_channels = {'channels': [], 699365297664294943: {'name': 'Stolik Smutku', 'bitrate': 64000, 'user_limit': 1, 'position': 0, 'permission_overwrites': [], 'parent_id': '699363712280166411'}}
+        else:
+            self.dynamic_channels = {'channels': []}
 
         self.alias = g.Alias
         #self.reactionRoles = {i.RoleGroup:{i.MessageID:{i.Reaction:i.RoleID}} for i in session.query(db.ReactionRoles).filter(db.Servers.GuildID == guildID).all()}
@@ -185,11 +191,15 @@ class Cache:
         for reaction in data.emojis:
             self.reactions += [reaction]
         #self.reactions = data.emojis
+        if data.afk_channel_id != 0:
+            self.afk_channel = data.afk_channel_id
     
     def message(self, message_id, data):
-        self.messages[message_id] = data
-    def getMessage(self, message_id):
-        return self.messages.pop(message_id, None)
+        if data.channel_id not in self.messages:
+            self.messages[data.channel_id] = {}
+        self.messages[data.channel_id][message_id] = data
+    def getMessage(self, message_id, channel_id):
+        return self.messages[data.channel_id].pop(message_id, None)
     
     def update_server_data(self, data):
         self.name = data.name
