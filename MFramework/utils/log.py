@@ -8,7 +8,7 @@ def MetaData(self, embed, c):
 
 def Message(self, embed, message):
     #c = self.cache.get(message.guild_id).getMessage(message)
-    c = self.cache[message.guild_id].getMessage(message.id)
+    c = self.cache[message.guild_id].getMessage(message.id, message.channel_id)
     if c != None:
         MetaData(self, embed, c)
         if c.attachments != None:
@@ -40,11 +40,16 @@ async def DirectMessage(self, data):
     s = self.db.sql.session()
     webhook = s.query(db.Webhooks).filter(db.Webhooks.GuildID == gid).filter(db.Webhooks.Source == 'DM').first()
     if webhook == None:
-        self.message(data.channel_id, "Hey, it looks like no channel was specified to send a DM to therefore the whole DM forwarding is disabled")
+        await self.message(data.channel_id, "Hey, it looks like no channel was specified to send a DM to therefore the whole DM forwarding is disabled")
         return
+    d = s.query(db.Servers).filter(db.Servers.GuildID == gid).first()
+    d.DMCount += 1
 
-    embed = Embed().addField("From",f"<@{data.author.id}>", True).setDescription(data.content)#setDescription(f"From: <@{data.author.id}>")
-    embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png", f"{data.author.id}")
+
+
+    embed = Embed()#.addField("From",f"<@{data.author.id}>", True)
+    embed.setDescription(data.content)#setDescription(f"From: <@{data.author.id}>")
+    embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png", f"{data.author.id}").setAuthor(f'{data.author.username}#{data.author.discriminator}','','')
     try:
         embed.setImage(data.attachments[0].url)
         filename = data.attachments[0].filename
@@ -55,6 +60,7 @@ async def DirectMessage(self, data):
     color = self.cache[gid].color
     embed.setColor(color)
     canned = self.cache[gid].canned
+    s.commit()
     if filename != "":
         embed.addField("Attachment", filename, True)  #embed.embed['description'] += f"\nAttachment: {filename}"
     if len(set(data.content.lower().split(' '))) < 2:
@@ -71,12 +77,16 @@ async def DirectMessage(self, data):
         content = f"Canned response `{reg.lastgroup}` has been sent in return."
     await self.webhook(
         [embed.embed],
-        content,#data.content,
+        content+f' <@{data.author.id}>',#data.content,
         webhook.Webhook,
         f"{data.author.username}#{data.author.discriminator}",
-        f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png",
+        f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png", {"parse":[]}
     )
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
+    s = self.db.sql.session()
+    d = s.query(db.Servers).filter(db.Servers.GuildID == gid).first()
+    d.DMCountForwarded += 1
+    s.commit()
 
 
 def Channel(self, data, change):
@@ -87,3 +97,29 @@ def Role(self, role):
 
 def User(self, user):
     pass
+
+def getWebhook(self, guild_id: int, logger: str):
+    webhook = self.cache[guild_id].logging
+    if not any(i in webhook for i in ["all", logger]):
+        return None
+    if logger in webhook:
+        webhook = webhook[logger]
+    else:
+        webhook = webhook["all"]
+    return webhook
+
+async def UserVoiceChannel(self, data, channel=''):
+    webhook = getWebhook(self, data.guild_id, 'voice_log')
+    if webhook is None:
+        return
+    string = f'<@{data.user_id}> '
+    if channel != '' and data.channel_id != channel and data.channel_id != 0:
+        string += f'moved from <#{channel}> to '
+        channel = data.channel_id
+    elif data.channel_id == 0:
+        string += 'left '
+    else:
+        string += 'joined '
+        channel = data.channel_id
+    string += f'<#{channel}>'
+    await self.webhook({}, string, webhook, 'Voice Log', None, {'parse': []})
