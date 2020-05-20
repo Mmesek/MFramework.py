@@ -21,6 +21,8 @@ class Servers(Base):
     Language = Column(String)
     VoiceLink = Column(BigInteger)
     TrackVoice = Column(Boolean)
+    DMCount = Column(Integer)
+    DMCountForwarded = Column(Integer)
 
     def __init__(self, GuildID=None, AdminIDs=None, ModIDs=None, VipIDs=None, NitroIDs=None, MutedIDs=None, NoExpRoles=None, NoExpChannels=None, Alias=None, Color=None, TrackPresence=None, Language=None, VoiceLink=None, TrackVoice=None):
         self.GuildID = GuildID
@@ -37,6 +39,8 @@ class Servers(Base):
         self.Language = Language
         self.VoiceLink = VoiceLink
         self.TrackVoice = TrackVoice
+        self.DMCount = 0
+        self.DMCountForwarded = 0
 
 
 class Regex(Base):
@@ -230,13 +234,14 @@ class Games(Base):
     Title = Column(String, primary_key=True)
     LastPlayed = Column(Integer, primary_key=True)
     TotalPlayed = Column(Integer)
+    AppID = Column(BigInteger)
 
-    def __init__(self, UserID=None, Title=None, LastPlayed=None, TotalPlayed=None):
+    def __init__(self, UserID=None, Title=None, LastPlayed=None, TotalPlayed=None, AppID=None):
         self.UserID = UserID
         self.Title = Title
         self.LastPlayed = LastPlayed
         self.TotalPlayed = TotalPlayed
-
+        self.AppID = AppID
 
 class ActionLog(Base):
     __tablename__ = 'ActionLog'
