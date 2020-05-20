@@ -185,7 +185,7 @@ class Cache:
         self.presence = {}
         for presence in data.presences:
             try:
-                if len(presence['client_status']) == 1 and 'web' in presence['client_status']:
+                if len(presence['client_status']) == 1 and 'web' in presence['client_status'] and not self.trackPresence:
                     continue
                 elif presence['game'] is not None and presence['game']['type'] == 0 and 'application_id' in presence['game']:
                     self.presence[int(presence['user']['id'])] = (presence['game']['name'], presence['game']['created_at'], int(presence['game']['application_id']))
