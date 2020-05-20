@@ -31,7 +31,7 @@ def GenerateConfig():
     config = configparser.ConfigParser()
     config.read_dict({
         "Tokens": {'discord': '', 'steam': '', 'spotify': '', 'twitter': '', 'twitch': ''},
-        "Discord": {'presence': '', 'subscription': False, 'presence_type': 3, 'status': 'dnd', 'alias': '!'},
+        "Discord": {'presence': '', 'subscription': False, 'presence_type': 3, 'status': 'dnd', 'alias': '!', 'url': ''},
         "DiscordTokens":{'bot':''},
         "Spotify": {'client': '', 'secret': '', 'auth': ''},
         "Twitter": {'client': '', 'secret': '', 'auth': ''},
