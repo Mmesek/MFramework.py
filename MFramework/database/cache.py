@@ -79,7 +79,17 @@ class Cache:
                 rr[i.RoleGroup][i.MessageID][i.Reaction] = []
             rr[i.RoleGroup][i.MessageID][i.Reaction] += [i.RoleID]
             self.reactionRoles = rr
-        self.presenceRoles = session.query(db.PresenceRoles).filter(db.Servers.GuildID == guildID).all()
+        self.presenceRoles = {}
+        for i in session.query(db.PresenceRoles).filter(db.Servers.GuildID == guildID).all():
+            pr = self.presenceRoles
+            if pr == {}:
+                pr[i.RoleGroup] = {}
+            if i.Presence not in pr[i.RoleGroup]:
+                pr[i.RoleGroup][i.Presence] = {}
+            if i.RoleID not in pr[i.RoleGroup][i.Presence]:
+                pr[i.RoleGroup][i.Presence] = []
+            pr[i.RoleGroup][i.Presence] += [i.RoleID]
+            self.presenceRoles = pr
         self.levels = session.query(db.LevelRoles).filter(db.Servers.GuildID == guildID).all()
         self.webhooks = session.query(db.Webhooks).filter(db.Servers.GuildID == guildID).all()
         self.responses = session.query(db.Regex).filter(db.Servers.GuildID == guildID).all()
@@ -177,8 +187,8 @@ class Cache:
             try:
                 if len(presence['client_status']) == 1 and 'web' in presence['client_status']:
                     continue
-                elif presence['game'] is not None and presence['game']['type'] == 0:
-                    self.presence[int(presence['user']['id'])] = (presence['game']['name'], presence['game']['created_at'])
+                elif presence['game'] is not None and presence['game']['type'] == 0 and 'application_id' in presence['game']:
+                    self.presence[int(presence['user']['id'])] = (presence['game']['name'], presence['game']['created_at'], int(presence['game']['application_id']))
                     print('Init', self.presence[int(presence['user']['id'])])
             except:
                 print(presence)
