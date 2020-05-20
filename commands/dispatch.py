@@ -47,17 +47,30 @@ async def message_create(self, data: Message):
         elif await parse(self, data) == None:
             return
         if data.channel_id == 463437626515652618:
-            reg = re.findall(r"\*.+\*", data.content)
-            if reg:
+            reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)#"\*.+\*", data.content)
+            if reg and set(reg) != {'*'}:
+                if '*' in reg:
+                    reg = set(reg)
+                    reg.remove('*')
+                    reg = list(reg)
                 v = random.randint(1, 600)
+                v = int(v / 100) + 1
                 reactions = {
+                    0:'0️⃣',
                     1:'1️⃣',2:'2️⃣',3:'3️⃣',
                     4:'4️⃣',5:'5️⃣',6:'6️⃣'
                 }
-                await self.create_reaction(data.channel_id, data.id, reactions.get(int(v / 100) + 1))
+                z = re.findall(r"(?i)zabij|wyryw|mord", reg[0])
+                if z:
+                    v = 0
+                await self.create_reaction(data.channel_id, data.id, reactions.get(v))
         elif data.channel_id == 466643151470198786:
             embed = utils.Embed().setDescription(data.content)
             await self.webhook([embed.embed],'','569802933227618318/6AJW6rQjG0mlGvTFNZDfGiUqJCkd3EHDkAIDyJ7rwx-SA9uXP2xITwV9OGHg2YLwzgTS', data.author.username, f'https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png')
+        c = self.cache[data.guild_id].messages
+        if data.channel_id in c and (len(c) >= 1) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].content == data.content):
+            await self.delete_message(data.channel_id, data.id, 'Duplicate Message')
+            return
         self.cache[data.guild_id].message(data.id, data)
         if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
             session = self.db.sql.session()
@@ -68,8 +81,6 @@ async def message_create(self, data: Message):
                 self.cache[data.guild_id].exp[data.author.id] = timestamp
                 self.db.sql.add(e)
             elif (last == None or (timestamp - last).total_seconds() > 60) and (len(set(data.content.split(' '))) >= 2):
-                #if (len(self.cache[data.guild_id].messages) > 1) and (self.cache[data.guild_id].messages[list(self.cache[data.guild_id].messages.keys())[-1]].content == data.content):
-                #    return
                 e = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).filter(db.UserLevels.UserID == data.author.id).first()
                 e.EXP += 1
                 e.LastMessage = timestamp
@@ -87,6 +98,20 @@ async def message_create(self, data: Message):
 async def message_update(self, data):
     if data.guild_id == 0 or data.webhook_id != 0 or data.content == None:
         return
+    elif data.channel_id == 463437626515652618:
+        if not data.reactions:
+            reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)#"\*.+\*", data.content)
+            if reg and set(reg) != {'*'}:
+                if '*' in reg:
+                    reg = set(reg)
+                    reg.remove('*')
+                    reg = list(reg)
+                v = random.randint(1, 600)
+                reactions = {
+                    1:'1️⃣',2:'2️⃣',3:'3️⃣',
+                    4:'4️⃣',5:'5️⃣',6:'6️⃣'
+                }
+                await self.create_reaction(data.channel_id, data.id, reactions.get(int(v / 100) + 1))
     elif data.channel_id == 466643151470198786:
         embed = utils.Embed().setDescription(data.content).setTitle("MESSAGE UPDATE")
         await self.webhook([embed.embed],'','569802933227618318/6AJW6rQjG0mlGvTFNZDfGiUqJCkd3EHDkAIDyJ7rwx-SA9uXP2xITwV9OGHg2YLwzgTS', data.author.username, f'https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png')
@@ -207,30 +232,25 @@ async def presence_update(self, data):
     if data.guild_id == 0 or data.user.bot or (len(data.client_status) == 1 and 'web' in data.client_status):
         return
     if self.cache[data.guild_id].trackPresence:
-        #session = self.db.sql.session()
-        #g = session.query(db.Games).filter(db.Games.UserID == data.user.id).filter(db.Games.Title == data.game.name).first()
-        #if g == None:
-        #    g = db.Games(data.user.id, data.game.name)
-        #g.LastPlayed = data.game.created_at
-        #session.commit()
-        if data.user.id not in self.cache[data.guild_id].presence and data.game is not None and data.game.type == 0 and data.game.name is not None:
-            self.cache[data.guild_id].presence[data.user.id] = (data.game.name, data.game.created_at)
-            #print('new in cache')
-        elif data.user.id in self.cache[data.guild_id].presence and data.game.name is None:
+        if data.user.id in self.cache[data.guild_id].presence and (data.game.name is None or data.game.name != self.cache[data.guild_id].presence[data.user.id][0]):
             s = self.cache[data.guild_id].presence.pop(data.user.id)
-            #print('removing from cache')
             e = int(time.time()) - int(s[1]/1000)
             session = self.db.sql.session()
             g = session.query(db.Games).filter(db.Games.UserID == data.user.id).filter(db.Games.Title == s[0]).first()
             if g == None:
-                g = db.Games(data.user.id, s[0], int(time.time()), e)
+                g = db.Games(data.user.id, s[0], int(time.time()), e, s[2])
                 self.db.sql.add(g)
             else:
                 g.LastPlayed = int(time.time())
-                #g.LastPlayed += e
+                if s[2]:
+                    g.AppID = s[2]
                 g.TotalPlayed += e
             session.commit()
             self.db.influx.commitPresence(data.guild_id, data.user.id, s[0], e)
+        if data.user.id not in self.cache[data.guild_id].presence and data.game is not None and data.game.type == 0 and data.game.name is not None:
+            self.cache[data.guild_id].presence[data.user.id] = (data.game.name, data.game.created_at, data.game.application_id)
+    if data.status == 'online' and data.user.id in self.cache[data.guild_id].afk:
+        await self.move_guild_member(data.guild_id, data.user.id, self.cache[data.guild_id].afk.pop(data.user.id), "User is no longer AFK")
     roles = self.cache[data.guild_id].presenceRoles
     if roles == None:
         return
@@ -239,10 +259,13 @@ async def presence_update(self, data):
         for g in roles[group]:
             if data.game.type == 0 and data.game.name in roles[group].keys():
                 role = roles[group][data.game.name]
-                if role == None or role in data.roles:
+                #if role == None or role in data.roles:
+                if role == None or any(i in role for i in data.roles):
                     return
                 break
-    return await self.add_guild_member_role(data.guild_id, data.user.id, role, "Presence Role")
+    if role is not None:
+        for i in role:
+            await self.add_guild_member_role(data.guild_id, data.user.id, i, "Presence Role")
 
 from MFramework.utils.timers import *
 @onDispatch(Voice_State)
@@ -250,7 +273,19 @@ async def voice_state_update(self, data):
     if data.member.user.bot: #or not self.cache[data.guild_id].trackVoice:
         return
     if data.channel_id in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
-        data.channel_id = 0
+        if data.channel_id == self.cache[data.guild_id].afk_channel:
+            data.channel_id = -1
+        else:
+            data.channel_id = 0
+    if self.cache[data.guild_id].dynamic_channels and data.channel_id in self.cache[data.guild_id].dynamic_channels:
+        template = self.cache[data.guild_id].dynamic_channels[data.channel_id]
+        count = len(self.cache[data.guild_id].dynamic_channels['channels'])+1
+        
+        new_channel = await self.create_guild_channel(data.guild_id, template['name']+f' #{count}', 2, None, template['bitrate'], template['user_limit'], None, template['position'], template['permission_overwrites'], template['parent_id'], False, "Generated Channel")
+        await self.move_guild_member(data.guild_id, data.user_id, new_channel.id, "Moved User to generated channel")
+        data.channel_id = new_channel.id
+
+        self.cache[data.guild_id].dynamic_channels['channels'] += [new_channel.id]
 
     if self.cache[data.guild_id].VoiceLink:
         r = self.cache[data.guild_id].VoiceLink
@@ -261,12 +296,19 @@ async def voice_state_update(self, data):
 
     if self.cache[data.guild_id].trackVoice:
         v = self.cache[data.guild_id].voice
-        if data.channel_id != 0: #User is on the Voice Channel
+        moved = False
+        if data.channel_id > 0: #User is on the Voice Channel
             for channel in v:
                 if data.user_id in v[channel]: #User is in cached channel
                     if channel != data.channel_id: #Moved to another channel
                         print('Moved')
                         finalize(self, data.guild_id, channel, data.user_id)
+                        await log.UserVoiceChannel(self, data, channel)
+                        moved = True
+                        if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
+                            print('Removing channel')
+                            await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
+                            self.cache[data.guild_id].dynamic_channels['channels'].remove(channel)
                     else:  #Channel is same as before
                         if data.self_deaf:  #User is now muted
                             print('Muted')
@@ -295,6 +337,8 @@ async def voice_state_update(self, data):
                     if v[data.channel_id][u] == 0:  #There was someone on VC without Timer 
                         print('Alone is not alone anymore')
                         startTimer(self, data.guild_id, data.channel_id, u)
+                if not moved:
+                   await log.UserVoiceChannel(self, data)
 
             elif len(v[data.channel_id]) == 0:  #Joined empty channel
                 if data.self_deaf:
@@ -302,7 +346,9 @@ async def voice_state_update(self, data):
                     restartTimer(self, data.guild_id, data.channel_id, data.user_id, -1) #Joined Empty Channel Muted
                 else:
                     print('Joined Empty')
-                    restartTimer(self, data.guild_id, data.channel_id, data.user_id) #Joined Empty Channel unmuted
+                    restartTimer(self, data.guild_id, data.channel_id, data.user_id)  #Joined Empty Channel unmuted
+                if not moved:
+                    await log.UserVoiceChannel(self, data)
 
             else: #Not a channel switch event
                 print('???')
@@ -310,10 +356,14 @@ async def voice_state_update(self, data):
         else:  #User is not on Voice channel anymore
             for channel in v:
                 if data.user_id in v[channel]:
+                    if data.channel_id == -1:
+                        self.cache[data.guild_id].afk[data.user_id] = channel
                     print('Left')
                     finalize(self, data.guild_id, channel, data.user_id)
-                    #if len(v[channel]) == 1: #Someone is now left alone
-                    #    u = list(v[channel].keys())[0]
-                    #    print('Alone')
-                    #    restartTimer(self, data.guild_id, channel, u) #Alone on channel
+                    await log.UserVoiceChannel(self, data, channel)
+                    if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
+                        print('Removing channel')
+                        await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
+                        self.cache[data.guild_id].dynamic_channels['channels'].remove(channel)
+                        v.pop(channel)
                     return
