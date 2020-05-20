@@ -71,7 +71,7 @@ class Cache:
         self.reactionRoles = {}
         for i in session.query(db.ReactionRoles).filter(db.ReactionRoles.GuildID == guildID).all():
             rr = self.reactionRoles
-            if rr == {}:
+            if rr == {} or i.RoleGroup not in rr:
                 rr[i.RoleGroup] = {}
             if i.MessageID not in rr[i.RoleGroup]:
                 rr[i.RoleGroup][i.MessageID] = {}
@@ -82,7 +82,7 @@ class Cache:
         self.presenceRoles = {}
         for i in session.query(db.PresenceRoles).filter(db.Servers.GuildID == guildID).all():
             pr = self.presenceRoles
-            if pr == {}:
+            if pr == {} or i.RoleGroup not in pr:
                 pr[i.RoleGroup] = {}
             if i.Presence not in pr[i.RoleGroup]:
                 pr[i.RoleGroup][i.Presence] = {}
