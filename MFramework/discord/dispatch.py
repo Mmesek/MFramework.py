@@ -135,8 +135,12 @@ class Dispatch:
         except Exception as ex:
             t = traceback.extract_tb(sys.exc_info()[2], limit=-1)
             line = t[0].lineno
-            fn = t[0].filename.replace('/',' ').replace('\\',' ').split(' ')[-1].split('.')[0]
-            await self.message(data['channel_id'], 'Exception: ' + str(ex).capitalize().replace("'", '`') + f' at {fn}@{line}')
+            fn = t[0].filename.replace('/', ' ').replace('\\',' ').split(' ')[-1].split('. ')[0]
+            if self.errorchannel:
+                channel = self.errorchannel
+            else:
+                channel = data['d']['channel_id']
+            await self.message(channel, 'Exception: ' + str(ex).capitalize().replace("'", '`') + f' at {fn}@{line}')
             print('Exception:',ex,'at',fn,'@',line)
             print(data)
         return 
