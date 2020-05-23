@@ -250,7 +250,7 @@ class Bot(EndpointWrappers, Endpoints):
                         "game": {
                             "name": self.presence,
                             "type": self.presenceType,
-                            "url": self.url
+                            #"url": self.url
                         },
                         "status": self.status,
                         "since": time.time(),
