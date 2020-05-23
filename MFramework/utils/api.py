@@ -185,8 +185,14 @@ class Steam:
         return await self.api_call("featured/", api=self.store)
 
     @staticmethod
-    async def appDetails(appid):
-        return await Steam.api_call(path="appdetails/", querry=f"?appids={appid}&l=english&cc=us", api=Steam.store)
+    async def appDetails(appid, language):
+        if language == 'pl':
+            cc = 'pl'
+            l = 'polish'
+        else:
+            cc = 'us'
+            l = 'english'
+        return await Steam.api_call(path="appdetails/", querry=f"?appids={appid}&l={l}&cc={cc}", api=Steam.store)
 
 
 class Twitter:

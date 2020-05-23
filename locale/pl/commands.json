@@ -75,16 +75,6 @@
         "cmd_trigger":"refreshAppIndex",
         "help":"Updates Index of Steam Games"
     },
-    "playercount":{
-        "cmd_trigger":"playercount",
-        "game":"game",
-        "help":"Fetches playercount for specified game(s). Separate with `,`"
-    },
-    "gameDetails":{
-        "cmd_trigger":"gameDetails",
-        "game":"game",
-        "help":"Shows game details"
-    },
     "edit_message":{
         "cmd_trigger":"edit_message",
         "messageID":"messageID",
@@ -294,5 +284,45 @@
     "fetch_rss":{
         "cmd_trigger":"fetch_rss",
         "help":"Fetch RSS manually"
+    },
+    "games":{
+        "cmd_trigger":"gry",
+        "help":"Pokazuje użytkowników którzy grali w podanę grę bądź vice versa",
+        "whoPlayed":"Użytkownicy którzy grali w %{query}",
+        "playedBy":"**Grane przez <@%{query}>:**\n",
+        "none":"Nie znaleziono"
+    },
+    "exp":{
+        "cmd_trigger":"exp",
+        "help":"Pokazuje obecny stan punktów doświadczenia użytkownika",
+        "chat":"\nCzat: %{chat}",
+        "voice":"\nGłosowy: %{voice}",
+        "none":"Nie znaleziono bądź brak punktów doświadczenia"
+    },
+    "game":{
+        "cmd_trigger":"gra",
+        "help":"Pokazuje informacje o grze",
+        "release":"Data wydania: ",
+        "f2p":"Darmowe",
+        "price":"Cena",
+        "recommendations":"Rekomendacje",
+        "players":"Liczba Graczy",
+        "achievements":"Osiągnięcia",
+        "age":"Wymagany wiek",
+        "dlc":"Dodatki",
+        "developers":{
+            "one":"Deweloper",
+            "many":"Deweloperzy"
+        },
+        "publishers":{
+            "one":"Wydawca",
+            "many":"Wydawcy"
+        }
+    },
+    "playercount":{
+        "cmd_trigger":"liczbagraczy",
+        "help":"Pokazuje liczbę graczy dla podanej gry (Bądź gier jeśli rozdzielone za pomocą `,`)",
+        "for":"Liczba graczy dla ",
+        "error":"Nie znaleziono: Gra jest niedostępna, nie wydana bądź wystąpił inny błąd\n"
     }
 }

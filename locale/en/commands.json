@@ -75,16 +75,6 @@
         "cmd_trigger":"refreshAppIndex",
         "help":"Updates Index of Steam Games"
     },
-    "playercount":{
-        "cmd_trigger":"playercount",
-        "game":"game",
-        "help":"Fetches playercount for specified game(s). Separate with `,`"
-    },
-    "gameDetails":{
-        "cmd_trigger":"gameDetails",
-        "game":"game",
-        "help":"Shows game details"
-    },
     "edit_message":{
         "cmd_trigger":"edit_message",
         "messageID":"messageID",
@@ -294,5 +284,45 @@
     "fetch_rss":{
         "cmd_trigger":"fetch_rss",
         "help":"Fetch RSS manually"
+    },
+    "games":{
+        "cmd_trigger":"games",
+        "help":"Shows users that played specified game or games played by user",
+        "whoPlayed":"Users that played %{query}",
+        "playedBy":"**Games played by <@%{query}>:**\n",
+        "none":"Not Found"
+    },
+    "exp":{
+        "cmd_trigger":"exp",
+        "help":"Shows exp of specified user",
+        "chat":"\nChat: %{chat}",
+        "voice":"\nVoice: %{voice}",
+        "none":"User Not Found or No exp yet"
+    },
+    "game":{
+        "cmd_trigger":"game",
+        "help":"Shows game details",
+        "release":"Release Date: ",
+        "f2p":"Free2Play",
+        "price":"Price",
+        "recommendations":"Recommendations",
+        "players":"Currently players",
+        "achievements":"Achievements",
+        "age":"Required Age",
+        "dlc":"DLC Count",
+        "developers":{
+            "one":"Developer",
+            "many":"Developers"
+        },
+        "publishers":{
+            "one":"Publisher",
+            "many":"Publishers"
+        }
+    },
+    "playercount":{
+        "cmd_trigger":"playercount",
+        "help":"Fetches playercount for specified game(s). Separate with `,`",
+        "for":"Playercount for ",
+        "error":"Not found: Game might be not available, released or an error occured\n"
     }
 }
