@@ -216,17 +216,25 @@ def pluralizePolish(number):
     return "a" if number == 1 else("y" if abs(number) % 10 in [2, 3, 4] and number not in range(12, 15) else "")
 
 def secondsToText(secs, lang="EN"):
-    days = secs//86400
-    hours = (secs - days*86400)//3600
-    minutes = (secs - days*86400 - hours*3600)//60
-    seconds = secs - days*86400 - hours*3600 - minutes*60
+    weeks = secs//604800
+    days = (secs - weeks*604800)//86400
+    hours = (secs - weeks*604800 - days*86400)//3600
+    minutes = (secs - weeks*604800 - days*86400 - hours*3600)//60
+    seconds = secs - weeks*604800 - days*86400 - hours*3600 - minutes*60
 
-    if lang == "ES":
+    weeks_text = "w"
+    if lang == 'SHORT':
+        days_text = "d"
+        hours_text = "h"
+        minutes_text = "m"
+        seconds_text = "s"
+    elif lang == "ES":
         days_text = "día{}".format("s" if days!=1 else "")
         hours_text = "hora{}".format("s" if hours!=1 else "")
         minutes_text = "minuto{}".format("s" if minutes!=1 else "")
         seconds_text = "segundo{}".format("s" if seconds!=1 else "")
     elif lang == "PL":
+        weeks_text = "{}".format("tydzień" if weeks==1 else ("tygodnie" if abs(weeks) % 10 in [2,3,4] else "tygodni"))
         days_text = "{}".format("dni" if days!=1 else "dzień")
         hours_text = "godzin{}".format("a" if hours==1 else ("y" if abs(hours) % 10 in [2,3,4] and hours not in [12,13,14] else ""))
         minutes_text = "minut{}".format("a" if minutes==1 else ("y" if abs(minutes) % 10 in [2,3,4] and minutes not in [12,13,14] else ""))
@@ -246,16 +254,18 @@ def secondsToText(secs, lang="EN"):
         minutes_text = "минута" if minutes == 1 else("минуты" if abs(minutes) % 10 in [2, 3, 4] and minutes not in range(11, 20) else "минут")
         seconds_text = "секунда" if seconds == 1 else("секунды" if abs(seconds) % 10 in [2, 3, 4] and seconds not in range(11, 20) else "секунд")
     else:
+        weeks_text = "week{}".format("s" if weeks != 1 else "")
         days_text = "day{}".format("s" if days!=1 else "")
         hours_text = "hour{}".format("s" if hours!=1 else "")
         minutes_text = "minute{}".format("s" if minutes!=1 else "")
         seconds_text = "second{}".format("s" if seconds!=1 else "")
 
-    result = ", ".join(filter(lambda x: bool(x),[
+    result = ", ".join(filter(lambda x: bool(x), [
+    "{0} {1}".format(weeks, weeks_text) if weeks else "",
     "{0} {1}".format(days, days_text) if days else "",
     "{0} {1}".format(hours, hours_text) if hours else "",
-    "{0} {1}".format(minutes, minutes_text) if minutes else "",
-    "{0} {1}".format(seconds, seconds_text) if seconds and not days else ""
+    "{0} {1}".format(minutes, minutes_text) if minutes and not weeks else "",
+    "{0} {1}".format(seconds, seconds_text) if seconds and not weeks and not days else ""
     ]))
     return result
 
