@@ -22,6 +22,8 @@ def register(**kwargs):
     """alias="alias"\nhelp="description of help message"\ngroup="Global|Vip|Nitro|Mod|Admin" - Default: Global\ncategory="Command's Category" - Default based on Directory"""
 
     def inner(f, *arg, **kwarg):
+        if 'notImpl' in kwargs:
+            return
 
         # Set Category
         if 'category' not in kwargs or 'group' not in kwargs:
@@ -54,7 +56,9 @@ def register(**kwargs):
             commandList[g][f"{f.__name__.lower()}"] = f
             if "alias" in kwargs:
                 if kwargs['alias'] != '':
-                    commandList[g][kwargs["alias"]] = f
+                    a = kwargs['alias'].split(',')
+                    for i in a:
+                        commandList[g][i.strip()] = f#[kwargs["alias"]] = f
 
         # Register help message
         sig = inspect.signature(f)
@@ -167,6 +171,7 @@ async def execute(self, data):
            'data': data,
            'group': group,
            'language': self.cache[data.guild_id].language,
+           'cmd': cmd[0].lower(),
            #'flags': flags,
            'channel': [t for t in self.patterns['channels'].findall(data.content) if t is not None],
            'user_mentions': [t for t in self.patterns['users'].findall(data.content) if t is not None],
