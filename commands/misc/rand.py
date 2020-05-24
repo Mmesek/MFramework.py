@@ -26,7 +26,7 @@ async def randomquote(self, *args, data, **kwargs):
     with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
         q = json.load(file)
     r = random.randrange(len(q))
-    await self.message(data.channel_id, q[r]["text"] + "\n-" + q[r]["author"])
+    await self.message(data.channel_id, '_'+q[r]["text"] + "_\n    ~" + q[r]["author"])
 
 
 def load_words():
@@ -35,7 +35,7 @@ def load_words():
     return valid_words
 
 
-@register(group="Global", help="Assembles english words from provided letters/solves anagrams", alias="", category="")
+@register(group="Global", help="Assembles english words from provided letters/solves anagrams", alias="", category="", notImpl=True)
 async def anagram(self, *args, data, **kwargs):
     words = load_words()
 
@@ -58,7 +58,7 @@ async def word(self, word, letter_count, *args, data, **kwargs):
     await self.message(data.channel_id, res)
 
 
-@register(group="System")
+@register(group="System", notImpl=True)
 async def how(self, *query, data, **kwargs):
     query = "".join(query).replace(" ", "+")
     language = "en"
@@ -112,7 +112,7 @@ async def today(self, *args, data, language, **kwargs):
     else:
         return await self.message(data.channel_id, "Error")
     f = ""
-    for p in soup.find_all("h3", class_="card-title"):
+    for p in soup.find_all("h3", class_="card__title heading"):
         if "Week" in p.text or "Month" in p.text:
             continue
         else:
@@ -155,7 +155,7 @@ async def getChords(self):
         for img in i.find_all('img'):
             self.chords[img['alt']] = 'https:' + img['src']
 
-@register(group='Global', help='Sends Diagram of provided Chord for instrument')
+@register(group='Global', help='Sends Diagram of provided Chord for instrument', notImpl=True)
 async def chord(self, instrument='guitar', *chord, data, **kwargs):
     if not hasattr(self, 'chords'):
         await getChords(self)
@@ -169,7 +169,7 @@ async def chord(self, instrument='guitar', *chord, data, **kwargs):
     embed = Embed().setTitle(t).setImage(l)
     await self.embed(data.channel_id, "", embed.embed)
 
-@register(group='Global', help='Converts Ascii to Numbers')
+@register(group='Global', help='Converts Ascii to Numbers', notImpl=True)
 async def asciitohex(self, *ascii_, data, **kwargs):
     ascii_ = ' '.join(ascii_)
     f = Embed().setTitle('Ascii to Hex').setDescription(ascii_)
