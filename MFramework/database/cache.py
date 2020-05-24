@@ -80,7 +80,7 @@ class Cache:
             rr[i.RoleGroup][i.MessageID][i.Reaction] += [i.RoleID]
             self.reactionRoles = rr
         self.presenceRoles = {}
-        for i in session.query(db.PresenceRoles).filter(db.Servers.GuildID == guildID).all():
+        for i in session.query(db.PresenceRoles).filter(db.PresenceRoles.GuildID == guildID).all():
             pr = self.presenceRoles
             if pr == {} or i.RoleGroup not in pr:
                 pr[i.RoleGroup] = {}
