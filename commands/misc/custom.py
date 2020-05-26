@@ -53,7 +53,7 @@ async def fetch(self, data, typeof, newline, *names, has=None):
             snippets += [r]
     if snippets == []:
         snippets = [session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).filter(db.Snippets.Name == ' '.join(names)).first()]
-    if snippets == [] or snippets is None:
+    if snippets == [] or snippets is None or snippets == [None]:
         snippets = session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).all()
     if snippets == [] or snippets is None:
         return "Not found"
