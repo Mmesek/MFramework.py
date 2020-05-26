@@ -286,3 +286,40 @@ def bytes2human(n, format="%(value).1f%(symbol)s"):
             value = float(n) / prefix[symbol]
             return format % locals()
     return format % dict(symbol=symbols[0], value=n)
+
+def getIfromRGB(rgb):
+    red = rgb[0]
+    green = rgb[1]
+    blue = rgb[2]
+    RGBint = (red<<16) + (green<<8) + blue
+    return RGBint
+#int from hex: int('ff0000', 16)
+from PIL import ImageFile
+import urllib
+def get_main_color(img):
+    file = urllib.request.urlopen(urllib.request.Request(img, headers={'User-Agent': 'Mozilla'}))#/JustCheckingImgSize'}))
+    #img = Image.open(file)
+    
+    p = ImageFile.Parser()
+
+    while 1:
+        s = file.read(1024)
+        if not s:
+            break
+        p.feed(s)
+
+    im = p.close()
+    r, g, b = im.getpixel((0, 0))
+    return getIfromRGB((r, g, b))
+    #colors = img.getcolors(1024*1024) #put a higher value if there are many colors in your image
+    #max_occurence, most_present = 0, 0
+    #try:
+    #    for c in colors:
+    #        if c[0] > max_occurence:
+    #            if c[1] == (0, 0, 0):
+    #                continue
+    #            (max_occurence, most_present) = c
+        #return most_present
+    #except TypeError:
+    #    return 0
+        #raise Exception("Too many colors in the image")
