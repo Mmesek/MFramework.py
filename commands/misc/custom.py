@@ -52,10 +52,10 @@ async def fetch(self, data, typeof, newline, *names, has=None):
         if r != None:
             snippets += [r]
     if snippets == []:
-        snippets = session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).filter(db.Snippets.Name == ' '.join(names)).first()
-    if snippets == []:
+        snippets = [session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).filter(db.Snippets.Name == ' '.join(names)).first()]
+    if snippets == [] or snippets is None:
         snippets = session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).all()
-    if snippets == []:
+    if snippets == [] or snippets is None:
         return "Not found"
     try:
         snippets = sorted(snippets, key=lambda x: int(x.Name))
@@ -152,11 +152,11 @@ async def ls(self, type='meme', *names, data, has=None, language, group, cmd, **
     '''meme/cannedresponse/rule/snippet'''
     if cmd == 'rule' or cmd == 'r':
         if type != 'meme':
-            names = list(names)+[type]
+            names = [type]+list(names)
         type = 'rule'
     elif cmd == 'meme' or cmd == 'm':
         if type != 'meme':
-            names = list(names)+[type]
+            names = [type]+list(names)
         type = 'meme'
     if group == 'System' and 'cross' in kwargs:
             data.guild_id = kwargs['cross']
