@@ -51,7 +51,53 @@ async def playercount(self, *game, data, language, **kwargs):
     await self.message(data.channel_id, result[:2000])
 
 
+def getBazarPrice(game):
+    from bs4 import BeautifulSoup
+    import requests
+    bazar = 'https://bazar.lowcygier.pl/?title='
+    data = requests.get(bazar+game)
+    soup= BeautifulSoup(data.text,'html.parser')
+    lis = soup.find('div', id="w0", class_='list-view')
+    sel = lis.find_all('div', class_='col-md-7 col-sm-4 col-xs-6 nopadding')
+    prc = 0
+    for each in sel:
+        if (each.find('h4',class_='media-heading').a.text == game):
+            prc = each.find('p',class_='prc').text.replace(' zł','zł')
+            url = each.find('h4', class_='media-heading').a.attrs['href']
+            break
+    if prc != 0:
+        return f"[{prc}](https://bazar.lowcygier.pl{url})"
+    return 0
 
+def getGGDealsLowPrice(game, language):
+    from bs4 import BeautifulSoup
+    import requests
+    if language == 'en':
+        language = 'eu'
+    gg = f"https://gg.deals/{language}/region/switch/?return=%2Fgame%2F"#f'https://gg.deals/{language}/game/'
+    name2= game.replace(' ','-').replace('!','-').replace('?','-').replace("'",'-').replace('.','').replace(':','').replace(',',' ')
+    data = requests.get(gg+name2)
+    soup= BeautifulSoup(data.text,'html.parser')
+    lis = soup.find('div', class_='price-wrap')
+    try:
+        prc = lis.find('span', class_='numeric').text.replace('~', '').replace(' zł','zł')
+        url2 = soup.find('div', class_='list-items').find('a', {'target': '_blank'})['href']
+    except:
+        prc = 0
+    try:
+        li = lis.find('div',class_='lowest-recorded price-widget')
+        prc2 = li.find('span', class_='numeric').text.replace('~', '').replace(' zł','zł')
+    except:
+        prc2 = 0
+    if prc != 0:
+        p1 = f"[{prc}](https://gg.deals{url2})"
+    else:
+        p1 = 0
+    if prc2 != 0:
+        p2 = prc2
+    else:
+        p2 = 0
+    return (p1, p2)
 
 @register(help="Shows game details", alias="", category="")
 async def game(self, *game, data, language, **kwargs):
@@ -68,6 +114,15 @@ async def game(self, *game, data, language, **kwargs):
             if is_free:
                 prc = tr("commands.game.f2p", language)
             embed.addField(tr("commands.game.price", language), prc, True)
+        if language == "pl":
+            bazar = getBazarPrice(game["name"])
+            if bazar != 0:
+                embed.addField(tr("commands.game.BazarPrice", language), bazar, True)
+        ggdeals = getGGDealsLowPrice(game["name"], language)
+        if ggdeals[0] != 0:
+            embed.addField(tr("commands.game.CurrentLowPrice", language), ggdeals[0], True)
+        if ggdeals[1] != 0:
+            embed.addField(tr("commands.game.HistLowPrice", language), ggdeals[1], True)
         r = game.get("recommendations", {}).get("total")
         if r is not None:
             embed.addField(tr("commands.game.recommendations", language), r, True)
