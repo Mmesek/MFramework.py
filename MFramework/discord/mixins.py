@@ -1,4 +1,5 @@
 import random
+from ..utils.utils import get_main_color
 class EndpointWrappers:
     async def sendMessage(self, channel, _content, _allowed_mentions={}, _tts=False):
         '''https://discordapp.com/developers/docs/resources/channel#allowed-mentions-object'''
@@ -11,7 +12,14 @@ class EndpointWrappers:
         return await self.api_call(f"/channels/{channel}/messages", "POST", json={"content": content, "allowed_mentions":allowed_mentions})
     async def embed(self, channel, content, embed={}, allowed_mentions={}):
         if embed != {} and 'color' not in embed:
-            embed['color'] = random.randint(0,16777215)#self.color
+            try:
+                if 'image' in embed:
+                    img = embed['image']['url']
+                elif 'thumbnail' in embed:
+                    img = embed['thumbnail']['url']
+                embed['color'] = get_main_color(img)
+            except Exception as ex:
+                embed['color'] = random.randint(0,16777215)#self.color
         return await self.api_call(f"/channels/{channel}/messages", "POST", json={"content": content, "embed": embed, "allowed_mentions":allowed_mentions})
     async def webhook(self, embeds, content="", webhook_url="", username="", avatar_url="", allowed_mentions={}):
         return await self.api_call(
