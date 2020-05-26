@@ -47,11 +47,16 @@ async def fetch(self, data, typeof, newline, *names, has=None):
                 continue
             else:
                 r = None
-        if r == None:
-            r = db.Snippets(Name=i, Response='Not found.')
-        snippets += [r]
+        #if r == None:
+            #r = db.Snippets(Name=i, Response='Not found.')
+        if r != None:
+            snippets += [r]
+    if snippets == []:
+        snippets = session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).filter(db.Snippets.Name == ' '.join(names)).first()
     if snippets == []:
         snippets = session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).all()
+    if snippets == []:
+        return "Not found"
     try:
         snippets = sorted(snippets, key=lambda x: int(x.Name))
     except:
