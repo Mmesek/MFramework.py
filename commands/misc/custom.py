@@ -94,7 +94,7 @@ async def createembed(self, name, message, trigger, *embed, data, language, **kw
     e = db.EmbedTemplates(data.guild_id, data.author.id, name, message, embed)
     self.db.sql.add(e)
 
-@register(group='Mod', help='Embeds', alias='', category='', notImpl=True)
+@register(group='Mod', help='Embeds', alias='', category='')#, notImpl=True)
 async def embed(self, name, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
@@ -107,7 +107,7 @@ async def embed(self, name, *args, data, language, **kwargs):
         embed['author']['name'] = embed['author']['name'].format(*args)
     embed['footer'] = {"icon_url": f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}", "text": data.author.username}
     embed['timestamp'] = data.timestamp
-    await self.embed(data.channel_id, r.Message, embed)
+    await self.embed(data.channel_id, r.Message, embed, {'parse':['roles']})
 
 
 @register(group='Nitro', help='Adds to db', alias='sm', category='')
@@ -115,6 +115,9 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
     '''meme/cannedresponse/rule/snippet/spotify/rss
     if rss: response = [uri color lang avatar_url]'''
     r = db.Snippets(data.guild_id, data.author.id, name, ' '.join(response), Type=type)
+    if response == ():
+        await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+        return
     if type == 'cannedresponse' and group in ['Mod', 'Admin', 'System']:
         r.Trigger = trigger
     elif type == 'snippet' and group in ['Mod', 'Admin', 'System']:
