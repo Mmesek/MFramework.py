@@ -43,7 +43,7 @@ async def fetch(self, data, typeof, newline, *names, has=None):
         else:
             r = r.filter(db.Snippets.Response.match(i)).all()
             if r != []:
-                snippets += [db.Snippets(Name=j.Name, Response=j.Response) for j in r]
+                snippets += [db.Snippets(Name=j.Name, Response=j.Response, Image=j.Image) for j in r]
                 continue
             else:
                 r = None
@@ -61,7 +61,7 @@ async def fetch(self, data, typeof, newline, *names, has=None):
         snippets = sorted(snippets, key=lambda x: int(x.Name))
     except:
         snippets = sorted(snippets, key=lambda x: x.Name)
-    snippets = '\n'.join([newline.format(name=i.Name, response=i.Response) for i in snippets])
+    snippets = '\n'.join([newline.format(name=i.Name, response=f'{i.Response} {i.Image}' if i.Image else i.Response) for i in snippets])
     if snippets == '\n':
         snippets = 'None yet.'
     return snippets
@@ -115,7 +115,7 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
     '''meme/cannedresponse/rule/snippet/spotify/rss
     if rss: response = [uri color lang avatar_url]'''
     r = db.Snippets(data.guild_id, data.author.id, name, ' '.join(response), Type=type)
-    if response == ():
+    if response == () and data.attachments == []:
         await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
         return
     if type == 'cannedresponse' and group in ['Mod', 'Admin', 'System']:
