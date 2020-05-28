@@ -48,14 +48,21 @@ async def DirectMessage(self, data):
 
 
     embed = Embed()#.addField("From",f"<@{data.author.id}>", True)
-    embed.setDescription(data.content)#setDescription(f"From: <@{data.author.id}>")
-    embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png", f"{data.author.id}").setAuthor(f'{data.author.username}#{data.author.discriminator}','','')
+    embed.setDescription(data.content)  #setDescription(f"From: <@{data.author.id}>")
+    if data.author.avatar:
+        avatar = f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png"
+    else:
+        avatar = f"https://cdn.discordapp.com/avatars/embed/avatars/{data.author.discriminator % 5}.png"
+    embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(avatar, f"{data.author.id}").setAuthor(f'{data.author.username}#{data.author.discriminator}','','')
+    content = ''
     try:
         embed.setImage(data.attachments[0].url)
+        if data.attachments[0].url[-3:] not in ['png', 'jpg', 'jpeg', 'webp', 'gif'] or len(data.attachments) > 1:
+            for i in data.attachments:
+                content += i.filename + ': ' + i.url + '\n'
         filename = data.attachments[0].filename
     except:
         filename = ""
-    content = ''
     
     color = self.cache[gid].color
     embed.setColor(color)
@@ -63,7 +70,7 @@ async def DirectMessage(self, data):
     s.commit()
     if filename != "":
         embed.addField("Attachment", filename, True)  #embed.embed['description'] += f"\nAttachment: {filename}"
-    if len(set(data.content.lower().split(' '))) < 2:
+    if (len(set(data.content.lower().split(' '))) < 2) and len(data.attachments) == 0:
         await self.message(data.channel_id, f"Hey, it appears your message consist of mostly single word, therefore I'm not going to forward it. I'm forwarding your messages here automatically and <:{self.emoji['success']}> under message means it was successfully delivered to mod team. Please form a sentence and try again. Cheers mate.")
         return
     if data.channel_id in self.cache['dm']:
@@ -77,10 +84,10 @@ async def DirectMessage(self, data):
         content = f"Canned response `{reg.lastgroup}` has been sent in return."
     await self.webhook(
         [embed.embed],
-        content+f' <@{data.author.id}>',#data.content,
+        content+f' <@!{data.author.id}>',#data.content,
         webhook.Webhook,
         f"{data.author.username}#{data.author.discriminator}",
-        f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png", {"parse":[]}
+        avatar, {"parse":[]}
     )
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
     s = self.db.sql.session()
