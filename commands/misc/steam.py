@@ -89,11 +89,11 @@ def getGGDealsLowPrice(game, language):
         prc2 = li.find('span', class_='numeric').text.replace('~', '').replace(' zł','zł')
     except:
         prc2 = 0
-    if prc != 0:
+    if prc != 'Free' and prc != 0:
         p1 = f"[{prc}](https://gg.deals{url2})"
     else:
         p1 = 0
-    if prc2 != 0:
+    if prc2 != 'Free' and prc2 != prc and prc != 0:
         p2 = prc2
     else:
         p2 = 0
