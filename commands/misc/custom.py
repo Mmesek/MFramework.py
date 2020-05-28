@@ -61,7 +61,21 @@ async def fetch(self, data, typeof, newline, *names, has=None):
         snippets = sorted(snippets, key=lambda x: int(x.Name))
     except:
         snippets = sorted(snippets, key=lambda x: x.Name)
-    snippets = '\n'.join([newline.format(name=i.Name, response=f'{i.Response} {i.Image}' if i.Image else i.Response) for i in snippets])
+    s = []
+    for i in snippets:
+        ff = ''
+        if i.Response:
+            o = i.Response.split(' ')
+            for j in o:
+                if len(snippets) > 1 and '/' in j and '/' not in j[-1]:
+                    ff += ' '+j.split('/')[-1]
+                else:
+                    ff += ' ' + j
+        if len(snippets) > 1 and i.Image and '/' in i.Image:
+            ff += i.Image.split('/')[-1]
+        s+=[db.Snippets(Name=i.Name, Response=ff)]
+    #snippets = '\n'.join([newline.format(name=i.Name, response=f"{' '.join([o.split('/')[-1] for o in i.Response.split(' ')]) if '/' in i.Response else i.Response} {i.Image.split('/')[-1] if '/' in i.Image else i.Image}" if i.Image else i.Response) for i in snippets])
+    snippets = '\n'.join([newline.format(name=i.Name, response=i.Response) for i in s])
     if snippets == '\n':
         snippets = 'None yet.'
     return snippets
@@ -150,7 +164,7 @@ async def delete(self, typeof='meme', *name, data, language, group, **kwargs):
     session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.UserID == data.author.id).filter(db.Snippets.Type == typeof.lower()).filter(db.Snippets.Name == ' '.join(name)).delete()
     session.commit()
 
-@register(group='Nitro', help='Lists currently stored snippets', alias='meme, m, r, rule', category='')
+@register(group='Nitro', help='Lists currently stored snippets', alias='meme, m, r, rule, s, snippet', category='')
 async def ls(self, type='meme', *names, data, has=None, language, group, cmd, **kwargs):
     '''meme/cannedresponse/rule/snippet'''
     if cmd == 'rule' or cmd == 'r':
@@ -161,6 +175,10 @@ async def ls(self, type='meme', *names, data, has=None, language, group, cmd, **
         if type != 'meme':
             names = [type]+list(names)
         type = 'meme'
+    elif cmd == 's' or cmd == 'snippet':
+        if type != 'meme':
+            names = [type] + list(names)
+        type = 'snippet'
     if group == 'System' and 'cross' in kwargs:
             data.guild_id = kwargs['cross']
     if type == 'rule':
@@ -174,7 +192,7 @@ async def ls(self, type='meme', *names, data, has=None, language, group, cmd, **
         if names != ():
             pattern = '\n{response}'
         else:
-            pattern = '{name}:\n{response}'
+            pattern = '- {name}:\n{response}\n'
     r = await fetch(self, data, type.lower(), pattern, *names, has=has)
     if names != ():
         await self.message(data.channel_id, r)
@@ -189,9 +207,15 @@ async def ls(self, type='meme', *names, data, has=None, language, group, cmd, **
             if len(f+l[:1024]) < 1024:
                 f += l
             else:
-                embed.addField('\u200b', f)
-                f = ''
+                if f !='':
+                    embed.addField('\u200b', f)
+                    f = ''
     if f != '':
         embed.addField('\u200b', f)
     embed.setDescription(s).setTitle(type.title()+'s')
     await self.embed(data.channel_id, '', embed.embed)
+
+@register(group='Nitro', help='Edits entry', alias='em', category='')
+async def edit(self, name, *new_response, data, trigger='', type='meme', language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    pass
