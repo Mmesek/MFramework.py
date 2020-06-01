@@ -54,13 +54,16 @@ async def DirectMessage(self, data):
     else:
         avatar = f"https://cdn.discordapp.com/avatars/embed/avatars/{data.author.discriminator % 5}.png"
     embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(avatar, f"{data.author.id}").setAuthor(f'{data.author.username}#{data.author.discriminator}','','')
-    content = ''
+    content, filename = '', ''
     try:
         embed.setImage(data.attachments[0].url)
         if data.attachments[0].url[-3:] not in ['png', 'jpg', 'jpeg', 'webp', 'gif'] or len(data.attachments) > 1:
             for i in data.attachments:
-                content += i.filename + ': ' + i.url + '\n'
-        filename = data.attachments[0].filename
+                filename += f'[{i.filename}]({i.url})\n'
+            embed.addField("Attachments", filename[:1024], True)
+            filename = ''
+        else:
+            filename = data.attachments[0].filename
     except:
         filename = ""
     
@@ -69,7 +72,7 @@ async def DirectMessage(self, data):
     canned = self.cache[gid].canned
     s.commit()
     if filename != "":
-        embed.addField("Attachment", filename, True)  #embed.embed['description'] += f"\nAttachment: {filename}"
+        embed.addField("Image", filename, True)  #embed.embed['description'] += f"\nAttachment: {filename}"
     if (len(set(data.content.lower().split(' '))) < 2) and len(data.attachments) == 0:
         await self.message(data.channel_id, f"Hey, it appears your message consist of mostly single word, therefore I'm not going to forward it. I'm forwarding your messages here automatically and <:{self.emoji['success']}> under message means it was successfully delivered to mod team. Please form a sentence and try again. Cheers mate.")
         return
