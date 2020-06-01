@@ -5,24 +5,65 @@ from MFramework.utils.utils import Embed, created, datetime, time
 from PIL import Image
 from io import BytesIO
 import re
-@register(group="Mod", alias='dm', help="Sends user DM as a bot")
-async def send_dm(self, user, *message, data, language, **kwargs):
-    dm = await self.create_dm(re.findall(r'\d+', user)[0])
+@register(group="Mod", help="Sends user DM as a bot")
+async def dm(self, user, *message, data, language, **kwargs):
+    uid = re.findall(r'\d+', user)
+    if uid == []:
+        await self.message(data.channel_id, "No UserID found in message. @User or provide their ID")
+        return await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+    dm = await self.create_dm(uid[0])
     if await self.message(dm.id, ' '.join(message)) == []:
         await self.message(data.channel_id, "Couldn't Deliver message to specified user.")
         return await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
     return await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
-@register(group="Mod", help="Sends message to a channel as a bot")
-async def send_message(self, channel, *message, data, **kwargs):
-    await self.message(channel, ''.join(*message))
+async def _dm(self, user, message, embed={}):
+    if user not in self.cache['dm']:
+        dm = await self.create_dm(user)
+    if await self.embed(dm.id, message) == []:
+        return False
+    return True
+
+@register(group="Mod", help="Sends message to a channel as a bot. DOES NOT SEND CHANNEL MENTIONS")
+async def say(self, *message, data, channel, **kwargs):
+    await self.message(channel[0], ' '.join(message))
 
 
 @register(group="Mod", help="Reacts to a message with emoji as a bot")
-async def react(self, channel, messageID, *reactions, data, **kwargs):
+async def react(self, messageID, *reactions, data, channel, **kwargs):
     for each in reactions:
-        await self.create_reaction(channel, messageID, each.replace("<:", "").replace(">", ""))
+        await self.create_reaction(channel[0], messageID, each.replace("<:", "").replace(">", ""))
 
+import asyncio
+async def fetch_members(self, guild):
+    server = self.cache[guild]
+    m_retries = 0
+    if len(server.joined) != server.member_count:
+        if len(server.joined) >= server.member_count:
+            server.joined = []
+        await self.request_guild_members(guild)
+    while len(server.joined) != server.member_count and len(server.joined) < server.member_count:
+        await asyncio.sleep(0.1)
+        m_retries+=1
+        if m_retries == 75:
+            break
+
+@register(group='System', help='Lists members with specified role', alias='', category='')
+async def listmembers(self, role, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    rid = int(re.findall(r'\d+', role)[0])
+    await self.trigger_typing_indicator(data.channel_id)
+    await fetch_members(self, data.guild_id)
+    s_member = self.cache[data.guild_id].joined
+    total = []
+    for each in s_member:
+        if rid in each[3]:
+            total += [each[0]]
+    embed = Embed().setDescription(''.join([f'<@{i}>' for i in total])[:2024]).setFooter('', f'Total users: {len(total)}')
+    for role in self.cache[data.guild_id].roles:
+        if role.id == rid:
+            embed.setColor(role.color).setTitle(f'List of members with role {role.name}')
+    await self.embed(data.channel_id, '', embed.embed)
 
 async def handleInfraction(self, data, infraction):
     params = data.content.split(" ", 1)
@@ -88,27 +129,27 @@ async def handleInfraction(self, data, infraction):
                 )
 
 
-@register(group="Mod", category="Moderation", help="Warns user.")
+@register(group="Mod", category="Moderation", help="Warns user.", notImpl=True)
 async def warn(self, user, *reason, data, **kwargs):
     await handleInfraction(self, data, ["Warn", "warned", "Warning"])
 
 
-@register(group="Mod", category="Moderation", help="Mutes user.")
+@register(group="Mod", category="Moderation", help="Mutes user.", notImpl=True)
 async def mute(self, user, time=0, *reason, data, **kwargs):
     await handleInfraction(self, data, ["Mute", "muted", "mute reason"])
 
 
-@register(group="Mod", category="Moderation", help="Kicks user.")
+@register(group="Mod", category="Moderation", help="Kicks user.", notImpl=True)
 async def kick(self, user, *reason, data, **kwargs):
     await handleInfraction(self, data, ["Kick", "kicked", "kick reason"])
 
 
-@register(group="Mod", category="Moderation", help="Bans user.")
+@register(group="Mod", category="Moderation", help="Bans user.", notImpl=True)
 async def ban(self, user, time=0, *reason, data, **kwargs):
     await handleInfraction(self, data, ["Ban", "banned", "ban reason"])
 
 
-@register(help="Shows Infractions of user.")
+@register(help="Shows Infractions of user.", notImpl=True)
 async def infractions(self, *users, data, **kwargs):
     uids = data.content.split("!", 1)[0].split(" ")
     if uids == [""]:
@@ -156,7 +197,7 @@ async def infractions(self, *users, data, **kwargs):
     await self.embed(data.channel_id, "", embed.embed)
 
 from MFramework.database import alchemy as db
-@register(group="Mod", category="Moderation", help="Shows information about user.")
+@register(group="Mod", category="Moderation", help="Shows information about user.", notImpl=True)
 async def userInfo(self, *users, data, **kwargs):
     uids = data.content.split("!", 1)[0].split(" ")
     if uids == [""]:
@@ -232,7 +273,7 @@ async def userInfo(self, *users, data, **kwargs):
         await self.embed(data.channel_id, "", embed.embed)
 
 
-@register(group="Mod", category="Moderation", help="Shows information about server.")
+@register(group="Mod", category="Moderation", help="Shows information about server.", notImpl=True)
 async def serverInfo(self, *args, data, **kwargs):
     server = await self.get_guild(data.guild_id)
     icon = server.icon
@@ -370,7 +411,7 @@ async def serverInfo(self, *args, data, **kwargs):
     print(await self.embed(data.channel_id, "", embed.embed))
 
 from MFramework.utils.utils import replaceMultiple
-@register(group="Mod", category="Moderation", help="Shows information about role.")
+@register(group="Mod", category="Moderation", help="Shows information about role.", notImpl=True)
 async def roleInfo(self, *roles, data, **kwargs):
     rid = data.content.split("!", 1)[0].split(" ")
     if rid == [""]:
