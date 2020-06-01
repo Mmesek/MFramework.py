@@ -1,6 +1,6 @@
 from MFramework.commands import register
 
-@register(group="Admin", help="Edits bot's message")
+@register(group="Admin", help="Edits bot's message", notImpl=True)
 async def edit_message(self, messageID, *newMessage, channel, data, **kwargs):
     await self.edit_message(channel, messageID, ' '.join(newMessage))
 
@@ -13,7 +13,7 @@ async def edit_emoji(self, emojis, roles, *args, data, **kwargs):
             await self.modify_guild_emoji(data.guild_id, part2[1], part2[0], roles)
 
 
-@register(group="Admin", help="Sends animated emoji")
+@register(group="Admin", help="Sends animated emoji", notImpl=True)
 async def aemoji(self, emoji_name, *args, data, **kwargs):
     emojis = await self.endpoints.list_guild_emoji(data.guild_id)
     message = ""
@@ -27,7 +27,7 @@ async def aemoji(self, emoji_name, *args, data, **kwargs):
     await self.message(data.channel_id, message)
 
 
-@register(group="Admin", help="Lists all available emoji's in guild")
+@register(group="Admin", help="Lists all available emoji's in guild", notImpl=True)
 async def list_emoji(self, *args, data, **kwargs):
     emojis = await self.list_guild_emoji(data.guild_id)
     elist = ""
@@ -39,12 +39,12 @@ async def list_emoji(self, *args, data, **kwargs):
     await self.message(data.channel_id, elist[:2000])
 
 
-@register(group="Admin", help="Delete's message")
+@register(group="Admin", help="Delete's message", notImpl=True)
 async def delete(self, channel, *message, data, **kwargs):
     await self.delete_message(channel, *message)
 
 
-@register(group="Admin", help="Retrives messages from DM")
+@register(group="Admin", help="Retrives messages from DM", notImpl=True)
 async def getmessagesfromdm(self, user, *args, data, **kwargs):
     dm = await self.create_dm(user)
     messages = await self.get_channel_messages(dm.id, dm.last_message_id)
