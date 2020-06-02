@@ -52,7 +52,7 @@ async def DirectMessage(self, data):
     if data.author.avatar:
         avatar = f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png"
     else:
-        avatar = f"https://cdn.discordapp.com/avatars/embed/avatars/{data.author.discriminator % 5}.png"
+        avatar = f"https://cdn.discordapp.com/avatars/embed/avatars/{int(data.author.discriminator) % 5}.png"
     embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(avatar, f"{data.author.id}").setAuthor(f'{data.author.username}#{data.author.discriminator}','','')
     content, filename = '', ''
     try:
