@@ -67,7 +67,7 @@ class Opcodes:
 
 class Bot(EndpointWrappers, Endpoints):
     __slots__ = ('token', 'startTime', 'patterns', 'session_id', 'user_id', 'keepConnection', 'state', 'stayConnected', 'alias', 'presence', 'sub', 'presenceType', 'shards', 'db', 'cache', 'csession', 'ws',
-    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild', 'url', 'intents', 'errorchannel')
+    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild', 'url', 'intents', 'errorchannel', 'context')
     opcodes = {
         0: Opcodes.dispatch,
         7: Opcodes.reconnect,
@@ -82,6 +82,7 @@ class Bot(EndpointWrappers, Endpoints):
         self.state = True
         self.stayConnected = True
         self.latency = None
+        self.context = {}
         self.url = config['Discord']['url']
         self.alias = config['Discord']['alias']
         self.presence = config["Discord"]["presence"]
@@ -123,7 +124,7 @@ class Bot(EndpointWrappers, Endpoints):
                 "file", kwargs["file"][1], filename=kwargs["file"][0], content_type="application/octet-stream"
             )
             return await self.csession.post(
-                url="https://discordapp.com/api" + path, data=data, headers=[("Authorization", f"Bot {self.token}")]
+                url="https://discord.com/api" + path, data=data, headers=[("Authorization", f"Bot {self.token}")]
             )
         defaults = {
             "headers": {
@@ -133,7 +134,7 @@ class Bot(EndpointWrappers, Endpoints):
             }
         }
         kwargs = dict(defaults, **kwargs)
-        return await self.csession.request(method, "https://discordapp.com/api" + path, **kwargs)
+        return await self.csession.request(method, "https://discord.com/api" + path, **kwargs)
 
 
     async def api_call(self, path, method='GET', reason='', **kwargs):
