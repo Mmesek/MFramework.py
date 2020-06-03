@@ -93,7 +93,7 @@ def getGGDealsLowPrice(game, language):
         p1 = f"[{prc}](https://gg.deals{url2})"
     else:
         p1 = 0
-    if prc2 != 'Free' and prc2 != prc and prc != 0:
+    if prc2 != 0:
         p2 = prc2
     else:
         p2 = 0
@@ -149,3 +149,18 @@ async def game(self, *game, data, language, **kwargs):
         if publishers != devs:
             embed.addField(tr("commands.game.publishers", language, count=len(publishers)), ", ".join(publishers), True)
         await self.embed(data.channel_id, "", embed.embed)
+
+
+@register(group='Global', help='Lists closest matches in Steam Index', alias='', category='')
+async def steamlist(self, *game, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    from difflib import get_close_matches
+    game = " ".join(game)
+    if not hasattr(self, "index"):
+        await loadSteamIndex(self)
+    game = get_close_matches(game, self.index.keys(), 10)
+    t= ''
+    for g in game:
+        t += '\n- ' + g
+    embed = Embed().setDescription(t[:2024])
+    await self.embed(data.channel_id, '', embed.embed)
