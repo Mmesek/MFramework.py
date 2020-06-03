@@ -26,13 +26,16 @@ async def _dm(self, user, message, embed={}):
 
 @register(group="Mod", help="Sends message to a channel as a bot. DOES NOT SEND CHANNEL MENTIONS")
 async def say(self, *message, data, channel, **kwargs):
-    await self.message(channel[0], ' '.join(message))
+    if await self.message(channel[0], ' '.join(message)) == []:
+        return await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+    return await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
 
 @register(group="Mod", help="Reacts to a message with emoji as a bot")
 async def react(self, messageID, *reactions, data, channel, **kwargs):
     for each in reactions:
         await self.create_reaction(channel[0], messageID, each.replace("<:", "").replace(">", ""))
+    return await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
 import asyncio
 async def fetch_members(self, guild):
@@ -48,7 +51,7 @@ async def fetch_members(self, guild):
         if m_retries == 75:
             break
 
-@register(group='System', help='Lists members with specified role', alias='', category='')
+@register(group='Admin', help='Lists members with specified role', alias='', category='')
 async def listmembers(self, role, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     rid = int(re.findall(r'\d+', role)[0])
