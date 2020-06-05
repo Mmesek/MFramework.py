@@ -9,13 +9,83 @@ async def Invalid(*args, **kwargs):
     return 0
 
 
-groups = ["System", "Admin", "Mod", "Nitro", "Vip", "Global"]
+groups = ["System", "Admin", "Mod", "Nitro", "Vip", "Global", "dm"]
 commandList, helpList, extHelpList = {}, {}, {}
+contextCommandList = {}
 
 for i in groups:
     commandList.update({i: {}})
     helpList.update({i: {}})
     extHelpList.update({i: {}})
+    contextCommandList.update({i: {}})
+
+class Register:
+    def __init__(self):
+        pass
+    def __call__(cls, group='Global', category='Uncategorized', alias='', help='', *args, **kwargs):
+        def inner(cls, *args, **kwargs):
+            cmds = [a.strip() for a in alias.split(',')] + [cls.__name__.lower()]
+            name = str(cls.__name__.lower())
+
+            for i in groups:
+                for cmd in cmds:
+                    if cmd == '':
+                        continue
+                    contextCommandList[i][cmd] = cls
+                if group.capitalize() == i:
+                    break
+            
+            sig = inspect.signature(cls)
+            s = str(sig).replace('(', '').replace('self, ', '').replace('*args', '').replace(')', '').replace('**kwargs', '').replace('*','\*').replace('group','').replace('_','\_').replace('language','').replace('cmd','').replace('bot','')
+            si = s.split('data, ')
+            sig = si[0].split(', ')
+            sig = [f'[{a}]' if '=' not in a else f"({a})" if a.split('=', 1)[1] not in ['0', "''", 'None', 'False'] else f"({a.split('=',1)[0]})" for a in sig if a != '']
+            s = si[1].split(', ') if len(si) > 1 else ''
+            sig += [f"(-{i.split('=')[0]})" if '=False' in i else f"(--{i.split('=')[0]})" if '=' in i else f'[@{i}]' for i in s if i != '']
+
+            methods = inspect.getmembers(cls, predicate=inspect.isfunction)
+            methods = [i[0] for i in methods if i[0] not in ['__init__', 'execute', 'iterate', 'end']]
+
+            helpList[group][name] = {}
+            if help != '':
+                helpList[group][name]['msg'] = help
+            if alias != '':
+                helpList[group][name]['alias'] = alias
+            helpList[group][name]['category'] = category.capitalize()
+            helpList[group][name]['sig'] = ' '.join(sig)
+            if cls.__doc__ != None:
+                extHelpList[group][name] = cls.__doc__
+            helpList[group][name]['sub'] = methods
+
+            return cls
+        return inner
+ctxRegister = Register()
+
+class BaseCtx:
+    def __init__(self, *args, bot, data, **kwargs):
+        self.channel = data.channel_id
+        self.user = data.author.id
+        self.currentStep = 0
+        self.guild_id = data.guild_id
+        if data.guild_id == 0:
+            self.guild_id = 'dm'
+        self.bot = bot
+        print('Init BaseCtx for', self.channel, self.user)
+    async def execute(self, *args, data, **kwargs):
+        print("Execute wasn't implemented")
+        print(self)
+        print(args)
+        print(data)
+        print(kwargs)
+    def iterate(self):
+        print('iterating')
+        self.currentStep += 1
+    async def end(self, *args, **kwargs):
+        print(args)
+        print(kwargs)
+        self.bot.context[self.guild_id].pop((self.channel, self.user))
+        print('Context Ended. Clean should go there')
+
 
 
 def register(**kwargs):
@@ -102,11 +172,11 @@ def register(**kwargs):
         #            s += "\n    },\n"
         #            file.write(s)
 
-        def inn(*ar, **kwar):
-            r = f(*ar, **kwar)
-            return r
+        #def inn(*ar, **kwar):
+            #r = f(*ar, **kwar)
+            #return r
 
-        return inn
+        return f#inn
 
     return inner
 
@@ -194,7 +264,11 @@ async def execute(self, data):
         print('args:  ',args)
         print('kwargs:', kwargs)
         #try:
-        if await commandList[group].get(cmd[0].lower(), Invalid)(self, *args, **kwargs) == None:
+        if cmd[0].lower() in contextCommandList[group]:
+            self.context[data.guild_id][(data.channel_id, data.author.id)] = contextCommandList[group].get(cmd[0].lower())(*args, bot=self, **kwargs)
+            await self.context[data.guild_id][(data.channel_id, data.author.id)].execute(data=data)
+            r = None
+        elif await commandList[group].get(cmd[0].lower(), Invalid)(self, *args, **kwargs) == None:
             r = None
         #elif await parse(self, data) == None:
             #r = None

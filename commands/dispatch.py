@@ -1,5 +1,5 @@
 from MFramework.discord.mbot import onDispatch
-from MFramework.commands import execute, parse, compilePatterns
+from MFramework.commands import execute, parse, compilePatterns, contextCommandList
 from MFramework.discord.objects import *
 from MFramework.database.cache import Cache, CacheDM
 from MFramework.utils import log, utils
@@ -36,7 +36,9 @@ async def message_create(self, data: Message):
         and data.author.bot is False
         and data.content != ""
     ):
-        if (
+        if (data.channel_id, data.author.id) in self.context[data.guild_id]:
+            return await self.context[data.guild_id][(data.channel_id, data.author.id)].execute(data=data)
+        elif (
             (self.username.lower() in data.content.lower())
             or any(i in data.content.lower()[0] for i in [self.cache[data.guild_id].alias, self.alias])
             or self.user_id in [u.id for u in data.mentions]
@@ -87,10 +89,19 @@ async def message_create(self, data: Message):
                 self.cache[data.guild_id].exp[data.author.id] = timestamp
                 session.commit()
     elif data.author.bot is False and data.guild_id == 0:
-        await log.DirectMessage(self, data)
-        if data.channel_id not in self.cache["dm"]:
-            self.cache["dm"][data.channel_id] = CacheDM()
-        self.cache["dm"][data.channel_id].message(data)
+        if 'dm' not in self.context:
+            self.context['dm'] = {}
+        cmd = data.content.split(' ')
+        if (data.channel_id, data.author.id) in self.context['dm']:
+            return await self.context['dm'][(data.channel_id, data.author.id)].execute(data=data)
+        elif cmd[0].lower() in contextCommandList['dm']:
+            self.context['dm'][(data.channel_id, data.author.id)] = contextCommandList['dm'].get(cmd[0].lower())(bot=self, data=data)
+            await self.context['dm'][(data.channel_id, data.author.id)].execute(data=data)
+        else:
+            await log.DirectMessage(self, data)
+            if data.channel_id not in self.cache["dm"]:
+                self.cache["dm"][data.channel_id] = CacheDM()
+            self.cache["dm"][data.channel_id].message(data)
     return
 
 
@@ -135,6 +146,8 @@ async def message_update(self, data):
 async def guild_create(self, guild):
     if guild.id not in self.cache:
         self.cache[guild.id] = Cache(guild, self.db, self.user_id, self.alias)
+    if guild.id not in self.context:
+        self.context[guild.id] = {}
 
 
 @onDispatch(Guild_Member)
@@ -153,7 +166,7 @@ async def guild_members_chunk(self, data):
     if type(s.joined) != list:
         s.joined = []
     for member in data.members:
-        s.joined += [(member.user.id, member.joined_at, member.premium_since)]
+        s.joined += [(member.user.id, member.joined_at, member.premium_since, member.roles)]
 
 
 @onDispatch(Message_Delete)
@@ -249,8 +262,11 @@ async def presence_update(self, data):
             self.db.influx.commitPresence(data.guild_id, data.user.id, s[0], e)
         if data.user.id not in self.cache[data.guild_id].presence and data.game is not None and data.game.type == 0 and data.game.name is not None:
             self.cache[data.guild_id].presence[data.user.id] = (data.game.name, data.game.created_at, data.game.application_id)
-    if data.status == 'online' and data.user.id in self.cache[data.guild_id].afk:
-        await self.move_guild_member(data.guild_id, data.user.id, self.cache[data.guild_id].afk.pop(data.user.id), "User is no longer AFK")
+    if data.guild_id == 463433273620824104:
+        if data.status == 'idle' and any(data.user.id in self.cache[data.guild_id].voice[channel] for channel in self.cache[data.guild_id].voice):
+            await self.move_guild_member(data.guild_id, data.user.id, self.cache[data.guild_id].afk_channel, f"User {data.user.id} is AFK")
+        elif data.status == 'online' and data.user.id in self.cache[data.guild_id].afk:
+            await self.move_guild_member(data.guild_id, data.user.id, self.cache[data.guild_id].afk.pop(data.user.id), f"User {data.user.id} is no longer AFK")
     roles = self.cache[data.guild_id].presenceRoles
     if roles == None:
         return
@@ -270,7 +286,9 @@ async def presence_update(self, data):
 from MFramework.utils.timers import *
 @onDispatch(Voice_State)
 async def voice_state_update(self, data):
-    if data.member.user.bot: #or not self.cache[data.guild_id].trackVoice:
+    if data.member.user.bot:  #or not self.cache[data.guild_id].trackVoice:
+        if data.user_id == self.user_id:
+            self.cache[data.guild_id].connection.session_id = data.session_id
         return
     if data.channel_id in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
         if data.channel_id == self.cache[data.guild_id].afk_channel:
@@ -282,7 +300,7 @@ async def voice_state_update(self, data):
         count = len(self.cache[data.guild_id].dynamic_channels['channels'])+1
         
         new_channel = await self.create_guild_channel(data.guild_id, template['name']+f' #{count}', 2, None, template['bitrate'], template['user_limit'], None, template['position'], template['permission_overwrites'], template['parent_id'], False, "Generated Channel")
-        await self.move_guild_member(data.guild_id, data.user_id, new_channel.id, "Moved User to generated channel")
+        await self.move_guild_member(data.guild_id, data.user_id, new_channel.id, f"Moved {data.member.user.username} to generated channel")
         data.channel_id = new_channel.id
 
         self.cache[data.guild_id].dynamic_channels['channels'] += [new_channel.id]
@@ -367,3 +385,7 @@ async def voice_state_update(self, data):
                         self.cache[data.guild_id].dynamic_channels['channels'].remove(channel)
                         v.pop(channel)
                     return
+
+@onDispatch(Voice_Server_Update)
+async def voice_server_update(self, data):
+    await self.cache[data.guild_id].connection.connect(data.token, data.guild_id, data.endpoint, self.user_id)
