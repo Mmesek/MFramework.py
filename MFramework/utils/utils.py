@@ -288,9 +288,9 @@ def bytes2human(n, format="%(value).1f%(symbol)s"):
     return format % dict(symbol=symbols[0], value=n)
 
 def getIfromRGB(rgb):
-    red = rgb[0]
-    green = rgb[1]
-    blue = rgb[2]
+    red = int(rgb[0].strip())
+    green = int(rgb[1].strip())
+    blue = int(rgb[2].strip())
     RGBint = (red<<16) + (green<<8) + blue
     return RGBint
 #int from hex: int('ff0000', 16)
@@ -323,3 +323,17 @@ def get_main_color(img):
     #except TypeError:
     #    return 0
         #raise Exception("Too many colors in the image")
+
+def sliceindex(x):
+    i = 0
+    for c in x:
+        if c.isalpha():
+            i = i + 1
+            return i
+        i = i + 1
+
+def upperfirst(x):
+    i = sliceindex(x)
+    if i == None:
+        return x
+    return x[:i].upper() + x[i:]
