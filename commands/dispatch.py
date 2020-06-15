@@ -49,7 +49,7 @@ async def message_create(self, data: Message):
         elif await parse(self, data) == None:
             return
         if data.channel_id == 463437626515652618:
-            reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)#"\*.+\*", data.content)
+            reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)
             if reg and set(reg) != {'*'}:
                 if '*' in reg:
                     reg = set(reg)
@@ -107,11 +107,19 @@ async def message_create(self, data: Message):
 
 @onDispatch(Message)
 async def message_update(self, data):
-    if data.guild_id == 0 or data.webhook_id != 0 or data.content == None:
+    if data.guild_id == 0:
+        data.guild_id = 'dm'
+    if (data.channel_id, data.author.id) in self.context[data.guild_id]:
+        return await self.context[data.guild_id][(data.channel_id, data.author.id)].edit(data=data)
+    elif data.guild_id == 0 or data.webhook_id != 0 or data.content == None or data.guild_id == 'dm':
         return
+    #elif (data.channel_id, data.id) in self.cache[data.guild_id].commandMessages:
+    #    c = self.cache[data.guild_id].commandMessages[(data.channel_id, data.id)]
+    #    await execute(self, data)
     elif data.channel_id == 463437626515652618:
-        if not data.reactions:
-            reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)#"\*.+\*", data.content)
+        m = await self.get_channel_message(data.channel_id, data.id)
+        if not m.reactions:#data.reactions:
+            reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)
             if reg and set(reg) != {'*'}:
                 if '*' in reg:
                     reg = set(reg)
@@ -192,6 +200,9 @@ async def message_delete(self, data):
 @onDispatch(Message_Reaction_Add)
 async def message_reaction_add(self, data):
     if data.guild_id == 0 or data.member.user.bot:
+        if not data.member.user.bot and data.user_id != self.user_id:
+            if (data.channel_id, data.user_id) in self.context['dm']:
+                return await self.context['dm'][(data.channel_id, data.user_id)].react(data=data)
         return
     roles = self.cache[data.guild_id].reactionRoles
     if roles == {}:
@@ -275,7 +286,6 @@ async def presence_update(self, data):
         for g in roles[group]:
             if data.game.type == 0 and data.game.name in roles[group].keys():
                 role = roles[group][data.game.name]
-                #if role == None or role in data.roles:
                 if role == None or any(i in role for i in data.roles):
                     return
                 break
@@ -286,7 +296,7 @@ async def presence_update(self, data):
 from MFramework.utils.timers import *
 @onDispatch(Voice_State)
 async def voice_state_update(self, data):
-    if data.member.user.bot:  #or not self.cache[data.guild_id].trackVoice:
+    if data.member.user.bot:
         if data.user_id == self.user_id:
             self.cache[data.guild_id].connection.session_id = data.session_id
         return
