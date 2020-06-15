@@ -37,10 +37,18 @@ class Spotify:
 
     def refresh(self, refresh_token):
         payload = {"grant_type": "refresh_token", "refresh_token": f"{refresh_token}"}
+        print('REFRESHING!!!!!!!!!')
         r = requests.post(
             "https://accounts.spotify.com/api/token", data=payload, auth=(f"{self.client}", f"{self.secret}")
         )
         return r.json()["access_token"]
+    
+    async def search(self, query, type='artist', additional=''):
+        return await self.spotify_call("search", f"?q={query.replace(' ','+')}&type={type}{additional}")
+
+    async def searchNew(self, query, type='artist', additional=''):
+        return await self.spotify_call("search", f"?q={query.replace(' ','+')}%20tag:new&type=albums{additional}")
+        
 
     async def new(self, market="gb"):
         output = []
