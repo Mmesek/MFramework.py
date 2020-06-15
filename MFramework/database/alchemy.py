@@ -229,14 +229,17 @@ class EmbedTemplates(Base):
 
 
 class Games(Base):
-    __tablename__ = 'Games'
+    __tablename__ = 'Games'#Presence
+    #GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
     UserID = Column(BigInteger, primary_key=True)
     Title = Column(String, primary_key=True)
-    LastPlayed = Column(Integer, primary_key=True)
+    LastPlayed = Column(Integer)
     TotalPlayed = Column(Integer)
-    AppID = Column(BigInteger)
+    AppID = Column(BigInteger)  #, primary_key=True)
+    #Type = Column(String, primary_key=True)
 
-    def __init__(self, UserID=None, Title=None, LastPlayed=None, TotalPlayed=None, AppID=None):
+    def __init__(self, GuildID=None, UserID=None, Title=None, LastPlayed=None, TotalPlayed=None, AppID=None):
+        #self.GuildID = GuildID
         self.UserID = UserID
         self.Title = Title
         self.LastPlayed = LastPlayed
@@ -292,4 +295,31 @@ class Snippets(Base):
         self.Filename = Filename
         self.Type = Type
         self.Trigger = Trigger
-        
+
+class RolePlayCharacters(Base):
+    __tablename__ = "RolePlayCharacters"
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    UserID = Column(BigInteger, primary_key=True)
+    Name = Column(String, primary_key=True)
+    Age = Column(Integer)
+    Color = Column(Integer)
+    Profession = Column(String)
+    Level = Column(Integer)
+    Skills = Column(JSON)
+    Items = Column(JSON)
+    Origin = Column(String)
+    Story = Column(String)
+    Goals = Column(JSON)
+    Favorites = Column(JSON)
+    Race = Column(String)
+    Gender = Column(String)
+
+    def __init__(self, GuildID, UserID, Name, Age, Color, Profession, Gender, Race):
+        self.GuildID = GuildID
+        self.UserID = UserID
+        self.Name = Name
+        self.Age = Age
+        self.Color = Color
+        self.Profession = Profession
+        self.Gender = Gender
+        self.Race = Race
