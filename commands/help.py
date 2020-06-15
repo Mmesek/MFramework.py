@@ -132,6 +132,8 @@ Flags are removed from argument list therefore can be specifed anywhere
             lower = True
         elif lower == False:
             continue
+        elif group == 'dm' and g != 'dm':
+            continue
         string = ''
         for one in helpList[group]:
         # Maybe show only commands for certain group/commands up to certain group?
