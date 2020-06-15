@@ -1,11 +1,8 @@
 import inspect, re
-from .utils.utils import timed, Embed, replaceMultiple
+from .utils.utils import timed
 
 
 async def Invalid(*args, **kwargs):
-    print('Invalid')
-#    print(args, kwargs)
-    # print(f"Invalid Package: {args[0]}")
     return 0
 
 
@@ -28,6 +25,8 @@ class Register:
             name = str(cls.__name__.lower())
 
             for i in groups:
+                if group == 'dm' and i != 'dm':
+                    continue
                 for cmd in cmds:
                     if cmd == '':
                         continue
@@ -66,9 +65,12 @@ class BaseCtx:
         self.channel = data.channel_id
         self.user = data.author.id
         self.currentStep = 0
-        self.guild_id = data.guild_id
         if data.guild_id == 0:
             self.guild_id = 'dm'
+            self.guild = 463433273620824104
+        else:
+            self.guild_id = data.guild_id
+            self.guild = data.guild_id
         self.bot = bot
         print('Init BaseCtx for', self.channel, self.user)
     async def execute(self, *args, data, **kwargs):
@@ -78,11 +80,11 @@ class BaseCtx:
         print(data)
         print(kwargs)
     def iterate(self):
-        print('iterating')
+        #print('iterating')
         self.currentStep += 1
     async def end(self, *args, **kwargs):
-        print(args)
-        print(kwargs)
+        #print(args)
+        #print(kwargs)
         self.bot.context[self.guild_id].pop((self.channel, self.user))
         print('Context Ended. Clean should go there')
 
@@ -128,7 +130,7 @@ def register(**kwargs):
                 if kwargs['alias'] != '':
                     a = kwargs['alias'].split(',')
                     for i in a:
-                        commandList[g][i.strip()] = f#[kwargs["alias"]] = f
+                        commandList[g][i.strip()] = f
 
         # Register help message
         sig = inspect.signature(f)
@@ -172,11 +174,7 @@ def register(**kwargs):
         #            s += "\n    },\n"
         #            file.write(s)
 
-        #def inn(*ar, **kwar):
-            #r = f(*ar, **kwar)
-            #return r
-
-        return f#inn
+        return f
 
     return inner
 
@@ -247,7 +245,6 @@ async def execute(self, data):
            'user_mentions': [t for t in self.patterns['users'].findall(data.content) if t is not None],
            'role_mentions': [t for t in self.patterns['roles'].findall(data.content) if t is not None]}
         for flag in flags:
-            #print(flag)
             kwargs[flag] = flags[flag]
         
         for c in kwargs['channel']:
@@ -272,11 +269,6 @@ async def execute(self, data):
             r = None
         #elif await parse(self, data) == None:
             #r = None
-        #except Exception as ex:
-            #import sys, traceback
-            #print('REEEE', ex)
-            #print(sys.exc_info())
-            #print(traceback.extract_tb(sys.exc_info()[1], limit=-1))
     return r
 
 Groups = {
@@ -287,160 +279,6 @@ Groups = {
     "Admin": 4,
     "System": 5
 }
-
-#@register(help='Sends list of commands')
-async def help2(self, command=None, *category, group, data, categories=False, **kwargs):
-    '''Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage.\nParameters: :command: - Command to show detailed help info for - Example: command\n:category: - Categories to show commands for - Example: Category another...\n:categories: - Shows list of categories - Example: -categories'''
-    if command != None and self.alias in command:
-        command = command.replace(self.alias, '').lower()
-        embed = Embed().setTitle('Help details for: ' + command)
-        perm = None
-        for _group in helpList:
-            if command.casefold() in helpList[_group]:
-                perm = _group
-                if Groups[perm] > Groups[group]:
-                    break
-                category = helpList[_group][command].get('category', None)
-                alias = helpList[_group][command].get('alias', None)
-                sig = helpList[_group][command].get('sig', None)
-                msg = helpList[_group][command].get('msg', None)
-                ext = extHelpList[_group].get(command, None)
-                break
-        try:
-            if perm is not None and Groups[perm] <= Groups[group]:
-                embed.addField('Required Permission', perm, True)
-            if category is not None and category != ():
-                embed.addField('Category', category, True)
-            if alias is not None:
-                embed.addField('Alias', alias, True)
-            if msg is not None:
-                embed.addField('Short Description', msg)
-            if sig is not None and sig != '':
-                params = sig.split(' ')
-                s = ''
-                extparams = []
-                parameters = {'Required':[], 'Optional':[], 'Multiple':[], 'Named Flag':[], 'Flag':[]}
-                for param in params:
-                    if '*' in param:
-                        parameters['Multiple']+=[param]
-                    elif '--' in param:
-                        parameters['Named Flag']+=[param]
-                    elif '-' in param:
-                        parameters['Flag']+=[param]
-                    elif '[' in param:
-                        parameters['Required']+=[param]
-                    elif '(' in param:
-                        parameters['Optional'] += [param]
-                if ext is not None:
-                    ext = ext.split('Parameters: ')
-                    extparams = ext[1].split('\n')
-                example = self.alias + command
-                orderOfParamTypes = ['Command']
-                orderofParams = []
-                for t in parameters:
-                    if parameters[t] == []:
-                        continue
-                    s += '\n\n**'+t + '**:'
-                    for x, param in enumerate(parameters[t]):
-                        param = replaceMultiple(param, ['[', ']', '(', ')', '*', '-', '\\'],' ').strip()                        
-                        if t == 'Flag':
-                            orderOfParamTypes += ['Flag']
-                            e ='`-'+param+'`'
-                        elif t == 'Named Flag':
-                            e = f'`--{param}=abc`'
-                            orderOfParamTypes += ['Named Flag']
-                        elif t == 'Multiple':
-                            e = f'`a b c...`'
-                            orderOfParamTypes += ['Multiple...']
-                        else:
-                            e = '`abc`'
-                            if t == 'Required':
-                                orderOfParamTypes += ['Required']
-                            else:
-                                orderOfParamTypes += ['Optional']
-                        orderofParams += [param]
-                        example += f' {e}'
-                if extparams != []:
-                    example = self.alias
-                    orderOfParamTypes = []
-                    for x, args in enumerate(extparams):
-                        arg = args.split(' - ')
-                        arg[0] = arg[0].replace(':', '').replace('  ', '')
-                        if arg[0] == orderofParams[x]:
-                            s+='\n'+param
-                            s += ' - ' + arg[1]
-                        if len(arg) > 1:
-                            example += '`'+arg[2].replace('Example: ', '')+'` '
-                            orderOfParamTypes += [t for t in parameters if (p for p in parameters[t] if p == arg[0])]
-                example +='\n `'+'`|`'.join(orderOfParamTypes)+'`'
-                embed.addField('Example Usage',example)
-                embed.addField('Parameters', s[:1023])
-            if ext is not None and ext[0] != '':
-                embed.setDescription(ext[0][:2023].strip())
-        except Exception as ex:
-            print(ex)
-            if perm != None:
-                if Groups[perm] > Groups[group]:
-                    embed.setDescription('You do not have permission to access this command.').addField('Required Permission Group', perm, True).addField('Your Permission Group', group, True)
-            else:
-                embed.setDescription("Command not found.")
-        embed.setColor(self.cache[data.guild_id].color)
-        await self.embed(data.channel_id, '', embed.embed)
-        return
-    elif command != None and self.alias not in command:
-        category = [c for c in category]+[command]
-    embed = Embed().setTitle('Commands')
-    desc = f"""Trigger can be any of: <@{self.user_id}>, `{self.username}` or `{self.alias}`\n"""
-    if self.cache[data.guild_id].alias != self.alias:
-        desc += f"""Server's Trigger Alias is set to: `{self.cache[data.guild_id].alias}`\n"""
-    desc+="""\n**Parameters:**
-`[Required]`
-`(optional=default value unless default is empty or 0)`
-`*` Argument ends with the message. 
-`(-flag)`
-`(--flag=value)` provided value for flag's variable.
-`[@Mention]` - Mention or Snowflake ID that defaults to relative user IDs that issued a command if not specified
-
-**Arguments:**
-If there is a single, double quote or a code block then everything inside is treated as a single argument. Mentions won't be removed from message in that case (Unless argument is just "@mention")
-If your argument contains a quote, use different quote around whole: \'`"argument go here, double quote is preserved, single is stripped"`\'
-Flags are removed from argument list therefore can be specifed anywhere
-
-**Example: ** """+f"""
-`{self.alias}add_cc name "trigger goes here" "and 'here' is @mention response" mod`: Will answer `and 'here' is @ mention response` to anyone that types `trigger goes here` and has right permission, in this example: only moderators """
-    embed.setDescription(desc)
-    g = group
-    category = [c.lower().capitalize() for c in category]
-    lower = False
-    c = {}
-    for group in helpList:
-        if group == g:
-            lower = True
-        elif lower == False:
-            continue
-        string = ''
-        for one in helpList[group]:
-        # Maybe show only commands for certain group/commands up to certain group?
-            cat = helpList[group][one].get('category', None)
-            if categories and cat not in c.get(group, {}):
-                string += f"{cat}\n"
-                if group not in c:
-                    c[group] = []
-                c[group]+=[cat]
-            elif categories is False and (cat != None and cat in category or len(category) == 0):
-                string += f"**{self.alias}{one}** {helpList[group][one]['sig']}"
-                if 'msg' in helpList[group][one]:
-                    string+= f" - {helpList[group][one]['msg']}"
-                if 'alias' in helpList[group][one]:
-                    string+= ' - Alias: `'+helpList[group][one]['alias']+'`'
-                string+='\n'
-        if string != '':
-            embed.addField(group, string[:1024])
-    if categories:
-        embed.setDescription('').setTitle('Available Categories')
-    embed.setColor(self.cache[data.guild_id].color)
-    await self.embed(data.channel_id, '', embed.embed)
-
 
 from .database import alchemy as db
 #@timed
