@@ -38,9 +38,15 @@ async def steamParse(self, request, language, *game):
             page = await steam.appDetails(appid, language)
             yield page[str(appid)]["data"], appid
 
+def isEmpty(tuple):
+    if len(tuple) == 0:
+        return True
+    return False
 
 @register(help="Fetches playercount for specified game(s). Separate with `,`", alias="", category="")
 async def playercount(self, *game, data, language, **kwargs):
+    if isEmpty(game):
+        return await self.message(data.channel_id, 'Game was not provided. Example usage: `playercount game title`')
     result = tr("commands.playercount.for", language)
     async for playercount, game in steamParse(self, "playercount", language, *game):
         try:
@@ -101,6 +107,8 @@ def getGGDealsLowPrice(game, language):
 
 @register(help="Shows game details", alias="", category="")
 async def game(self, *game, data, language, **kwargs):
+    if isEmpty(game):
+        return await self.message(data.channel_id, 'Game was not provided. Example usage: `game game title`')
     async for game, appid in steamParse(self, "details", language, *game):
         embed = Embed()
         embed.setDescription(game["short_description"]).setTitle(game["name"])
