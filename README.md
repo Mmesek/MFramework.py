@@ -13,3 +13,10 @@ Set crontab:
 crontab -e
 @reboot sleep 40 && /home/pi/mframework.sh
 ```
+
+Notes:
+---
+System package requirements:
+```sh
+sudo apt install libpq5
+```
