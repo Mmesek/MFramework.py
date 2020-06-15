@@ -17,4 +17,6 @@ crontab -e
 Notes:
 ---
 System package requirements:
+```sh
 sudo apt install libpq5
+```
