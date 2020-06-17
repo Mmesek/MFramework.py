@@ -133,3 +133,11 @@ async def UserVoiceChannel(self, data, channel=''):
         channel = data.channel_id
     string += f'<#{channel}>'
     await self.webhook({}, string, webhook, 'Voice Log', None, {'parse': []})
+
+
+async def Infraction(self, data, user, type, reason):
+    webhook = getWebhook(self, data.guild_id, 'infraction_log')
+    if webhook is None:
+        return
+    string = f'<@{data.author.id}> {type} <@{user}> for "{reason}"'
+    await self.webhook({}, string, webhook, 'Infraction Log', None, {'parse': []})
