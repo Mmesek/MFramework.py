@@ -57,7 +57,8 @@ class SQL:
     __slots__ = ('engine', 'Session')
     def __init__(self, db, user, password, location, port, name, echo):
         #self.engine = create_engine("sqlite:///mbot.db", echo=False)#f'{db}://{user}:{password}@{location}:{port}/{name}', echo={echo})
-        self.engine = create_engine("postgresql://postgres:postgres@raspberry:5432/mbot")
+        #self.engine = create_engine("postgresql://postgres:postgres@r4:5432/mbot")
+        self.engine = create_engine(f'{db}://{user}:{password}@{location}:{port}/{name}', echo=echo)
         self.Session = sessionmaker(bind=self.engine)
     def create_tables(self):
         Base.metadata.create_all(self.engine)
@@ -67,6 +68,10 @@ class SQL:
     def add(self, mapping):
         s = self.session()
         s.add(mapping)
+        return s.commit()
+    def delete(self, mapping):
+        s = self.session()
+        s.delete(mapping)
         return s.commit()
 
 
