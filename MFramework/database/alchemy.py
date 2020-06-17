@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, JSON, ForeignKey, Boolean, BigInteger, ARRAY, Time#, BLOB, PickleType, Date, create_engine, Table
+from sqlalchemy import Column, String, Integer, JSON, ForeignKey, Boolean, BigInteger, ARRAY, TIMESTAMP #, BLOB, PickleType, Date, create_engine, Table
 from sqlalchemy.ext.declarative import declarative_base
 #from sqlalchemy.orm import relationship, backref
 
@@ -112,7 +112,7 @@ class UserLevels(Base):
     UserID = Column(BigInteger, primary_key=True)
     EXP = Column(Integer)
     vEXP = Column(Integer)
-    LastMessage = Column(Time)#Integer)
+    LastMessage = Column(TIMESTAMP(True))#Integer)
 
     def __init__(self, GuildID=None, UserID=None, EXP=None, vEXP=None, LastMessage=None):
         self.GuildID = GuildID
@@ -126,7 +126,7 @@ class Infractions(Base):
     __tablename__ = 'Infractions'
     GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
     UserID = Column(BigInteger, primary_key=True)
-    Timestamp = Column(Integer, primary_key=True)
+    Timestamp = Column(TIMESTAMP(True), primary_key=True)
     Reason = Column(String)
     ModeratorID = Column(BigInteger)
     Duration = Column(Integer)
