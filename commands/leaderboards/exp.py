@@ -26,7 +26,7 @@ async def exp(self, *user, data, language, **kwargs):
     await self.embed(data.channel_id, '', embed.embed)
 
 def getUserID(self, data, game_or_user=''):
-    user = re.search(r'\d+', game_or_user)
+    user = re.search(r'\d\d\d+', game_or_user)
     if game_or_user == '':
         return data.author.id
     elif user:
@@ -46,6 +46,11 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
         total = session.query(db.Games).filter(db.Games.AppID != None, db.Games.AppID != 0).order_by(db.Games.TotalPlayed.desc()).all()
     else:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.EXP.desc()).limit(limit).all()    
+        if not chat:
+            t = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.vEXP.desc()).limit(limit).all()
+            nt = set(total)
+            nt.update(t)
+            total = list(nt)
     embed = Embed()
     t = ''
     a = []
@@ -129,3 +134,8 @@ async def games(self, *game_or_user, data, language, **kwargs):
         t = d+t
     embed.setDescription(t[:2024]).setColor(self.cache[data.guild_id].color)
     await self.embed(data.channel_id, '', embed.embed)
+
+# Przybysz - Postać || Chat+Voice 500
+# Bywalec - Postać && Chat + Voice 1000 || Chat+Voice 2000
+# Stały Bywalec - Postać && Chat 1000 && Voice 1000 || chat 2000 || voice 4000 + Chat 500
+# Legenda - Postać && Chat 5000 && Voice 5000 || Chat 3000 Voice 10000
