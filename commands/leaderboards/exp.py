@@ -43,7 +43,7 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
     if voice and not games and not chat:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.vEXP.desc()).limit(limit).all()
     elif games and not voice and not chat:
-        total = session.query(db.Games).filter(db.Games.AppID != None, db.Games.AppID != 0).order_by(db.Games.TotalPlayed.desc()).all()
+        total = session.query(db.Presences).filter(db.Presences.AppID != None, db.Presences.AppID != 0).order_by(db.Presences.TotalPlayed.desc()).all()
     else:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.EXP.desc()).limit(limit).all()    
         if not chat:
@@ -98,15 +98,15 @@ async def games(self, *game_or_user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     query = getUserID(self, data, ' '.join(game_or_user))
     session = self.db.sql.session()
-    r = session.query(db.Games)
+    r = session.query(db.Presences).filter(db.Presences.Type == "Game")
     embed = Embed()
     d = ''
     if type(query) == str:
-        r = r.filter(db.Games.Title == query).all()
+        r = r.filter(db.Presences.Title == query).all()
         game = True
         embed.setTitle(tr("commands.games.whoPlayed", language, query=query))
     else:
-        r = r.filter(db.Games.UserID == query).all()
+        r = r.filter(db.Presences.UserID == query).all()
         game = False
         d = tr("commands.games.playedBy", language, query=query)
     if r != []:

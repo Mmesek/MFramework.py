@@ -260,9 +260,9 @@ async def presence_update(self, data):
             s = self.cache[data.guild_id].presence.pop(data.user.id)
             e = int(time.time()) - int(s[1]/1000)
             session = self.db.sql.session()
-            g = session.query(db.Games).filter(db.Games.UserID == data.user.id).filter(db.Games.Title == s[0]).first()
+            g = session.query(db.Presences).filter(db.Presences.UserID == data.user.id).filter(db.Presences.Title == s[0]).first()
             if g == None:
-                g = db.Games(data.user.id, s[0], int(time.time()), e, s[2])
+                g = db.Presences(data.guild_id, data.user.id, s[0], int(time.time()), e, s[2], "Game")
                 self.db.sql.add(g)
             else:
                 g.LastPlayed = int(time.time())

@@ -228,23 +228,24 @@ class EmbedTemplates(Base):
         self.Trigger = Trigger
 
 
-class Games(Base):
-    __tablename__ = 'Games'#Presence
-    #GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+class Presences(Base):
+    __tablename__ = 'Presences'
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
     UserID = Column(BigInteger, primary_key=True)
     Title = Column(String, primary_key=True)
     LastPlayed = Column(Integer)
     TotalPlayed = Column(Integer)
-    AppID = Column(BigInteger)  #, primary_key=True)
-    #Type = Column(String, primary_key=True)
+    AppID = Column(BigInteger, primary_key=True)
+    Type = Column(String, primary_key=True)
 
-    def __init__(self, GuildID=None, UserID=None, Title=None, LastPlayed=None, TotalPlayed=None, AppID=None):
-        #self.GuildID = GuildID
+    def __init__(self, GuildID=None, UserID=None, Title=None, LastPlayed=None, TotalPlayed=None, AppID=None, Type=None):
+        self.GuildID = GuildID
         self.UserID = UserID
         self.Title = Title
         self.LastPlayed = LastPlayed
         self.TotalPlayed = TotalPlayed
         self.AppID = AppID
+        self.Type = Type
 
 class ActionLog(Base):
     __tablename__ = 'ActionLog'
