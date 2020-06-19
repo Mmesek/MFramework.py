@@ -1,4 +1,4 @@
-from .utils import Embed
+from .utils import Embed, created
 
 def MetaData(self, embed, c):
     embed.setDescription(c.content)
@@ -141,3 +141,46 @@ async def Infraction(self, data, user, type, reason):
         return
     string = f'<@{data.author.id}> {type} <@{user}> for "{reason}"'
     await self.webhook({}, string, webhook, 'Infraction Log', None, {'parse': []})
+
+async def UserJoinedGuild(self, data):
+    webhook = getWebhook(self, data.guild_id, 'join_log')
+    if webhook is None:
+        return
+    string = f"<@{data.user.id}> joined server. Account created at {created(data.user.id)}"
+    await self.webhook({}, string, webhook, 'Joined Log', None, {'parse': []})
+    
+async def UserLeftGuild(self, data):
+    webhook = getWebhook(self, data.guild_id, 'join_log')
+    if webhook is None:
+        return
+    string = f"<@{data.user.id}> left server"
+    await self.webhook({}, string, webhook, 'Leave Log', None, {'parse': []})
+    
+async def MemberUpdate(self, data):
+    webhook = getWebhook(self, data.guild_id, 'member_update_log')
+    if webhook is None:
+        return
+    if data.user.id in self.cache[data.guild_id].members:
+        c = self.cache[data.guild_id].members[data.user.id]
+        diff = set(c.roles) ^ set(data.roles)
+        
+        if len(diff) == 0:
+            return
+            case = "Something else"
+        elif any(i in data.roles for i in diff):
+            case = 'added'
+        else:
+            case = 'removed'
+        roles = ""
+        for i in diff:
+            if i == self.cache[data.guild_id].VoiceLink:
+                if len(diff) == 1:
+                    return
+                continue
+            roles += f"<@&{i}> "
+        s =''
+        if len(diff) > 1:
+            s = 's'
+        string = f"<@{data.user.id}> role{s} {case}: {roles}"
+        await self.webhook({}, string, webhook, 'Member Update Log', None, {'parse': []})
+        self.cache[data.guild_id].members[data.user.id] = data
