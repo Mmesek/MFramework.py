@@ -287,10 +287,10 @@ def bytes2human(n, format="%(value).1f%(symbol)s"):
             return format % locals()
     return format % dict(symbol=symbols[0], value=n)
 
-def getIfromRGB(rgb):
-    red = int(rgb[0].strip())
-    green = int(rgb[1].strip())
-    blue = int(rgb[2].strip())
+def getIfromRGB(rgb : tuple):
+    red = rgb[0]
+    green = rgb[1]
+    blue = rgb[2]
     RGBint = (red<<16) + (green<<8) + blue
     return RGBint
 #int from hex: int('ff0000', 16)
@@ -309,7 +309,11 @@ def get_main_color(img):
         p.feed(s)
 
     im = p.close()
-    r, g, b = im.getpixel((0, 0))
+    try:
+        r, g, b = im.getpixel((0, 0))
+    except Exception as ex:
+        print(img)
+        r, g, b = 0,0,0
     return getIfromRGB((r, g, b))
     #colors = img.getcolors(1024*1024) #put a higher value if there are many colors in your image
     #max_occurence, most_present = 0, 0
