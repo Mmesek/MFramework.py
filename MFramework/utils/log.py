@@ -131,6 +131,8 @@ async def UserVoiceChannel(self, data, channel=''):
     else:
         string += 'joined '
         channel = data.channel_id
+    if channel == -1:
+        channel = self.cache[data.guild_id].afk_channel
     string += f'<#{channel}>'
     await self.webhook({}, string, webhook, 'Voice Log', None, {'parse': []})
 
