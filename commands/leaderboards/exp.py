@@ -43,7 +43,7 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
     if voice and not games and not chat:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.vEXP.desc()).limit(limit).all()
     elif games and not voice and not chat:
-        total = session.query(db.Presences).filter(db.Presences.AppID != None, db.Presences.AppID != 0).order_by(db.Presences.TotalPlayed.desc()).all()
+        total = session.query(db.Presences).filter(db.Presences.AppID != None, db.Presences.AppID != 0).order_by(db.Presences.TotalPlayed.desc()).limit(limit).all()
     else:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.EXP.desc()).limit(limit).all()    
         if not chat:
