@@ -18,6 +18,16 @@ MFramework.import_from('commands')
 # Better handling of starting multiple bots
 # Roleplay character management
 # Split Listener with Backend (Backend being sort of server and Listener being sort of a proxy)
+#Embeds, Modernise memes above, fix sending DMs, perhaps store Quotes in database? Also dockets as a sort of generic data, in Influx maybe? 
+#Sockets for Voice Connection
+#Context Commands for multimessage commands, i.e, character management, minigames like card games or panstwa-miasta
+#Stock simulation game?
+#User profiles (birthdays etc)
+#Spotify presence tracking
+#Wolfram Alpha integration/support?
+#Localized commands?
+#UI for admin panel?
+#Presence based on currently played song in Mopidy?
 
 def run(token):
     asyncio.run(main(token))
@@ -26,7 +36,10 @@ async def main(token):
     b = MFramework.Bot(token)
     try:
         while True:
-            await b.connection()
+            try:
+                await b.connection()
+            except Exception as ex:
+                print(ex)
             try:
                 await b.msg()
                 await asyncio.sleep(1)
@@ -46,7 +59,7 @@ async def main(token):
         except Exception as ex:
             MFramework.log(f"Clean up exception: {ex}")
 from multiprocessing.dummy import Pool
-pool = Pool(2)
+pool = Pool(3)
 from MFramework.utils.config import cfg
 tokens = []
 for token in cfg['DiscordTokens']:
