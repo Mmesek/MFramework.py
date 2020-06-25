@@ -35,8 +35,8 @@ def GenerateConfig():
         "DiscordTokens":{'bot':''},
         "Spotify": {'client': '', 'secret': '', 'auth': ''},
         "Twitter": {'client': '', 'secret': '', 'auth': ''},
-        "Database": {'db': 'sqlite', 'user': '', 'password': '', 'location': 'raspberry', 'port': '', 'name': 'MBot', 'echo': True},
-        "Influx": {'db': 'MFramework', 'host': 'raspberry'},
+        "Database": {'db': 'sqlite', 'user': '', 'password': '', 'location': '127.0.0.1', 'port': '', 'name': 'MBot', 'echo': True},
+        "Influx": {'db': 'MFramework', 'host': '127.0.0.1'},
         "Defaults": {"locale":"en_GB", "owner": 273499695186444289},
         "Emoji":{"success":"✅","failure":"❎"}
     })
