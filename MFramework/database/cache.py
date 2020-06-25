@@ -3,7 +3,7 @@ import datetime, time, re
 from ..discord.objects import *
 
 class Cache:
-    __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language',
+    __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language', 'connection',
     'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice', 'afk', 'afk_channel',
     'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence', 'dynamic_channels',
     'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned')
@@ -40,7 +40,6 @@ class Cache:
             g = session.query(db.Servers).filter(db.Servers.GuildID == guildID).first()
         else:
             self.setBot(data, user_id)
-
         self.groups = {}
 
         self.groups['Admin'] = g.AdminIDs
@@ -209,7 +208,7 @@ class Cache:
             self.messages[data.channel_id] = {}
         self.messages[data.channel_id][message_id] = data
     def getMessage(self, message_id, channel_id):
-        return self.messages[data.channel_id].pop(message_id, None)
+        return self.messages[channel_id].pop(message_id, None)
     
     def update_server_data(self, data):
         self.name = data.name
