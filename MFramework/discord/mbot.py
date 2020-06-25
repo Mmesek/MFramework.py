@@ -82,7 +82,7 @@ class Bot(EndpointWrappers, Endpoints):
         self.state = True
         self.stayConnected = True
         self.latency = None
-        self.context = {}
+        self.context = {'dm':{}}
         self.url = config['Discord']['url']
         self.alias = config['Discord']['alias']
         self.presence = config["Discord"]["presence"]
@@ -176,7 +176,7 @@ class Bot(EndpointWrappers, Endpoints):
         self._buffer = bytearray()
         self._zlib = zlib.decompressobj()
         self.state = True
-        self.csession = aiohttp.ClientSession()
+        self.csession = aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False))
         gate = await self.get_gateway_bot()
         self.ws = await self.csession.ws_connect(f"{gate['url']}?v=6&encoding=json&compress=zlib-stream")
 
@@ -296,7 +296,7 @@ class Bot(EndpointWrappers, Endpoints):
                     "game": {
                         "name": status_name.strip(), 
                         "type": int(status_type),
-                        "url": url
+                        #"url": url
                     }, 
                     "status": status.strip().lower(), 
                     "afk": afk
