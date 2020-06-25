@@ -61,16 +61,22 @@ class Register:
 ctxRegister = Register()
 
 class BaseCtx:
-    def __init__(self, *args, bot, data, **kwargs):
-        self.channel = data.channel_id
-        self.user = data.author.id
-        self.currentStep = 0
-        if data.guild_id == 0:
+    def __init__(self, *args, bot, data, channel=None, **kwargs):
+        if data.guild_id == 0 or channel != None:
+            if channel != None:
+                self.channel = channel.id
+                self.user = data.user.id
+            else:
+                self.user = data.author.id
+                self.channel = data.channel_id
             self.guild_id = 'dm'
             self.guild = 463433273620824104
         else:
+            self.channel = data.channel_id
+            self.user = data.author.id
             self.guild_id = data.guild_id
             self.guild = data.guild_id
+        self.currentStep = 0
         self.bot = bot
         print('Init BaseCtx for', self.channel, self.user)
     async def execute(self, *args, data, **kwargs):
@@ -316,13 +322,13 @@ async def parse(self, data):
                 elif "react" == command:
                     await self.react(data.channel_id, data.id, r[r.index(command) + 1])
                 elif "role_mentionable" == command:
-                    await self.role_update(data.guild_id, r[r.index(command) + 1], "True", "Regex Mention")
+                    await self.modify_guild_role(data.guild_id, r[r.index(command) + 1], mentionable=True, audit_reason="Regex Mention")
                 elif "role_not_mentionable" == command:
-                    await self.role_update(data.guild_id, r[r.index(command) + 1], "False", "Regex Mention")
+                    await self.modify_guild_role(data.guild_id, r[r.index(command) + 1], mentionable=False, audit_reason="Regex Mention")
                 elif "message" == command:
                     await self.message(data.channel_id, r[r.index(command) + 1])
                 elif "delete_match" == command:
-                    await self.delete(data.channel_id, data.id, "Regex Trigger")
+                    await self.delete_message(data.channel_id, data.id, "Regex Trigger")
                 elif "embed" == command:
                     embedName = r[r.index(command) + 1].split(' ',1)[0]
                     embed = self.db.selectOne("EmbedTemplates", "Embed, Message", "WHERE GuildID=? AND Name=?",[server, embedName])[0]
