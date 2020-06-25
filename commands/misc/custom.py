@@ -81,23 +81,23 @@ async def fetch(self, data, typeof, newline, *names, has=None):
     return snippets
 
 
-@register(group='Admin', help='Loads rules based on message', alias='', category='', notImpl=True)
-async def loadRules(self, messagelink, *args, data, language, **kwargs):
+@register(group='Admin', help='Loads rules based on message. Default detects "🔸 **1.** Rule" as separate rule', alias='', category='')#, notImpl=True)
+async def loadRules(self, messagelink, separate_rules='🔸', rule_nr_ends_with=".**", *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     link = messagelink.split('/')[-2:]
     channel = link[0]
     message = link[1]
     msg = await self.get_channel_message(channel, message)
-    lines = msg.content.split('\n')
+    lines = msg.content.split(separate_rules)
     s = self.db.sql.session()
     for line in lines:
         print(line)
-        if ')**' in line:
-            line = line.split(')**')
+        if rule_nr_ends_with in line:
+            line = line.split(rule_nr_ends_with)
             name = line[0].replace('**','').strip()
             response = line[1].strip()
             r = db.Snippets(data.guild_id, data.author.id, name, response, Type='rule')
-            s.add(r)
+            s.merge(r)#add(r)
     return s.commit()
 
 @register(group='Admin', help='Create Embed, provide embed in {json} form', alias='', category='', notImpl=True)
@@ -126,10 +126,11 @@ async def embed(self, name, *args, data, language, **kwargs):
 
 @register(group='Nitro', help='Adds to db', alias='sm', category='')
 async def add(self, name, *response, data, trigger='', type='meme', language, group, **kwargs):
-    '''meme/cannedresponse/rule/snippet/spotify/rss
-    if rss: response = [uri color lang avatar_url]'''
+    '''meme/cannedresponse/rule/snippet/spotify/rss/regex
+    if rss: response = [uri color lang avatar_url]
+    if regex: response = [trigger required_role response]'''
     r = db.Snippets(data.guild_id, data.author.id, name, ' '.join(response), Type=type)
-    if response == () and data.attachments == []:
+    if response == () and data.attachments == [] and type != 'spotify':
         await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
         return
     if type == 'cannedresponse' and group in ['Mod', 'Admin', 'System']:
@@ -141,9 +142,26 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
     elif type == 'meme':
         pass
     elif type == 'spotify' and group == 'System':
-        r = db.Spotify(''.join(response), name, data.author.id)
+        from MFramework.utils.api import Spotify
+        s = Spotify()
+        await s.connect()
+        res = await s.search(''.join(' '.join([name]+list(response))))
+        sid = res['artists']['items'][0]['id']
+        await self.message(data.channel_id, f"Added Artist {res['artists']['items'][0]['name']} with SpotifyID {sid}")
+        await s.disconnect()
+        r = db.Spotify(sid, name+' '.join(response), data.author.id)
     elif type == 'rss' and group == 'System':
-        r = db.RSS(name, 0, response[0], response[1], response[2], response[3])
+        from MFramework.utils.utils import get_main_color
+        from MFramework.utils import favicon
+        av = favicon.get('/'.join(response[0].split('/')[:3]))        
+        color = get_main_color(av[0].url)
+        if '.pl' in response[0]:
+            lang = 'pl'
+        else:
+            lang = 'en'
+        r = db.RSS(name, 0, response[0], color, lang, av[0].url)
+    elif type == 'regex' and group == 'System':
+        r = db.Regex(data.guild_id, data.author.id, name, response[0], ' '.join(response[2]), response[1])
     else:
         await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
         return
@@ -153,6 +171,8 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
     self.db.sql.add(r)
     if 'cannedresponse':
         self.cache[data.guild_id].recompileCanned(self.db, data.guild_id)
+    elif 'regex':
+        self.cache[data.guild_id].recompileTriggers(self.db, data.guild_id)
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
 @register(group='Nitro', help='Removes from db', alias='del', category='')
