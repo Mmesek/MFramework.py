@@ -4,7 +4,7 @@ import datetime
 import aiohttp
 from .config import cfg as config
 
-
+spotify_token = ''
 class Spotify:
     def __init__(self):
         self.rToken = config["Tokens"]["spotify"]
@@ -27,7 +27,8 @@ class Spotify:
         try:
             return await response.json()
         except:
-            return
+            self.token = self.refresh(self.rToken, True)
+            return await self.spotify_call(path, querry, method, kwargs)
 
     async def connect(self):
         self.ClientSession = aiohttp.ClientSession()
@@ -35,12 +36,16 @@ class Spotify:
     async def disconnect(self):
         await self.ClientSession.close()
 
-    def refresh(self, refresh_token):
+    def refresh(self, refresh_token, force=False):
+        global spotify_token
+        if spotify_token != '' and force==False:
+            return spotify_token
         payload = {"grant_type": "refresh_token", "refresh_token": f"{refresh_token}"}
         print('REFRESHING!!!!!!!!!')
         r = requests.post(
             "https://accounts.spotify.com/api/token", data=payload, auth=(f"{self.client}", f"{self.secret}")
         )
+        spotify_token = r.json()["access_token"]
         return r.json()["access_token"]
     
     async def search(self, query, type='artist', additional=''):
