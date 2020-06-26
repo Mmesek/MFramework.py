@@ -149,7 +149,7 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
         sid = res['artists']['items'][0]['id']
         await self.message(data.channel_id, f"Added Artist {res['artists']['items'][0]['name']} with SpotifyID {sid}")
         await s.disconnect()
-        r = db.Spotify(sid, name+' '.join(response), data.author.id)
+        r = db.Spotify(sid, name+' '+' '.join(response), data.author.id)
     elif type == 'rss' and group == 'System':
         from MFramework.utils.utils import get_main_color
         from MFramework.utils import favicon
