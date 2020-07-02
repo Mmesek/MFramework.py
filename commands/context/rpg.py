@@ -11,8 +11,6 @@ class CreateCharacter(BaseCtx):
 
     def __init__(self, *args, **kwargs):
         super().__init__(args, **kwargs)
-        if self.bot.username != 'M_Bot':
-            self.end()
         #self.order = ["race","gender", "story"]
         self.embed = Embed().setAuthor('[Imię "Przydomek" Nazwisko]',None, None).setDescription("[Twoja Historia]")
         self.order = ["intro",
@@ -78,6 +76,8 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         "width": 64}
         self.steps = {}
     async def execute(self, *args, data, **kwargs):
+        if self.bot.username != 'M_Bot':
+            return await self.end()
         if data.content == "--zakończ":
             await self.bot.message(self.channel, "Koniec")
             await self.end()
