@@ -240,6 +240,7 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
     async def react(self, *args, data, **kwargs):
         if data.emoji.name == '✅':
             await self.confirmed()
+            return await self.end()
 
     async def intro(self):
         '''Entry'''
@@ -459,4 +460,5 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         s = s.format(welcome=choice(welcome), who=choice(w),question=choice(question).format(ending=gi, item=chosen_item), drink=choice(drink).format(beverage=self.answers['drink']))
 
         await self.bot.message(463437626515652618, f'*Bartender wita <@{self.user}>*: "{s}"')
-        await self.bot.add_guild_member_role(self.guild,self.user,466370566665011200, "Created RolePlay character")
+        await self.bot.add_guild_member_role(self.guild, self.user, 466370566665011200, "Created RolePlay character")
+        await self.end()
