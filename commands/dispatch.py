@@ -70,7 +70,7 @@ async def message_create(self, data: Message):
             embed = utils.Embed().setDescription(data.content)
             await self.webhook([embed.embed],'','569802933227618318/6AJW6rQjG0mlGvTFNZDfGiUqJCkd3EHDkAIDyJ7rwx-SA9uXP2xITwV9OGHg2YLwzgTS', data.author.username, f'https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png')
         c = self.cache[data.guild_id].messages
-        if data.channel_id in c and (len(c) >= 1) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].content == data.content) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].author.id == data.author.id):
+        if data.channel_id in c and (len(c) > 1) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].content == data.content) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].author.id == data.author.id):
             await self.delete_message(data.channel_id, data.id, 'Duplicate Message')
             return
         self.cache[data.guild_id].message(data.id, data)
@@ -161,12 +161,24 @@ async def guild_create(self, guild):
 @onDispatch(Guild_Member)
 async def guild_member_add(self, data):
     await self.db.influx.influxMember(data.guild_id, data.user.id, True, data.joined_at)
+    await log.UserJoinedGuild(self, data)
+    if data.guild_id == 463433273620824104:
+        print('New user joined guild! :D')
+        dm = await self.create_dm(data.user.id)
+        if dm:
+            from .context.rpg import CreateCharacter
+            self.context['dm'][(dm.id, data.user.id)] = CreateCharacter(bot=self, data=data, channel=dm)
+            await self.context['dm'][(dm.id, data.user.id)].execute(data=dm)
 
 
 @onDispatch(Guild_Member_Remove)
 async def guild_member_remove(self, data):
     await self.db.influx.influxMember(data.guild_id, data.user.id, False)
+    await log.UserLeftGuild(self, data)
 
+@onDispatch(Guild_Member_Update)
+async def guild_member_update(self, data):
+    await log.MemberUpdate(self, data)
 
 @onDispatch(Guild_Members_Chunk)
 async def guild_members_chunk(self, data):
@@ -181,6 +193,8 @@ async def guild_members_chunk(self, data):
 async def message_delete(self, data):
     if data.guild_id == 0:
         return
+    await log.MessageRemoved(self, data)
+    return
     webhook = self.cache[data.guild_id].logging
     if not any(i in webhook for i in ["all", "message_delete"]):
         return
