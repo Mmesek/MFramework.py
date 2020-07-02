@@ -23,9 +23,11 @@ def Message(self, embed, message):
         return embed
 
 async def MessageRemoved(self, message):
+    webhook = getWebhook(self, message.guild_id, 'message_delete')
+    if webhook is None:
+        return
     embed = Embed()  #.setTitle(
     embed = Message(self, embed, message)
-    webhook = getWebhook(self, message.guild_id, 'message_delete')
     if embed != None:
         await self.webhook([embed.embed], f"Message deleted in <#{message.channel_id}>", webhook, 'Message Log', None, {'parse': []})
     else:
