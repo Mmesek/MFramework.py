@@ -1,4 +1,4 @@
-from .utils import Embed, created
+from .utils import Embed, created, tr
 
 def MetaData(self, embed, c):
     embed.setDescription(c.content)
@@ -83,7 +83,8 @@ async def DirectMessage(self, data):
     if filename != "":
         embed.addField("Image", filename, True)  #embed.embed['description'] += f"\nAttachment: {filename}"
     if (len(set(data.content.lower().split(' '))) < 2) and len(data.attachments) == 0:
-        await self.message(data.channel_id, f"Hey, it appears your message consist of mostly single word, therefore I'm not going to forward it. I'm forwarding your messages here automatically and <:{self.emoji['success']}> under message means it was successfully delivered to mod team. Please form a sentence and try again. Cheers mate.")
+        await self.message(data.channel_id, tr("commands.dm.singleWordError", self.cache[gid].language, emoji_success=self.emoji['success']))
+        #await self.message(data.channel_id, f"Hey, it appears your message consist of mostly single word, therefore I'm not going to forward it. I'm forwarding your messages here automatically and <:{self.emoji['success']}> under message means it was successfully delivered to mod team. Please form a sentence and try again. Cheers mate.")
         return
     if data.channel_id in self.cache['dm']:
         s = list(self.cache['dm'][data.channel_id].messages.keys())

@@ -327,5 +327,8 @@
         "help":"Fetches playercount for specified game(s). Separate with `,`",
         "for":"Playercount for ",
         "error":"Not found: Game might be not available, released or an error occured\n"
+    },
+    "dm":{
+        "singleWordError":"Hey, it appears your message consist of mostly single word, therefore I'm not going to forward it. I'm forwarding your messages here automatically and <:%{emoji_success}> under message means it was successfully delivered to mod team. Please form a sentence and try again. Cheers mate."
     }
 }
