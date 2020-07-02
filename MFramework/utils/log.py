@@ -8,19 +8,28 @@ def MetaData(self, embed, c):
 
 def Message(self, embed, message):
     #c = self.cache.get(message.guild_id).getMessage(message)
-    c = self.cache[message.guild_id].getMessage(message.id, message.channel_id)
+    try:
+        c = self.cache[message.guild_id].getMessage(message.id, message.channel_id)
+    except:
+        return None
     if c != None:
         MetaData(self, embed, c)
         if c.attachments != None:
             attachments = ''
             for a in c.attachments:
-                attachments+=c.attachments[a]["filename"]+"\n"
-            embed.addField("Attachments:", attachments)
+                attachments += c.attachments[a]["filename"] + "\n"
+            if attachments != '':
+                embed.addField("Attachments:", attachments)
         return embed
 
-def MessageRemoved(self, message):
-    embed = Embed().setTitle(f"Message deleted in <#{message.channel_id}>")
-    return Message(self, embed, message)
+async def MessageRemoved(self, message):
+    embed = Embed()  #.setTitle(
+    embed = Message(self, embed, message)
+    webhook = getWebhook(self, message.guild_id, 'message_delete')
+    if embed != None:
+        await self.webhook([embed.embed], f"Message deleted in <#{message.channel_id}>", webhook, 'Message Log', None, {'parse': []})
+    else:
+        await self.webhook({}, f"Messaged deleted in <#{message.channel_id}>", webhook, 'Message Log', None, {'parse':[]})
 
 def MessageUpdated(self, message):
     embed = Embed().setTitle(f"Message edited in <#{message.channel_id}>\nBefore:")
