@@ -11,6 +11,8 @@ class CreateCharacter(BaseCtx):
 
     def __init__(self, *args, **kwargs):
         super().__init__(args, **kwargs)
+        if self.bot.username != 'M_Bot':
+            self.end()
         #self.order = ["race","gender", "story"]
         self.embed = Embed().setAuthor('[Imię "Przydomek" Nazwisko]',None, None).setDescription("[Twoja Historia]")
         self.order = ["intro",
@@ -179,6 +181,13 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
             return await self.bot.message(self.channel, "Skąd dokładnie przybywasz?")
         elif self.order[self.steps[data.id]] == "profession" and data.content.lower() in ['nieznany', 'nieznana', 'nic', 'brak']:
             return await self.bot.message(self.channel, "Podaj swoją profesję mordko")
+        elif self.order[self.steps[data.id]] == 'race' and data.content.lower() in ['hybryda', 'mieszaniec', 'mieszanka', 'zwierz', 'zwierzę', 'zwierzęcie']:
+            if 'hybryda' in data.content.lower():
+                return await self.bot.message(self.channel, "Hybryda jakich ras?")
+            elif data.content.lower() in ['zwierz', 'zwierzę', 'zwierzęcie']:
+                return await self.bot.message(self.channel, "Jakie zwierzęcie?")
+            else:
+                return await self.bot.message(self.channel, "Mieszanka jakich gatunków?")
         elif self.order[self.steps[data.id]] == 'gender':
             if data.content[0].lower() not in ["m", "k"]:
                 return await self.bot.message(self.channel, "Binarna płeć mordo.\nM - Mężczyna\nK - Kobieta")
@@ -291,9 +300,11 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         await self.bot.message(self.channel, "Czym, jakiej rasy bądź gatunku jesteś?")#"Czym jesteś?/Jakiej jesteś rasy?/Jakiego gatunku jesteś?")
 
     async def race(self):
-        if self.answers['race'].lower() in ['hybryda', 'mieszaniec', 'mieszanka']:
+        if self.answers['race'].lower() in ['hybryda', 'mieszaniec', 'mieszanka','zwierz', 'zwierzę', 'zwierzęcie']:
             if 'hybryda' in self.answers['race'].lower():
                 await self.bot.message(self.channel, "Hybryda jakich ras?")
+            elif self.answers['race'].lower() in ['zwierz', 'zwierzę', 'zwierzęcie']:
+                await self.bot.message(self.channel, "Jakie zwierzęcie?")
             else:
                 await self.bot.message(self.channel, "Mieszanka jakich gatunków?")
             return True
