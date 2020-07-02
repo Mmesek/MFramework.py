@@ -327,5 +327,8 @@
         "help":"Pokazuje liczbę graczy dla podanej gry (Bądź gier jeśli rozdzielone za pomocą `,`)",
         "for":"Liczba graczy dla ",
         "error":"Nie znaleziono: Gra jest niedostępna, nie wydana bądź wystąpił inny błąd\n"
+    },
+    "dm":{
+        "singleWordError":"Witaj, wygląda na to że twoja wiadomość składa się tylko z jednego słowa, toteż nie przekażę jej dalej. Przekazuję twoje wiadomość tutaj automatycznie i <:%{emoji_success}> pod wiadomością oznacza że została dostarczona. Sforumułuj zdanie i spróbuj ponownie. Miłego mordeczko."
     }
 }
