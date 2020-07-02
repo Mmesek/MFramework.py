@@ -70,7 +70,7 @@ async def message_create(self, data: Message):
             embed = utils.Embed().setDescription(data.content)
             await self.webhook([embed.embed],'','569802933227618318/6AJW6rQjG0mlGvTFNZDfGiUqJCkd3EHDkAIDyJ7rwx-SA9uXP2xITwV9OGHg2YLwzgTS', data.author.username, f'https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png')
         c = self.cache[data.guild_id].messages
-        if data.channel_id in c and (len(c) > 1) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].content == data.content) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].author.id == data.author.id):
+        if (data.channel_id in c and (len(c[data.channel_id]) >= 1)) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].content == data.content) and (c[data.channel_id][list(c[data.channel_id].keys())[-1]].author.id == data.author.id):
             await self.delete_message(data.channel_id, data.id, 'Duplicate Message')
             return
         self.cache[data.guild_id].message(data.id, data)
