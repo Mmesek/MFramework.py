@@ -34,6 +34,7 @@ class CreateCharacter(BaseCtx):
             "story", "confirmed"
         ]
         self.answers = {}
+        self.last_error_message = None
         self.wrong_answers = ['brak', 'nie posiadam', 'nic', 'niczego', 'nie istnieje', 'wielka', 'wielki','duża','duży','ogromny','ogromna']
         self.fields = {
             "placeoforigin": "Przybyto z",
@@ -172,57 +173,55 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
                     embed.setAuthor(self.answers[i][:512],None,None)
         
         return embed
+
+    async def _handle_error_edit(self, *args, data, **kwargs):
+        if self.order[self.steps[data.id]] == 'placeoforigin' and data.content.lower() in ['z dalekiej krainy', 'z bardzo daleka','z bardzo dalekiej krainy', 'zniknąd', 'zewsząd']:
+            return await self.bot.message(self.channel, "Skąd dokładnie przybywasz?")
+        elif self.order[self.steps[data.id]] == "profession" and data.content.lower() in ['nieznany', 'nieznana', 'nic', 'brak']:
+            return await self.bot.message(self.channel, "Podaj swoją profesję mordko")
+        elif self.order[self.steps[data.id]] == 'gender':
+            if data.content[0].lower() not in ["m", "k"]:
+                return await self.bot.message(self.channel, "Binarna płeć mordo.\nM - Mężczyna\nK - Kobieta")
+        elif self.order[self.steps[data.id]] == 'age':
+            if not data.content.isdigit():
+                return await self.bot.message(self.channel, "Podaj cyfrę.")
+        elif self.order[self.steps[data.id]] == 'story':
+            if (data.content.lower() == "długa") or (((len(set(data.content.lower().split(' '))) < 5) and len(data.content) < 20)):
+                if data.content.lower() == "długa":
+                    return await self.bot.message(self.channel, "To bardzo fajnie że jest długa mordko. A teraz ją tutaj opowiedz. Z detalami.")
+                elif (len(set(data.content.lower().split(' '))) < 5) and len(data.content) < 20:
+                    return await self.bot.message(self.channel, "Nie za długa ta historia mordko tak więc zapytam raz jeszcze: Jaka jest Twoja historia?")
+                else:
+                    return await self.bot.message(self.channel, "Niby jest. A jednak się nie zgadza.")
+        elif self.order[self.steps[data.id]] == 'whereabouts':
+            if ((data.content.lower() == "nic") or (((len(set(data.content.lower().split(' '))) < 3) and len(data.content) < 10))):
+                if data.content.lower() == "nic":
+                    return await self.bot.message(self.channel, f"Raczej nie nic, w jakiś sposób się tutaj musiał{self.g}ś znaleźć. W jaki?")
+                elif (len(set(data.content.lower().split(' '))) < 3) and len(data.content) < 10:
+                    return await self.bot.message(self.channel, "Doprawdy? Dodaj może odrobinę więcej detali mordko?")
+                else:
+                    return await self.bot.message(self.channel, "Niby jest. A jednak się nie zgadza.")
+        elif self.order[self.steps[data.id]] in ['fear', 'strength', 'weakness', 'hate']:
+            if data.content.lower() in self.wrong_answers:
+                return await self.bot.message(self.channel, "Raczej nie mordko, coś tam jest.")
+        elif self.order[self.steps[data.id]] == 'items':
+            if data.content.lower() in ['wszystkie', 'wszystkie potrzebne', 'wszystko', 'wszystko potrzebne', 'cokolwiek', 'nic']:
+                return await self.bot.message(self.channel, "Doprecyzuj, co takiego obecnie przy sobie posiadasz?")
+        return None
+
     async def edit(self, *args, data, **kwargs):
         if not self.lock:
             #self.last = data
             self.lock = True
             if data.id in self.steps:
-                if self.order[self.steps[data.id]] == 'placeoforigin' and data.content.lower() in ['z dalekiej krainy', 'z bardzo daleka','z bardzo dalekiej krainy', 'zniknąd', 'zewsząd']:
-                    await self.bot.message(self.channel, "Skąd dokładnie przybywasz?")
-                    return    
-                elif self.order[self.steps[data.id]] == "profession" and data.content.lower() in ['nieznany', 'nieznana', 'nic', 'brak']:
-                    await self.bot.message(self.channel, "Podaj swoją profesję mordko")
+                r = await self._handle_error_edit(args, data, kwargs)
+                if r is not None:
+                    self.last_error_message = r.id
+                    self.lock = False
                     return
-                elif self.order[self.steps[data.id]] == 'gender':
-                    if data.content[0].lower() not in ["m", "k"]:
-                        await self.bot.message(self.channel, "Binarna płeć mordo.\nM - Mężczyna\nK - Kobieta")
-                        self.lock = False
-                        return
-                elif self.order[self.steps[data.id]] == 'age':
-                    if not data.content.isdigit():
-                        await self.bot.message(self.channel, "Podaj cyfrę.")
-                        self.lock = False
-                        return
-                elif self.order[self.steps[data.id]] == 'story':
-                    if (data.content.lower() == "długa") or (((len(set(data.content.lower().split(' '))) < 5) and len(data.content) < 20)):
-                        if data.content.lower() == "długa":
-                            await self.bot.message(self.channel, "To bardzo fajnie że jest długa mordko. A teraz ją tutaj opowiedz. Z detalami.")
-                        elif (len(set(data.content.lower().split(' '))) < 5) and len(data.content) < 20:
-                            await self.bot.message(self.channel, "Nie za długa ta historia mordko tak więc zapytam raz jeszcze: Jaka jest Twoja historia?")
-                        else:
-                            await self.bot.message(self.channel, "Niby jest. A jednak się nie zgadza.")
-                        self.lock = False
-                        return
-                elif self.order[self.steps[data.id]] == 'whereabouts':
-                    if ((data.content.lower() == "nic") or (((len(set(data.content.lower().split(' '))) < 3) and len(data.content) < 10))):
-                        if data.content.lower() == "nic":
-                            await self.bot.message(self.channel, f"Raczej nie nic, w jakiś sposób się tutaj musiał{self.g}ś znaleźć. W jaki?")
-                        elif (len(set(data.content.lower().split(' '))) < 3) and len(data.content) < 10:
-                            await self.bot.message(self.channel, "Doprawdy? Dodaj może odrobinę więcej detali mordko?")
-                        else:
-                            await self.bot.message(self.channel, "Niby jest. A jednak się nie zgadza.")
-                        self.lock = False
-                        return
-                elif self.order[self.steps[data.id]] in ['fear', 'strength', 'weakness', 'hate']:
-                    if data.content.lower() in self.wrong_answers:
-                        await self.bot.message(self.channel, "Raczej nie mordko, coś tam jest.")
-                        self.lock = False
-                        return
-                elif self.order[self.steps[data.id]] == 'items':
-                    if data.content.lower() in ['wszystkie', 'wszystkie potrzebne', 'wszystko', 'wszystko potrzebne', 'cokolwiek', 'nic']:
-                        await self.bot.message(self.channel, "Doprecyzuj, co takiego obecnie przy sobie posiadasz?")
-                        self.lock = False
-                        return
+                elif self.last_error_message is not None:
+                    self.bot.delete_message(self.channel, self.last_error_message)
+                    self.last_error_message = None
                 #self.answers[self.order[self.steps[data.id]]] = data.content
                 self.answers[self.order[self.steps[data.id]]] = upperfirst(data.content)
                 print(self.order[self.steps[data.id]], data.content)
@@ -238,35 +237,35 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         #Wędrując samotnie natrafiasz na Tawernę, jedyny otwarty obecnie lokal w okolicy. Postanawiasz zajrzeć do środka.
         #Wędujesz samotnie drogą aż w pewnym momencie natrafiasz na Tawernę, jedyny lokal sprawiający wrażenie będącego otwartym w okolicy, postanawiasz zajrzeć do środka.
         #Samotnie Wędując w pewnym momencie natrafiasz na Tawernę - jedyny lokal sprawiający wrażenie będącego otwartym obecnie w okolicy - postanawiasz zajrzeć do środka.
-    #    await self.bot.message(self.channel, "Wędrując samotnie natrafiasz na Tawernę, jedyny otwarty obecnie lokal w okolicy. Postanawiasz zajrzeć do środka.")
-    #    await self.bot.trigger_typing_indicator(self.channel)
-    #    await asyncio.sleep(3)
+        await self.bot.message(self.channel, "Wędrując samotnie natrafiasz na Tawernę, jedyny otwarty obecnie lokal w okolicy. Postanawiasz zajrzeć do środka.")
+        await self.bot.trigger_typing_indicator(self.channel)
+        await asyncio.sleep(3)
         '''Inside'''
         #W środku słyszysz muzykę lecz nie możesz jeszcze zlokalizować jej źródła, przy kontuarze znajduje się grupa osób wraz z dziwną maszyną. 
         #Spoglądając na resztę (/Rozglądając się po wnętrzu?) pomieszczenia dostrzegasz scenę po lewej stronie oraz schody na piętro oraz do piwnicy w prawym rogu pomieszczenia. 
         #Większość stolików wydaje się być pusta.
         #/W środku znajdujesz grupę przy kontuarze, większość stolików jest obecnie pusta. Na lewo znajduje się pusta scena a na prawo są schody.
         #/Wchodąc do środka spotykasz grupę przy kontuarze, większość stolików wydaje się być pusta. Na lewo znajduje się obecnie pusta scena a na prawo są schody.
-    #    await self.bot.message(self.channel, "W środku słyszysz muzykę lecz nie możesz jeszcze zlokalizować jej źródła, przy kontuarze znajduje się grupa osób wraz z dziwną maszyną.")
-    #    await self.bot.trigger_typing_indicator(self.channel)
-    #    await asyncio.sleep(3)
-    #    await self.bot.message(self.channel, "Rozglądając się po wnętrzu pomieszczenia dostrzegasz scenę po lewej stronie oraz schody na piętro oraz do piwnicy w prawym rogu pomieszczenia.")
-    #    await self.bot.trigger_typing_indicator(self.channel)
-    #    await asyncio.sleep(4)
-    #    await self.bot.message(self.channel, "Większość stolików wydaje się być pusta.")
-    #    await self.bot.trigger_typing_indicator(self.channel)
-    #    await asyncio.sleep(2)
+        await self.bot.message(self.channel, "W środku słyszysz muzykę lecz nie możesz jeszcze zlokalizować jej źródła, przy kontuarze znajduje się grupa osób wraz z dziwną maszyną.")
+        await self.bot.trigger_typing_indicator(self.channel)
+        await asyncio.sleep(3)
+        await self.bot.message(self.channel, "Rozglądając się po wnętrzu pomieszczenia dostrzegasz scenę po lewej stronie oraz schody na piętro oraz do piwnicy w prawym rogu pomieszczenia.")
+        await self.bot.trigger_typing_indicator(self.channel)
+        await asyncio.sleep(4)
+        await self.bot.message(self.channel, "Większość stolików wydaje się być pusta.")
+        await self.bot.trigger_typing_indicator(self.channel)
+        await asyncio.sleep(2)
         '''Menu'''
-    #    await self.bot.message(self.channel, "Tuż po wejściu pojawia się obok ciebie obłok dymu z którego wyłania się karta Menu:")
-    #    await self.bot.trigger_typing_indicator(self.channel)
-    #    await asyncio.sleep(2)
-    #    await self.bot.embed(self.channel, "", self.rules.embed)
-    #    await self.bot.trigger_typing_indicator(self.channel)
-    #    await asyncio.sleep(10)
+        await self.bot.message(self.channel, "Tuż po wejściu pojawia się obok ciebie obłok dymu z którego wyłania się karta Menu:")
+        await self.bot.trigger_typing_indicator(self.channel)
+        await asyncio.sleep(2)
+        await self.bot.embed(self.channel, "", self.rules.embed)
+        await self.bot.trigger_typing_indicator(self.channel)
+        await asyncio.sleep(10)
         '''Q'''
-    #    await self.bot.message(self.channel, "Dziwna Maszyna zaczyna wydawać dziwne dźwięki i pojawia się przed tobą drugi obłok dymu z którego pokazuje się druga karta tym razem nazwana Kwestionariusz:")
-    #    await self.bot.trigger_typing_indicator(self.channel)
-    #    await asyncio.sleep(3)
+        await self.bot.message(self.channel, "Dziwna Maszyna zaczyna wydawać dziwne dźwięki i pojawia się przed tobą drugi obłok dymu z którego pokazuje się druga karta tym razem nazwana Kwestionariusz:")
+        await self.bot.trigger_typing_indicator(self.channel)
+        await asyncio.sleep(3)
         self.first_embed = await self.bot.embed(self.channel, "", self.embed.embed)
         await self.bot.trigger_typing_indicator(self.channel)
         await asyncio.sleep(1)
