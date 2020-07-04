@@ -78,7 +78,7 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
     async def execute(self, *args, data, **kwargs):
         if self.bot.username != 'M_Bot':
             return await self.end()
-        if data.content == "--zakończ":
+        if hasattr(data, "content") and data.content == "--zakończ":
             await self.bot.message(self.channel, "Koniec")
             await self.end()
             return
