@@ -61,7 +61,7 @@ class Cache:
         self.presence = {}
         self.afk = {}
         if guildID == 463433273620824104:
-            self.dynamic_channels = {'channels': [], 699365297664294943: {'name': 'Stolik Smutku', 'bitrate': 64000, 'user_limit': 1, 'position': 0, 'permission_overwrites': [], 'parent_id': '699363712280166411'}}
+            self.dynamic_channels = {'channels': [], 699365297664294943: {'name': 'Stolik Smutku', 'bitrate': 64000, 'user_limit': 1, 'position': 0, 'permission_overwrites': [], 'parent_id': '699363712280166411'}, 734523870647681101: {"buffer":734523217141563463}}
         else:
             self.dynamic_channels = {'channels': []}
 
