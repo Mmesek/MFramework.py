@@ -321,13 +321,16 @@ async def voice_state_update(self, data):
             data.channel_id = 0
     if self.cache[data.guild_id].dynamic_channels and data.channel_id in self.cache[data.guild_id].dynamic_channels:
         template = self.cache[data.guild_id].dynamic_channels[data.channel_id]
-        count = len(self.cache[data.guild_id].dynamic_channels['channels'])+1
+        if 'buffer' in template:
+            await self.move_guild_member(data.guild_id, data.user_id, template['buffer'], f"Moved {data.member.user.username} to channel")
+        else:
+            count = len(self.cache[data.guild_id].dynamic_channels['channels'])+1
         
-        new_channel = await self.create_guild_channel(data.guild_id, template['name']+f' #{count}', 2, None, template['bitrate'], template['user_limit'], None, template['position'], template['permission_overwrites'], template['parent_id'], False, "Generated Channel")
-        await self.move_guild_member(data.guild_id, data.user_id, new_channel.id, f"Moved {data.member.user.username} to generated channel")
-        data.channel_id = new_channel.id
+            new_channel = await self.create_guild_channel(data.guild_id, template['name']+f' #{count}', 2, None, template['bitrate'], template['user_limit'], None, template['position'], template['permission_overwrites'], template['parent_id'], False, "Generated Channel")
+            await self.move_guild_member(data.guild_id, data.user_id, new_channel.id, f"Moved {data.member.user.username} to generated channel")
+            data.channel_id = new_channel.id
 
-        self.cache[data.guild_id].dynamic_channels['channels'] += [new_channel.id]
+            self.cache[data.guild_id].dynamic_channels['channels'] += [new_channel.id]
 
     if self.cache[data.guild_id].VoiceLink:
         r = self.cache[data.guild_id].VoiceLink
