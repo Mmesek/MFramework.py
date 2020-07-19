@@ -259,7 +259,7 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         await self.bot.message(self.channel, "W środku słyszysz muzykę lecz nie możesz jeszcze zlokalizować jej źródła, przy kontuarze znajduje się grupa osób wraz z dziwną maszyną.")
         await self.bot.trigger_typing_indicator(self.channel)
         await asyncio.sleep(3)
-        await self.bot.message(self.channel, "Rozglądając się po wnętrzu pomieszczenia dostrzegasz scenę po lewej stronie oraz schody na piętro oraz do piwnicy w prawym rogu pomieszczenia.")
+        await self.bot.message(self.channel, "Rozglądając się po wnętrzu pomieszczenia dostrzegasz scenę po lewej stronie oraz schody na piętro jak również do piwnicy w prawym rogu pomieszczenia.")
         await self.bot.trigger_typing_indicator(self.channel)
         await asyncio.sleep(4)
         await self.bot.message(self.channel, "Większość stolików wydaje się być pusta.")
@@ -273,7 +273,7 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         await self.bot.trigger_typing_indicator(self.channel)
         await asyncio.sleep(10)
         '''Q'''
-        await self.bot.message(self.channel, "Dziwna Maszyna zaczyna wydawać dziwne dźwięki i pojawia się przed tobą drugi obłok dymu z którego pokazuje się druga karta tym razem nazwana Kwestionariusz:")
+        await self.bot.message(self.channel, "Tajemnicza Maszyneria zaczyna wydawać dziwne dźwięki i pojawia się przed tobą drugi obłok dymu z którego pokazuje się następna karta tym razem nazwana Kwestionariusz:")
         await self.bot.trigger_typing_indicator(self.channel)
         await asyncio.sleep(3)
         self.first_embed = await self.bot.embed(self.channel, "", self.embed.embed)
