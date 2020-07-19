@@ -35,7 +35,7 @@ class CreateCharacter(BaseCtx):
         ]
         self.answers = {}
         self.last_error_message = None
-        self.wrong_answers = ['brak', 'nie posiadam', 'nic', 'niczego', 'nie istnieje', 'wielka', 'wielki','duża','duży','ogromny','ogromna']
+        self.wrong_answers = ['brak', 'nie posiadam', 'nic', 'niczego', 'nie istnieje', 'wielka', 'wielki','duża','duży','ogromny','ogromna', "niczym","-"]
         self.fields = {
             "placeoforigin": "Przybyto z",
             "who": "Imię",
@@ -223,7 +223,7 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
             #self.last = data
             self.lock = True
             if data.id in self.steps:
-                r = await self._handle_error_edit(args, data, kwargs)
+                r = await self._handle_error_edit(data=data)
                 if r is not None:
                     self.last_error_message = r.id
                     self.lock = False
