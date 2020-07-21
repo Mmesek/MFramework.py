@@ -19,7 +19,7 @@ class EndpointWrappers:
                     img = embed['thumbnail']['url']
                 embed['color'] = get_main_color(img)
             except Exception as ex:
-                embed['color'] = random.randint(0,16777215)#self.color
+                embed['color'] = random.SystemRandom().randint(0,16777215)#self.color
         return await self.api_call(f"/channels/{channel}/messages", "POST", json={"content": content, "embed": embed, "allowed_mentions":allowed_mentions})
     async def webhook(self, embeds, content="", webhook_url="", username="", avatar_url="", allowed_mentions={}):
         return await self.api_call(
@@ -33,4 +33,4 @@ class EndpointWrappers:
             json={"content": content, "embed": embed},
             file=(filename, attachment))
     async def move_guild_member(self, guild_id, user_id, channel_id, audit_reason='') -> None:
-        return await self.api_call(f'/guilds/{guild_id}/members/{user_id}', 'PATCH', reason=audit_reason, json={'channel_id':channel_id})
+        return await self.api_call(f'/guilds/{guild_id}/members/{user_id}', 'PATCH', reason=audit_reason, json={'channel_id': channel_id})
