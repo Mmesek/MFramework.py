@@ -55,8 +55,8 @@ async def message_create(self, data: Message):
                     reg = set(reg)
                     reg.remove('*')
                     reg = list(reg)
-                v = random.randint(1, 600)
-                v = int(v / 100) + 1
+                v = random.SystemRandom().randint(1, 6)
+                #v = int(v / 100) + 1
                 reactions = {
                     0:'0️⃣',
                     1:'1️⃣',2:'2️⃣',3:'3️⃣',
@@ -125,7 +125,7 @@ async def message_update(self, data):
                     reg = set(reg)
                     reg.remove('*')
                     reg = list(reg)
-                v = random.randint(1, 600)
+                v = random.SystemRandom().randint(1, 600)
                 reactions = {
                     1:'1️⃣',2:'2️⃣',3:'3️⃣',
                     4:'4️⃣',5:'5️⃣',6:'6️⃣'

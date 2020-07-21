@@ -432,7 +432,8 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         self.bot.db.sql.add(character)
         session.commit()
         await asyncio.sleep(1)
-        from random import choice
+        from random import SystemRandom
+        choice = SystemRandom().choice
         call = ["Chwilę później Bartender Cię woła", "Po chwili Bartender Cię woła", "Bartender po chwili Cię woła"]
         await self.bot.message(self.channel, "*{call}.*\n→ <#463437626515652618> ←".format(call=choice(call)))#""*.*\n→ <#463437626515652618> ←")
         #await self.bot.trigger_typing_indicator(self.channel)
