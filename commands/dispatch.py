@@ -319,10 +319,27 @@ async def voice_state_update(self, data):
             data.channel_id = -1
         else:
             data.channel_id = 0
+    #if data.guild_id == 463433273620824104 and data.channel_id == 734523217141563463:
+    #    if data.self_stream:
+    #        await self.channel_name(734523870647681101, 'Wejście do Zakątka [NA ŻYWO]')
+    #    else:
+    #        stream = False
+    #        v = self.cache[data.guild_id].voice
+    #        if data.channel_id in v:
+    #            for user in v[data.channel_id]:
+    #                if v[data.channel_id][user].self_stream:
+    #                    stream = True
+    #            if stream:
+    #                await self.channel_name(734523870647681101, 'Wejście do Zakątka')
     if self.cache[data.guild_id].dynamic_channels and data.channel_id in self.cache[data.guild_id].dynamic_channels:
         template = self.cache[data.guild_id].dynamic_channels[data.channel_id]
         if 'buffer' in template:
             await self.move_guild_member(data.guild_id, data.user_id, template['buffer'], f"Moved {data.member.user.username} to channel")
+    #        if template['buffer'] in self.cache[data.guild_id].voice:
+    #            count = len(self.cache[data.guild_id].voice[template['buffer']])+1
+    #        else:
+    #            count = 1
+    #        await self.user_limit(data.channel_id, count)
         else:
             count = len(self.cache[data.guild_id].dynamic_channels['channels'])+1
         
@@ -416,3 +433,13 @@ async def voice_state_update(self, data):
 @onDispatch(Voice_Server_Update)
 async def voice_server_update(self, data):
     await self.cache[data.guild_id].connection.connect(data.token, data.guild_id, data.endpoint, self.user_id)
+
+
+@onDispatch(Guild_Ban_Add)
+async def guild_ban_add(self, data):
+    reason = await self.get_guild_ban(data.guild_id, data.user.id)
+    await log.Infraction(self, data, "banned", reason=reason)
+
+@onDispatch(Guild_Ban_Remove)
+async def guild_ban_remove(self, data):
+    await log.InfractionEvent(self, data, "unbanned")
