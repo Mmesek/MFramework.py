@@ -198,12 +198,12 @@ def compilePatterns(self):
 
 @timed
 async def execute(self, data):
-    server_alias = self.cache[data.guild_id].alias
-    server_alias = re.compile(re.escape(server_alias))
+    _server_alias = self.cache[data.guild_id].alias
+    server_alias = re.compile(re.escape(_server_alias))
     if self.patterns['strip_trigger'].search(data.content) == None and server_alias.search(data.content) == None:
         return None
     command = [c.strip() for c in self.patterns['strip_trigger'].split(data.content)[1:] if c is not None and c != '']
-    if server_alias != self.alias:
+    if _server_alias != self.alias and command == []:
         command = [c.strip() for c in server_alias.split(data.content)[1:] if c is not None and c != '']
     #print(command,'content:', data.content)
     
