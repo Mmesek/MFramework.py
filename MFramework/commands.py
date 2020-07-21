@@ -62,7 +62,7 @@ ctxRegister = Register()
 
 class BaseCtx:
     def __init__(self, *args, bot, data, channel=None, **kwargs):
-        if data.guild_id == 0 or channel != None:
+        if data.guild_id == 0 or channel != None and type(channel) != list:
             if channel != None:
                 self.channel = channel.id
                 self.user = data.user.id
@@ -198,9 +198,13 @@ def compilePatterns(self):
 
 @timed
 async def execute(self, data):
-    if self.patterns['strip_trigger'].search(data.content) == None:
+    server_alias = self.cache[data.guild_id].alias
+    server_alias = re.compile(re.escape(server_alias))
+    if self.patterns['strip_trigger'].search(data.content) == None and server_alias.search(data.content) == None:
         return None
     command = [c.strip() for c in self.patterns['strip_trigger'].split(data.content)[1:] if c is not None and c != '']
+    if server_alias != self.alias:
+        command = [c.strip() for c in server_alias.split(data.content)[1:] if c is not None and c != '']
     #print(command,'content:', data.content)
     
     for mention in data.mentions:
