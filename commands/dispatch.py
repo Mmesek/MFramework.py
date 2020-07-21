@@ -179,6 +179,7 @@ async def guild_member_remove(self, data):
 @onDispatch(Guild_Member_Update)
 async def guild_member_update(self, data):
     await log.MemberUpdate(self, data)
+    await log.NitroChange(self, data)
 
 @onDispatch(Guild_Members_Chunk)
 async def guild_members_chunk(self, data):

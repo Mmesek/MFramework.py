@@ -207,3 +207,27 @@ async def MemberUpdate(self, data):
         string = f"<@{data.user.id}> role{s} {case}: {roles}"
         await self.webhook({}, string, webhook, 'Member Update Log', None, {'parse': []})
         self.cache[data.guild_id].members[data.user.id] = data
+
+async def NitroChange(self, data):
+    webhook = getWebhook(self, data.guild_id, 'nitro_log')
+    if webhook is None:
+        return
+    if data.user.id in self.cache[data.guild_id].members:
+        c = self.cache[data.guild_id].members[data.user.id]
+        diff = set(c.roles) ^ set(data.roles)
+        if len(diff) == 0:
+            return
+
+        elif any(i in data.roles for i in diff) and data.premium_since is not None:
+            case = 'started boosting'
+        else:
+            case = 'stopped boosting'
+        booster = False
+        for i in diff:
+            if i in self.cache[data.guild_id].groups['Nitro']:
+                booster = True
+                break
+        if booster:
+            string = f"<@{data.user.id}> {case}"
+            await self.webhook({}, string, webhook, 'Nitro Log', None, {'parse': []})
+            self.cache[data.guild_id].members[data.user.id] = data
