@@ -105,7 +105,8 @@ async def version(self, *args, data, **kwargs):
     python = platform.python_version()
     shard = self.shards
     servers = len(self.cache)
-    mframework = 3#self.version
+    from MFramework import __version__ as ver, ver_date
+    mframework = ver#self.version
     seq = self.last_sequence
     desc = f"{self.username} @ {node}"
     if 'arm' in machine:
@@ -135,7 +136,7 @@ async def version(self, *args, data, **kwargs):
     .addField("\u200b", "\u200b", True)
     .addField("PostgreSQL", postgres, True)
     )
-    
+    embed.setTimestamp(ver_date).setFooter('',"Last Commit")
     embed.setColor(self.cache[data.guild_id].color).setDescription(desc)
     await self.embed(data.channel_id, "", embed.embed)
 
