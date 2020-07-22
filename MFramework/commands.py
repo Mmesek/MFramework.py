@@ -318,23 +318,23 @@ async def parse(self, data):
             session = self.db.sql.session()
             response = session.query(db.Regex).filter(db.Regex.GuildID == server).filter(db.Regex.Name == match).first()
             r = response.Response.split('$')
-            for command in r:
+            for x, command in enumerate(r):
                 if "execute" == command:
-                    res = self.alias + r[r.index(command) + 1]
+                    res = self.alias + r[x + 1]
                     data.content = data.content.replace(match.group(), res)
                     await execute(self, data)
                 elif "react" == command:
-                    await self.react(data.channel_id, data.id, r[r.index(command) + 1])
+                    await self.create_reaction(data.channel_id, data.id, r[x + 1])
                 elif "role_mentionable" == command:
-                    await self.modify_guild_role(data.guild_id, r[r.index(command) + 1], mentionable=True, audit_reason="Regex Mention")
+                    await self.modify_guild_role(data.guild_id, r[x + 1], mentionable=True, audit_reason="Regex Mention")
                 elif "role_not_mentionable" == command:
-                    await self.modify_guild_role(data.guild_id, r[r.index(command) + 1], mentionable=False, audit_reason="Regex Mention")
+                    await self.modify_guild_role(data.guild_id, r[x + 1], mentionable=False, audit_reason="Regex Mention")
                 elif "message" == command:
-                    await self.message(data.channel_id, r[r.index(command) + 1])
+                    await self.message(data.channel_id, r[x + 1])
                 elif "delete_match" == command:
                     await self.delete_message(data.channel_id, data.id, "Regex Trigger")
                 elif "embed" == command:
-                    embedName = r[r.index(command) + 1].split(' ',1)[0]
+                    embedName = r[x + 1].split(' ',1)[0]
                     embed = self.db.selectOne("EmbedTemplates", "Embed, Message", "WHERE GuildID=? AND Name=?",[server, embedName])[0]
                     message = embed[1].replace('{mention}',f"<@{data.author.id}>")
                     embed = embed[0]
@@ -342,6 +342,6 @@ async def parse(self, data):
                     await self.embed(data.channel_id, message, embed)
                 elif "chance" == command:
                     rng = range(100)
-                    if rng > r[r.index(command) + 1]:
+                    if rng > r[x + 1]:
                         return 0
     return 0
