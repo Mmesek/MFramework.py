@@ -44,3 +44,9 @@ def import_commands(path='commands'):
     f = time.time()
     print("Loaded in:", f - t)
 #import_commands()
+
+import git, time
+commits = git.Repo().heads.Rework.log()
+ver_msg = commits[-1].message
+__version__ = f"3.{len(commits)}"
+ver_date = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(commits[-1].time[0]))
