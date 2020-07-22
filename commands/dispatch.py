@@ -156,6 +156,8 @@ async def guild_create(self, guild):
         self.cache[guild.id] = Cache(guild, self.db, self.user_id, self.alias)
     if guild.id not in self.context:
         self.context[guild.id] = {}
+    if len(self.cache[guild.id].members) < 10:
+        await self.request_guild_members(guild.id)
 
 
 @onDispatch(Guild_Member)
@@ -180,6 +182,7 @@ async def guild_member_remove(self, data):
 async def guild_member_update(self, data):
     await log.MemberUpdate(self, data)
     await log.NitroChange(self, data)
+    await log.MutedChange(self, data)
 
 @onDispatch(Guild_Members_Chunk)
 async def guild_members_chunk(self, data):
@@ -187,6 +190,7 @@ async def guild_members_chunk(self, data):
     if type(s.joined) != list:
         s.joined = []
     for member in data.members:
+        s.members[member.user.id] = member
         s.joined += [(member.user.id, member.joined_at, member.premium_since, member.roles)]
 
 
@@ -365,8 +369,8 @@ async def voice_state_update(self, data):
                 if data.user_id in v[channel]: #User is in cached channel
                     if channel != data.channel_id: #Moved to another channel
                         print('Moved')
-                        finalize(self, data.guild_id, channel, data.user_id)
-                        await log.UserVoiceChannel(self, data, channel)
+                        t = finalize(self, data.guild_id, channel, data.user_id)
+                        await log.UserVoiceChannel(self, data, channel, int(t))
                         moved = True
                         if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
                             print('Removing channel')
@@ -422,8 +426,8 @@ async def voice_state_update(self, data):
                     if data.channel_id == -1:
                         self.cache[data.guild_id].afk[data.user_id] = channel
                     print('Left')
-                    finalize(self, data.guild_id, channel, data.user_id)
-                    await log.UserVoiceChannel(self, data, channel)
+                    t = finalize(self, data.guild_id, channel, data.user_id)
+                    await log.UserVoiceChannel(self, data, channel, int(t))
                     if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
                         print('Removing channel')
                         await self.delete_close_channel(channel, "Deleting Empty Generated Channel")

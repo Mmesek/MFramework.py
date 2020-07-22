@@ -8,7 +8,8 @@ def checkLast(self, guild, channel, user):
         return 0
     return n - j
 def _log(msg):
-    print(time.ctime(), msg)
+    pass
+    #print(time.ctime(), msg)
 
 def finalize(self, guild, channel, user):
     v = checkLast(self, guild, channel, user)
@@ -29,6 +30,7 @@ def finalize(self, guild, channel, user):
         _log(f'reStarting alone {user}')
         #finalize(self, guild, channel, user)
         restartTimer(self, guild, channel, user)
+    return v
 
 def startTimer(self, guild, channel, user):
     self.cache[guild].voice[channel][user] = time.time()

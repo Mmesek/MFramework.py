@@ -129,8 +129,8 @@ def getWebhook(self, guild_id: int, logger: str):
     else:
         webhook = webhook["all"]
     return webhook
-
-async def UserVoiceChannel(self, data, channel=''):
+from .utils import secondsToText
+async def UserVoiceChannel(self, data, channel='', after=None):
     webhook = getWebhook(self, data.guild_id, 'voice_log')
     if webhook is None:
         return
@@ -146,6 +146,8 @@ async def UserVoiceChannel(self, data, channel=''):
     if channel == -1:
         channel = self.cache[data.guild_id].afk_channel
     string += f'<#{channel}>'
+    if after is not None and after > 0:
+        string += f" after {secondsToText(after)}"
     await self.webhook({}, string, webhook, 'Voice Log', None, {'parse': []})
 
 
@@ -230,4 +232,75 @@ async def NitroChange(self, data):
         if booster:
             string = f"<@{data.user.id}> {case}"
             await self.webhook({}, string, webhook, 'Nitro Log', None, {'parse': []})
+            self.cache[data.guild_id].members[data.user.id] = data
+
+async def MutedChange(self, data):
+    webhook = getWebhook(self, data.guild_id, 'muted_log')
+    if webhook is None:
+        return
+    if data.user.id in self.cache[data.guild_id].members:
+        c = self.cache[data.guild_id].members[data.user.id]
+        diff = set(c.roles) ^ set(data.roles)
+        if len(diff) == 0:
+            return
+
+        elif any(i in data.roles for i in diff):
+            case = f'has been muted'
+        else:
+            case = 'has been unmuted'
+        muted = False
+        for i in diff:
+            if i in self.cache[data.guild_id].groups['Muted']:
+                muted = True
+                break
+        if muted:
+            string = f"<@{data.user.id}> {case}"
+            await self.webhook({}, string, webhook, 'Mute Log', None, {'parse': []})
+            self.cache[data.guild_id].members[data.user.id] = data
+
+async def _MemberUpdate(self, data):
+    webhooks = ['member_update_log', 'nitro_log', 'muted_log']
+    for x, webhook in enumerate(webhooks):
+        webhook = getWebhook(self, data.guild_id, 'nitro_log')
+        if webhook is None:
+            return
+        if data.user.id in self.cache[data.guild_id].members:
+            c = self.cache[data.guild_id].members[data.user.id]
+            diff = set(c.roles) ^ set(data.roles)
+            if len(diff) == 0:
+                return
+            elif any(i in data.roles for i in diff):
+                case = 'added'
+            else:
+                case = 'removed'
+            roles = ""
+            booster = False
+            muted = False
+            for i in diff:
+                if i == self.cache[data.guild_id].VoiceLink:
+                    if len(diff) == 1:
+                        return
+                    continue
+                elif i in self.cache[data.guild_id].groups['Nitro']:
+                    booster = True
+                    if i in data.roles and data.premium_since is not None:
+                        case = 'started boosting'
+                    else:
+                        case = 'stopped boosting'
+                elif i in self.cache[data.guild_id].groups['Muted']:
+                    muted = True
+                    if i in data.roles:
+                        case = f'has been <@{i}>'
+                    else:
+                        case = f'has been unmuted'
+                roles += f"<@&{i}> "
+            s =''
+            if len(diff) > 1:
+                s = 's'
+            string = f"<@{data.user.id}> role{s} {case}: {roles}"
+            if booster or muted:
+                string = f"<@{data.user.id}> {case}"
+
+            logs = ['Member Update Log', 'Nitro Log', 'Muted Log']
+            await self.webhook({}, string, webhook, logs[x], None, {'parse': []})
             self.cache[data.guild_id].members[data.user.id] = data
