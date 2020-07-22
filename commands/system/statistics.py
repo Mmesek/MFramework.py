@@ -109,8 +109,8 @@ async def version(self, *args, data, **kwargs):
     seq = self.last_sequence
     desc = f"{self.username} @ {node}"
     if 'arm' in machine:
-        import gpiozero
-        node = 'Raspberry {0:board}\n{0:memory}MB'.format(gpiozero.pi_info())
+        from gpiozero import pi_info
+        node = 'Raspberry {0}\n{1}MB'.format(pi_info().model, pi_info().memory)
     try:
         influx = await self.db.influx.influxPing()
     except:
