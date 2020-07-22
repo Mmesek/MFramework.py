@@ -16,7 +16,10 @@ async def status(self, *args, data, no_ping=False, language, **kwargs):
     cpu = psutil.cpu_percent()
     proc = psutil.Process()
     ram = proc.memory_info()[0]
-    temp = 0#psutil.sensors_temperatures()["cpu-thermal"][0][1]
+    try:
+        temp = psutil.sensors_temperatures()["cpu-thermal"][0][1]
+    except:
+        temp = 0
     sys_uptime = int(time.time() - psutil.boot_time())
     proc_uptime = int(time.time() - proc.create_time())
 
@@ -35,12 +38,15 @@ async def status(self, *args, data, no_ping=False, language, **kwargs):
     embed.addField("Current Temperature", "{0:.2f}'C".format(temp), True)
     embed.addField("CPU", f"{cpu}%", True)
     embed.addField("Tasks", str(len(tasks)), True)
-    child_usage = 0
-    self_usage = 0
-    #    child_usage = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+    try:
+        import resource
+        child_usage = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+        self_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    except:
+        child_usage = 0
+        self_usage = 0
     #    print(resource.getrusage(resource.RUSAGE_CHILDREN))
     #    print(resource.getrusage(resource.RUSAGE_SELF))
-    #    self_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     network = psutil.net_io_counters(pernic=True)
     eth = 0
     wlan = 0
@@ -76,8 +82,13 @@ async def status(self, *args, data, no_ping=False, language, **kwargs):
 
     embed.addField("Bot Usage", bot_size, True)
     embed.addField("RAM", f"{convert_bytes(ram)}", True)
+    try:
+        import gpiozero
+        embed.addField("Disk Usage", f"{int(gpiozero.DiskUsage().usage)}%", True)
+    except:
+        embed.addField("\u200b", "\u200b", True)
     embed.addField("Cache Size", convert_bytes(cache_size), True)
-    embed.addField("\u200b", "\u200b", True)
+    #embed.addField("\u200b", "\u200b", True)
     embed.addField("Steam Index Size", idx, True)
     embed.setColor(self.cache[data.guild_id].color)
     await self.embed(data.channel_id, "", embed.embed)
@@ -97,6 +108,9 @@ async def version(self, *args, data, **kwargs):
     mframework = 3#self.version
     seq = self.last_sequence
     desc = f"{self.username} @ {node}"
+    if 'arm' in machine:
+        import gpiozero
+        node = 'Raspberry {0:board}\n{0:memory}MB'.format(gpiozero.pi_info())
     try:
         influx = await self.db.influx.influxPing()
     except:
@@ -125,7 +139,7 @@ async def version(self, *args, data, **kwargs):
     embed.setColor(self.cache[data.guild_id].color).setDescription(desc)
     await self.embed(data.channel_id, "", embed.embed)
 
-@register(group='System', help='Short description to use with help command')
+@register(group='System', help='Short description to use with help command', notImpl=True)
 async def remaining(self, *args, data, **kwargs):
     '''Extended description to use with detailed help command'''
     print(await self.get_gateway_bot())
