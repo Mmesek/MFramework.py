@@ -422,7 +422,12 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         character.Level = 0
         character.Skills = {}
         character.Items = {}
-        for i in [upperfirst(i.strip()) for i in self.answers['items'].split(',')[:3]]:
+        if ',' in self.answers['items']:
+            items = ['- ' + upperfirst(i.strip()) for i in self.answers['items'].split(',')]
+        else:
+            items = ['- ' + upperfirst(i.strip()) for i in self.answers['items'].split('\n')]
+        #for i in [upperfirst(i.strip()) for i in self.answers['items'].split(',')[:3]]:
+        for i in items[:3]:
             character.Items[i] = 1
         character.Origin = self.answers['placeoforigin']
         character.Story = self.answers['story']
@@ -449,7 +454,12 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
             w = who['f'] + who['any']
         else:
             w = who['m'] + who['any']
-        items = self.answers['items'].split(',')[:3]
+        #items = self.answers['items'].split(',')[:3]
+        #if ',' in self.answers['items']:
+        #    items = ['- ' + upperfirst(i.strip()) for i in self.answers['items'].split(',')]
+        #else:
+        #    items = ['- ' + upperfirst(i.strip()) for i in self.answers['items'].split('\n')]
+        items= items[:3]
         chosen_item = choice(items)
         if chosen_item.strip()[-1] in ['a','ą','ę']:
             gi = 'a'
