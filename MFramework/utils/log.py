@@ -137,18 +137,21 @@ async def UserVoiceChannel(self, data, channel='', after=None):
     string = f'<@{data.user_id}> '
     if channel != '' and data.channel_id != channel and data.channel_id != 0:
         string += f'moved from <#{channel}> to '
+        status = '/'
         channel = data.channel_id
     elif data.channel_id == 0:
         string += 'left '
+        status = '-'
     else:
         string += 'joined '
+        status = '+'
         channel = data.channel_id
     if channel == -1:
         channel = self.cache[data.guild_id].afk_channel
     string += f'<#{channel}>'
     if after is not None and after > 0:
         string += f" after {secondsToText(after)}"
-    await self.webhook({}, string, webhook, 'Voice Log', None, {'parse': []})
+    await self.webhook({}, string, webhook, f'Voice Log [{status}]', None, {'parse': []})
 
 
 async def Infraction(self, data, user, type, reason):
