@@ -199,12 +199,12 @@ def compilePatterns(self):
 @timed
 async def execute(self, data):
     _server_alias = self.cache[data.guild_id].alias
-    server_alias = re.compile(re.escape(_server_alias))
-    if self.patterns['strip_trigger'].search(data.content) == None and server_alias.search(data.content) == None:
+    #server_alias = re.compile(re.escape(_server_alias))
+    if self.patterns['strip_trigger'].search(data.content) == None and _server_alias not in data.content[0]:#server_alias.search(data.content[0]) == None:
         return None
     command = [c.strip() for c in self.patterns['strip_trigger'].split(data.content)[1:] if c is not None and c != '']
     if _server_alias != self.alias and command == []:
-        command = [c.strip() for c in server_alias.split(data.content)[1:] if c is not None and c != '']
+        command = [data.content[1:]]
     #print(command,'content:', data.content)
     
     for mention in data.mentions:
