@@ -137,7 +137,7 @@ async def UserVoiceChannel(self, data, channel='', after=None):
     string = f'<@{data.user_id}> '
     if channel != '' and data.channel_id != channel and data.channel_id != 0:
         string += f'moved from <#{channel}> to '
-        status = '/'
+        status = '|'
         channel = data.channel_id
     elif data.channel_id == 0:
         string += 'left '
