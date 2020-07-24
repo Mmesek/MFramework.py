@@ -1,8 +1,8 @@
 from MFramework.commands import register
 
-@register(group="Admin", help="Edits bot's message", notImpl=True)
-async def edit_message(self, messageID, *newMessage, channel, data, **kwargs):
-    await self.edit_message(channel, messageID, ' '.join(newMessage))
+@register(group="Admin", help="Edits bot's message")
+async def edit_message(self, messageID, *newMessage, data, channel, **kwargs):
+    await self.edit_message(channel[0], messageID, ' '.join(newMessage))
 
 
 @register(group="Admin", help="Allows only specific roles access to emoji's")
