@@ -176,10 +176,10 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
 @register(group='Nitro', help='Removes from db', alias='del', category='')
-async def delete(self, typeof='meme', *name, data, language, group, **kwargs):
+async def delete(self, *name, data, typeof='meme', user='', language, group, **kwargs):
     '''meme/cannedresponse/rule/snippet'''
-    if group == 'System' and 'user' in kwargs:
-        data.author.id = kwargs['user']
+    if group in ['System','Admin'] and user!='':
+        data.author.id = user
     session = self.db.sql.session()
     session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.UserID == data.author.id).filter(db.Snippets.Type == typeof.lower()).filter(db.Snippets.Name == ' '.join(name)).delete()
     session.commit()
