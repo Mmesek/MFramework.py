@@ -322,3 +322,4 @@ async def xkcdpassword(self, *args, data, language, **kwargs):
     with open('/usr/share/dict/words') as f:
         words = [word.strip() for word in f]
         password = ' '.join(secrets.choice(words) for i in range(4))
+    await self.message(data.channel_id, password)
