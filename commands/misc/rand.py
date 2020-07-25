@@ -44,18 +44,27 @@ async def anagram(self, *args, data, **kwargs):
 
 @register(group="Global", help="Checks if provided word exists", alias="", category="")
 async def word(self, word, letter_count, *args, data, **kwargs):
-    dig = int(letter_count) + 1
+    dig = int(letter_count)
     m = word.replace("*", "(.+?)")
     reg = re.compile(r"(?i)" + m)
     res = []
     words = load_words()
-    for word in words:
-        if len(word) == int(dig):
-            ree = reg.search(word)
+    for _word in words:
+        if len(_word) == int(dig):
+            ree = reg.search(_word)
             if ree != None:
-                res += [word]
-    res = "\n".join(res)
-    await self.message(data.channel_id, res)
+                res += [_word]
+    embed = Embed().setTitle("Words matching provided criteria: "+word+f" ({letter_count})")
+    field = ''
+    for word in res:
+        if len(field) + len(word) < 1024:
+            field += ' ' + word
+        else:
+            embed.addField("\u200b", field)
+            field = word
+    if field != '':
+        embed.addField('\u200b', field)
+    await self.embed(data.channel_id, '', embed.embed)
 
 
 @register(group="System", notImpl=True)
@@ -303,3 +312,13 @@ async def lyrics(self, artist, song, *args, data, **kwargs):
         await self.embed(data.channel_id, '', embe)
     else:
         await self.message(data.channel_id, '404')
+
+
+@register(group='Global', help='Generates random xkcd 936 styled password')
+async def xkcdpassword(self, *args, data, language, **kwargs):
+    import secrets
+    # On standard Linux systems, use a convenient dictionary file.
+    # Other platforms may need to provide their own word-list.
+    with open('/usr/share/dict/words') as f:
+        words = [word.strip() for word in f]
+        password = ' '.join(secrets.choice(words) for i in range(4))
