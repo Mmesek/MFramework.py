@@ -42,7 +42,7 @@ async def anagram(self, *args, data, **kwargs):
     await self.message(data.channel_id, words[0])
 
 
-@register(group="Global", help="Checks if provided word exists", alias="", category="")
+@register(group="Global", help="Checks if provided word exists. Use * as wildcard character", alias="", category="")
 async def word(self, word, letter_count, *args, data, **kwargs):
     dig = int(letter_count)
     m = word.replace("*", "(.+?)")
