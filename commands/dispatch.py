@@ -340,8 +340,12 @@ async def voice_state_update(self, data):
         template = self.cache[data.guild_id].dynamic_channels[data.channel_id]
         if 'buffer' in template:
             await self.move_guild_member(data.guild_id, data.user_id, template['buffer'], f"Moved {data.member.user.username} to channel")
-    #        if template['buffer'] in self.cache[data.guild_id].voice:
-    #            count = len(self.cache[data.guild_id].voice[template['buffer']])+1
+    #        if template['buffer'] not in self.cache[data.guild_id].voice:
+    #            self.cache[data.guild_id].voice[template['buffer']] = {}
+    #            await self.channel_name(data.channel_id, '🔴 Wejście do Zakątka')
+    #        elif self.cache[data.guild_id].voice[template['buffer']] == {}:
+    #            await self.channel_name(data.channel_id, '🔴 Wejście do Zakątka')
+                #count = len(self.cache[data.guild_id].voice[template['buffer']])+1
     #        else:
     #            count = 1
     #        await self.user_limit(data.channel_id, count)
@@ -372,6 +376,8 @@ async def voice_state_update(self, data):
                         t = finalize(self, data.guild_id, channel, data.user_id)
                         await log.UserVoiceChannel(self, data, channel, int(t))
                         moved = True
+                        #if v[734523217141563463] == {}:
+                        #    await self.channel_name(734523870647681101, 'Wejście do Zakątka')
                         if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
                             print('Removing channel')
                             await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
@@ -428,6 +434,8 @@ async def voice_state_update(self, data):
                     print('Left')
                     t = finalize(self, data.guild_id, channel, data.user_id)
                     await log.UserVoiceChannel(self, data, channel, int(t))
+                    #if v[734523217141563463] == {}:
+                    #    await self.channel_name(734523870647681101, 'Wejście do Zakątka')
                     if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
                         print('Removing channel')
                         await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
@@ -443,7 +451,7 @@ async def voice_server_update(self, data):
 @onDispatch(Guild_Ban_Add)
 async def guild_ban_add(self, data):
     reason = await self.get_guild_ban(data.guild_id, data.user.id)
-    await log.Infraction(self, data, "banned", reason=reason)
+    await log.InfractionEvent(self, data, "banned", reason=reason)
 
 @onDispatch(Guild_Ban_Remove)
 async def guild_ban_remove(self, data):
