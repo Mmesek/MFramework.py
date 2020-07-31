@@ -54,7 +54,10 @@ async def fetch(self, data, typeof, newline, *names, has=None):
     if snippets == []:
         snippets = [session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).filter(db.Snippets.Name == ' '.join(names)).first()]
     if snippets == [] or snippets is None or snippets == [None]:
-        snippets = session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).all()
+        if names != ():
+            return 'For a list of available ' + typeof + 's do not provide any arguments'
+        else:
+            snippets = session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.Type == typeof).all()
     if snippets == [] or snippets is None:
         return "Not found"
     try:
@@ -215,7 +218,7 @@ async def ls(self, type='meme', *names, data, has=None, language, group, cmd, **
             pattern = '- {name}:\n{response}\n'
     r = await fetch(self, data, type.lower(), pattern, *names, has=has)
     if names != ():
-        await self.message(data.channel_id, r)
+        await self.message(data.channel_id, r, allowed_mentions={"parse":[]})
         return
     rn = r.splitlines(True)
     s, f='', ''
