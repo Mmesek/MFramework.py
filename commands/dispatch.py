@@ -451,7 +451,7 @@ async def voice_server_update(self, data):
 @onDispatch(Guild_Ban_Add)
 async def guild_ban_add(self, data):
     reason = await self.get_guild_ban(data.guild_id, data.user.id)
-    await log.InfractionEvent(self, data, "banned", reason=reason)
+    await log.InfractionEvent(self, data, "banned", reason=reason.reason)
 
 @onDispatch(Guild_Ban_Remove)
 async def guild_ban_remove(self, data):
