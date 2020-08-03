@@ -158,7 +158,9 @@ async def Infraction(self, data, user, type, reason):
     webhook = getWebhook(self, data.guild_id, 'infraction_log')
     if webhook is None:
         return
-    string = f'<@{data.author.id}> {type} <@{user}> for "{reason}"'
+    string = f'<@{data.author.id}> {type} <@{user}>'
+    if reason != '':
+        string += f' for "{reason}"'
     await self.webhook({}, string, webhook, 'Infraction Log', None, {'parse': []})
 
 async def InfractionEvent(self, data, type, reason=''):
@@ -166,7 +168,7 @@ async def InfractionEvent(self, data, type, reason=''):
     if webhook is None:
         return
     string = f'<@{data.user.id}> has been {type}'
-    if reason != '':
+    if reason != '' and reason != 'Unspecified':
         string += f' for "{reason}"'
     await self.webhook({}, string, webhook, 'Infraction Event Log', None, {'parse': []})
 
