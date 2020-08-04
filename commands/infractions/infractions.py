@@ -7,12 +7,14 @@ import re, datetime
 
 types = {
     "warn": "warned",
+    "tempmute":"temporarily muted",
     "mute": "muted",
     "kick": "kicked",
+    "tempban":"temporarily banned",
     "ban": "banned",
 }
 
-@register(group='Mod', help='Warns user', alias='mute, kick, ban', category='')
+@register(group='Mod', help='Warns user', alias='tempmute, mute, kick, tempban, ban', category='')
 async def warn(self, user, *reason, data, language, cmd, **kwargs):
     '''Extended description to use with detailed help command'''
     await infract(self, data, user, reason, cmd)
