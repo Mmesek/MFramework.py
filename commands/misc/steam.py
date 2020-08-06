@@ -36,7 +36,7 @@ async def steamParse(self, request, language, *game):
             yield playercount, game
         elif request == "details":
             page = await steam.appDetails(appid, language)
-            yield page[str(appid)]["data"], appid
+            yield page[str(appid)].get("data",{"short_description": "There was an error searching for data, perhaps Steam page doesn't exist anymore?", "name":game}), appid
 
 def isEmpty(tuple):
     if len(tuple) == 0:
@@ -111,11 +111,11 @@ async def game(self, *game, data, language, **kwargs):
         return await self.message(data.channel_id, 'Game was not provided. Example usage: `game game title`')
     async for game, appid in steamParse(self, "details", language, *game):
         embed = Embed()
-        embed.setDescription(game["short_description"]).setTitle(game["name"])
+        embed.setDescription(game.get("short_description")).setTitle(game.get("name"))
         embed.setUrl(f"https://store.steampowered.com/app/{appid}/").setFooter(
-            "", text=tr("commands.game.release", language) + game["release_date"]["date"]
+            "", text=tr("commands.game.release", language) + game.get("release_date",{}).get("date","")
         )
-        embed.setImage(game["header_image"])
+        embed.setImage(game.get("header_image",""))
         prc = game.get("price_overview", {}).get("final_formatted")
         is_free = game.get("is_free", {})
         if prc is not None or is_free:
@@ -138,10 +138,10 @@ async def game(self, *game, data, language, **kwargs):
         cp = cp.get("response", {}).get("player_count")
         if cp is not None:
             embed.addField(tr("commands.game.players", language), cp, True)
-        ach = game.get("achievements", {}).get("total")
+        ach = game.get("achievements", {}).get("total",0)
         if ach is not None and ach != 0:
             embed.addField(tr("commands.game.achievements", language), ach, True)
-        required_age = game.get("required_age")
+        required_age = game.get("required_age",0)
         if required_age != 0:
             embed.addField(tr("commands.game.age", language), required_age, True)
         dlc = len(game.get("dlc", []))
