@@ -186,6 +186,7 @@ async def delete(self, *name, data, typeof='meme', user='', language, group, **k
     session = self.db.sql.session()
     session.query(db.Snippets).filter(db.Snippets.GuildID == data.guild_id).filter(db.Snippets.UserID == data.author.id).filter(db.Snippets.Type == typeof.lower()).filter(db.Snippets.Name == ' '.join(name)).delete()
     session.commit()
+    await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
 @register(group='Nitro', help='Lists currently stored snippets', alias='meme, m, r, rule, s, snippet', category='')
 async def ls(self, type='meme', *names, data, has=None, language, group, cmd, **kwargs):
