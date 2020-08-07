@@ -4,14 +4,10 @@ from MFramework.utils.utils import Embed, secondsToText, tr
 
 import re
 @register(group='Global', help='Shows exp of specified user', alias='', category='')
-async def exp(self, *user, data, language, **kwargs):
+async def exp(self, *user_id, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
-    user = re.search(r'\d+', data.content)
-    if user:
-        user = user[0]
-    else:
-        user = data.author.id
+    user = getUserID(self, data, data.content)
     r = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).filter(db.UserLevels.UserID == user).first()
     embed = Embed()
     t = ''
@@ -98,7 +94,7 @@ async def games(self, *game_or_user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     query = getUserID(self, data, ' '.join(game_or_user))
     session = self.db.sql.session()
-    r = session.query(db.Presences).filter(db.Presences.Type == "Game")
+    r = session.query(db.Presences).filter(db.Presences.GuildID == data.guild_id).filter(db.Presences.Type == "Game")
     embed = Embed()
     d = ''
     if type(query) == str:
