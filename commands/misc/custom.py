@@ -178,7 +178,7 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
         self.cache[data.guild_id].recompileTriggers(self.db, data.guild_id)
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
-@register(group='Nitro', help='Removes from db', alias='del', category='')
+@register(group='Nitro', help='Removes from db', alias='del, remove, rem', category='')
 async def delete(self, *name, data, typeof='meme', user='', language, group, **kwargs):
     '''meme/cannedresponse/rule/snippet'''
     if group in ['System','Admin'] and user!='':
