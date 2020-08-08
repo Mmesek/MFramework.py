@@ -227,7 +227,9 @@ async def NitroChange(self, data):
 
         elif any(i in data.roles for i in diff) and data.premium_since is not None:
             case = 'started boosting'
+            s = True
         else:
+            s = False
             case = 'stopped boosting'
         booster = False
         for i in diff:
@@ -238,6 +240,7 @@ async def NitroChange(self, data):
             string = f"<@{data.user.id}> {case}"
             await self.webhook({}, string, webhook, 'Nitro Log', None, {'parse': []})
             self.cache[data.guild_id].members[data.user.id] = data
+            return s
 
 async def MutedChange(self, data):
     webhook = getWebhook(self, data.guild_id, 'muted_log')
