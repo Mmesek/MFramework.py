@@ -181,7 +181,34 @@ async def guild_member_remove(self, data):
 @onDispatch(Guild_Member_Update)
 async def guild_member_update(self, data):
     await log.MemberUpdate(self, data)
-    await log.NitroChange(self, data)
+    is_boosting = await log.NitroChange(self, data)
+    if is_boosting and data.guild_id == 289739584546275339:
+        #TODO: Fetch from database channel/setting regarding nitro handling and message to send them
+        nitro_channel = 589745007737700352
+        greeting = [
+        "Thank you for boosting the server, <@{user}>.", 
+        "<@{user}> Thank you for boosting the server.",
+        "<@{user}> Hello, thanks for boosting the server.",
+        "<@{user}> Thanks for boosting."]
+
+        color=[
+        "As a booster, you can have your own custom role that you can choose the name and the color of.", 
+        "As a booster you can have a role with your name and colour of choice.",
+        "Alongside access to this channel, you can also get a custom role with any name (within ruleset) and any color.",
+        "You can have a custom role as long as your boost persists."]
+
+        fine_print = [
+        "(As long as it doesn 't clash with Staff' s orange or Techland 's red.)",
+        "(apart from Staff orange and Techland red)"]
+
+        last = [
+        "If you would like to have one, just contact one of the currently online staff.",
+        "If that interests you, then just tell us what you'd like.",
+        "If you would like to have one. Just write down the name and color, in hexadecimal if possible, in this channel.",
+        "If you want one, just tell a staff member the name and color code you want for it."]
+        from random import choice
+        message = choice(greeting).format(user=data.user.id) + ' ' + choice(color) + ' ' + choice(fine_print) + ' '+ choice(last)
+        await self.message(nitro_channel, message)
     await log.MutedChange(self, data)
 
 @onDispatch(Guild_Members_Chunk)
@@ -374,6 +401,11 @@ async def voice_state_update(self, data):
                     if channel != data.channel_id: #Moved to another channel
                         print('Moved')
                         t = finalize(self, data.guild_id, channel, data.user_id)
+                        if t[1][1] != 0:
+                            _data = data
+                            _data.user_id = t[1][0]
+                            await log.UserVoiceChannel(self, _data, channel, int(t[1][1]))
+                        t = t[0]
                         await log.UserVoiceChannel(self, data, channel, int(t))
                         moved = True
                         #if v[734523217141563463] == {}:
@@ -433,6 +465,11 @@ async def voice_state_update(self, data):
                         self.cache[data.guild_id].afk[data.user_id] = channel
                     print('Left')
                     t = finalize(self, data.guild_id, channel, data.user_id)
+                    if t[1][1] != 0:
+                        _data = data
+                        _data.user_id = t[1][0]
+                        await log.UserVoiceChannel(self, _data, channel, int(t[1][1]))
+                    t = t[0]
                     await log.UserVoiceChannel(self, data, channel, int(t))
                     #if v[734523217141563463] == {}:
                     #    await self.channel_name(734523870647681101, 'Wejście do Zakątka')
