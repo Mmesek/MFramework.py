@@ -39,6 +39,7 @@ def startTimer(self, guild, channel, user):
 
 def restartTimer(self, guild, channel, user, flag=0):
     c = self.cache[guild].voice[channel]
+    v = (0,0)
     if user in c:
         if c[user] > 0:
             _log(f'Finalizing Previous Timer for {user} in {channel}')
