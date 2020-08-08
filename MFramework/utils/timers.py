@@ -12,6 +12,7 @@ def _log(msg):
     #print(time.ctime(), msg)
 
 def finalize(self, guild, channel, user):
+    _v = 0
     v = checkLast(self, guild, channel, user)
     if v != 0:
         session = self.db.sql.session()
@@ -29,8 +30,8 @@ def finalize(self, guild, channel, user):
         user = list(in_channel.keys())[0]
         _log(f'reStarting alone {user}')
         #finalize(self, guild, channel, user)
-        restartTimer(self, guild, channel, user)
-    return v
+        _v = restartTimer(self, guild, channel, user)
+    return v, (user, _v)
 
 def startTimer(self, guild, channel, user):
     self.cache[guild].voice[channel][user] = time.time()
@@ -41,6 +42,7 @@ def restartTimer(self, guild, channel, user, flag=0):
     if user in c:
         if c[user] > 0:
             _log(f'Finalizing Previous Timer for {user} in {channel}')
-            finalize(self, guild, channel, user)
+            v = finalize(self, guild, channel, user)
     c[user] = flag
     _log(f'reStarting Timer for {user} in {channel} with {flag}')
+    return v[0]
