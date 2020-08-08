@@ -12,9 +12,11 @@ types = {
     "kick": "kicked",
     "tempban":"temporarily banned",
     "ban": "banned",
+    "unban": "unbanned",
+    "unmute": "unmuted"
 }
 
-@register(group='Mod', help='Warns user', alias='tempmute, mute, kick, tempban, ban', category='')
+@register(group='Mod', help='Warns user', alias='tempmute, mute, kick, tempban, ban, unban, unmute', category='')
 async def warn(self, user, *reason, data, language, cmd, **kwargs):
     '''Extended description to use with detailed help command'''
     await infract(self, data, user, reason, cmd)
@@ -31,10 +33,15 @@ async def infract(self, data, user, reason, type):
     r = db.Infractions(data.guild_id, user, timestamp, reason, data.author.id, None, type)
     self.db.sql.add(r)
     await Infraction(self, data, user, types[type], reason)
+    if type in ['unban', 'unmute']:
+        return
     guild = await self.get_guild(data.guild_id)
     guild = guild.name
     cid = await self.create_dm(user)
-    result = await self.message(cid.id, f"You've been {types[type]} in {guild} server for {reason}")
+    s = f"You've been {types[type]} in {guild} server"
+    if reason != '':
+        s+=f" for {reason}"
+    result = await self.message(cid.id, s)
     if "code" in result:
         await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
