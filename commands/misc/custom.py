@@ -243,3 +243,36 @@ async def ls(self, type='meme', *names, data, has=None, language, group, cmd, **
 async def edit(self, name, *new_response, data, trigger='', type='meme', language, **kwargs):
     '''Extended description to use with detailed help command'''
     pass
+
+@register(group='Nitro', help='Create self role. Only one per booster', alias='', category='')
+async def role(self, hex_color, *name, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    s = self.db.sql.session()
+    c = s.query(db.CustomRoles).filter(db.CustomRoles.GuildID == data.guild_id).filter(db.CustomRoles.UserID == data.author.id).first()
+    reserved_colors = []
+    groups = self.cache[data.guild_id].groups
+    for _role in self.cache[data.guild_id].roles:
+        if _role.id in groups['Admin'] or _role.id in groups['Mod']:
+            reserved_colors.append(_role.color)
+        elif _role.id in groups['Nitro']:
+            nitro_position = _role.position
+    color = int(hex_color.strip('#'), 16)
+    if color in reserved_colors:
+        await self.message(data.channel_id, "Color is too similiar to admin colors")
+        color = None
+    if c != None:
+        await self.modify_guild_role(data.guild_id, c.RoleID, ' '.join(name), 0, color=color, audit_reason="Updated Role of Nitro user")
+        role = c.RoleID
+    else:
+        role = await self.create_guild_role(data.guild_id, ' '.join(name), 0, color, False, False, "Created Role for Nitro user "+data.author.username)
+        role = role.id
+        nitro_position = 1
+        await self.modify_guild_role_positions(data.guild_id, role, nitro_position)
+        await self.add_guild_member_role(data.guild_id, data.author.id, role)
+    
+    r = db.CustomRoles(data.guild_id, data.author.id, ' '.join(name), color, role)
+    if c != None:
+        s.merge(r)
+    else:
+        self.db.sql.add(r)
+    await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
