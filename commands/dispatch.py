@@ -3,7 +3,7 @@ from MFramework.commands import execute, parse, compilePatterns, contextCommandL
 from MFramework.discord.objects import *
 from MFramework.database.cache import Cache, CacheDM
 from MFramework.utils import log, utils
-
+import MFramework.database.alchemy as db
 import time, datetime
 
 
@@ -209,6 +209,12 @@ async def guild_member_update(self, data):
         from random import choice
         message = choice(greeting).format(user=data.user.id) + ' ' + choice(color) + ' ' + choice(fine_print) + ' '+ choice(last)
         await self.message(nitro_channel, message)
+    elif is_boosting is False and data.guild_id == 289739584546275339:
+        s = self.db.sql.session()
+        c = s.query(db.CustomRoles).filter(db.CustomRoles.GuildID == data.guild_id).filter(db.CustomRoles.UserID == data.author.id).first()
+        if c != None:
+            await self.delete_guild_role(data.guild_id, c.RoleID, "User stopped boosting server")
+            self.db.sql.delete(c)
     await log.MutedChange(self, data)
 
 @onDispatch(Guild_Members_Chunk)
@@ -296,7 +302,7 @@ async def message_reaction_remove(self, data):
     for i in role:
         await self.remove_guild_member_role(data.guild_id, data.user_id, i, "Reaction Role")
 
-import MFramework.database.alchemy as db
+
 @onDispatch(Presence_Update)
 async def presence_update(self, data):
     if data.guild_id == 0 or data.user.bot or (len(data.client_status) == 1 and 'web' in data.client_status):
