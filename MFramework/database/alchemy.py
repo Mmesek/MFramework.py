@@ -324,3 +324,18 @@ class RolePlayCharacters(Base):
         self.Profession = Profession
         self.Gender = Gender
         self.Race = Race
+
+class CustomRoles(Base):
+    __tablename__ = "CustomRoles"
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    UserID = Column(BigInteger, primary_key=True)
+    Name = Column(String)
+    Color = Column(Integer)
+    RoleID = Column(BigInteger, primary_key=True)
+
+    def __init__(self, GuildID, UserID, Name, Color, RoleID):
+        self.GuildID = GuildID
+        self.UserID = UserID
+        self.Name = Name
+        self.Color = Color
+        self.RoleID = RoleID
