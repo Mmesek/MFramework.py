@@ -32,7 +32,7 @@ async def infract(self, data, user, reason, type):
     timestamp = datetime.datetime.fromisoformat(data.timestamp)
     r = db.Infractions(data.guild_id, user, timestamp, reason, data.author.id, None, type)
     self.db.sql.add(r)
-    await Infraction(self, data, user, types[type], reason)
+    await Infraction(self, data, user, types[type], reason, attachments=data.attachments)
     if type in ['unban', 'unmute']:
         return
     guild = await self.get_guild(data.guild_id)
