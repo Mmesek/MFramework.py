@@ -493,6 +493,7 @@ async def voice_server_update(self, data):
 
 @onDispatch(Guild_Ban_Add)
 async def guild_ban_add(self, data):
+    import asyncio
     await asyncio.sleep(3)
     moderator = ''
     audit = await self.get_audit_log(data.guild_id, 22)
