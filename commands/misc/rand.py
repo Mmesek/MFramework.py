@@ -14,7 +14,7 @@ from MFramework.utils.utils import Embed
 from MFramework.utils.utils import tr
 @register(help="Rolls Random Number")
 async def rd(self, number=20, *args, data, **kwargs):
-    await self.message(data.channel_id, str(number) + ": " + str(random.randrange(int(number)) + 1))
+    await self.message(data.channel_id, str(number) + ": " + str(random.SystemRandom().randrange(int(number)) + 1))
 
 
 @register(group="Global", help="Sends random quote", alias="", category="")
