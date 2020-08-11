@@ -34,3 +34,11 @@ class EndpointWrappers:
             file=(filename, attachment))
     async def move_guild_member(self, guild_id, user_id, channel_id, audit_reason='') -> None:
         return await self.api_call(f'/guilds/{guild_id}/members/{user_id}', 'PATCH', reason=audit_reason, json={'channel_id': channel_id})
+    async def user_limit(self, channel_id, user_limit):
+        return await self.api_call(f'/channels/{channel_id}', 'PATCH', json={'user_limit': user_limit})
+    async def channel_name(self, channel_id, name):
+        return await self.api_call(f'/channels/{channel_id}', 'PATCH', json={'name': name})
+    async def get_audit_log(self, guild_id, action_type=0, limit=10):
+        r = await self.api_call(f'/guilds/{guild_id}/audit-logs', 'GET', params={"action_type":action_type, "limit": limit})
+        from .objects import Audit_Log
+        return Audit_Log(r)
