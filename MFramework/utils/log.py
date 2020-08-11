@@ -154,14 +154,20 @@ async def UserVoiceChannel(self, data, channel='', after=None):
     await self.webhook({}, string, webhook, f'Voice Log [{status}]', None, {'parse': []})
 
 
-async def Infraction(self, data, user, type, reason):
+async def Infraction(self, data, user, type, reason, attachments=[]):
     webhook = getWebhook(self, data.guild_id, 'infraction_log')
+    embeds = []
     if webhook is None:
         return
     string = f'<@{data.author.id}> {type} <@{user}>'
     if reason != '':
         string += f' for "{reason}"'
-    await self.webhook({}, string, webhook, 'Infraction Log', None, {'parse': []})
+    if attachments != []:
+        for attachment in attachments:
+            if len(embeds) == 10:
+                break
+            embeds += [Embed().setImage(attachment.url).setTitle(attachment.filename).embed]
+    await self.webhook(embeds, string, webhook, 'Infraction Log', None, {'parse': []})
 
 async def InfractionEvent(self, data, type, reason='', by_user=''):
     webhook = getWebhook(self, data.guild_id, 'infraction_event_log')
