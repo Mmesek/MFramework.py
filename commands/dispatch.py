@@ -493,16 +493,17 @@ async def voice_server_update(self, data):
 
 @onDispatch(Guild_Ban_Add)
 async def guild_ban_add(self, data):
+    await asyncio.sleep(3)
     moderator = ''
     audit = await self.get_audit_log(data.guild_id, 22)
     for ban in audit.audit_log_entries:
       if int(ban.target_id) == data.user.id:
         moderator = ban.user_id
-        reason = ban.reason
+        reason = ban
         break
     if moderator == '':
-        reason = await self.get_guild_ban(data.guild_id, data.user.id).reason
-    await log.InfractionEvent(self, data, "banned", reason=reason, by_user=moderator)
+        reason = await self.get_guild_ban(data.guild_id, data.user.id)
+    await log.InfractionEvent(self, data, "banned", reason=reason.reason, by_user=moderator)
 
 @onDispatch(Guild_Ban_Remove)
 async def guild_ban_remove(self, data):
