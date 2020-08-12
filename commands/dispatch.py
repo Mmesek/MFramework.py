@@ -491,21 +491,58 @@ async def voice_server_update(self, data):
     await self.cache[data.guild_id].connection.connect(data.token, data.guild_id, data.endpoint, self.user_id)
 
 
-@onDispatch(Guild_Ban_Add)
-async def guild_ban_add(self, data):
+async def get_ban_data(self, data, type, audit_type):
     import asyncio
     await asyncio.sleep(3)
     moderator = ''
-    audit = await self.get_audit_log(data.guild_id, 22)
-    for ban in audit.audit_log_entries:
-      if int(ban.target_id) == data.user.id:
-        moderator = ban.user_id
-        reason = ban
+    audit = await self.get_audit_log(data.guild_id, audit_type)
+    for obj in audit.audit_log_entries:
+      if int(unban.target_id) == data.user.id:
+        moderator = obj.user_id
+        reason = obj.reason
         break
-    if moderator == '':
+    if moderator == '' and type == 'ban':
         reason = await self.get_guild_ban(data.guild_id, data.user.id)
-    await log.InfractionEvent(self, data, "banned", reason=reason.reason, by_user=moderator)
+        reason = reason.reason
+    session = self.db.sql.session()
+    r = session.query(db.Infractions).filter(db.Infractions.GuildID == data.guild_id).filter(db.Infractions.UserID == data.user.id).filter(db.Infractions.InfractionType == type).filter(db.Infractions.Reason == reason).first()
+    if r is None:
+        timestamp = datetime.datetime.now().isoformat()
+        if moderator == '':
+            moderator = 0
+        r = db.Infractions(data.guild_id, data.user.id, timestamp, reason, moderator, None, type)
+        self.db.sql.add(r)
+        return reason, moderator
+    return False, False
+
+@onDispatch(Guild_Ban_Add)
+async def guild_ban_add(self, data):
+    #import asyncio
+    #await asyncio.sleep(3)
+    #moderator = ''
+    #audit = await self.get_audit_log(data.guild_id, 22)
+    #for ban in audit.audit_log_entries:
+    #  if int(ban.target_id) == data.user.id:
+    #    moderator = ban.user_id
+    #    reason = ban
+    #    break
+    #if moderator == '':
+    #    reason = await self.get_guild_ban(data.guild_id, data.user.id)
+    #session = self.db.sql.session()
+    #r = session.query(db.Infractions).filter(db.Infractions.GuildID == data.guild_id).filter(db.Infractions.UserID == data.user.id).filter(db.Infractions.InfractionType == 'ban').filter(db.Infractions.Reason == reason.reason).first()
+    #if r is None:
+    #    timestamp = datetime.datetime.now().isoformat()  #fromisoformat(data.timestamp)
+    #    if moderator == '':
+    #        moderator = 0
+    #    r = db.Infractions(data.guild_id, data.user.id, timestamp, reason.reason, moderator, None, "ban")
+    #    self.db.sql.add(r)
+    #    await log.InfractionEvent(self, data, "banned", reason=reason.reason, by_user=moderator)
+    reason, moderator = await get_ban_data(self, data, "ban", 22)
+    if reason is not False:
+        await log.InfractionEvent(self, data, "banned", reason=reason, by_user=moderator)
 
 @onDispatch(Guild_Ban_Remove)
 async def guild_ban_remove(self, data):
-    await log.InfractionEvent(self, data, "unbanned")
+    reason, moderator = await get_ban_data(self, data, "unban", 23)
+    if reason is not False:
+        await log.InfractionEvent(self, data, "unbanned", by_user=moderator)
