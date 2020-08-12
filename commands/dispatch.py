@@ -407,12 +407,11 @@ async def voice_state_update(self, data):
                     if channel != data.channel_id: #Moved to another channel
                         print('Moved')
                         t = finalize(self, data.guild_id, channel, data.user_id)
+                        await log.UserVoiceChannel(self, data, channel, int(t[0]))
                         if t[1][1] != 0:
                             _data = data
                             _data.user_id = t[1][0]
                             await log.UserVoiceChannel(self, _data, channel, int(t[1][1]))
-                        t = t[0]
-                        await log.UserVoiceChannel(self, data, channel, int(t))
                         moved = True
                         #if v[734523217141563463] == {}:
                         #    await self.channel_name(734523870647681101, 'Wejście do Zakątka')
@@ -471,12 +470,11 @@ async def voice_state_update(self, data):
                         self.cache[data.guild_id].afk[data.user_id] = channel
                     print('Left')
                     t = finalize(self, data.guild_id, channel, data.user_id)
+                    await log.UserVoiceChannel(self, data, channel, int(t[0]))
                     if t[1][1] != 0:
                         _data = data
                         _data.user_id = t[1][0]
                         await log.UserVoiceChannel(self, _data, channel, int(t[1][1]))
-                    t = t[0]
-                    await log.UserVoiceChannel(self, data, channel, int(t))
                     #if v[734523217141563463] == {}:
                     #    await self.channel_name(734523870647681101, 'Wejście do Zakątka')
                     if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
