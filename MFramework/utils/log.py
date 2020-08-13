@@ -159,7 +159,7 @@ async def Infraction(self, data, user, type, reason, attachments=[]):
     embeds = []
     if webhook is None:
         return
-    string = f'<@{data.author.id}> {type} <@{user}>'
+    string = f'[<@{data.author.id}> | {data.author.username}] {type} <@{user}>'
     for mention in data.mentions:
         if mention.id == user:
             string += f' | {mention.username}#{mention.discriminator}'
