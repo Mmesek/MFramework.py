@@ -160,6 +160,9 @@ async def Infraction(self, data, user, type, reason, attachments=[]):
     if webhook is None:
         return
     string = f'<@{data.author.id}> {type} <@{user}>'
+    for mention in data.mentions:
+        if mention.id == user:
+            string += f' | {mention.username}#{mention.discriminator}'
     if reason != '':
         string += f' for "{reason}"'
     if attachments != []:
@@ -177,6 +180,7 @@ async def InfractionEvent(self, data, type, reason='', by_user=''):
         string = f'<@{by_user}> {type} <@{data.user.id}>'
     else:
         string = f'<@{data.user.id}> has been {type}'
+    string += f' | {data.user.username}#{data.user.discriminator}'
     if reason != '' and reason != 'Unspecified':
         string += f' for "{reason}"'
     await self.webhook({}, string, webhook, 'Infraction Event Log', None, {'parse': []})
