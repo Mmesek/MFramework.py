@@ -495,7 +495,7 @@ async def get_ban_data(self, data, type, audit_type):
     moderator = ''
     audit = await self.get_audit_log(data.guild_id, audit_type)
     for obj in audit.audit_log_entries:
-      if int(unban.target_id) == data.user.id:
+      if int(obj.target_id) == data.user.id:
         moderator = obj.user_id
         reason = obj.reason
         break
