@@ -294,6 +294,21 @@ def getIfromRGB(rgb : tuple):
     RGBint = (red<<16) + (green<<8) + blue
     return RGBint
 #int from hex: int('ff0000', 16)
+
+def hex_to_rgb(value):
+    value = value.lstrip('#')
+    lv = len(value)
+    return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+
+def ColorDistance(rgb1,rgb2):
+    '''d = {} distance between two colors(3)'''
+    import numpy
+    rgb1 = numpy.array(rgb1)
+    rgb2 = numpy.array(rgb2)
+    rm = 0.5*(rgb1[0]+rgb2[0])
+    d = sum((2+rm,4,3-rm)*(rgb1-rgb2)**2)**0.5
+    return d
+
 from PIL import ImageFile
 import urllib
 def get_main_color(img):
@@ -341,3 +356,8 @@ def upperfirst(x):
     if i == None:
         return x
     return x[:i].upper() + x[i:]
+
+def grouper(iterable, n, fillvalue=None):
+    from itertools import zip_longest
+    args = [iter(iterable)] * n
+    return zip_longest(*args, fillvalue=fillvalue)
