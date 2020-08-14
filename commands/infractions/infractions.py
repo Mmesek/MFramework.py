@@ -37,11 +37,14 @@ async def infract(self, data, user, reason, type):
         return
     guild = await self.get_guild(data.guild_id)
     guild = guild.name
-    cid = await self.create_dm(user)
+    try:
+        cid = await self.create_dm(user)
+    except:
+        return await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
     s = f"You've been {types[type]} in {guild} server"
     if reason != '':
         s+=f" for {reason}"
     result = await self.message(cid.id, s)
-    if "code" in result:
-        await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+    if "code" in result or result == []:
+        return await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
