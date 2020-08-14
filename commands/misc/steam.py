@@ -172,3 +172,72 @@ async def steamlist(self, *game, data, language, **kwargs):
         t += '\n- ' + g
     embed = Embed().setDescription(t[:2024])
     await self.embed(data.channel_id, '', embed.embed)
+
+
+@register(group='Global', help='Steam Calculator. Similiar to Steamdb one (With few differences). Provide Country Code for currency', alias='', category='')
+async def steamcalc(self, *user, data, currency='pl', language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    if user == ():
+        user = data.author.username
+    else:
+        user = ' '.join(user)
+    s = steam()
+    uid = await s.resolveVanityUrl(user)
+    if uid != 'Not Found':
+        uid = uid['response']
+    else:
+        return
+    if uid['success'] == 1:
+        user = uid['steamid']
+    games = await s.OwnedGames(user)
+    games = games['response']
+    total_playtime = 0
+    total_played = 0
+    game_ids = []
+    for game in games['games']:
+        total_playtime += game['playtime_forever']
+        game_ids += [game['appid']]
+        if game['playtime_forever'] != 0:
+            total_played += 1
+    total_price = 0
+    has_price = []
+    def calcPrice(prices, total_price, has_price):
+        keys = list(prices.keys())
+        for x, price in enumerate(prices.values()):
+            if price['success'] and price['data'] != []:
+                total_price += price['data']['price_overview']['final']
+                ending = price['data']['price_overview']['final_formatted'].split(',')[-1][2:]
+                has_price += [int(keys[x])]
+        return total_price, ending, has_price
+    try:
+        from MFramework.utils.utils import grouper
+        for chunk in grouper(game_ids, 100):
+            prices = await s.getPrices(chunk, currency)
+            total_price, ending, has_price = calcPrice(prices, total_price, has_price)
+    except Exception as ex:
+        ending = ''
+        print(ex)
+    total = f"Playtime: {total_playtime/60}h"
+    if total_price != 0:
+        total += f"\nPrices: {total_price/100}{ending}"
+    if len(has_price) != 0:
+        str_prices = f"\nPricetaged: {len(has_price)}"
+    else:
+        str_prices = ''
+    e = Embed().addField("Total", total, True).addField("Games", f"Total: {games['game_count']}\nPlayed: {total_played}" + " ({:.1%})".format(total_played / games['game_count']) + str_prices, True)
+    pt = 0
+    pf = 0
+    for game in games['games']:
+        if game['appid'] in has_price:
+            if game['playtime_forever'] != 0:
+                pf += 1
+                pt += game['playtime_forever']
+    avg = "Hours per game: {:.2}".format((total_playtime / 60) / total_played)
+    avg += "\nPrice per game: {:.3}".format((total_price/100) / len(has_price)) + f"{ending}"
+    avg += "\nPrice per hour: {:.2}".format((total_price / 100) / (pt / 60)) + f"{ending}"
+    e.setFooter("", f"SteamID: {user}").addField("Average", avg, True)
+    from MFramework.utils.utils import get_main_color
+    profile = await s.PlayerSummaries(user)
+    profile = profile['response']['players'][0]
+    e.setThumbnail(profile['avatarfull']).setAuthor(profile["personaname"],profile["profileurl"],"").setColor(get_main_color(profile['avatar']))
+    await self.embed(data.channel_id, '', e.embed)
