@@ -158,7 +158,8 @@ class Spotify:
 
 
 class Steam:
-    # def __init__(self):
+    def __init__(self):
+        pass
     token = config["Tokens"]["steam"]
     steam = "http://api.steampowered.com/"
     store = "https://store.steampowered.com/api/"
@@ -170,14 +171,18 @@ class Steam:
                 return await request.json()
             except:
                 return request.reason
+    async def resolveVanityUrl(self, username):
+        return await self.api_call(f"ISteamUser/ResolveVanityURL/v0001/?key={self.token}&vanityurl={username}")
+    async def getPrices(self, steamids, currency):
+        return await self.api_call(f"appdetails?appids={','.join([str(i) for i in steamids[:100]])}&filters=price_overview&cc={currency}", api=self.store)
 
     async def OwnedGames(self, steamid):
         return await self.api_call(
-            "/IPlayerService/GetOwnedGames/v0001/", f"?key={self.token}&steamid={steamid}&format=json"
+            "IPlayerService/GetOwnedGames/v0001/", f"?key={self.token}&steamid={steamid}&format=json"
         )
 
     async def PlayerSummaries(self, steamids):
-        return await self.api_call("ISteamUser/GetPlayerSummaries/v2/", f"?key={self.token}&steamid={steamids}")
+        return await self.api_call("ISteamUser/GetPlayerSummaries/v2/", f"?key={self.token}&steamids={steamids}")
 
     async def getAppList(self):
         return await self.api_call(
