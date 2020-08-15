@@ -63,7 +63,7 @@ async def DirectMessage(self, data):
     if data.author.avatar:
         avatar = f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png"
     else:
-        avatar = f"https://cdn.discordapp.com/avatars/embed/avatars/{int(data.author.discriminator) % 5}.png"
+        avatar = f"https://cdn.discordapp.com/embed/avatars/{int(data.author.discriminator) % 5}.png"
     embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(avatar, f"{data.author.id}").setAuthor(f'{data.author.username}#{data.author.discriminator}','','')
     content, filename = '', ''
     try:
@@ -177,10 +177,9 @@ async def InfractionEvent(self, data, type, reason='', by_user=''):
     if webhook is None:
         return
     if by_user != '':
-        string = f'<@{by_user}> {type} <@{data.user.id}>'
+        string = f'[<@{by_user}> | {by_user}] {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]'
     else:
-        string = f'<@{data.user.id}> has been {type}'
-    string += f' | {data.user.username}#{data.user.discriminator}'
+        string = f'[<@{data.user.id}> | {data.user.username}#{data.user.discriminator}] has been {type}'
     if reason != '' and reason != 'Unspecified':
         string += f' for "{reason}"'
     await self.webhook({}, string, webhook, 'Infraction Event Log', None, {'parse': []})
