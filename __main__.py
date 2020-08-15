@@ -39,14 +39,20 @@ async def main(token):
             try:
                 await b.connection()
             except Exception as ex:
-                print(ex)
+                if "name resolution" in ex:
+                    await asyncio.sleep(10)
+                else:
+                    print(ex)
             try:
                 await b.msg()
                 await asyncio.sleep(1)
                 if b.state:
                     await b.close()
             except Exception as ex:
-                print(ex)
+                if "name resolution" in ex:
+                    await asyncio.sleep(10)
+                else:
+                    print(ex)
     except KeyboardInterrupt:
         return
     except Exception as ex:
