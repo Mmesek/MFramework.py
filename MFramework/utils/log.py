@@ -172,12 +172,16 @@ async def Infraction(self, data, user, type, reason, attachments=[]):
             embeds += [Embed().setImage(attachment.url).setTitle(attachment.filename).embed]
     await self.webhook(embeds, string, webhook, 'Infraction Log', None, {'parse': []})
 
-async def InfractionEvent(self, data, type, reason='', by_user=''):
+async def InfractionEvent(self, data, type, reason='', by_user_id=''):
     webhook = getWebhook(self, data.guild_id, 'infraction_event_log')
     if webhook is None:
         return
-    if by_user != '':
-        string = f'[<@{by_user}> | {by_user}] {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]'
+    if by_user_id != '':
+        try:
+            by_user = self.cache[data.guild_id].members[int(by_user_id)].user.username
+        except:
+            by_user = by_user_id
+        string = f'[<@{by_user_id}> | {by_user}] {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]'
     else:
         string = f'[<@{data.user.id}> | {data.user.username}#{data.user.discriminator}] has been {type}'
     if reason != '' and reason != 'Unspecified':
