@@ -159,10 +159,13 @@ async def Infraction(self, data, user, type, reason, attachments=[]):
     embeds = []
     if webhook is None:
         return
-    string = f'[<@{data.author.id}> | {data.author.username}] {type} <@{user}>'
+    string = f'{data.author.username} {type}' 
+    u = f'[<@{user}>'
     for mention in data.mentions:
         if mention.id == user:
-            string += f' | {mention.username}#{mention.discriminator}'
+            u += f' | {mention.username}#{mention.discriminator}'
+    u += ']'
+    string += u
     if reason != '':
         string += f' for "{reason}"'
     if attachments != []:
@@ -172,16 +175,16 @@ async def Infraction(self, data, user, type, reason, attachments=[]):
             embeds += [Embed().setImage(attachment.url).setTitle(attachment.filename).embed]
     await self.webhook(embeds, string, webhook, 'Infraction Log', None, {'parse': []})
 
-async def InfractionEvent(self, data, type, reason='', by_user_id=''):
+async def InfractionEvent(self, data, type, reason='', by_user=''):
     webhook = getWebhook(self, data.guild_id, 'infraction_event_log')
     if webhook is None:
         return
-    if by_user_id != '':
+    if by_user != '':
         try:
-            by_user = self.cache[data.guild_id].members[int(by_user_id)].user.username
+            by_user = self.cache[data.guild_id].members[int(by_user)].user.username
         except:
-            by_user = by_user_id
-        string = f'[<@{by_user_id}> | {by_user}] {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]'
+            pass
+        string = f'{by_user} {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]'
     else:
         string = f'[<@{data.user.id}> | {data.user.username}#{data.user.discriminator}] has been {type}'
     if reason != '' and reason != 'Unspecified':
