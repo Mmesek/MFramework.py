@@ -26,10 +26,13 @@ async def parse_id(self, data, user):
     if user:
         return int(user[0])
     else:
-        return await self.message(data.channel_id, "There was some error parsing user ID. Make sure to either @Mention them or provide their UserID")
+        await self.message(data.channel_id, "There was some error parsing user ID. Make sure to either @Mention them or provide their UserID")
+        return
 
 async def infract(self, data, user, reason, type):
     user = await parse_id(self, data, user)
+    if user == None:
+        return
     reason = ' '.join(reason)
     timestamp = datetime.datetime.fromisoformat(data.timestamp)
     r = db.Infractions(data.guild_id, user, timestamp, reason, data.author.id, None, type)
