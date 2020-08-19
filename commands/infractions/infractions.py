@@ -75,10 +75,10 @@ async def infractions(self, *user, data, show_all=False, language, **kwargs):
             avatar = ''
             username = ''
             discriminator = 0
-    if avatar is not None:
+    if avatar is not None and avatar != '':
         avatar = f"https://cdn.discordapp.com/avatars/{user}/{avatar}.png"
     else:
-        avatar = f"https://cdn.discordapp.com/embed/avatars/{discriminator % 5}.png"
+        avatar = f"https://cdn.discordapp.com/embed/avatars/{int(discriminator) % 5}.png"
     session = self.db.sql.session()
     _infractions = session.query(db.Infractions)
     if not show_all:
