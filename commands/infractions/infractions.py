@@ -90,5 +90,8 @@ async def infractions(self, *user, data, show_all=False, language, **kwargs):
         str_infractions += f'\n`[{infraction.Timestamp.strftime("%Y/%m/%d")}] [{infraction.InfractionType.upper()}]` - "{infraction.Reason}" by <@{infraction.ModeratorID}>'
         if x == 10:
             break
-    e = Embed().setAuthor(f"{username}'s infractions", "", avatar).setDescription(str_infractions)#.setColor(get_main_color(avatar))
-    await self.embed(data.channel_id, "", e.embed)
+    if str_infractions != "":
+        e = Embed().setAuthor(f"{username}'s infractions", "", avatar).setDescription(str_infractions)#.setColor(get_main_color(avatar))
+        await self.embed(data.channel_id, "", e.embed)
+    else:
+        await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
