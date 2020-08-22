@@ -237,19 +237,25 @@ async def execute(self, data):
                 flags[f] = True
             
         args = [t.strip() for t in self.patterns['args'].split(cmd) if t is not None and t != '']
-        cmd = cmd.split(' ',1)
+        cmd = cmd.split(' ', 1)
+        lower_cmd = cmd[0].lower()
+        if lower_cmd not in commandList[group] and lower_cmd not in contextCommandList[group]:
+            continue
         try:
             data.content =cmd[1]
         except:
             data.content = ''
         finally:
-            args.pop(0)
+            try:
+                args.pop(0)
+            except:
+                continue
         
         kwargs = {
            'data': data,
            'group': group,
            'language': self.cache[data.guild_id].language,
-           'cmd': cmd[0].lower(),
+           'cmd': lower_cmd,
            #'flags': flags,
            'channel': [t for t in self.patterns['channels'].findall(data.content) if t is not None],
            'user_mentions': [t for t in self.patterns['users'].findall(data.content) if t is not None],
@@ -267,18 +273,24 @@ async def execute(self, data):
         if kwargs['channel'] == []:
             kwargs['channel'] += [data.channel_id]
 
-        print('Cmd:   ', cmd[0].lower())
+        print('Cmd:   ', lower_cmd)
         print('args:  ',args)
         print('kwargs:', kwargs)
-        #try:
-        if cmd[0].lower() in contextCommandList[group]:
-            self.context[data.guild_id][(data.channel_id, data.author.id)] = contextCommandList[group].get(cmd[0].lower())(*args, bot=self, **kwargs)
-            await self.context[data.guild_id][(data.channel_id, data.author.id)].execute(data=data)
-            r = None
-        elif await commandList[group].get(cmd[0].lower(), Invalid)(self, *args, **kwargs) == None:
-            r = None
+        try:
+            if lower_cmd in contextCommandList[group]:
+                self.context[data.guild_id][(data.channel_id, data.author.id)] = contextCommandList[group].get(lower_cmd)(*args, bot=self, **kwargs)
+                await self.context[data.guild_id][(data.channel_id, data.author.id)].execute(data=data)
+                r = None
+            elif await commandList[group].get(lower_cmd, Invalid)(self, *args, **kwargs) == None:
+                r = None
         #elif await parse(self, data) == None:
             #r = None
+        except TypeError as ex:
+            if 'missing' in str(ex):
+                await self.message(data.channel_id, str(ex).split(" ", 1)[1].replace("'", '`').capitalize())
+                r = None
+            else:
+                raise
     return r
 
 Groups = {
