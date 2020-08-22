@@ -249,28 +249,40 @@ async def role(self, hex_color, *name, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
     c = s.query(db.CustomRoles).filter(db.CustomRoles.GuildID == data.guild_id).filter(db.CustomRoles.UserID == data.author.id).first()
+    if name == ():
+        name = c.Name()
+    else:
+        name = ' '.join(name)
     reserved_colors = []
+    reserved_names = []
     groups = self.cache[data.guild_id].groups
     for _role in self.cache[data.guild_id].roles:
         if _role.id in groups['Admin'] or _role.id in groups['Mod']:
             reserved_colors.append(_role.color)
+            reserved_names.append(_role.name.lower())
         elif _role.id in groups['Nitro']:
             nitro_position = _role.position
-    color = int(hex_color.strip('#'), 16)
+    try:
+        color = int(hex_color.strip('#'), 16)
+    except ValueError:
+        await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+        return await self.message(data.channel_id, "Color has to be provided as a hexadecimal value (between 0 to F for example `#012DEF`) not {whatever_was_provided}")
     if color in reserved_colors:
         await self.message(data.channel_id, "Color is too similiar to admin colors")
         color = None
+    if name.lower() in reserved_names:
+        return await self.message(data.channel_id, "Sorry, choose different name")
     if c != None:
-        await self.modify_guild_role(data.guild_id, c.RoleID, ' '.join(name), 0, color=color, audit_reason="Updated Role of Nitro user")
+        await self.modify_guild_role(data.guild_id, c.RoleID, name, 0, color=color, audit_reason="Updated Role of Nitro user")
         role = c.RoleID
     else:
-        role = await self.create_guild_role(data.guild_id, ' '.join(name), 0, color, False, False, "Created Role for Nitro user "+data.author.username)
+        role = await self.create_guild_role(data.guild_id, name, 0, color, False, False, "Created Role for Nitro user "+data.author.username)
         role = role.id
         nitro_position = 1
         await self.modify_guild_role_positions(data.guild_id, role, nitro_position)
         await self.add_guild_member_role(data.guild_id, data.author.id, role)
     
-    r = db.CustomRoles(data.guild_id, data.author.id, ' '.join(name), color, role)
+    r = db.CustomRoles(data.guild_id, data.author.id, name, color, role)
     if c != None:
         s.merge(r)
     else:
