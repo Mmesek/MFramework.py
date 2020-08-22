@@ -178,7 +178,7 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
         self.cache[data.guild_id].recompileTriggers(self.db, data.guild_id)
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
-@register(group='Nitro', help='Removes from db', alias='del, remove, rem', category='')
+@register(group='Nitro', help='Removes from db', alias='del, rm', category='')
 async def delete(self, *name, data, typeof='meme', user='', language, group, **kwargs):
     '''meme/cannedresponse/rule/snippet'''
     if group in ['System','Admin'] and user!='':
@@ -249,8 +249,8 @@ async def role(self, hex_color, *name, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
     c = s.query(db.CustomRoles).filter(db.CustomRoles.GuildID == data.guild_id).filter(db.CustomRoles.UserID == data.author.id).first()
-    if name == ():
-        name = c.Name()
+    if name == () and c is not None:
+        name = c.Name
     else:
         name = ' '.join(name)
     reserved_colors = []
@@ -264,9 +264,9 @@ async def role(self, hex_color, *name, data, language, **kwargs):
             nitro_position = _role.position
     try:
         color = int(hex_color.strip('#'), 16)
-    except ValueError:
+    except ValueError as ex:
         await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
-        return await self.message(data.channel_id, "Color has to be provided as a hexadecimal value (between 0 to F for example `#012DEF`) not {whatever_was_provided}")
+        return await self.message(data.channel_id, "Color has to be provided as a hexadecimal value (between 0 to F for example `#012DEF`) not `"+ str(ex).split(": '")[-1].replace("'","`"))
     if color in reserved_colors:
         await self.message(data.channel_id, "Color is too similiar to admin colors")
         color = None
