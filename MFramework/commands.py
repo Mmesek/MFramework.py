@@ -245,11 +245,10 @@ async def execute(self, data):
             data.content =cmd[1]
         except:
             data.content = ''
-        finally:
-            try:
-                args.pop(0)
-            except:
-                continue
+        try:
+            args.pop(0)
+        except:
+            continue
         
         kwargs = {
            'data': data,
