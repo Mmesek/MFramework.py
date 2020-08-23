@@ -17,7 +17,7 @@ async def status(self, *args, data, no_ping=False, language, **kwargs):
     proc = psutil.Process()
     ram = proc.memory_info()[0]
     try:
-        temp = psutil.sensors_temperatures()["cpu-thermal"][0][1]
+        temp = psutil.sensors_temperatures()["cpu_thermal"][0][1]
     except:
         temp = 0
     sys_uptime = int(time.time() - psutil.boot_time())
