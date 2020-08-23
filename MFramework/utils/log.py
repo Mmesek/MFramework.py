@@ -17,7 +17,7 @@ def Message(self, embed, message):
         if c.attachments != None:
             attachments = ''
             for a in c.attachments:
-                attachments += c.attachments[a]["filename"] + "\n"
+                attachments += a.filename + "\n"
             if attachments != '':
                 embed.addField("Attachments:", attachments)
         return embed
