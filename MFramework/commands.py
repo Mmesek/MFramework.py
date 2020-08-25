@@ -290,6 +290,8 @@ async def execute(self, data):
                 r = None
             else:
                 raise
+        except Exception as ex:
+            raise
     return r
 
 Groups = {
