@@ -33,7 +33,9 @@
         "created":"Utworzonych kont",
         "boosters":"Wzmacniaczy Nitro",
         "growth":"Wzrost Użytkowników",
+        "infractions":"Ostrzeżenia",
         "memberCount":"Liczba Osób",
+        "infractionCount":"Liczba Ostrzeżeń",
         "dates":"Daty (M/R)",
         "stats":"Rysowanie zajęło: %{total}s\n%{gather}s aby zebrać dane\n%{sort}s aby posortować\n%{convert}s aby przekonwertować\n%{imp}s aby zaimportować."
     },

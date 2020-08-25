@@ -28,12 +28,14 @@
     "graph":{
         "cmd_trigger":"graph",
         "help":"Shows graph of member count change and years of account creations.",
-        "extHelp":"Possible arguments: graph=all/joined/created/boosters\nresample=W-MON/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth",
+        "extHelp":"Possible arguments: graph=all/joined/created/boosters\nresample=D/W-MON/W/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth",
         "joined":"Joined",
         "created":"Created",
         "boosters":"Boosters",
         "growth":"Growth",
+        "infractions":"Infractions",
         "memberCount":"Member Count",
+        "infractionCount":"Infraction Count",
         "dates":"Dates (M/Y)",
         "stats":"Plotting: %{total}s\nGathering: %{gather}s\nSorting: %{sort}s\nConverting: %{convert}s\nImporting: %{imp}s"
     },
