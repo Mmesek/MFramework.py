@@ -420,10 +420,10 @@ async def voice_state_update(self, data):
                             await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
                             self.cache[data.guild_id].dynamic_channels['channels'].remove(channel)
                     else:  #Channel is same as before
-                        if data.self_deaf:  #User is now muted
+                        if data.self_deaf or data.self_mute:  #User is now muted
                             print('Muted')
                             restartTimer(self, data.guild_id, data.channel_id, data.user_id, -1)
-                        elif not data.self_deaf and v[data.channel_id][data.user_id] == -1:  #User is not muted anymore
+                        elif (not data.self_deaf and not data.self_mute) and v[data.channel_id][data.user_id] == -1:  #User is not muted anymore
                             #log(f'User {data.user_id} is unmuted')
                             if len(v[data.channel_id]) > 1:
                                 print('Unmuted')
@@ -437,7 +437,7 @@ async def voice_state_update(self, data):
                 v[data.channel_id] = {}
 
             if len(v[data.channel_id]) >= 1 and data.user_id not in v[data.channel_id]:  #New person Joined channel
-                if data.self_deaf:
+                if data.self_deaf or data.self_mute:
                     print('Joined Muted')
                     restartTimer(self, data.guild_id, data.channel_id, data.user_id, -1) #Muted Joined
                 else:
@@ -451,7 +451,7 @@ async def voice_state_update(self, data):
                    await log.UserVoiceChannel(self, data)
 
             elif len(v[data.channel_id]) == 0:  #Joined empty channel
-                if data.self_deaf:
+                if data.self_deaf or data.self_mute:
                     print('Joined Empty Muted')
                     restartTimer(self, data.guild_id, data.channel_id, data.user_id, -1) #Joined Empty Channel Muted
                 else:
