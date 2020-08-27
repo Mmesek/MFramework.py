@@ -42,3 +42,17 @@ class EndpointWrappers:
         r = await self.api_call(f'/guilds/{guild_id}/audit-logs', 'GET', params={"action_type":action_type, "limit": limit})
         from .objects import Audit_Log
         return Audit_Log(r)
+    async def get_messages(self, channel_id, when="before", snowflake=None, limit=100):
+        p = {'limit': limit}
+        if snowflake != None:
+            p[when] = snowflake
+        r = await self.api_call(f'/channels/{channel_id}/messages', 'GET', params =p)
+        from .objects import Message
+        return [Message(i) for i in r]
+    async def getreactions(self, channel_id, message_id, emoji, when="before", snowflake=None, limit=100):
+        p = {'limit': limit}
+        if snowflake != None:
+            p[when] = snowflake
+        r = await self.api_call(f'/channels/{channel_id}/messages/{message_id}/reactions/{emoji}', 'GET', params =p)
+        from .objects import User
+        return [User(i) for i in r]
