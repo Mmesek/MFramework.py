@@ -154,6 +154,17 @@ async def message_update(self, data):
 async def guild_create(self, guild):
     if guild.id not in self.cache:
         self.cache[guild.id] = Cache(guild, self.db, self.user_id, self.alias)
+        import asyncio
+        from .misc.giveaways import giveaway_end
+        session = self.db.sql.session()
+        tasks = session.query(db.Tasks).filter(db.Tasks.GuildID == guild.id).filter(db.Tasks.Finished == False).all()  #TimestampEnd > datetime.datetime.now(tz=datetime.timezone.utc)).all()
+        if tasks != []:
+            print(tasks)
+        total_tasks = []
+        for task in tasks:
+            if task.Type == 'Giveaway':
+                total_tasks.append(asyncio.create_task(giveaway_end(self, task.TimestampEnd, guild.id, task.ChannelID, task.MessageID, self.cache[guild.id].language, task.TimestampStart)))
+        self.cache[guild.id].tasks = total_tasks
     if guild.id not in self.context:
         self.context[guild.id] = {}
     if len(self.cache[guild.id].members) < 10:

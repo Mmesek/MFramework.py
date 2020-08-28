@@ -6,7 +6,7 @@ class Cache:
     __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language', 'connection',
     'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice', 'afk', 'afk_channel',
     'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence', 'dynamic_channels',
-    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned')
+    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks')
     groups: dict
     disabled_channels: tuple
     disabled_roles: tuple
@@ -60,8 +60,9 @@ class Cache:
         self.quoteWebhook = '706282832477028403/eZVXx3-iPfyrjQgJt3kZOfJVSt98ZRGI5VJe0t5SN32cNsgPOugZK8-AxUm0tKhD2dfJ'
         self.presence = {}
         self.afk = {}
+        self.tasks = []
         if guildID == 463433273620824104:
-            self.dynamic_channels = {'channels': [], 699365297664294943: {'name': 'Stolik Smutku', 'bitrate': 64000, 'user_limit': 1, 'position': 0, 'permission_overwrites': [], 'parent_id': '699363712280166411'}, 734523870647681101: {"buffer":734523217141563463}}
+            self.dynamic_channels = {'channels': [], "counters":{}, 699365297664294943: {'name': 'Stolik Smutku', 'bitrate': 64000, 'user_limit': 1, 'position': 0, 'permission_overwrites': [], 'parent_id': '699363712280166411'}, 734523870647681101: {"buffer":734523217141563463}}
         else:
             self.dynamic_channels = {'channels': []}
 
