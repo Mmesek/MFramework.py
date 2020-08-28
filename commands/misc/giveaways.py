@@ -48,6 +48,14 @@ def createGiveawayEmbed(l, finish, prize, winner_count, finished=False, winners=
     e = Embed().setFooter('', t['endTime']).setTimestamp(finish.isoformat()).setTitle(t['title']).setDescription(t['description'])
     return e.embed
 
+@register(group='System', help='Short description to use with help command', alias='', category='')
+async def giveaway_delete(self, message_id, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    s = self.db.sql.session()
+    r = s.query(db.Tasks).filter(db.Tasks.GuildID == data.guild_id).filter(db.Tasks.Type == 'Giveaway').filter(db.Tasks.MessageID == int(message_id)).first()
+    s.delete(r)
+    s.commit()
+    await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
 
 async def giveaway_end(self, finish, guild_id, channel_id, msg_id, language, start):
     s = (finish - datetime.now(tz=timezone.utc)).total_seconds()
