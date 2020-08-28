@@ -190,24 +190,30 @@ class Spotify(Base):
         self.AddedBy = AddedBy
 
 
-class Giveaways(Base):
-    __tablename__ = 'Giveaways'
+class Tasks(Base):
+    __tablename__ = 'Tasks'
     GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    Type = Column(String, primary_key=True)
     ChannelID = Column(BigInteger)
     MessageID = Column(BigInteger)
     UserID = Column(BigInteger)
-    Timestamp = Column(Integer, primary_key=True)
-    Duration = Column(Integer)
+    TimestampStart = Column(TIMESTAMP(True), primary_key=True)#Integer, primary_key=True)
+    TimestampEnd = Column(TIMESTAMP(True))  #Integer)
+    Prize = Column(String)
     WinnerCount = Column(Integer)
+    Finished = Column(Boolean, primary_key=True)
 
-    def __init__(self, GuildID=None, ChannelID=None, MessageID=None, UserID=None, Timestamp=None, Duration=None, WinnerCount=None):
+    def __init__(self, GuildID=None, Type=None, ChannelID=None, MessageID=None, UserID=None, TimestampStart=None, TimestampEnd=None, Prize=None, WinnerCount=None, Finished=False):
         self.GuildID = GuildID
+        self.Type = Type
         self.ChannelID = ChannelID
         self.MessageID = MessageID
         self.UserID = UserID
-        self.Timestamp = Timestamp
-        self.Duration = Duration
+        self.TimestampStart = TimestampStart
+        self.TimestampEnd = TimestampEnd
+        self.Prize = Prize
         self.WinnerCount = WinnerCount
+        self.Finished = Finished
 
 
 class EmbedTemplates(Base):
