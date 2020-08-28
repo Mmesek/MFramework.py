@@ -34,8 +34,10 @@
         "boosters":"Boosters",
         "growth":"Growth",
         "infractions":"Infractions",
+        "words":"Words",
         "memberCount":"Member Count",
         "infractionCount":"Infraction Count",
+        "wordCount":"Word Count",
         "dates":"Dates (M/Y)",
         "stats":"Plotting: %{total}s\nGathering: %{gather}s\nSorting: %{sort}s\nConverting: %{convert}s\nImporting: %{imp}s"
     },
@@ -332,5 +334,38 @@
     },
     "dm":{
         "singleWordError":"Hey, it appears your message consist of mostly single word, therefore I'm not going to forward it. I'm forwarding your messages here automatically and <:%{emoji_success}> under message means it was successfully delivered to mod team. Please form a sentence and try again. Cheers mate."
+    },
+    "giveaway":{
+        "cmd_trigger":"giveaway",
+        "help":"help",
+        "endTime":"Ends at",
+        "endTimeFinished":{
+            "zero":"Ended at",
+            "one":"Chance: %{chance} | Ended at",
+            "many":"Chance: %{chance} x %{count} | Ended at"
+        },
+        "title":{
+            "one":"%{prize}",
+            "many":"%{prize} x %{count}"
+        },
+        "titleFinished":{
+            "zero":"[NO WINNER] %{prize}",
+            "one":"[ENDED] %{prize}",
+            "many":"[ENDED] %{prize} x %{count}"
+        },
+        "description":{
+            "one":"React with 🎉 to join giveaway!",
+            "many":"React with 🎉 to join giveaway!\nAmount of Prizes: %{count}"
+        },
+        "descriptionFinished":{
+            "zero":"Could not determine winner :(",
+            "one":"Winner: %{winners}",
+            "many":"Winners: %{winners}"
+        },
+        "endMessage":{
+            "zero":"Could not determine winner for giveaway https://discordapp.com/channels/%{server}/%{channel}/%{message}",
+            "one":"Congratulations to %{winners}!\nYou won %{prize}!\n\nTotal participants: %{participants}",
+            "many":"Congratulations, %{winners}!\nYou won %{prize}!\n\nTotal participants: %{participants}"
+        }
     }
 }

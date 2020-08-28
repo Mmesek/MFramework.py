@@ -34,7 +34,9 @@
         "boosters":"Wzmacniaczy Nitro",
         "growth":"Wzrost Użytkowników",
         "infractions":"Ostrzeżenia",
+        "words":"Słowa",
         "memberCount":"Liczba Osób",
+        "wordCount":"Liczba Słów",
         "infractionCount":"Liczba Ostrzeżeń",
         "dates":"Daty (M/R)",
         "stats":"Rysowanie zajęło: %{total}s\n%{gather}s aby zebrać dane\n%{sort}s aby posortować\n%{convert}s aby przekonwertować\n%{imp}s aby zaimportować."
@@ -332,5 +334,38 @@
     },
     "dm":{
         "singleWordError":"Witaj, wygląda na to że twoja wiadomość składa się tylko z jednego słowa, toteż nie przekażę jej dalej. Przekazuję twoje wiadomość tutaj automatycznie i <:%{emoji_success}> pod wiadomością oznacza że została dostarczona. Sforumułuj zdanie i spróbuj ponownie. Miłego mordeczko."
+    },
+    "giveaway":{
+        "cmd_trigger":"giveaway",
+        "help":"help",
+        "endTime":"Kończy się",
+        "endTimeFinished":{
+            "zero":"Zakończyło się",
+            "one":"Szansa: %{chance} | Zakończyło się",
+            "many":"Szansa: %{chance} x %{count} | Zakończyło się"
+        },
+        "title":{
+            "one":"%{prize}",
+            "many":"%{prize} x %{count}"
+        },
+        "titleFinished":{
+            "zero":"[BRAK ZYWCIĘZCY] %{prize}",
+            "one":"[ZAKOŃCZONY] %{prize}",
+            "many":"[ZAKOŃCZONY] %{prize} x %{count}"
+        },
+        "description":{
+            "one":"Zareaguj za pomocą 🎉 aby dołączyć!",
+            "many":"Zareaguj za pomocą 🎉 aby dołączyć!\nLiczba Nagród: %{count}"
+        },
+        "descriptionFinished":{
+            "zero":"Nie można było wyłonić zwycięzcy :(",
+            "one":"Zwycięzca: %{winners}",
+            "many":"Zwycięzcy: %{winners}"
+        },
+        "endMessage":{
+            "zero":"Nie można było wyłonić zywcięzcy w losowaniu https://discordapp.com/channels/%{server}/%{channel}/%{message}",
+            "one":"Gratulacje, %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}",
+            "many":"Gratulacje dla %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}"
+        }
     }
 }
