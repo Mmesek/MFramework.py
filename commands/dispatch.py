@@ -160,10 +160,13 @@ async def guild_create(self, guild):
         tasks = session.query(db.Tasks).filter(db.Tasks.GuildID == guild.id).filter(db.Tasks.Finished == False).all()  #TimestampEnd > datetime.datetime.now(tz=datetime.timezone.utc)).all()
         if tasks != []:
             print(tasks)
-        total_tasks = []
+        total_tasks = {}
         for task in tasks:
             if task.Type == 'Giveaway':
-                total_tasks.append(asyncio.create_task(giveaway_end(self, task.TimestampEnd, guild.id, task.ChannelID, task.MessageID, self.cache[guild.id].language, task.TimestampStart)))
+                if 'giveaways' not in total_tasks:
+                    total_tasks['giveaways'] = {}
+                total_tasks['giveaways'][task.MessageID] = asyncio.create_task(giveaway_end(self, task.TimestampEnd, guild.id, task.ChannelID, task.MessageID, self.cache[guild.id].language, task.TimestampStart))
+                #total_tasks.append(asyncio.create_task(giveaway_end(self, task.TimestampEnd, guild.id, task.ChannelID, task.MessageID, self.cache[guild.id].language, task.TimestampStart)))
         self.cache[guild.id].tasks = total_tasks
     if guild.id not in self.context:
         self.context[guild.id] = {}
