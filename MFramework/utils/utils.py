@@ -361,3 +361,16 @@ def grouper(iterable, n, fillvalue=None):
     from itertools import zip_longest
     args = [iter(iterable)] * n
     return zip_longest(*args, fillvalue=fillvalue)
+
+async def get_all_reactions(self, channel_id, message_id, emoji='🎉'):
+    msg = await self.get_channel_message(channel_id, message_id)
+    for reaction in msg.reactions:
+        if reaction.emoji.name == emoji:
+            count = reaction.count
+    users = []
+    last_id = None
+    for chunk in range(int(count / 100) + (count % 100 > 0)):
+        users += await self.getreactions(channel_id, message_id, '🎉', when="after", snowflake=last_id)
+        last_id = users[-1].id
+    users = [i for i in users if i.id != self.user_id]
+    return list(set(users))
