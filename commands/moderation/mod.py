@@ -459,6 +459,9 @@ async def roleInfo(self, *roles, data, **kwargs):
 async def creationdate(self, *snowflake, data, **kwargs):
     embed = Embed().setFooter('','Dates are in format YYYY/MM/DD HH:MM UTC')
     for flake in snowflake:
+        if not flake.isdigit():
+            await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+            continue
         r = '\nOn Discord since: ' + str(time.strftime("%Y-%m-%d %H:%M", datetime.datetime.fromisoformat(str(created(flake))).timetuple()))
         try:
             member = await self.get_member(data.guild_id, flake)
