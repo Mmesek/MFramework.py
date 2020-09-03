@@ -116,6 +116,9 @@ async def embed(self, name, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
     r = session.query(db.EmbedTemplates).filter(db.EmbedTemplates.GuildID == data.guild_id).filter(db.EmbedTemplates.Name == name).first()
+    if r is None:
+        await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+        return await self.message(data.channel_id, 'Provided embed could not be found in database. Name is case sensitive.')
     embed = r.Embed
     embed['description'] = embed['description'].format(*args)
     if 'title' in embed:
