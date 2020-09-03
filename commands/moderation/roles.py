@@ -1,114 +1,154 @@
-from MFramework.commands import register
 from MFramework.database import alchemy as db
 import re
-@register(group="Admin", help="Create reaction role")
-async def create_rr(self, channel_slash_message, role, reaction, roleGroup='None', *args, data, **kwargs):
-    if len(channel_slash_message.split("/")) > 1:
-        channel = channel_slash_message.split("/")
-        message = channel[1]
-        channel = channel[0]
-    else:
-        channel = data.channel_id
-        message = channel_slash_message
-    reaction = reaction.replace('<:', '').replace('>', '')
-    role = int(re.search('(\d+)', role)[0])
-    g = roleGroup
-    message = int(message)
-    channel = int(channel)
-
-    if ':' not in reaction:
-        reaction_ = reaction + ':0'
-    else:
-        reaction_ = reaction
-    if g not in self.cache[data.guild_id].reactionRoles:
-        self.cache[data.guild_id].reactionRoles[g] = {message: {reaction_: [role]}}
-    else:
-        if message not in self.cache[data.guild_id].reactionRoles[g]:
-            self.cache[data.guild_id].reactionRoles[g][message] = {reaction_: [role]}
+from MFramework.commands import ctxRegister, BaseCtx
+@ctxRegister(group='Admin', help='Manages Reaction Role. Type one of: [create/remove]. Arguments: [role/reaction] (reaction) (group)', alias='rr', category='')
+class ReactionRole(BaseCtx):
+    def __init__(self, type, channel_slash_message, *args, bot, data, **kwargs):
+        self.type = type
+        s = self.resolve_location(channel_slash_message, data)
+        self.channel_id = s[0]
+        self.message = s[1]
+        self.args = args
+        self.kwargs = kwargs
+        self.bot = bot
+        self.channel = data.channel_id
+        self.user = data.author.id
+        self.guild_id  = data.guild_id
+    async def execute(self, *args, data, **kwargs):
+        try:
+            if 'create' == self.type:
+                await self.create(self.bot)
+            elif 'remove' == self.type:
+                await self.remove(self.bot)
+            elif 'update' == self.type:
+                await self.update(self.bot)
+        except Exception as ex:
+            pass
+        await self.end()
+    
+    def resolve_location(self, channel_slash_message, data):
+        if len(channel_slash_message.split("/")) > 1:
+            channel = channel_slash_message.split("/")
+            message = channel[1]
+            channel = channel[0]
         else:
-            self.cache[data.guild_id].reactionRoles[g][message][reaction_] = [role]
-    #session = self.db.sql.session()
-    r = db.ReactionRoles(data.guild_id, channel, message, role, reaction_, roleGroup)
-    #session.add(r)
-    #session.commit()
-    self.db.sql.add(r)
-    await self.create_reaction(channel, message, reaction)
+            channel = data.channel_id
+            message = channel_slash_message
+        return (int(channel), int(message))
+
+    def isUnicodeReaction(self, reaction):
+        reaction = reaction.replace('<:', '').replace('>', '')
+        if ':' not in reaction:
+            return reaction + ':0'
+        else:
+            return reaction
+    async def create(self, bot):  #, channel_slash_message, role, reaction, roleGroup='None', *args, data, **kwargs):
+        role = self.args[0]
+        reaction = self.args[1]
+        try:
+            roleGroup = self.args[2]
+        except:
+            roleGroup = None
+        role = int(re.search('(\d+)', role)[0])
+        g = roleGroup
+        reaction_ = self.isUnicodeReaction(reaction)
+        if g not in bot.cache[self.guild_id].reactionRoles:
+            bot.cache[self.guild_id].reactionRoles[g] = {self.message: {reaction_: [role]}}
+        else:
+            if self.message not in bot.cache[self.guild_id].reactionRoles[g]:
+                bot.cache[self.guild_id].reactionRoles[g][self.message] = {reaction_: [role]}
+            else:
+                bot.cache[self.guild_id].reactionRoles[g][self.message][reaction_] = [role]
+        r = db.ReactionRoles(self.guild_id, self.channel_id, self.message, role, reaction_, roleGroup)
+        bot.db.sql.add(r)
+        await bot.create_reaction(self.channel_id, self.message, reaction)
+
+    async def remove(self, bot):
+        reaction = self.args[0]
+        reaction_ = self.isUnicodeReaction(reaction)
+        session = bot.db.sql.session()
+        r = session.query(db.ReactionRoles).filter(db.ReactionRoles.GuildID == self.guild_id).filter(db.ReactionRoles.ChannelID == self.channel_id).filter(db.ReactionRoles.MessageID == self.message).filter(db.ReactionRoles.Reaction == reaction_).first()
+        bot.cache[self.guild_id].reactionRoles[r.RoleGroup][self.message].pop(reaction_)
+        if bot.cache[self.guild_id].reactionRoles[r.RoleGroup][self.message] == {}:
+            bot.cache[self.guild_id].reactionRoles[r.RoleGroup].pop(self.message)
+            if bot.cache[self.guild_id].reactionRoles[r.RoleGroup] == {}:
+                bot.cache[self.guild_id].reactionRoles.pop(r.RoleGroup)
+        session.delete(r)
+        await bot.delete_own_reaction(self.channel_id, self.message, reaction_)
+        session.commit()
 
 
-@register(group="Admin", help="Remove reaction role")
-async def remove_rr(self, channel, message, reaction, *args, data, **kwargs):
-    params = data.content.split(" ")
-    if len(params[0].split("/")) > 1:
-        channel = params[0].split("/")
-        message = channel[1]
-        channel = channel[0]
-    else:
-        channel = data.channel_id
-        message = params[0]
-    reaction = params[1]
-    await self.db.delete(
-        "ReactionRoles",
-        "GuildID=? AND ChannelID=? AND MessageID=? AND Reaction=?",
-        [data.guild_id, channel, message, reaction],
-    )
-    await self.delete_own_reaction(channel, message, reaction)
+@ctxRegister(group='System', help='Short description to use with help command', alias='', category='')
+class crr(BaseCtx):
+    '''Extended description to use with detailed help command'''
+    def __init__(self, type, channel_slash_message, *args, bot, data, **kwargs):
+        self.type = type
+        s = self.resolve_location(channel_slash_message, data)
+        self.channel_id = s[0]
+        self.message = s[1]
+        self.args = args
+        self.kwargs = kwargs
+        self.bot = bot
+        self.channel = data.channel_id
+        self.user = data.author.id
+        self.guild_id  = data.guild_id
+    async def execute(self, *args, data, **kwargs):
+        if data.content == '--exit':
+            await self.end()
+        elif 'create' in data.content:
+            await self.bot.message(self.channel, 'Ready')
+        else:
+            d = data.content.replace('\n', ' ').split(' ')
+            if len(d) % 2 != 0:
+                rg = d[-1]
+                d = d[:-1]
+            else:
+                rg = None
+            role = d[0]
+            reaction = d[1]
+            if len(d) == 3:
+                rg = d[2]
+            elif len(d) > 3:
+                dd = []
+                for i in range(0, len(d), 2):
+                    dd += [(d[i], d[i+1])]
+                for role, reaction in dd:
+                    await self.create(reaction, role, self.bot, rg)
+                return
+            await self.create(role, reaction, self.bot, rg)
+    def resolve_location(self, channel_slash_message, data):
+        if len(channel_slash_message.split("/")) > 1:
+            channel = channel_slash_message.split("/")
+            message = channel[1]
+            channel = channel[0]
+        else:
+            channel = data.channel_id
+            message = channel_slash_message
+        return (int(channel), int(message))
 
-
-@register(group="Admin", help="Update reaction role")
-async def update_rr(self, *args, data, **kwargs):
-    await self.message(
-        data.channel_id,
-        "Look, remove it and then create again or make me sql query\
- for update cause, honestly: what exactly do you want to update? Add a group? Change Role? Reaction? Bro, come\
- on, be serious. !remove_rr and then !add_rr, you can do it",
-    )
-
-
-@register(group="Admin", help="Creates custom command/reaction", category="")
-async def add_cc(self, name, trigger, response, group, *args, data, **kwargs):
-    """$execute$command\n$$"""
-    params = data.content.split(";")
-    name = params[0]
-    trigger = params[1]
-    response = params[2]
-    req = params[3]
-    await self.db.insert(
-        "Regex",
-        "GuildID, UserID, Name, Trigger, Response, ReqRole",
-        [data.guild_id, data.author.id, name, trigger, response, req],
-    )
-    await self.cache.recompileTriggers(data)
-
-@register(group='Admin', help='Removes custom command/reaction', category='')
-async def remove_cc(self, name, trigger, *args, data, **kwargs):
-    params = data.content.split(';')
-    name = params[0]
-    trigger = params[1]
-    await self.db.delete('Regex','GuildID=? AND Name=? AND Trigger=?',[data['guild_id'],name, trigger])
-    await self.cache.recompileTriggers(data)
-
-
-def getfromdb(name):
-    pass
-from MFramework.utils.utils import Embed
-
-@register(group='Mod', help='Creates message with custom embed', alias='', category='')
-async def customEmbed(self, embedName, *args, data, **kwargs):
-    e = getfromdb(embedName)
-    embed = Embed()
-    for val in e:
-        if val is not None:
-            continue
-    embed.setTitle(e[1])
-    embed.setDescription(e[2])
-    embed.setUrl(e)
-    if e.timestamp is not None:
-        if e.timestamp == 'message_trigger':
-            embed.setTimestamp(data['timestamp'])
-    embed.setThumbnail()
-    embed.setImage()
-    embed.setFooter()
-    embed.setColor()
-    embed.setAuthor()
-    for field in e.fields:
-        embed.addField(field[0], field[1], field[2])
+    def isUnicodeReaction(self, reaction):
+        reaction = reaction.replace('<:', '').replace('>', '')
+        if ':' not in reaction:
+            return reaction + ':0'
+        else:
+            return reaction
+    async def create(self, role, reaction, bot, roleGroup=None):  #, channel_slash_message, role, reaction, roleGroup='None', *args, data, **kwargs):
+        #role = self.args[0]
+        #reaction = self.args[1]
+#        try:
+#            roleGroup = #self.args[2]
+#        except:
+#            roleGroup = None
+        role = int(re.search('(\d+)', role)[0])
+        g = roleGroup
+        reaction_ = self.isUnicodeReaction(reaction)
+        if g not in bot.cache[self.guild_id].reactionRoles:
+            bot.cache[self.guild_id].reactionRoles[g] = {self.message: {reaction_: [role]}}
+        else:
+            if self.message not in bot.cache[self.guild_id].reactionRoles[g]:
+                bot.cache[self.guild_id].reactionRoles[g][self.message] = {reaction_: [role]}
+            else:
+                bot.cache[self.guild_id].reactionRoles[g][self.message][reaction_] = [role]
+        r = db.ReactionRoles(self.guild_id, self.channel_id, self.message, role, reaction_, roleGroup)
+        bot.db.sql.add(r)
+        await bot.create_reaction(self.channel_id, self.message, reaction)
