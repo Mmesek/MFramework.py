@@ -4,21 +4,27 @@ import asyncio, time
 
 
 @register(group='Global', help='Shows ping & Heartbeat latency', alias='', category='')
-async def ping(self, *args, data, language, **kwargs):
+async def ping(self, *args, data, detailed=False, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    from datetime import datetime, timezone
-    t = datetime.fromisoformat(data.timestamp)
-    now = datetime.now(tz=timezone.utc)
-    internal = now - t
-    discord = ping()
-    e = Embed().addField("Discord", f"{discord}", True)
-    router = ping('192.168.1.254')
-    if router[0] != '0':
-        e.addField("Router", f"{router}", True)
-    if self.latency != None:
-        e.addField("Heartbeat", "{0:.2f}ms".format(self.latency), True)
-    e.setFooter(None,"Internal Difference: {}s".format(internal.total_seconds()))
-    await self.embed(data.channel_id, "", e.embed)
+    s = time.time()
+    m = await self.message(data.channel_id, "Pong!")
+    end = time.time()
+    if detailed:
+        from datetime import datetime, timezone
+        t = datetime.fromisoformat(data.timestamp)
+        now = datetime.now(tz=timezone.utc)
+        internal = now - t
+        discord = ping()
+        e = Embed().addField("Discord", f"{discord}", True)
+        router = ping('192.168.1.254')
+        if router[0] != '0':
+            e.addField("Router", f"{router}", True)
+        if self.latency != None:
+            e.addField("Heartbeat", "{0:.2f}ms".format(self.latency), True)
+        e.setFooter(None, "Internal Difference: {}s".format(internal.total_seconds()))
+        await self.edit_message(data.channel_id, m["id"], f"Pong! `{int((end-s)*1000)}ms`", e.embed)
+    else:
+        await self.edit_message(data.channel_id, m["id"], f"Pong! `{int((end-s)*1000)}ms`")
 
 def ping(host='discord.com'):
     import platform, os
