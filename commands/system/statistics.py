@@ -3,8 +3,41 @@ from MFramework.utils.utils import Embed, convert_bytes, getsize, file_size, sec
 import asyncio, time
 
 
-def ping(endpoint=''):
-    return 0
+@register(group='Global', help='Shows ping & Heartbeat latency', alias='', category='')
+async def ping(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    from datetime import datetime, timezone
+    t = datetime.fromisoformat(data.timestamp)
+    now = datetime.now(tz=timezone.utc)
+    internal = now - t
+    discord = ping()
+    e = Embed().addField("Discord", f"{discord}", True)
+    router = ping('192.168.1.254')
+    if router[0] != '0':
+        e.addField("Router", f"{router}", True)
+    if self.latency != None:
+        e.addField("Heartbeat", "{0:.2f}ms".format(self.latency), True)
+    e.setFooter(None,"Internal Difference: {}s".format(internal.total_seconds()))
+    await self.embed(data.channel_id, "", e.embed)
+
+def ping(host='discord.com'):
+    import platform, os
+    s = platform.system().lower() == 'windows'
+    param = '-n' if s else '-c'
+    command = ['ping', param, '1', host]
+    r = os.popen(' '.join(command))
+    for line in r:
+        last = line
+    try:
+        if s:
+            ping = last.split('=', 1)[1].split('=', 2)[2]
+        else:
+            ping = last.split('=', 1)[1].split('/', 2)[1]
+    except:
+        return ''
+    if 'ms' not in ping:
+        ping+='ms'
+    return ping.lstrip().strip('\n')
 
 
 @register(group="System", help="Shows statistics related to bot and system")
@@ -28,9 +61,9 @@ async def status(self, *args, data, no_ping=False, language, **kwargs):
     embed.addField("Session", secondsToText(int(time.time() - self.startTime), language), True)
     if not no_ping:
         discord = ping()
-        api = ping("")
-        cdn = ping("cdn")
-        embed.addField("Ping", f"Discord: {discord}ms\nAPI: {api}ms\nCDN: {cdn}ms", True)
+        api = 0#ping("")
+        cdn = ping("cdn.discordapp.com")
+        embed.addField("Ping", f"Discord: {discord}\nAPI: {api}ms\nCDN: {cdn}", True)
     if self.latency != None:
         embed.addField("Latency", "{0:.2f}ms".format(self.latency), True)
     else:
