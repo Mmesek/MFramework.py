@@ -39,31 +39,31 @@ class Queue(BaseApi):
     def queue():
         return Queue.api(method="GET")
 
-@register(group='System', help='', alias='', category='')
+@register(group='System', category='Daapd')
 async def dplay(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.play()
 
-@register(group='System', help='', alias='', category='')
+@register(group='System', category='Daapd')
 async def dpause(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.pause()
-@register(group='System', help='', alias='', category='')
+@register(group='System', category='Daapd')
 async def dnext(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.next()
 
-@register(group='System', help='', alias='', category='')
+@register(group='System', category='Daapd')
 async def dprevious(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.previous
 
-@register(group='System', help='', alias='', category='')
+@register(group='System', category='Daapd')
 async def dvolume(self, new_volume, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.set_volume(new_volume)
 
-@register(group='System', help='', alias='', category='')
+@register(group='System', category='Daapd')
 async def dplaying(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     current = Player.get_status().json()
@@ -87,7 +87,7 @@ async def dplaying(self, *args, data, language, **kwargs):
     embed = Embed().setTitle("Currently Playing").setDescription(string).addField("Next",string2[:1024]).setFooter("",f"Queue at: {x}/{len(q['items'])}").setThumbnail(rpc+'/artwork/nowplaying')
     await self.embed(data.channel_id, "", embed.embed)
 
-@register(group='System', help='Short description to use with help command', alias='', category='')
+@register(group='System', category='Daapd')
 async def dhistory(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     current = Player.get_status().json()
@@ -160,7 +160,7 @@ async def getLyrics(artist, song):
                 i=i+1
     return (lyrics, src)
 
-@register(group='System', help='Short description to use with help command', alias='', category='')
+@register(group='System', category='Daapd')
 async def dlyrics(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     current = Player.get_status().json()
@@ -176,8 +176,8 @@ async def dlyrics(self, *args, data, language, **kwargs):
     await self.embed(data.channel_id, "", embed.embed)
 
 
-@register(group='System', help='Short description to use with help command', alias='', category='')
-async def start(self, *args, data, language, **kwargs):
+@register(group='System', category='Daapd')
+async def dstart(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     d = Daapd()
     await d.connect()

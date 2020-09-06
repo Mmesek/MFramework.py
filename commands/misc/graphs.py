@@ -108,7 +108,7 @@ async def graph(self, graph='all', resample='Y', locator='Month', interval=4, *a
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
     await self.withFile(data.channel_id, img_str, f"growth-{date.today()}.png", stats)#f"Took ~{truncate(time.time()-d,2)}s\n{truncate(s-f,2)}s to gather\n{truncate(d-sd,2)}s to sort\n{truncate(sd-s,2)}s to convert\n{truncate(f-b,2)}s to import stuff")
 
-@register(group='Admin', help='Short description to use with help command', alias='', category='')
+@register(group='Admin', help='Plot infractions over days', alias='', category='')
 async def graph_infractions(self, infraction_type='all', resample='D', locator='Week', interval=1, *args, data, moderator=None, user=None, growth=False, language, **kwargs):
     '''Extended description to use with detailed help command'''
     import time
@@ -204,7 +204,7 @@ async def graph_infractions(self, infraction_type='all', resample='D', locator='
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
     await self.withFile(data.channel_id, img_str, f"growth-{date.today()}.png", stats)
 
-@register(group='Admin', help='Short description to use with help command', alias='', category='')
+@register(group='Admin', help='Plots word usage over days', alias='', category='')
 async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10000, resample='W-MON', locator='Week', interval=1, growth=False, language, **kwargs):
     '''Extended description to use with detailed help command'''
     import time
