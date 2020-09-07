@@ -347,9 +347,22 @@ async def presence_update(self, data):
         for i in role:
             await self.add_guild_member_role(data.guild_id, data.user.id, i, "Presence Role")
 
-from MFramework.utils.timers import *
 @onDispatch(Voice_State)
 async def voice_state_update(self, data):
+    from MFramework.utils.voice_channels import _check_afk_channel, _check_if_bot, _handle_dynamic_channel, _handle_voice_activity, _handle_voice_link
+    if data.member.user.bot:
+        _check_if_bot(self, data)
+    if data.channel_id in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
+        data = _check_afk_channel(self, data)
+    if self.cache[data.guild_id].dynamic_channels and data.channel_id in self.cache[data.guild_id].dynamic_channels:
+        data = await _handle_dynamic_channel(self, data)
+    if self.cache[data.guild_id].VoiceLink:
+        await _handle_voice_link(self, data)
+    await _handle_voice_activity(self, data)
+
+from MFramework.utils.timers import *
+#@onDispatch(Voice_State)
+async def _voice_state_update(self, data):
     if data.member.user.bot:
         if data.user_id == self.user_id:
             self.cache[data.guild_id].connection.session_id = data.session_id
