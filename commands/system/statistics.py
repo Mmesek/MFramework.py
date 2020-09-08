@@ -11,9 +11,11 @@ async def ping(self, *args, data, detailed=False, language, **kwargs):
     end = time.time()
     if detailed:
         from datetime import datetime, timezone
-        t = datetime.fromisoformat(data.timestamp)
         now = datetime.now(tz=timezone.utc)
+        t = datetime.fromisoformat(data.timestamp)
+        msg_t = datetime.fromisoformat(m["timestamp"])
         internal = now - t
+        msg_diff = msg_t - t
         discord = ping()
         e = Embed().addField("Discord", f"{discord}", True)
         router = ping('192.168.1.254')
@@ -21,7 +23,7 @@ async def ping(self, *args, data, detailed=False, language, **kwargs):
             e.addField("Router", f"{router}", True)
         if self.latency != None:
             e.addField("Heartbeat", "{0:.2f}ms".format(self.latency), True)
-        e.setFooter(None, "Internal Difference: {}s".format(internal.total_seconds()))
+        e.setFooter(None, "Internal | Timestamp Difference: {} | {}s".format(internal.total_seconds(), msg_diff.total_seconds()))
         await self.edit_message(data.channel_id, m["id"], f"Pong! `{int((end-s)*1000)}ms`", e.embed)
     else:
         await self.edit_message(data.channel_id, m["id"], f"Pong! `{int((end-s)*1000)}ms`")
