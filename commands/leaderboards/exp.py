@@ -31,7 +31,7 @@ def getUserID(self, data, game_or_user=''):
         return game_or_user
 
 @register(group='Global', help='Shows leaderboard', alias='', category='')
-async def top(self, limit=10, *args, data, games=False, voice=False, chat=False, language, **kwargs):
+async def top(self, limit=10, *args, data, games=False, voice=False, chat=False, count=False, language, **kwargs):
     '''Extended description to use with detailed help command'''
     if type(limit) != int and not limit.isdigit():
         limit = 10
@@ -39,7 +39,11 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
     if voice and not games and not chat:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.vEXP.desc()).limit(limit).all()
     elif games and not voice and not chat:
-        total = session.query(db.Presences).filter(db.Presences.AppID != None, db.Presences.AppID != 0).order_by(db.Presences.TotalPlayed.desc()).limit(limit).all()
+        from sqlalchemy import func
+        if count:
+            total = session.query(db.Presences.Title, func.count(db.Presences.Title)).filter(db.Presences.GuildID == data.guild_id, db.Presences.Type == 'Game', db.Presences.AppID != None, db.Presences.AppID != 0).group_by(db.Presences.Title).order_by(func.count(db.Presences.Title).desc()).limit(limit).all()
+        else:
+            total = session.query(db.Presences.Title, func.sum(db.Presences.TotalPlayed)).filter(db.Presences.GuildID == data.guild_id, db.Presences.Type == 'Game', db.Presences.AppID != None, db.Presences.AppID != 0).group_by(db.Presences.Title).order_by(func.sum(db.Presences.TotalPlayed).desc()).limit(limit).all()
     else:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.EXP.desc()).limit(limit).all()    
         if not chat:
@@ -54,10 +58,13 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
     for r in total:
         i = 0
         if games and not voice and not chat:
-            if r.Title not in c:
-                c[r.Title] = r.TotalPlayed
+            if not count:
+                if r.Title not in c:
+                    c[r.Title] = r[1]#r.TotalPlayed
+                else:
+                    c[r.Title] += r[1]#r.TotalPlayed
             else:
-                c[r.Title] += r.TotalPlayed
+                a.append((r[0], r[1]))
         else:
             if r.EXP:
                 i = r.EXP
@@ -77,7 +84,10 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
         if games or voice:
             if games and not voice:
                 p1 = i[0]
-            st = secondsToText(i[1], language.upper())
+            if not count:
+                st = secondsToText(i[1], language.upper())
+            else:
+                st = i[1]
         else:
             st = i[1]
         l = f'\n{x+1}. {p1} - {st}'
