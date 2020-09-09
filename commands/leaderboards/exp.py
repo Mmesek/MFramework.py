@@ -43,7 +43,7 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
         if count:
             total = session.query(db.Presences.Title, func.count(db.Presences.Title)).filter(db.Presences.GuildID == data.guild_id, db.Presences.Type == 'Game', db.Presences.AppID != None, db.Presences.AppID != 0).group_by(db.Presences.Title).order_by(func.count(db.Presences.Title).desc()).limit(limit).all()
         else:
-            total = session.query(db.Presences.Title, func.sum(db.Presences.TotalPlayed)).filter(db.Presences.GuildID == data.guild_id, db.Presences.Type == 'Game', db.Presences.AppID != None, db.Presences.AppID != 0).group_by(db.Presences.Title).order_by(func.sum(db.Presences.TotalPlayed).desc()).limit(limit).all()
+            total = session.query(db.Presences.Title, func.sum(db.Presences.TotalPlayed), func.count(db.Presences.Title)).filter(db.Presences.GuildID == data.guild_id, db.Presences.Type == 'Game', db.Presences.AppID != None, db.Presences.AppID != 0).group_by(db.Presences.Title).order_by(func.sum(db.Presences.TotalPlayed).desc()).limit(limit).all()
     else:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.EXP.desc()).limit(limit).all()    
         if not chat:
@@ -59,21 +59,26 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
         i = 0
         if games and not voice and not chat:
             if not count:
-                if r.Title not in c:
-                    c[r.Title] = r[1]#r.TotalPlayed
+                if r[2] != 1:
+                    title = f'{r.Title} - {r[2]}'
                 else:
-                    c[r.Title] += r[1]#r.TotalPlayed
+                    title = r.Title
+                if title not in c:
+                    c[title] = r[1]#r.TotalPlayed
+                else:
+                    c[title] += r[1]#r.TotalPlayed
             else:
                 a.append((r[0], r[1]))
         else:
-            if r.EXP:
+            if r.EXP and not voice:
                 i = r.EXP
             if r.vEXP:
                 if voice:
                     i = r.vEXP
                 elif not chat:
                     i += int((r.vEXP / 60) / 10)
-            a += [(r.UserID, i)]
+            if i != 0:
+                a += [(r.UserID, i)]
     for r in c:
         a += [(r, c[r])]
     a = sorted(a, key=lambda x: x[1], reverse=True)
