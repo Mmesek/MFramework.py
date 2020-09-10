@@ -45,7 +45,7 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
         else:
             total = session.query(db.Presences.Title, func.sum(db.Presences.TotalPlayed), func.count(db.Presences.Title)).filter(db.Presences.GuildID == data.guild_id, db.Presences.Type == 'Game', db.Presences.AppID != None, db.Presences.AppID != 0).group_by(db.Presences.Title).order_by(func.sum(db.Presences.TotalPlayed).desc()).limit(limit).all()
     else:
-        total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.EXP.desc()).limit(limit).all()    
+        total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.EXP.desc()).limit(limit).all()
         if not chat:
             t = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.vEXP.desc()).limit(limit).all()
             nt = set(total)
@@ -73,7 +73,7 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
             if r.EXP and not voice:
                 i = r.EXP
             if r.vEXP:
-                if voice:
+                if voice and not count:
                     i = r.vEXP
                 elif not chat:
                     i += int((r.vEXP / 60) / 10)
