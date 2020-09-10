@@ -252,10 +252,12 @@ async def role(self, hex_color, *name, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
     c = s.query(db.CustomRoles).filter(db.CustomRoles.GuildID == data.guild_id).filter(db.CustomRoles.UserID == data.author.id).first()
-    if name == () and c is not None:
+    if name == () and c is not None and '#' == hex_color[0]:
         name = c.Name
     else:
         name = ' '.join(name)
+        if '#' != hex_color[0]:
+            name = hex_color +' '+ name    
     reserved_colors = []
     reserved_names = []
     groups = self.cache[data.guild_id].groups
@@ -265,11 +267,16 @@ async def role(self, hex_color, *name, data, language, **kwargs):
             reserved_names.append(_role.name.lower())
         elif _role.id in groups['Nitro']:
             nitro_position = _role.position
-    try:
-        color = int(hex_color.strip('#'), 16)
-    except ValueError as ex:
-        await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
-        return await self.message(data.channel_id, "Color has to be provided as a hexadecimal value (between 0 to F for example `#012DEF`) not `"+ str(ex).split(": '")[-1].replace("'","`"))
+    if '#' in hex_color:
+        try:
+            color = int(hex_color.strip('#'), 16)
+        except ValueError as ex:
+            await self.create_reaction(data.channel_id, data.id, self.emoji['failure'])
+            return await self.message(data.channel_id, "Color has to be provided as a hexadecimal value (between 0 to F for example `#012DEF`) not `"+ str(ex).split(": '")[-1].replace("'","`"))
+    elif c is not None:
+        color = c.Color
+    else:
+        color = None
     if color in reserved_colors:
         await self.message(data.channel_id, "Color is too similiar to admin colors")
         color = None
@@ -288,6 +295,7 @@ async def role(self, hex_color, *name, data, language, **kwargs):
     r = db.CustomRoles(data.guild_id, data.author.id, name, color, role)
     if c != None:
         s.merge(r)
+        s.commit()
     else:
         self.db.sql.add(r)
     await self.create_reaction(data.channel_id, data.id, self.emoji['success'])
