@@ -345,3 +345,16 @@ class CustomRoles(Base):
         self.Name = Name
         self.Color = Color
         self.RoleID = RoleID
+
+class Channels(Base):
+    __tablename__ = "Channels"
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    ChannelID = Column(BigInteger, primary_key=True)
+    Type = Column(String)
+    Template = Column(JSON)
+
+    def __init__(self, GuildID, ChannelID, Type, Template=None):
+        self.GuildID = GuildID
+        self.ChannelID = ChannelID
+        self.Type = Type
+        self.Template = Template

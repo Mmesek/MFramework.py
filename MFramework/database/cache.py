@@ -6,7 +6,7 @@ class Cache:
     __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language', 'connection',
     'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice', 'afk', 'afk_channel',
     'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence', 'dynamic_channels',
-    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks')
+    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks', 'rpg_channels')
     groups: dict
     disabled_channels: tuple
     disabled_roles: tuple
@@ -61,11 +61,14 @@ class Cache:
         self.presence = {}
         self.afk = {}
         self.tasks = {}
-        if guildID == 463433273620824104:
-            self.dynamic_channels = {'channels': [], "counters":{}, 699365297664294943: {'name': 'Stolik Smutku', 'bitrate': 64000, 'user_limit': 1, 'position': 0, 'permission_overwrites': [], 'parent_id': '699363712280166411'}, 734523870647681101: {"buffer":734523217141563463}}
-        else:
-            self.dynamic_channels = {'channels': []}
-
+        self.dynamic_channels = {'channels':[], 'counters':{}}
+        self.rpg_channels = []
+        channels = session.query(db.Channels).filter(db.Channels.GuildID == guildID).all()
+        for channel in channels:
+            if channel.Type == 'dynamic':
+                self.dynamic_channels[channel.ChannelID] = channel.Template
+            elif channel.Type == 'rpg':
+                self.rpg_channels.append(channel.ChannelID)
         self.alias = g.Alias
         #self.reactionRoles = {i.RoleGroup:{i.MessageID:{i.Reaction:i.RoleID}} for i in session.query(db.ReactionRoles).filter(db.Servers.GuildID == guildID).all()}
         self.reactionRoles = {}
