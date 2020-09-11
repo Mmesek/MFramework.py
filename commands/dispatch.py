@@ -26,7 +26,7 @@ def isDM(data) -> bool:
         and data.content != ""
     )
 
-import re, random
+from .rpg import dice
 @onDispatch(Message)
 async def message_create(self, data: Message):
     if (
@@ -48,24 +48,8 @@ async def message_create(self, data: Message):
             return  # await quote(self, data)
         elif await parse(self, data) == None:
             return
-        if data.channel_id == 463437626515652618:
-            reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)
-            if reg and set(reg) != {'*'}:
-                if '*' in reg:
-                    reg = set(reg)
-                    reg.remove('*')
-                    reg = list(reg)
-                v = random.SystemRandom().randint(1, 6)
-                #v = int(v / 100) + 1
-                reactions = {
-                    0:'0️⃣',
-                    1:'1️⃣',2:'2️⃣',3:'3️⃣',
-                    4:'4️⃣',5:'5️⃣',6:'6️⃣'
-                }
-                z = re.findall(r"(?i)zabij|wyryw|mord", reg[0])
-                if z:
-                    v = 0
-                await self.create_reaction(data.channel_id, data.id, reactions.get(v))
+        if data.channel_id in self.cache[data.guild_id].rpg_channels:#== 463437626515652618:
+            await dice.roll(self, data)
         elif data.channel_id == 466643151470198786:
             embed = utils.Embed().setDescription(data.content)
             await self.webhook([embed.embed],'','569802933227618318/6AJW6rQjG0mlGvTFNZDfGiUqJCkd3EHDkAIDyJ7rwx-SA9uXP2xITwV9OGHg2YLwzgTS', data.author.username, f'https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png')
@@ -116,21 +100,8 @@ async def message_update(self, data):
     #elif (data.channel_id, data.id) in self.cache[data.guild_id].commandMessages:
     #    c = self.cache[data.guild_id].commandMessages[(data.channel_id, data.id)]
     #    await execute(self, data)
-    elif data.channel_id == 463437626515652618:
-        m = await self.get_channel_message(data.channel_id, data.id)
-        if not m.reactions:#data.reactions:
-            reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)
-            if reg and set(reg) != {'*'}:
-                if '*' in reg:
-                    reg = set(reg)
-                    reg.remove('*')
-                    reg = list(reg)
-                v = random.SystemRandom().randint(1, 600)
-                reactions = {
-                    1:'1️⃣',2:'2️⃣',3:'3️⃣',
-                    4:'4️⃣',5:'5️⃣',6:'6️⃣'
-                }
-                await self.create_reaction(data.channel_id, data.id, reactions.get(int(v / 100) + 1))
+    elif data.channel_id in self.cache[data.guild_id].rpg_channels:# == 463437626515652618:
+        await dice.roll(self, data, True)
     elif data.channel_id == 466643151470198786:
         embed = utils.Embed().setDescription(data.content).setTitle("MESSAGE UPDATE")
         await self.webhook([embed.embed],'','569802933227618318/6AJW6rQjG0mlGvTFNZDfGiUqJCkd3EHDkAIDyJ7rwx-SA9uXP2xITwV9OGHg2YLwzgTS', data.author.username, f'https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png')
