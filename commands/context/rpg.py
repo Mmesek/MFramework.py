@@ -461,9 +461,10 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         #    items = ['- ' + upperfirst(i.strip()) for i in self.answers['items'].split('\n')]
         items= items[:3]
         chosen_item = choice(items)
-        if chosen_item.strip()[-1] in ['a','ą','ę']:
+        _chosen_item = chosen_item.strip().split(' ')[0][-1]
+        if _chosen_item in ['a','ą','ę']:
             gi = 'a'
-        elif chosen_item.strip()[-1] in ['e', 'i', 'o', 'u', 'y']:
+        elif _chosen_item in ['e', 'i', 'o', 'u', 'y']:
             gi = 'e'
         else:
             gi = 'y'
