@@ -423,9 +423,9 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
         character.Skills = {}
         character.Items = {}
         if ',' in self.answers['items']:
-            items = ['- ' + upperfirst(i.strip()) for i in self.answers['items'].split(',')]
+            items = [upperfirst(i.strip()) for i in self.answers['items'].split(',')]
         else:
-            items = ['- ' + upperfirst(i.strip()) for i in self.answers['items'].split('\n')]
+            items = [upperfirst(i.strip()) for i in self.answers['items'].split('\n')]
         #for i in [upperfirst(i.strip()) for i in self.answers['items'].split(',')[:3]]:
         for i in items[:3]:
             character.Items[i] = 1
