@@ -175,8 +175,9 @@ async def steamlist(self, *game, data, language, **kwargs):
 
 
 @register(group='Global', help='Steam Calculator. Similiar to Steamdb one (With few differences). Provide Country Code for currency', alias='', category='')
-async def steamcalc(self, *user, data, currency='pl', language, **kwargs):
+async def steamcalc(self, *user, data, currency='us', language, **kwargs):
     '''Extended description to use with detailed help command'''
+    await self.trigger_typing_indicator(data.channel_id)
     if user == ():
         user = data.author.username
     else:
@@ -186,11 +187,13 @@ async def steamcalc(self, *user, data, currency='pl', language, **kwargs):
     if uid != 'Not Found':
         uid = uid['response']
     else:
-        return
+        return await self.message(data.channel_id, "Couldn't find specifed User. Please provide either your Vanity URL name or SteamID")
     if uid['success'] == 1:
         user = uid['steamid']
     games = await s.OwnedGames(user)
-    games = games['response']
+    games = games.get('response', {'games':{}})
+    if games.get('games',{}) == {}:
+        return await self.message(data.channel_id, "Couldn't find any games on specified account. Perhaps profile is set to private?")
     total_playtime = 0
     total_played = 0
     game_ids = []
@@ -206,7 +209,14 @@ async def steamcalc(self, *user, data, currency='pl', language, **kwargs):
         for x, price in enumerate(prices.values()):
             if price['success'] and price['data'] != []:
                 total_price += price['data']['price_overview']['final']
-                ending = price['data']['price_overview']['final_formatted'].split(',')[-1][2:]
+                ending = price['data']['price_overview']['currency']  #['final_formatted'].split(',')[-1][2:]
+                endings = {
+                    'USD': '$',
+                    'EUR': '€',
+                    'PLN': 'zł',
+                    'GBP': '£'
+                }
+                ending = endings.get(ending, ending)
                 has_price += [int(keys[x])]
         return total_price, ending, has_price
     try:
@@ -217,9 +227,10 @@ async def steamcalc(self, *user, data, currency='pl', language, **kwargs):
     except Exception as ex:
         ending = ''
         print(ex)
-    total = f"Playtime: {total_playtime/60}h"
+    from MFramework.utils.utils import truncate
+    total = "Playtime: {}h".format(truncate(total_playtime/60, 2))
     if total_price != 0:
-        total += f"\nPrices: {total_price/100}{ending}"
+        total += f"\nPrices: {total_price/100} {ending}"
     if len(has_price) != 0:
         str_prices = f"\nPricetaged: {len(has_price)}"
     else:
@@ -232,9 +243,14 @@ async def steamcalc(self, *user, data, currency='pl', language, **kwargs):
             if game['playtime_forever'] != 0:
                 pf += 1
                 pt += game['playtime_forever']
-    avg = "Hours per game: {:.2}".format((total_playtime / 60) / total_played)
-    avg += "\nPrice per game: {:.3}".format((total_price/100) / len(has_price)) + f"{ending}"
-    avg += "\nPrice per hour: {:.2}".format((total_price / 100) / (pt / 60)) + f"{ending}"
+    avg = "Hours per game: 0"
+    if total_playtime != 0:
+        hpg = truncate(((total_playtime / 60) / total_played), 2)
+        avg = "Hours per game: {}".format(hpg)
+    if total_price != 0:
+        avg += "\nPrice per game: {:.3}".format(truncate((total_price / 100) / len(has_price)), 2) + f"{ending}"
+        if pt != 0:
+            avg += "\nPrice per hour: {:.3}".format(truncate((total_price / 100) / (pt / 60), 2)) + f"{ending}"
     e.setFooter("", f"SteamID: {user}").addField("Average", avg, True)
     from MFramework.utils.utils import get_main_color
     profile = await s.PlayerSummaries(user)
