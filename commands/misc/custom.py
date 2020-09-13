@@ -161,14 +161,15 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
         from MFramework.utils import favicon
         av = favicon.get('/'.join(response[0].split('/')[:3]))
         try:
-            color = get_main_color(av[0].url)
+            av_url = av[0].url
+            color = get_main_color(av_url)
         except IndexError:
-            color = 0
+            av_url, color = None, None
         if '.pl' in response[0]:
             lang = 'pl'
         else:
             lang = 'en'
-        r = db.RSS(name, 0, response[0], color, lang, av[0].url)
+        r = db.RSS(name, 0, response[0], color, lang, av_url)
     elif type == 'regex' and group == 'System':
         r = db.Regex(data.guild_id, data.author.id, name, response[0], ' '.join(response[2]), response[1])
     else:
