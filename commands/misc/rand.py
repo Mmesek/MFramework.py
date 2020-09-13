@@ -101,9 +101,13 @@ async def how(self, *query, data, **kwargs):
 
 
 @register(group="System", help="Summary of what is today")
-async def today(self, *args, data, language, **kwargs):
+async def today(self, *difference, data, language, **kwargs):
     s = sun.sun(lat=51.15, long=22.34)
-    today = datetime.datetime.now()#datetime.timezone.utc)
+    today = datetime.datetime.now(datetime.timezone.utc)
+    if difference != ():
+        d = ''.join(difference)
+        d = '-'+d if '+' not in d else d
+        today = today + datetime.timedelta(days=int(d))
     month = today.month
     day = today.day
     if month <= 9:
