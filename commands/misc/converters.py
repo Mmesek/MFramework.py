@@ -49,3 +49,25 @@ async def roman(self, *value, data, language, **kwargs):
         except KeyError:
             s = f'An error occured, perhas non roman numeral was provided? Only `I`, `V`, `X`, `L`, `C`, `D` and `M` are allowed'
     await self.message(data.channel_id, f'{s}')
+
+@register(group='Global', help='Converts for example 3600s into 1h. Works with `s`, `m`, `h`, `d` and `w`', alias='', category='')
+async def timeunits(self, *duration, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    from MFramework.utils.utils import secondsToText
+    seconds = 0
+    if duration == ():
+        return await self.message(data.channel_id, "Provide value you want to convert for example `3540s 1m` as an argument")
+    for d in duration:
+        if 's' in d:
+            seconds += int(d.split('s')[0])
+        elif 'm' in d:
+            seconds += int(d.split('m')[0])*60
+        elif 'h' in d:
+            seconds += (int(d.split('h')[0])*60)*60
+        elif 'd' in d:
+            seconds += ((int(d.split('d')[0])*24)*60)*60
+        elif 'w' in d:
+            seconds += (((int(d.split('w')[0]) * 7) * 24) * 60) * 60
+        else:
+            return await self.message(data.channel_id, "Pass `s` for second, `m` for minute, `h` for hour, `d` for day or `w` for week after right after digit as an argument, for example `60s 59m 23h`")
+    await self.message(data.channel_id, secondsToText(seconds, language))
