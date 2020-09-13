@@ -159,8 +159,11 @@ async def add(self, name, *response, data, trigger='', type='meme', language, gr
     elif type == 'rss' and group == 'System':
         from MFramework.utils.utils import get_main_color
         from MFramework.utils import favicon
-        av = favicon.get('/'.join(response[0].split('/')[:3]))        
-        color = get_main_color(av[0].url)
+        av = favicon.get('/'.join(response[0].split('/')[:3]))
+        try:
+            color = get_main_color(av[0].url)
+        except IndexError:
+            color = 0
         if '.pl' in response[0]:
             lang = 'pl'
         else:
