@@ -10,6 +10,13 @@ async def shutdown(self, *args, data, **kwargs):
                 users.append(u)
             for u in users:
                 finalize(self, data.guild_id, v, u)
+    if self.context[data.guild_id]:
+        s = ''
+        for channel_id, author_id in self.context[data.guild_id]:
+            s += f'\n<#{channel_id}> <@{author_id}>'
+            #await self.message(channel_id, "Context ended. To retry type the command that started context again later.")
+        if s!='':
+            await self.message(data.channel_id, "Ended contexts: "+s)
     await self.close()
     print("Received shutdown command. Shutting down.")
 
