@@ -374,3 +374,5 @@ async def get_all_reactions(self, channel_id, message_id, emoji='🎉'):
         last_id = users[-1].id
     users = [i for i in users if i.id != self.user_id]
     return list(set(users))
+
+currencies = {'€':'EUR', '$':'USD', '£':'GBP'}

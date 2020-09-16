@@ -193,12 +193,15 @@ async def asciitohex(self, *ascii_, data, **kwargs):
     await self.embed(data.channel_id, '', f.embed)
 
 @register(group='Global', help='Converts currency', alias='cc, currency')
-async def currency_exchange(self, amount='1', currency='EUR', to_currency='USD', *args, data, **kwargs):
-    currency, to_currency = currency.upper(), to_currency.upper()
+async def currency_exchange(self, amount='1', currency='EUR', to_currency='USD', *args, data, language, **kwargs):
+    def check(c):
+        from MFramework.utils.utils import currencies
+        return currencies.get(c, c).upper()
+    currency, to_currency = check(currency), check(to_currency)
     r = requests.get(f'https://api.exchangeratesapi.io/latest?base={currency}&symbols={to_currency}')
     try:
         amount = float(amount.replace(',','.').replace(' ',''))
-        r = "%3.2f %s from %s %s" % (amount * float(r.json()['rates'][to_currency]), to_currency, amount, currency)
+        r = tr('commands.currency_exchange.result', language, result="%3.2f" % (amount * float(r.json()['rates'][to_currency])), to_currency=to_currency, amount=amount, currency=currency)
     except KeyError:
         r = r.json().get('error','Error')
     await self.message(data.channel_id, r)
