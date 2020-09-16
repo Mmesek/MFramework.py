@@ -192,27 +192,17 @@ async def asciitohex(self, *ascii_, data, **kwargs):
     f.addField('Oct',str(oct(int.from_bytes(bytearray(ascii_, encoding='ascii'), 'big')))[2:1023])
     await self.embed(data.channel_id, '', f.embed)
 
-@register(group='Global', help='Converts currency')
+@register(group='Global', help='Converts currency', alias='cc, currency')
 async def currency_exchange(self, amount=1, currency='EUR', to_currency='USD', *args, data, **kwargs):
-    def exchange(currency, currency2='USD',amount=1):
-        try:#alt: f'https://www.x-rates.com/calculator/?from={currency}&to={currency2}&amount={amount}'
-            getdata = requests.get(f'https://www.bankier.pl/waluty/kursy-walut/forex/{currency}{currency2}', timeout=10)
-            soup = BeautifulSoup(getdata.text,'html.parser')
-            lis = soup.find('div', class_='profilLast').text.replace(',','.').replace(' ','')
-            return lis
-        except Exception as ex:
-            return f"Time Out :( Exception: {ex}"
-    def check(currency):
-        if '$' in currency:
-            currency = 'usd'
-        elif '€' in currency:
-            currency = 'eur'
-        return currency
-    currency = check(currency)
-    to_currency = check(to_currency)
-    amount = float(amount.replace(',','.').replace(' ',''))
-    await self.message(data.channel_id, "%3.2f %s" % (amount*float(exchange(currency, to_currency, amount)), to_currency))
-        
+    currency, to_currency = currency.upper(), to_currency.upper()
+    r = requests.get(f'https://api.exchangeratesapi.io/latest?base={currency}&symbols={to_currency}')
+    try:
+        amount = float(amount.replace(',','.').replace(' ',''))
+        r = "%3.2f %s" % (amount * float(r.json()['rates'][to_currency]), to_currency)
+    except KeyError:
+        r = r.json().get('error','Error')
+    await self.message(data.channel_id, r)
+
 async def azlyrics(artist, song):
     #song1 = song.split(' - ',1)
     #song2 = song1[0].replace('-','').replace(' ','').replace('the','').casefold()
