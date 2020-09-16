@@ -299,10 +299,10 @@ async def presence_update(self, data):
         if data.user.id not in self.cache[data.guild_id].presence and data.game is not None and data.game.type == 0 and data.game.name is not None:
             self.cache[data.guild_id].presence[data.user.id] = (data.game.name, data.game.created_at, data.game.application_id)
     if data.guild_id == 463433273620824104:
-        if data.status == 'idle' and any(data.user.id in self.cache[data.guild_id].voice[channel] for channel in self.cache[data.guild_id].voice) and (data.self_mute or data.self_deaf):
+        if data.status == 'idle' and any(data.user.id in self.cache[data.guild_id].voice[channel] for channel in self.cache[data.guild_id].voice):# and (data.self_mute or data.self_deaf):
             await self.move_guild_member(data.guild_id, data.user.id, self.cache[data.guild_id].afk_channel, f"User {data.user.id} is AFK")
-        elif data.status == 'online' and data.user.id in self.cache[data.guild_id].afk and (not data.self_mute or not data.self_deaf):
-            await self.move_guild_member(data.guild_id, data.user.id, self.cache[data.guild_id].afk.pop(data.user.id), f"User {data.user.id} is no longer AFK")
+        #elif data.status == 'online' and data.user.id in self.cache[data.guild_id].afk and (not data.self_mute or not data.self_deaf):
+        #    await self.move_guild_member(data.guild_id, data.user.id, self.cache[data.guild_id].afk.pop(data.user.id), f"User {data.user.id} is no longer AFK")
     roles = self.cache[data.guild_id].presenceRoles
     if roles == None:
         return
