@@ -159,28 +159,39 @@ async def guild_member_update(self, data):
         #TODO: Fetch from database channel/setting regarding nitro handling and message to send them
         nitro_channel = 589745007737700352
         greeting = [
-        "Thank you for boosting the server, <@{user}>.", 
-        "<@{user}> Thank you for boosting the server.",
-        "<@{user}> Hello, thanks for boosting the server.",
-        "<@{user}> Thanks for boosting."]
+        "Thank you for boosting the server, <@{user}>.", "<@{user}> Hello! Thank you for boosting!",
+        "<@{user}> Thank you for boosting the server.", "<@{user}>, Hey, Thanks for boosting!",
+        "<@{user}> Hello, thanks for boosting the server.", "Thank you, <@{user}> for boosting.",
+        "<@{user}> Thanks for boosting.", "Hello <@{user}>, thank you for boosting!",
+        "Hey <@{user}>! Thank you for boosting our server!", "<@{user}>, Welcome in the cool club."]
 
         color=[
         "As a booster, you can have your own custom role that you can choose the name and the color of.", 
-        "As a booster you can have a role with your name and colour of choice.",
+        "As a booster you can have a role with your name and colour of choice.", "Since you are boosting, you are eligible to have your own custom role (within ruleset)."
         "Alongside access to this channel, you can also get a custom role with any name (within ruleset) and any color.",
         "You can have a custom role as long as your boost persists."]
 
         fine_print = [
-        "(As long as it doesn 't clash with Staff' s orange or Techland 's red.)",
-        "(apart from Staff orange and Techland red)"]
+        "(As long as it doesn't clash with Staff's orange or Techland's red.)",
+        "(Apart from Staff orange and Techland red)",
+        "(Besides Staff's and Techland's colors)"]
 
-        last = [
-        "If you would like to have one, just contact one of the currently online staff.",
-        "If that interests you, then just tell us what you'd like.",
-        "If you would like to have one. Just write down the name and color, in hexadecimal if possible, in this channel.",
-        "If you want one, just tell a staff member the name and color code you want for it."]
+        if_interest = [
+        "If you would like to have one, type {},",
+        "If that interests you, please use {},",
+        "If you want one, use Ayo to create one: {},"]
+        #"If you would like to have one, just contact one of the currently online staff.",
+        #"If that interests you, then just tell us what you'd like.",
+        #"If you would like to have one, please write down the name and color, please write down the name and color in this channel, preferably the hexadecimal if possible.",
+        #"If you want one, just tell a staff member the name and color code you want for it."]
+
+        ending = [
+        "then ask moderator to move your role.", "after doing so, ask Moderator to move your role.", "and ask moderator to move your role."]
+        note = [
+        "You can change name of the role at any moment as well as color using the same command again."]
         from random import choice
-        message = choice(greeting).format(user=data.user.id) + ' ' + choice(color) + ' ' + choice(fine_print) + ' '+ choice(last)
+        cmd_line = "`Ayo role #HexadecimalColor Name of your role`"
+        message = ' '.join([choice(greeting).format(user=data.user.id), choice(color), choice(fine_print), choice(if_interest).format(cmd_line), choice(ending), choice(note)])
         await self.message(nitro_channel, message)
     elif is_boosting is False and data.guild_id == 289739584546275339:
         s = self.db.sql.session()
