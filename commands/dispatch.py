@@ -331,9 +331,9 @@ async def presence_update(self, data):
 
 @onDispatch(Voice_State)
 async def voice_state_update(self, data):
-    from MFramework.utils.voice_channels import _check_afk_channel, _check_if_bot, _handle_dynamic_channel, _handle_voice_activity, _handle_voice_link
+    from MFramework.utils.voice_channels import _check_afk_channel, _check_if_current_bot, _handle_dynamic_channel, _handle_voice_activity, _handle_voice_link
     if data.member.user.bot:
-        return _check_if_bot(self, data)
+        return _check_if_current_bot(self, data)
     if data.channel_id in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
         data = _check_afk_channel(self, data)
     if self.cache[data.guild_id].dynamic_channels and data.channel_id in self.cache[data.guild_id].dynamic_channels:

@@ -1,6 +1,6 @@
 from .timers import *
 from . import log
-def _check_if_bot(self, data):
+def _check_if_current_bot(self, data):
     if data.user_id == self.user_id:
         self.cache[data.guild_id].connection.session_id = data.session_id
 
