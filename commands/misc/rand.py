@@ -320,3 +320,9 @@ async def xkcdpassword(self, *args, data, language, **kwargs):
         words = [word.strip() for word in f]
         password = ' '.join(secrets.choice(words) for i in range(4))
     await self.message(data.channel_id, password)
+
+@register(group='Global', help='Makes text uʍop ǝpᴉsdn!', alias='', category='')
+async def upsidedown(self, *text, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    import upsidedown
+    await self.message(data.channel_id, upsidedown.transform(' '.join(text)))
