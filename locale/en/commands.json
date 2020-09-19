@@ -367,5 +367,10 @@
             "one":"Congratulations to %{winners}!\nYou won %{prize}!\n\nTotal participants: %{participants}",
             "many":"Congratulations, %{winners}!\nYou won %{prize}!\n\nTotal participants: %{participants}"
         }
+    },
+    "currency_exchange":{
+        "cmd_trigger":"currency_exchange",
+        "help":"help",
+        "result":"%{result} %{to_currency} from %{amount} %{currency}"
     }
 }
