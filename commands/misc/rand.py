@@ -326,3 +326,42 @@ async def upsidedown(self, *text, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     import upsidedown
     await self.message(data.channel_id, upsidedown.transform(' '.join(text)))
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def rot(self, *key, data, language, shift=0, alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ', **kwargs):
+    '''Extended description to use with detailed help command'''
+    dict_alphabet = {}
+    msg = '`'
+    for x, letter in enumerate(alphabet):
+        dict_alphabet[letter] = x
+#        msg += f'{x+1+int(shift)}. {letter} '
+#        if x % 5 == 0 and x != 0:
+#            msg += '\n'
+    shifted = ''
+    for x, letter in enumerate(alphabet):
+        y = int(x) + int(shift)
+        if y > 25:
+            y = y-26
+        shifted += alphabet[y]
+    msg += shifted
+    msg += '`'
+    from_key = ''
+    new_key = []
+    try_key = list(' '.join(key))
+    for k in try_key:
+        if not k.isdigit() and k.upper() in alphabet:
+            new_key.append(dict_alphabet[k.upper()])
+        else:
+            new_key.append(' ')
+    if new_key != []:
+        key = new_key
+    for k in key:
+        try:
+            _key = int(k) + int(shift)
+            if _key > 25:
+                _key = _key - 26
+            from_key += alphabet[_key]
+        except:
+            from_key += k
+    e = Embed().addField("Alphabet", f"`{alphabet}`\n"+msg).setDescription(from_key)
+    await self.embed(data.channel_id, "", e.embed)
