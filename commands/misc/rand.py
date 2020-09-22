@@ -103,7 +103,7 @@ async def how(self, *query, data, **kwargs):
 @register(group="System", help="Summary of what is today")
 async def today(self, *difference, data, language, **kwargs):
     s = sun.sun(lat=51.15, long=22.34)
-    today = datetime.datetime.now(datetime.timezone.utc)
+    today = datetime.datetime.now()
     if difference != ():
         d = ''.join(difference)
         d = '-'+d if '+' not in d else d
@@ -132,7 +132,7 @@ async def today(self, *difference, data, language, **kwargs):
             f += "\n- " + p.text
     embed = Embed().setDescription(f)  # .setTitle(f"{today.year}/{month}/{day}")
     embed = embed.setTitle(today.strftime(f"%A, %B %Y (%m/%d)"))
-    embed = embed.setTimestamp(today.isoformat())
+    embed = embed.setTimestamp(datetime.datetime.now(tz=datetime.timezone.utc).isoformat())
     random.seed(today.isoformat()[:10])  # hash(today.year / today.month + today.day))
     with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
         q = json.load(file)
@@ -328,7 +328,7 @@ async def upsidedown(self, *text, data, language, **kwargs):
     await self.message(data.channel_id, upsidedown.transform(' '.join(text)))
 
 @register(group='Global', help='Short description to use with help command', alias='', category='')
-async def rot(self, *key, data, language, shift=0, alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ', **kwargs):
+async def rot(self, *key, data, language, shift=13, alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ', **kwargs):
     '''Extended description to use with detailed help command'''
     dict_alphabet = {}
     msg = '`'
