@@ -202,8 +202,10 @@ class Tasks(Base):
     Prize = Column(String)
     WinnerCount = Column(Integer)
     Finished = Column(Boolean, primary_key=True)
+#    MessageContent = Column(String)
+#    SendDM = Column(Boolean)
 
-    def __init__(self, GuildID=None, Type=None, ChannelID=None, MessageID=None, UserID=None, TimestampStart=None, TimestampEnd=None, Prize=None, WinnerCount=None, Finished=False):
+    def __init__(self, GuildID=None, Type=None, ChannelID=None, MessageID=None, UserID=None, TimestampStart=None, TimestampEnd=None, Prize=None, WinnerCount=None, Finished=None, MessageContent=None, SendDM=None):
         self.GuildID = GuildID
         self.Type = Type
         self.ChannelID = ChannelID
@@ -214,6 +216,8 @@ class Tasks(Base):
         self.Prize = Prize
         self.WinnerCount = WinnerCount
         self.Finished = Finished
+#        self.MessageContent = MessageContent
+#        self.SendDM = SendDM
 
 
 class EmbedTemplates(Base):
@@ -352,9 +356,11 @@ class Channels(Base):
     ChannelID = Column(BigInteger, primary_key=True)
     Type = Column(String)
     Template = Column(JSON)
+    Language = Column(String)
 
-    def __init__(self, GuildID, ChannelID, Type, Template=None):
+    def __init__(self, GuildID, ChannelID, Type, Template=None, Language=None):
         self.GuildID = GuildID
         self.ChannelID = ChannelID
         self.Type = Type
         self.Template = Template
+        self.Language = Language
