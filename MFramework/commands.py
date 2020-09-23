@@ -186,18 +186,19 @@ def register(**kwargs):
 
 def subcommand(main, group='Global', **kwargs):
     def inner(f, **_kwargs):
-        _main = main.__name__.lower()
         sub = str(f.__name__.lower())
         _group = []
         for i in groups:
             _group.append(i)
             if group.capitalize() == i:
                 break
+        if not hasattr(main, 'subcmds'):
+            main.subcmds = {}
         for g in _group:
-            if not hasattr(commandList[g][_main], 'subcmds'):
-                commandList[g][_main].subcmds = {}
-            if sub not in commandList[g][_main].subcmds:
-                commandList[g][_main].subcmds[sub] = f
+            if g not in main.subcmds:
+                main.subcmds[g] = {}
+            if sub not in main.subcmds[g]:
+                main.subcmds[g][sub] = f
         return f
     return inner
 

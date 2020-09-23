@@ -1,19 +1,30 @@
 from MFramework.commands import register, subcommand, Invalid
 from MFramework.database import alchemy as db
-@register(group='Moderator', help='Short description to use with help command', alias='', category='')
-async def settings(self, command, *args, data, language, **kwargs):
+from MFramework.utils.utils import Embed
+
+async def check_if_command(self, main, command, group, data):
+    if command is None:
+        await self.embed(data.channel_id, "", Embed().setDescription("Available subsettings:\n- " + ('\n- '.join(main.subcmds[group]))).embed)
+        return Invalid
+    else:
+        return main.subcmds[group].get(command, Invalid)
+
+
+@register(group='Mod', help='Server settings', alias='', category='')
+async def settings(self, command=None, *args, data, language, group, **kwargs):
     '''Extended description to use with detailed help command'''
-    await settings.subcmds.get(command, Invalid)(self, *args, data=data, language=language, **kwargs)
+    #await settings.subcmds[group].get(command, Invalid)
+    _command = await check_if_command(self, settings, command, group, data)
+    await _command(self, *args, data=data, language=language, group=group, **kwargs)
 
-@subcommand(settings, 'Moderator')
-@register(group='Moderator', help='Short description to use with help command', alias='', category='')
-async def channel(self, sub_channel_cmd, *args, data, language, **kwargs):
-    await channel.subcmds.get(sub_channel_cmd, Invalid)(self, *args, data=data, language=language, **kwargs)
+@subcommand(settings, 'Mod')
+async def channel(self, sub_channel_cmd=None, *args, data, language, group, **kwargs):
+    _command = await check_if_command(self, channel, sub_channel_cmd, group, data)
+    #await channel.subcmds[group].get(sub_channel_cmd, Invalid)
+    await _command(self, *args, data=data, language=language, group=group, **kwargs)
 
-#@register(group='System', help='Short description to use with help command', alias='', category='')
-@subcommand(settings, 'Moderator')
+@subcommand(settings, 'Mod')
 async def channel_type(self, channel_id, type, name='', parent_or_buffer_id='', bitrate=64000, user_limit=0, postion=0, *args, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
     template = None
     if type == 'dynamic':
         template = {'name': name, 'bitrate': int(bitrate), 'user_limit': user_limit, 'position': 0, 'permission_overwrites': [], 'parent_id': parent_or_buffer_id}
@@ -26,8 +37,8 @@ async def channel_type(self, channel_id, type, name='', parent_or_buffer_id='', 
     else:
         self.cache[data.guild_id].rpg_channels.append(channel_id)
 
-@subcommand(channel, "Moderator")
-async def set_language(self, new_language, channel_id, *args, data, language, **kwargs):
+@subcommand(channel, "Admin")
+async def language(self, new_language, channel_id, *args, data, language, **kwargs):
     s = self.db.sql.session()
     channel = s.query(db.Channels).filter(db.Channels.GuildID == data.guild_id, db.Channels.ChannelID == channel_id).first()
     if channel is not None:
