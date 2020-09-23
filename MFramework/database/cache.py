@@ -6,7 +6,7 @@ class Cache:
     __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language', 'connection',
     'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice', 'afk', 'afk_channel',
     'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence', 'dynamic_channels',
-    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks', 'rpg_channels')
+    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks', 'rpg_channels', 'language_overwrites')
     groups: dict
     disabled_channels: tuple
     disabled_roles: tuple
@@ -63,12 +63,15 @@ class Cache:
         self.tasks = {}
         self.dynamic_channels = {'channels':[], 'counters':{}}
         self.rpg_channels = []
+        self.language_overwrites = {}
         channels = session.query(db.Channels).filter(db.Channels.GuildID == guildID).all()
         for channel in channels:
             if channel.Type == 'dynamic':
                 self.dynamic_channels[channel.ChannelID] = channel.Template
             elif channel.Type == 'rpg':
                 self.rpg_channels.append(channel.ChannelID)
+            if channel.Language is not None:
+                self.language_overwrites[channel.ChannelID] = channel.Language
         self.alias = g.Alias
         #self.reactionRoles = {i.RoleGroup:{i.MessageID:{i.Reaction:i.RoleID}} for i in session.query(db.ReactionRoles).filter(db.Servers.GuildID == guildID).all()}
         self.reactionRoles = {}
