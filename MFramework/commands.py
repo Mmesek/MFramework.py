@@ -184,6 +184,23 @@ def register(**kwargs):
 
     return inner
 
+def subcommand(main, group='Global', **kwargs):
+    def inner(f, **_kwargs):
+        _main = main.__name__.lower()
+        sub = str(f.__name__.lower())
+        _group = []
+        for i in groups:
+            _group.append(i)
+            if group.capitalize() == i:
+                break
+        for g in _group:
+            if not hasattr(commandList[g][_main], 'subcmds'):
+                commandList[g][_main].subcmds = {}
+            if sub not in commandList[g][_main].subcmds:
+                commandList[g][_main].subcmds[sub] = f
+        return f
+    return inner
+
 def compilePatterns(self):
     patterns = {
         "strip_trigger":rf'<@[!?]{self.user_id}>|(?i)\b{self.username}\b|^{re.escape(self.alias)}',
@@ -250,10 +267,18 @@ async def execute(self, data):
         except:
             continue
         
+        l_overwrites = self.cache[data.guild_id].language_overwrites
+#        if data.author.id in users:
+#            if users[data.author.id].language is not None:
+#                _language = users[data.author.id].language
+        if data.channel_id in l_overwrites:
+            _language = l_overwrites[data.channel_id]
+        else:
+            _language = self.cache[data.guild_id].language
         kwargs = {
            'data': data,
            'group': group,
-           'language': self.cache[data.guild_id].language,
+           'language': _language,
            'cmd': lower_cmd,
            #'flags': flags,
            'channel': [t for t in self.patterns['channels'].findall(data.content) if t is not None],
