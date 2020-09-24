@@ -49,6 +49,9 @@ class Embed:
         self.embed['fields'] += [{"name": name,
                                   "value": value, "inline": inline}]
         return self
+    @property
+    def fields(self):
+        return self.embed['fields']
 
 
 def created(snowflake: int) -> datetime.datetime:
@@ -375,4 +378,10 @@ async def get_all_reactions(self, channel_id, message_id, emoji='🎉'):
     users = [i for i in users if i.id != self.user_id]
     return list(set(users))
 
-currencies = {'€':'EUR', '$':'USD', '£':'GBP'}
+currencies = {'€': 'EUR', '$': 'USD', '£': 'GBP'}
+
+def get_avatar(author):
+    if author.avatar:
+        return f"https://cdn.discordapp.com/avatars/{author.id}/{author.avatar}.png"
+    else:
+        return f"https://cdn.discordapp.com/embed/avatars/{int(author.discriminator) % 5}.png"

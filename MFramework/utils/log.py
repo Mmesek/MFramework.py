@@ -1,4 +1,4 @@
-from .utils import Embed, created, tr
+from .utils import Embed, created, tr, get_avatar
 
 def MetaData(self, embed, c):
     embed.setDescription(c.content)
@@ -60,10 +60,11 @@ async def DirectMessage(self, data):
 
     embed = Embed()#.addField("From",f"<@{data.author.id}>", True)
     embed.setDescription(data.content)  #setDescription(f"From: <@{data.author.id}>")
-    if data.author.avatar:
-        avatar = f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png"
-    else:
-        avatar = f"https://cdn.discordapp.com/embed/avatars/{int(data.author.discriminator) % 5}.png"
+    avatar = get_avatar(data.author)
+    #if data.author.avatar:
+    #    avatar = f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png"
+    #else:
+    #    avatar = f"https://cdn.discordapp.com/embed/avatars/{int(data.author.discriminator) % 5}.png"
     embed.setTimestamp(data.timestamp.split("+", 1)[0]).setFooter(avatar, f"{data.author.id}").setAuthor(f'{data.author.username}#{data.author.discriminator}','','')
     content, filename = '', ''
     try:
