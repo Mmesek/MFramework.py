@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, JSON, ForeignKey, Boolean, BigInteger, ARRAY, TIMESTAMP #, BLOB, PickleType, Date, create_engine, Table
+from sqlalchemy import Column, String, Integer, JSON, ForeignKey, Boolean, BigInteger, ARRAY, TIMESTAMP, Date #, BLOB, PickleType, Date, create_engine, Table
 from sqlalchemy.ext.declarative import declarative_base
 #from sqlalchemy.orm import relationship, backref
 
@@ -364,3 +364,14 @@ class Channels(Base):
         self.Type = Type
         self.Template = Template
         self.Language = Language
+
+class Users(Base):
+    __tablename__ = 'Users'
+    UserID = Column(BigInteger, primary_key=True)
+    Language = Column(String)
+    Birthday = Column(Date)
+
+    def __init__(self, UserID, Language=None, Birthday=None):
+        self.UserID = UserID
+        self.Language = Language
+        self.Birthday = Birthday
