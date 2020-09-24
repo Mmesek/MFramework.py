@@ -1,13 +1,6 @@
-from MFramework.commands import register, subcommand, Invalid
+from MFramework.commands import register, subcommand, check_if_command
 from MFramework.database import alchemy as db
-from MFramework.utils.utils import Embed
 
-async def check_if_command(self, main, command, group, data):
-    if command is None:
-        await self.embed(data.channel_id, "", Embed().setDescription("Available subsettings:\n- " + ('\n- '.join(main.subcmds[group]))).embed)
-        return Invalid
-    else:
-        return main.subcmds[group].get(command, Invalid)
 
 
 @register(group='Mod', help='Server settings', alias='', category='')
