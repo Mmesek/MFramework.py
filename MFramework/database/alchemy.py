@@ -370,8 +370,10 @@ class Users(Base):
     UserID = Column(BigInteger, primary_key=True)
     Language = Column(String)
     Birthday = Column(Date)
+    Color = Column(Integer)
 
-    def __init__(self, UserID, Language=None, Birthday=None):
+    def __init__(self, UserID, Language=None, Birthday=None, Color=None):
         self.UserID = UserID
         self.Language = Language
         self.Birthday = Birthday
+        self.Color = Color
