@@ -202,6 +202,15 @@ def subcommand(main, group='Global', **kwargs):
         return f
     return inner
 
+async def check_if_command(self, main, command, group, data, verbose_invalid=False):
+    from MFramework.utils.utils import Embed
+    c = main.subcmds[group].get(command, Invalid)
+    if command is None or (verbose_invalid and c == Invalid):
+        await self.embed(data.channel_id, "", Embed().setDescription("Available subsettings:\n- " + ('\n- '.join(main.subcmds[group]))).embed)
+        return Invalid
+    else:
+        return main.subcmds[group].get(command, Invalid)
+
 def compilePatterns(self):
     patterns = {
         "strip_trigger":rf'<@[!?]{self.user_id}>|(?i)\b{self.username}\b|^{re.escape(self.alias)}',
