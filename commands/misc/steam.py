@@ -184,16 +184,16 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
         user = ' '.join(user)
     s = steam()
     uid = await s.resolveVanityUrl(user)
-    if uid != 'Not Found':
+    if uid != tr('commands.steamcalc.notFound', language):
         uid = uid['response']
     else:
-        return await self.message(data.channel_id, "Couldn't find specifed User. Please provide either your Vanity URL name or SteamID")
+        return await self.message(data.channel_id, tr('commands.steamcalc.vanityURL', language))
     if uid['success'] == 1:
         user = uid['steamid']
     games = await s.OwnedGames(user)
     games = games.get('response', {'games':{}})
     if games.get('games',{}) == {}:
-        return await self.message(data.channel_id, "Couldn't find any games on specified account. Perhaps profile is set to private?")
+        return await self.message(data.channel_id, tr('commands.steamcalc.privateProfile', language))
     total_playtime = 0
     total_played = 0
     game_ids = []
@@ -228,14 +228,14 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
         ending = ''
         print(ex)
     from MFramework.utils.utils import truncate
-    total = "Playtime: {}h".format(truncate(total_playtime/60, 2))
+    total = tr('commands.steamcalc.playtime', language, hours=truncate(total_playtime/60, 2))
     if total_price != 0:
-        total += f"\nPrices: {total_price/100} {ending}"
+        total += tr('commands.steamcalc.prices', language, prices=f"{total_price/100} {ending}")
     if len(has_price) != 0:
-        str_prices = f"\nPricetaged: {len(has_price)}"
+        str_prices = tr('commands.steamcalc.pricetaged', language, price_taged=len(has_price))
     else:
         str_prices = ''
-    e = Embed().addField("Total", total, True).addField("Games", f"Total: {games['game_count']}\nPlayed: {total_played}" + " ({:.1%})".format(total_played / games['game_count']) + str_prices, True)
+    e = Embed().addField(tr('commands.steamcalc.total', language), total, True).addField(tr('commands.steamcalc.games', language), tr('commands.steamcalc.games_desc', language, game_count=games['game_count'], total_played=total_played)  + " ({:.1%})".format(total_played / games['game_count']) + str_prices, True)
     pt = 0
     pf = 0
     for game in games['games']:
@@ -243,15 +243,15 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
             if game['playtime_forever'] != 0:
                 pf += 1
                 pt += game['playtime_forever']
-    avg = "Hours per game: 0"
+    avg = tr('commands.steamcalc.hoursPerGame', language, avg=0)
     if total_playtime != 0:
         hpg = truncate(((total_playtime / 60) / total_played), 2)
-        avg = "Hours per game: {}".format(hpg)
+        avg = tr('commands.steamcalc.hoursPerGame', language, avg=hpg)
     if total_price != 0:
-        avg += "\nPrice per game: {:.3}".format(truncate((total_price / 100) / len(has_price)), 2) + f"{ending}"
+        avg += tr('commands.steamcalc.pricePerGame', language, price="{:.3}".format(truncate((total_price / 100) / len(has_price)), 2) + f"{ending}")
         if pt != 0:
-            avg += "\nPrice per hour: {:.3}".format(truncate((total_price / 100) / (pt / 60), 2)) + f"{ending}"
-    e.setFooter("", f"SteamID: {user}").addField("Average", avg, True)
+            avg += tr('commands.steamcalc.pricePerHour', language, price="{:.3}".format(truncate((total_price / 100) / (pt / 60), 2)) + f"{ending}")
+    e.setFooter("", f"SteamID: {user}").addField(tr('commands.steamcalc.avg', language), avg, True)
     from MFramework.utils.utils import get_main_color
     profile = await s.PlayerSummaries(user)
     profile = profile['response']['players'][0]
