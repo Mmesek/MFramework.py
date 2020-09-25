@@ -191,7 +191,10 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
     if uid['success'] == 1:
         user = uid['steamid']
     games = await s.OwnedGames(user)
-    games = games.get('response', {'games':{}})
+    try:
+        games = games.get('response', {'games': {}})
+    except:
+        return await self.message(data.channel_id, tr('commands.steamcalc.vanityURL', language))
     if games.get('games',{}) == {}:
         return await self.message(data.channel_id, tr('commands.steamcalc.privateProfile', language))
     total_playtime = 0
