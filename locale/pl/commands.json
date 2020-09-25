@@ -372,5 +372,22 @@
         "cmd_trigger":"currency_exchange",
         "help":"help",
         "result":"%{result} %{to_currency} z kwoty %{amount} %{currency}"
+    },
+    "steamcalc":{
+        "cmd_trigger":"steamcalc",
+        "help":"help",
+        "notFound":"Nie znaleziono",
+        "vanityURL":"Nie można znaleźć takiego użytkownika. Podaj albo końcówkę linka do profilu (VanityURL) albo SteamID",
+        "privateProfile":"Nie można znaleźć żadnych gier na podanym koncie. Możliwe że jest ustawione jako prywatne?",
+        "playtime":"Czas gry: %{hours}h",
+        "prices":"\nCeny: %{prices}",
+        "pricetaged":"\nGry z cenami: %{price_taged}",
+        "total":"Łącznie",
+        "hoursPerGame":"Godziny na grę: %{avg}",
+        "pricePerGame":"\nCena na grę: %{price}",
+        "pricePerHour":"\nCena na godzinę: %{price}",
+        "avg":"Średnia",
+        "games":"Gry",
+        "games_desc":"Łącznie: %{game_count}\nZagrano: %{total_played}"
     }
 }
