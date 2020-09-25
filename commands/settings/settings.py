@@ -11,13 +11,17 @@ async def settings(self, command=None, *args, data, language, group, **kwargs):
     await _command(self, *args, data=data, language=language, group=group, **kwargs)
 
 @subcommand(settings, 'Mod')
-async def channel(self, sub_channel_cmd=None, *args, data, language, group, **kwargs):
+async def channel(self, channel_id=None, sub_channel_cmd=None, *args, data, language, group, **kwargs):
+    if not channel_id.isdigit():
+        args = (sub_channel_cmd, *args)
+        sub_channel_cmd = channel_id
+        channel_id = data.channel_id        
     _command = await check_if_command(self, channel, sub_channel_cmd, group, data)
     #await channel.subcmds[group].get(sub_channel_cmd, Invalid)
-    await _command(self, *args, data=data, language=language, group=group, **kwargs)
+    await _command(self, *args, data=data, language=language, group=group, channel_id=channel_id, **kwargs)
 
 @subcommand(settings, 'Mod')
-async def channel_type(self, channel_id, type, name='', parent_or_buffer_id='', bitrate=64000, user_limit=0, postion=0, *args, data, language, **kwargs):
+async def channel_type(self, type, name='', parent_or_buffer_id='', bitrate=64000, user_limit=0, postion=0, *args, data, language, channel_id, **kwargs):
     template = None
     if type == 'dynamic':
         template = {'name': name, 'bitrate': int(bitrate), 'user_limit': user_limit, 'position': 0, 'permission_overwrites': [], 'parent_id': parent_or_buffer_id}
@@ -31,7 +35,7 @@ async def channel_type(self, channel_id, type, name='', parent_or_buffer_id='', 
         self.cache[data.guild_id].rpg_channels.append(channel_id)
 
 @subcommand(channel, "Admin")
-async def language(self, new_language, channel_id, *args, data, language, **kwargs):
+async def language(self, new_language, *args, data, language, channel_id, **kwargs):
     s = self.db.sql.session()
     channel = s.query(db.Channels).filter(db.Channels.GuildID == data.guild_id, db.Channels.ChannelID == channel_id).first()
     if channel is not None:
