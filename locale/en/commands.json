@@ -382,6 +382,7 @@
         "playtime":"Playtime: %{hours}h",
         "prices":"\nPrices: %{prices}",
         "pricetaged":"\nPricetaged: %{price_taged}",
+        "notAvailable":"\nNot Available: %{unavailable}",
         "total":"Total",
         "hoursPerGame":"Hours per game: %{avg}",
         "pricePerGame":"\nPrice per game: %{price}",
