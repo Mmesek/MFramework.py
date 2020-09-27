@@ -207,6 +207,7 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
             total_played += 1
     total_price = 0
     has_price = []
+    unavailable = 0
     def calcPrice(prices, total_price, has_price):
         keys = list(prices.keys())
         for x, price in enumerate(prices.values()):
@@ -221,6 +222,9 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
                 }
                 ending = endings.get(ending, ending)
                 has_price += [int(keys[x])]
+            elif not price['success']:
+                nonlocal unavailable
+                unavailable += 1
         return total_price, ending, has_price
     try:
         from MFramework.utils.utils import grouper
@@ -238,6 +242,7 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
         str_prices = tr('commands.steamcalc.pricetaged', language, price_taged=len(has_price))
     else:
         str_prices = ''
+    str_prices += tr('commands.steamcalc.notAvailable', language, unavilable=unavailable)
     e = Embed().addField(tr('commands.steamcalc.total', language), total, True).addField(tr('commands.steamcalc.games', language), tr('commands.steamcalc.games_desc', language, game_count=games['game_count'], total_played=total_played)  + " ({:.1%})".format(total_played / games['game_count']) + str_prices, True)
     pt = 0
     pf = 0
