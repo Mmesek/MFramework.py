@@ -198,12 +198,22 @@ async def currency_exchange(self, amount='1', currency='EUR', to_currency='USD',
         from MFramework.utils.utils import currencies
         return currencies.get(c, c).upper()
     currency, to_currency = check(currency), check(to_currency)
-    r = requests.get(f'https://api.exchangeratesapi.io/latest?base={currency}&symbols={to_currency}')
-    try:
-        amount = float(amount.replace(',','.').replace(' ',''))
-        r = tr('commands.currency_exchange.result', language, result="%3.2f" % (amount * float(r.json()['rates'][to_currency])), to_currency=to_currency, amount=amount, currency=currency)
-    except KeyError:
-        r = r.json().get('error','Error')
+    if currency.lower() in ['btc', 'ltc', 'eth']:
+        #"https://api.crypto.com/v1/ticker/price" this might be useful for various other crypto -> usd or crypto -> crypto
+        r = requests.get(f'https://api.crypto.com/v1/ticker?symbol={currency.lower()}usdt')
+        try:
+            result = r.json()['data']['last']
+        except KeyError:
+            result = r.json().get('msg', 'Error')
+        to_currency = 'USD'
+    else:
+        r = requests.get(f'https://api.exchangeratesapi.io/latest?base={currency}&symbols={to_currency}')
+        try:
+            result = r.json()['rates'][to_currency]
+        except KeyError:
+            result = r.json().get('error','Error')
+    amount = float(amount.replace(',','.').replace(' ',''))
+    r = tr('commands.currency_exchange.result', language, result="%3.2f" % (amount * float(result)), to_currency=to_currency, amount=amount, currency=currency)
     await self.message(data.channel_id, r)
 
 async def azlyrics(artist, song):
