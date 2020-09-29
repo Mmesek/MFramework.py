@@ -1,6 +1,6 @@
 from MFramework.commands import register, subcommand, check_if_command
 from MFramework.database import alchemy as db
-from MFramework.utils.utils import Embed, get_avatar, secondsToText
+from MFramework.utils.utils import Embed, get_avatar, secondsToText, created
 @register(group='Global', help='Sets profile', alias='', category='')
 async def profile(self, command='', *args, data, language, group, **kwargs):
     '''Extended description to use with detailed help command'''
@@ -10,6 +10,7 @@ async def profile(self, command='', *args, data, language, group, **kwargs):
     else:
         await show_profile(self, data=data, language=language)
 
+from datetime import datetime
 async def show_profile(self, *args, data, language, **kwargs):
     e = Embed().setAuthor(data.author.username, None, get_avatar(data.author))
     s = self.db.sql.session()
@@ -32,6 +33,10 @@ async def show_profile(self, *args, data, language, **kwargs):
         e.addField("Total Voice Time", secondsToText(total_vexp, language.upper()), True)
     if u.Color is not None:
         e.setColor(u.Color)
+    dates = "Discord: {discord}\nServer: {server}".format(discord=created(data.author.id).strftime('%Y-%m-%d %H:%M:%S'), server=datetime.fromisoformat(data.member.joined_at).strftime('%Y-%m-%d %H:%M:%S'))
+    if data.member.premium_since:
+        dates += '\nBooster: {boost}'.format(boost=datetime.fromisoformat(data.member.premium_since).strftime('%Y-%m-%d %H:%M:%S'))
+    e.addField("Joined", dates, True)
     await self.embed(data.channel_id, "", e.embed)
 
 
