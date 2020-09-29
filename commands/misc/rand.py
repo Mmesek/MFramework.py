@@ -193,27 +193,43 @@ async def asciitohex(self, *ascii_, data, **kwargs):
     await self.embed(data.channel_id, '', f.embed)
 
 @register(group='Global', help='Converts currency', alias='cc, currency')
-async def currency_exchange(self, amount='1', currency='EUR', to_currency='USD', *args, data, language, **kwargs):
+async def currency_exchange(self, amount='1', currency='EUR', to_currency='USD', *args, data, language, fresh=False, **kwargs):
     def check(c):
         from MFramework.utils.utils import currencies
         return currencies.get(c, c).upper()
-    currency, to_currency = check(currency), check(to_currency)
-    if currency.lower() in ['btc', 'ltc', 'eth']:
-        #"https://api.crypto.com/v1/ticker/price" this might be useful for various other crypto -> usd or crypto -> crypto
-        r = requests.get(f'https://api.crypto.com/v1/ticker?symbol={currency.lower()}usdt')
-        try:
-            result = r.json()['data']['last']
-        except KeyError:
-            result = r.json().get('msg', 'Error')
-        to_currency = 'USD'
+    if amount.isdigit() or '.' in amount or ',' in amount:
+        amount = float(amount.replace(',', '.').replace(' ', ''))
     else:
-        r = requests.get(f'https://api.exchangeratesapi.io/latest?base={currency}&symbols={to_currency}')
+        to_currency = currency
+        currency = amount
+        amount = 1
+    currency, to_currency = check(currency), check(to_currency)
+    if not fresh:
+        r = requests.get(f"https://api.cryptonator.com/api/ticker/{currency}-{to_currency}", headers={"user-agent": "Mozilla"})
+        result = r.json()
         try:
-            result = r.json()['rates'][to_currency]
+            result = result.get('ticker', {}).get('price', 0)
+            result = "%3.2f" % (amount * float(result))
         except KeyError:
-            result = r.json().get('error','Error')
-    amount = float(amount.replace(',','.').replace(' ',''))
-    r = tr('commands.currency_exchange.result', language, result="%3.2f" % (amount * float(result)), to_currency=to_currency, amount=amount, currency=currency)
+            result = result.get('error', 'Error')
+    else:
+        if currency.lower() in ['btc', 'ltc', 'eth']:
+            #"https://api.crypto.com/v1/ticker/price" this might be useful for various other crypto -> usd or crypto -> crypto
+            r = requests.get(f'https://api.crypto.com/v1/ticker?symbol={currency.lower()}usdt')
+            try:
+                result = r.json()['data']['last']
+                result = "%3.2f" % (amount * float(result))
+            except KeyError:
+                result = r.json().get('msg', 'Error')
+            to_currency = 'USD'
+        else:
+            r = requests.get(f'https://api.exchangeratesapi.io/latest?base={currency}&symbols={to_currency}')
+            try:
+                result = r.json()['rates'][to_currency]
+                result = "%3.2f" % (amount * float(result))
+            except KeyError:
+                result = r.json().get('error','Error')
+    r = tr('commands.currency_exchange.result', language, result=result, to_currency=to_currency, amount=amount, currency=currency)
     await self.message(data.channel_id, r)
 
 async def azlyrics(artist, song):
