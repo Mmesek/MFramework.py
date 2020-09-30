@@ -391,3 +391,27 @@ async def rot(self, *key, data, language, shift=13, alphabet='ABCDEFGHIJKLMNOPQR
             from_key += k
     e = Embed().addField("Alphabet", f"`{alphabet}`\n"+msg).setDescription(from_key)
     await self.embed(data.channel_id, "", e.embed)
+
+@register(group='Global', help='Shows file extension details', alias='', category='')
+async def fileext(self, ext, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    url = f"https://fileinfo.com/extension/{ext}"
+    r = requests.get(url)
+    if r.status_code == 200:
+        soup = BeautifulSoup(r.content, "html.parser")
+    else:
+        return await self.message(data.channel_id, "Error")
+    article = soup.find('article')
+    header = article.find('h1').text
+    ftype = article.find('h2').text.replace('File Type','')
+    misc = article.find('div', class_='fileHeader').find('table').find_all('tr')
+    info = article.find('div', class_='infoBox').text
+    e = Embed().setTitle(header).addField('File Type', ftype, True).setDescription(info).setUrl(url)
+    for i in misc:
+        if 'developer' in i.text.lower():
+            e.addField('Developer', i.text[9:], True)
+        elif 'category' in i.text.lower():
+            e.addField('Category', i.text[8:], True)
+        elif 'format' in i.text.lower():
+            e.addField('Format', i.text[6:], True)
+    await self.embed(data.channel_id, "", e.embed)
