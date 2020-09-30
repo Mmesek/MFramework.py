@@ -242,7 +242,7 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
         str_prices = tr('commands.steamcalc.pricetaged', language, price_taged=len(has_price))
     else:
         str_prices = ''
-    str_prices += tr('commands.steamcalc.notAvailable', language, unavilable=unavailable)
+    str_prices += tr('commands.steamcalc.notAvailable', language, unavailable=unavailable)
     e = Embed().addField(tr('commands.steamcalc.total', language), total, True).addField(tr('commands.steamcalc.games', language), tr('commands.steamcalc.games_desc', language, game_count=games['game_count'], total_played=total_played)  + " ({:.1%})".format(total_played / games['game_count']) + str_prices, True)
     pt = 0
     pf = 0
