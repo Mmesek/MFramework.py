@@ -124,7 +124,7 @@ class Bot(EndpointWrappers, Endpoints):
                 "file", kwargs["file"][1], filename=kwargs["file"][0], content_type="application/octet-stream"
             )
             return await self.csession.post(
-                url="https://discord.com/api" + path, data=data, headers=[("Authorization", f"Bot {self.token}")]
+                url="https://discord.com/api/v8" + path, data=data, headers=[("Authorization", f"Bot {self.token}")]
             )
         defaults = {
             "headers": {
@@ -155,7 +155,7 @@ class Bot(EndpointWrappers, Endpoints):
                     self.lock['global'] = True
                 else:
                     self.lock[bucket] = True
-                await asyncio.sleep(r['retry_after'] / 1000)
+                await asyncio.sleep(r['retry_after'])# / 1000)
                 if r['global'] is True:
                     self.lock['global'] = False
                 else:
@@ -163,6 +163,7 @@ class Bot(EndpointWrappers, Endpoints):
                 return await self.api_call(path, method, reason, **kwargs)
             elif 'message' in r:
                 print(f"[{res.reason}] [{r['code']}] - {r['message']}: [{method}] {path}")
+                print(r.get('errors','')) if 'errors' in r else None
                 return []
             else:
                 return r
