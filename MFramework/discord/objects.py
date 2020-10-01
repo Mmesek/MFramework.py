@@ -1634,10 +1634,10 @@ class Presence_Update:
     def __init__(self, data):
         self.user = User(data.get('user', {}))
         self.roles = [int(i or 0) for i in data.get('roles', [])]
-        self.game = Activity(data.get('game') or {})
         self.guild_id = int(data.get('guild_id', 0) or 0)
         self.status = data.get('status', None)
         self.activities = [Activity(i) if type(i) is dict else int(i or 0) if type(i) is int or i.isdigit() else [] for i in data.get('activities', [])]
+        self.game = self.activities[0] if self.activities != [] else Activity({}) #Activity(data.get('game') or {})
         self.client_status = data.get('client_status',{})#Gateway_Status_Update(data.get('client_status', {}))
         self.premium_since = data.get('premium_since', None)
         self.nick = data.get('nick', None)

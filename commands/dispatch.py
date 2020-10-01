@@ -322,8 +322,8 @@ async def presence_update(self, data):
         for g in roles[group]:
             if data.game.type == 0 and data.game.name in roles[group].keys():
                 role = roles[group][data.game.name]
-                if role == None or any(i in role for i in data.roles):
-                    return
+                #if role == None or any(i in role for i in data.roles):
+                #    return
                 break
     if role is not None:
         for i in role:
