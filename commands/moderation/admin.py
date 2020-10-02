@@ -43,13 +43,19 @@ async def list_emoji(self, *args, data, **kwargs):
 async def delete(self, channel, *message, data, **kwargs):
     await self.delete_message(channel, *message)
 
-
-@register(group="Admin", help="Retrives messages from DM", notImpl=True)
-async def getmessagesfromdm(self, user, *args, data, **kwargs):
+from MFramework.utils.utils import Embed
+@register(group="Admin", help="Retrives messages from DM")
+async def getmessages(self, user, *args, data, **kwargs):
     dm = await self.create_dm(user)
-    messages = await self.get_channel_messages(dm.id, dm.last_message_id)
+    messages = await self.get_messages(dm.id)
     message = ""
     for each in messages:
-        print(each.author, each.content)
-        message += f"[{each.id}] - {each.author.username}: {each.content}"
-    await self.embed(data.channel_id, "", {"title": dm.id, "description": message})
+        message += f"\n`[{each.timestamp[:19]}]` - `{each.author.username}`: {each.content}"
+    e = Embed().setFooter("", f"DM ID: {dm.id}").setDescription(message[:2000])
+    await self.embed(data.channel_id, "", e.embed)
+
+@register(group='Admin', help='Shows prune count', alias='', category='', notImpl=True)
+async def prunecount(self, days=7, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    count = await self.get_guild_prune_count(data.guild_id, days)
+    await self.message(data.channel_id, count)
