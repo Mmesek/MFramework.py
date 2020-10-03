@@ -8,13 +8,16 @@ def tr(key, language='en', **kwargs):
 class Embed:
     def __init__(self):
         self.embed = {"fields": []}
+        self.total_characters = 0
 
     def setTitle(self, title):
         self.embed['title'] = title
+        self.total_characters += len(title)
         return self
 
     def setDescription(self, description):
         self.embed['description'] = description
+        self.total_characters += len(description)
         return self
 
     def setColor(self, color):
@@ -35,6 +38,7 @@ class Embed:
 
     def setFooter(self, icon, text):
         self.embed['footer'] = {"icon_url": icon, "text": text}
+        self.total_characters += len(text)
         return self
 
     def setTimestamp(self, timestamp):
@@ -43,15 +47,33 @@ class Embed:
 
     def setAuthor(self, name, url, icon):
         self.embed['author'] = {"name": name, "url": url, "icon_url": icon}
+        self.total_characters += len(name)
         return self
 
     def addField(self, name, value, inline=False):
         self.embed['fields'] += [{"name": name,
                                   "value": value, "inline": inline}]
+        self.total_characters += len(name) + len(value)
         return self
+    
+    def addFields(self, title, text, inline=False):
+        from textwrap import wrap
+        for x, chunk in enumerate(wrap(text, 1024, replace_whitespace=False)):
+            if len(self.fields) == 25:
+                break
+            if x == 0 and (len(title) + len(chunk) + self.total_characters) < 6000:
+                self.addField(title, chunk, inline)
+            elif (len('\u200b') + len(chunk) + self.total_characters) < 6000:
+                self.addField('\u200b', chunk, inline)
+        return self
+    
     @property
     def fields(self):
-        return self.embed['fields']
+        return self.embed.get('fields', [])
+
+    @property
+    def description(self):
+        return self.embed.get('description','')
 
 
 def created(snowflake: int) -> datetime.datetime:
