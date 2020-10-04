@@ -415,3 +415,16 @@ async def fileext(self, ext, *args, data, language, **kwargs):
         elif 'format' in i.text.lower():
             e.addField('Format', i.text[6:], True)
     await self.embed(data.channel_id, "", e.embed)
+
+@register(group='Global', help='Shows current time in specified timezone(s)', alias='', category='')
+async def timezone(self, *timezones, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    import pytz
+    utc_dt = datetime.datetime.fromisoformat(data.timestamp)
+    e = Embed().setFooter("", f"UTC {utc_dt.strftime('%Y-%m-%d %H:%M:%S')}").setTimestamp(data.timestamp)
+    for timezone in timezones:
+        tz = pytz.timezone(timezone)
+        dt = utc_dt.astimezone(tz)
+        if len(e.fields) <= 25:
+            e.addField(timezone, dt.strftime('%Y-%m-%d %H:%M:%S'))
+    await self.embed(data.channel_id, "", e.embed)
