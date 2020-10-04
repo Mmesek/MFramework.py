@@ -417,14 +417,99 @@ async def fileext(self, ext, *args, data, language, **kwargs):
     await self.embed(data.channel_id, "", e.embed)
 
 @register(group='Global', help='Shows current time in specified timezone(s)', alias='', category='')
-async def timezone(self, *timezones, data, language, **kwargs):
+async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     import pytz
-    utc_dt = datetime.datetime.fromisoformat(data.timestamp)
-    e = Embed().setFooter("", f"UTC {utc_dt.strftime('%Y-%m-%d %H:%M:%S')}").setTimestamp(data.timestamp)
+    _timezones = []
+    now = datetime.datetime.now()
+    if ':' in yymmdd or (yymmdd.isdigit() and not hhmm.isdigit()):
+        if 'HH:MM' != hhmm:
+            timezones = [hhmm, *timezones]
+        hhmm = yymmdd
+        yymmdd = 'YYYY-MM-DD'
+        year = now.year
+        month = now.month
+        day = now.day
+    elif 'YYYY-MM-DD' != yymmdd and ('-' in yymmdd or yymmdd.isdigit()):
+        yymmdd = yymmdd.split('-')
+        if len(yymmdd) == 3:
+            year = int(yymmdd[0])
+            month = int(yymmdd[1])
+            day = int(yymmdd[2])
+        elif len(yymmdd) == 2:
+            year = now.year
+            month = int(yymmdd[0])
+            day = int(yymmdd[1])
+        else:
+            year = now.year
+            month = now.month
+            day = int(yymmdd[0])
+    else:
+        if yymmdd != 'YYYY-MM-DD':
+            _timezones.append(yymmdd)
+            yymmdd = 'YYYY-MM-DD'
+        year = now.year
+        month = now.month
+        day = now.day
+    if hhmm != 'HH:MM' and (':' in hhmm or hhmm.isdigit()):
+        is_digit = hhmm.isdigit()
+        has_colon = ':' in hhmm
+        hhmm = hhmm.split(':')
+        if len(hhmm) == 2:
+            hour = int(hhmm[0])
+            minute = int(hhmm[1])
+        else:
+            hour = int(hhmm[0])
+            minute = 0
+    else:
+        if hhmm != 'HH:MM':
+            _timezones.append(hhmm)
+            hhmm = 'HH:MM'
+        hour = now.hour
+        minute = now.minute
+    timezones = (*_timezones, *timezones)
+    _timezones = []
+    if 'in' in timezones or 'to' in timezones:
+        if any(i == timezones[0] for i in ['in', 'to']):
+            #use default
+            from_timezone = 'UTC'
+            timezones = timezones[1:]
+        elif any(i == timezones[1] for i in ['in', 'to']):
+            from_timezone = timezones[0]
+            timezones = timezones[2:]
+    else:
+        #use default
+        from_timezone = 'UTC'
+    if yymmdd != 'YYYY-MM-DD' or hhmm != 'HH:MM' or from_timezone != 'UTC':
+        if (('gmt+' in from_timezone.lower()) or ('gmt-' in from_timezone.lower())) and 'etc/' not in from_timezone.lower():
+            from_timezone = from_timezone.lower().replace('gmt', 'Etc/GMT')
+        try:
+            _dt = pytz.timezone(from_timezone).localize(datetime.datetime(year, month, day, hour, minute, 0))
+        except:
+            return await self.message(data.channel_id, f"Couldn't find timezone {from_timezone}")
+        #_dt = tz#datetime.datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=0, microsecond=0, tzinfo=tz)
+        utc_dt = _dt.astimezone(pytz.timezone('UTC'))
+        base = _dt.isoformat()
+    else:
+        base = data.timestamp
+        utc_dt = datetime.datetime.fromisoformat(base)
+        #tz = pytz.timezone('UTC').localize(datetime.datetime(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour, utc_dt.minute, utc_dt.second))
+        _dt = utc_dt
+    e = Embed().setFooter("", f"UTC {utc_dt.strftime('%Y-%m-%d %H:%M:%S')}").setTimestamp(base)
+    if from_timezone != 'UTC':
+        e.setDescription(f"{from_timezone}: {_dt.strftime('%Y-%m-%d %H:%M:%S %Z%z')}")
     for timezone in timezones:
-        tz = pytz.timezone(timezone)
-        dt = utc_dt.astimezone(tz)
+        if 'gmt' in timezone.lower() and 'etc/' not in timezone.lower():
+            timezone = timezone.lower().replace('gmt', 'Etc/GMT').replace('+','MINUS').replace('-','PLUS').replace('MINUS','-').replace('PLUS','+')
+        try:
+            #tz = pytz.timezone(timezone)
+            #tz = tz.localize(datetime.datetime(_dt.year, _dt.month, _dt.day, _dt.hour, _dt.minute, 0))
+            dt = _dt.astimezone(pytz.timezone(timezone))
+            dt = dt.strftime('%Y-%m-%d %H:%M:%S %Z%z')
+        except pytz.UnknownTimeZoneError:
+            dt = 'Not Found'
+        except Exception as ex:
+            dt = ex
         if len(e.fields) <= 25:
-            e.addField(timezone, dt.strftime('%Y-%m-%d %H:%M:%S'))
+            e.addField(timezone, dt)
     await self.embed(data.channel_id, "", e.embed)
