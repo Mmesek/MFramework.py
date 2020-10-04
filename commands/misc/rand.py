@@ -513,3 +513,26 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
         if len(e.fields) <= 25:
             e.addField(timezone, dt)
     await self.embed(data.channel_id, "", e.embed)
+
+@register(group='Global', help='Shows guitar chord(s) diagram(s)', alias='', category='')
+async def chord(self, *chords, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    _chords = {"Em": "022000", "C": "x32010", "A":"x02220", "G": "320033", "E": "022100", "D": "xx0232", "F": "x3321x", "Am": "x02210", "Dm": "xx0231"}
+    base_notes = "EADGBE"
+    e = Embed()
+    for _chord in chords:
+        text = "```\n"
+        c = _chords[_chord]
+        for x, string in enumerate(c):
+            text += string if string == 'x' else base_notes[x]
+        text+='\n'
+        for fret in range(1,6):
+            for string in c:
+                if string == str(fret):
+                    text += 'O'
+                else:
+                    text += '|'
+            text += '\n'
+        text+= '```'
+        e.addField(_chord, text, True)
+    await self.embed(data.channel_id, "", e.embed)
