@@ -390,5 +390,11 @@
         "avg":"Average",
         "games":"Games",
         "games_desc":"Total: %{game_count}\nPlayed: %{total_played}"
+    },
+    "timezone":{
+        "cmd_trigger":"timezone",
+        "help":"help",
+        "timezoneNotFound":"Couldn't find timezone %{from_timezone}",
+        "notFound":"Not Found"
     }
 }
