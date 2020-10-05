@@ -16,9 +16,9 @@ async def show_profile(self, *args, data, language, **kwargs):
     s = self.db.sql.session()
     u = query_user(s, data.author.id)
     if u.Language is not None:
-        e.addField("Language", u.Language, True)
+        e.addField(tr('commands.profile.language', language), u.Language, True)
     if u.Birthday is not None:
-        e.addField("Birthday", u.Birthday.strftime("%A, %B\n%d/%m/%Y"), True)
+        e.addField(tr('commands.profile.birthday', language), u.Birthday.strftime("%A, %B\n%d/%m/%Y"), True)
     if len(e.fields) == 2:
         e.addField("\u200b", "\u200b", True)
     total_exp = 0
@@ -28,15 +28,18 @@ async def show_profile(self, *args, data, language, **kwargs):
         total_exp += server_exp.EXP
         total_vexp += server_exp.vEXP
     if total_exp != 0:
-        e.addField("Total EXP", total_exp, True)
+        e.addField(tr('commands.profile.totalEXP', language), str(total_exp), True)
     if total_vexp != 0:
-        e.addField("Total Voice Time", secondsToText(total_vexp, language.upper()), True)
+        e.addField(tr('commands.profile.totalVoiceTime', language), secondsToText(total_vexp, language.upper()), True)
     if u.Color is not None:
         e.setColor(u.Color)
-    dates = "Discord: {discord}\nServer: {server}".format(discord=created(data.author.id).strftime('%Y-%m-%d %H:%M:%S'), server=datetime.fromisoformat(data.member.joined_at).strftime('%Y-%m-%d %H:%M:%S'))
+    dates = tr('commands.profile.datesDiscord', language, discord=created(data.author.id).strftime('%Y-%m-%d %H:%M:%S')) + '\n'
+    dates += tr('commands.profile.datesServer', language, server=datetime.fromisoformat(data.member.joined_at).strftime('%Y-%m-%d %H:%M:%S'))
+    #"Discord: {discord}\nServer: {server}".format(discord=created(data.author.id).strftime('%Y-%m-%d %H:%M:%S'), server=datetime.fromisoformat(data.member.joined_at).strftime('%Y-%m-%d %H:%M:%S'))
     if data.member.premium_since:
-        dates += '\nBooster: {boost}'.format(boost=datetime.fromisoformat(data.member.premium_since).strftime('%Y-%m-%d %H:%M:%S'))
-    e.addField("Joined", dates, True)
+        dates += tr('commands.profile.datesBoostStart', language, boost=datetime.fromisoformat(data.member.premium_since).strftime('%Y-%m-%d %H:%M:%S'))
+        #'\nBooster: {boost}'.format(boost=datetime.fromisoformat(data.member.premium_since).strftime('%Y-%m-%d %H:%M:%S'))
+    e.addField(tr('commands.profile.datesJoined', language), dates, True)
     await self.embed(data.channel_id, "", e.embed)
 
 
@@ -63,7 +66,7 @@ async def language(self, new_language, *args, data, language, **kwargs):
     try:
         new_language = pycountry.languages.lookup(new_language).alpha_2
     except LookupError:
-        return await self.message(data.channel, f"Couldn't find language {new_language}")
+        return await self.message(data.channel, tr('commands.profile.notFoundLanguage', language, language=new_language))#f"Couldn't find language {new_language}")
     c.Language = new_language
     s.merge(c)
     s.commit()
@@ -86,7 +89,7 @@ async def timezone(self, timezone, *args, data, language, **kwargs):
     if any(timezone.lower() == i.lower() for i in pytz.all_timezones):
         c.Timezone = timezone.replace('+','MINUS').replace('-','PLUS').replace('MINUS','-').replace('PLUS','+')
     else:
-        return await self.message(data.channel_id, tr('commands.timezone.timezoneNotFound', language, from_timezone=timezone))#f"Couldn't find Timezone {timezone}.")
+        return await self.message(data.channel_id, tr('commands.profile.notFoundTimezone', language, timezone=timezone))#f"Couldn't find Timezone {timezone}.")
     s.merge(c)
     s.commit()
 
@@ -98,7 +101,7 @@ async def region(self, region, *args, data, language, **kwargs):
     try:
         region = pycountry.countries.search_fuzzy(region)[0].alpha_2
     except LookupError:
-        return await self.message(data.channel, f"Couldn't find region {region}")
+        return await self.message(data.channel, tr('commands.profile.notFoundRegion', language, region=region))#f"Couldn't find region {region}")
     c.Region = region
     s.merge(c)
     s.commit()
