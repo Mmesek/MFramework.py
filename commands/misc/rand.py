@@ -486,7 +486,7 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
         try:
             _dt = pytz.timezone(from_timezone).localize(datetime.datetime(year, month, day, hour, minute, 0))
         except:
-            return await self.message(data.channel_id, f"Couldn't find timezone {from_timezone}")
+            return await self.message(data.channel_id, tr('commands.timezone.timezoneNotFound', language, from_timezone=from_timezone))#f"Couldn't find timezone {from_timezone}")
         #_dt = tz#datetime.datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=0, microsecond=0, tzinfo=tz)
         utc_dt = _dt.astimezone(pytz.timezone('UTC'))
         base = _dt.isoformat()
@@ -507,7 +507,7 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
             dt = _dt.astimezone(pytz.timezone(timezone))
             dt = dt.strftime('%Y-%m-%d %H:%M:%S %Z%z')
         except pytz.UnknownTimeZoneError:
-            dt = 'Not Found'
+            dt = tr('commands.timezone.notFound', language)
         except Exception as ex:
             dt = ex
         if len(e.fields) <= 25:
@@ -517,7 +517,10 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
 @register(group='Global', help='Shows guitar chord(s) diagram(s)', alias='', category='')
 async def chord(self, *chords, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    _chords = {"Em": "022000", "C": "x32010", "A":"x02220", "G": "320033", "E": "022100", "D": "xx0232", "F": "x3321x", "Am": "x02210", "Dm": "xx0231"}
+    import json
+    with open('data/chords.json','r',newline='',encoding='utf-8') as file:
+        _chords = json.load(file)
+    #_chords = {"Em": "022000", "C": "x32010", "A":"x02220", "G": "320033", "E": "022100", "D": "xx0232", "F": "x3321x", "Am": "x02210", "Dm": "xx0231"}
     base_notes = "EADGBE"
     e = Embed()
     for _chord in chords:
@@ -536,3 +539,12 @@ async def chord(self, *chords, data, language, **kwargs):
         text+= '```'
         e.addField(_chord, text, True)
     await self.embed(data.channel_id, "", e.embed)
+
+@register(group='System', help='Adds new chord', alias='', category='')
+async def add_chord(self, chord, *frets, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    with open('data/chords.json','r',newline='',encoding='utf-8') as file:
+        _chords = json.load(file)
+    _chords[chord] = ''.join(frets)
+    with open('data/chords.json','w',newline='',encoding='utf-8') as file:
+        json.dump(_chords, file)

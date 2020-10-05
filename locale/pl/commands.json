@@ -390,5 +390,11 @@
         "avg":"Średnia",
         "games":"Gry",
         "games_desc":"Łącznie: %{game_count}\nZagrano: %{total_played}"
+    },
+    "timezone":{
+        "cmd_trigger":"timezone",
+        "help":"help",
+        "timezoneNotFound":"Nie można znaleźć strefy %{from_timezone}",
+        "notFound":"Nie znaleziono"
     }
 }
