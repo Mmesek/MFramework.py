@@ -371,9 +371,13 @@ class Users(Base):
     Language = Column(String)
     Birthday = Column(Date)
     Color = Column(Integer)
+    Timezone = Column(String)
+    Region = Column(String)
+    
 
-    def __init__(self, UserID, Language=None, Birthday=None, Color=None):
+    def __init__(self, UserID, Language=None, Birthday=None, Color=None, Timezone=None):
         self.UserID = UserID
         self.Language = Language
         self.Birthday = Birthday
         self.Color = Color
+        self.Timezone = Timezone

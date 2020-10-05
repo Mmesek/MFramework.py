@@ -1,6 +1,6 @@
 from MFramework.commands import register, subcommand, check_if_command
 from MFramework.database import alchemy as db
-from MFramework.utils.utils import Embed, get_avatar, secondsToText, created
+from MFramework.utils.utils import Embed, get_avatar, secondsToText, created, tr
 @register(group='Global', help='Sets profile', alias='', category='')
 async def profile(self, command='', *args, data, language, group, **kwargs):
     '''Extended description to use with detailed help command'''
@@ -59,6 +59,11 @@ async def birthday(self, year=1, month=1, day=1, *args, data, language, **kwargs
 async def language(self, new_language, *args, data, language, **kwargs):
     s = self.db.sql.session()
     c = query_user(s, data.author.id)
+    import pycountry
+    try:
+        new_language = pycountry.languages.lookup(new_language).alpha_2
+    except LookupError:
+        return await self.message(data.channel, f"Couldn't find language {new_language}")
     c.Language = new_language
     s.merge(c)
     s.commit()
@@ -72,3 +77,28 @@ async def color(self, hex_color, *args, data, language, **kwargs):
     s.merge(c)
     s.commit()
     
+@subcommand(profile)
+async def timezone(self, timezone, *args, data, language, **kwargs):
+    s = self.db.sql.session()
+    c = query_user(s, data.author.id)
+    import pytz
+    timezone = timezone.lower().replace('utc', 'Etc/GMT').replace('gmt', 'Etc/GMT')
+    if any(timezone.lower() == i.lower() for i in pytz.all_timezones):
+        c.Timezone = timezone.replace('+','MINUS').replace('-','PLUS').replace('MINUS','-').replace('PLUS','+')
+    else:
+        return await self.message(data.channel_id, tr('commands.timezone.timezoneNotFound', language, from_timezone=timezone))#f"Couldn't find Timezone {timezone}.")
+    s.merge(c)
+    s.commit()
+
+@subcommand(profile)
+async def region(self, region, *args, data, language, **kwargs):
+    s = self.db.sql.session()
+    c = query_user(s, data.author.id)
+    import pycountry
+    try:
+        region = pycountry.countries.search_fuzzy(region)[0].alpha_2
+    except LookupError:
+        return await self.message(data.channel, f"Couldn't find region {region}")
+    c.Region = region
+    s.merge(c)
+    s.commit()
