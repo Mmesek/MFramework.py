@@ -396,5 +396,20 @@
         "help":"help",
         "timezoneNotFound":"Couldn't find timezone %{from_timezone}",
         "notFound":"Not Found"
+    },
+    "profile":{
+        "cmd_trigger":"profile",
+        "help":"help",
+        "language":"Language",
+        "birthday":"Birthday",
+        "totalEXP":"Total EXP",
+        "totalVoiceEXP":"Total Voice EXP",
+        "datesDiscord":"Discord: %{discord}",
+        "datesServer":"Server: %{server}",
+        "datesBoostStart":"Booster: %{boost}",
+        "datesJoinedServer":"Joined: %{joined}",
+        "notFoundRegion":"Couldn't find region %{region}",
+        "notFoundTimezone":"Couldn't find timezone %{timezone}",
+        "notFoundLanguage":"Couldn't find language %{language}"
     }
 }

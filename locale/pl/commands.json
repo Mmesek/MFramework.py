@@ -396,5 +396,20 @@
         "help":"help",
         "timezoneNotFound":"Nie można znaleźć strefy %{from_timezone}",
         "notFound":"Nie znaleziono"
+    },
+    "profile":{
+        "cmd_trigger":"profile",
+        "help":"help",
+        "language":"Język",
+        "birthday":"Urodziny",
+        "totalEXP":"Całkowity EXP",
+        "totalVoiceTime":"Całkowity czas na Głosowym",
+        "datesDiscord":"Na Discordzie od: %{discord}",
+        "datesServer":"Na serwerze od: %{server}",
+        "datesBoostStart":"Wzmacnia od: %{boost}",
+        "datesJoined":"Dołączono",
+        "notFoundRegion":"Nie można znaleźć regionu %{region}",
+        "notFoundTimezone":"Nie można znaleźć strefy %{timezone}",
+        "notFoundLanguage":"Nie można znaleźć języka %{language}"
     }
 }
