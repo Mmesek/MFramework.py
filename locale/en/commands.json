@@ -402,6 +402,10 @@
         "help":"help",
         "language":"Language",
         "birthday":"Birthday",
+        "timezone":"Timezone: %{timezone}",
+        "region":"Region: %{region}",
+        "currency":"Currency: %{currency}",
+        "regional":"Regional",
         "totalEXP":"Total EXP",
         "totalVoiceEXP":"Total Voice EXP",
         "datesDiscord":"Discord: %{discord}",
@@ -409,6 +413,7 @@
         "datesBoostStart":"Booster: %{boost}",
         "datesJoinedServer":"Joined: %{joined}",
         "notFoundRegion":"Couldn't find region %{region}",
+        "notFoundCurrency":"Couldn't find currency %{currency}",
         "notFoundTimezone":"Couldn't find timezone %{timezone}",
         "notFoundLanguage":"Couldn't find language %{language}"
     }
