@@ -1,5 +1,5 @@
 from .timers import *
-from . import log
+from . import log, levels
 def _check_if_current_bot(self, data):
     if data.user_id == self.user_id:
         self.cache[data.guild_id].connection.session_id = data.session_id
@@ -44,6 +44,7 @@ async def user_left_voice_channel(self, data, channel, track_voice=False):
             _data = data
             _data.user_id = t[1][0]
             await log.UserVoiceChannel(self, _data, channel, int(t[1][1]))
+        await levels.handle_exp(self, data)
     else:
         checkLast(self, data.guild_id, channel, data.user_id)
         await log.UserVoiceChannel(self, data, channel)
