@@ -2,7 +2,7 @@ from MFramework.discord.mbot import onDispatch
 from MFramework.commands import execute, parse, compilePatterns, contextCommandList
 from MFramework.discord.objects import *
 from MFramework.database.cache import Cache, CacheDM
-from MFramework.utils import log, utils
+from MFramework.utils import log, utils, levels
 import MFramework.database.alchemy as db
 import time, datetime
 
@@ -72,6 +72,7 @@ async def message_create(self, data: Message):
                 e.LastMessage = timestamp
                 self.cache[data.guild_id].exp[data.author.id] = timestamp
                 session.commit()
+                await levels.handle_exp(self, data, e)
     elif data.author.bot is False and data.guild_id == 0:
         if 'dm' not in self.context:
             self.context['dm'] = {}

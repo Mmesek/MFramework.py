@@ -95,9 +95,15 @@ class PresenceRoles(Base):
 class LevelRoles(Base):
     __tablename__ = 'LevelRoles'
     GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
-    Level = Column(Integer, primary_key=True)
+    #Level = Column(Integer, primary_key=True)
+    Level = Column(Integer)
+    Priority = Column(Integer)
+    ReqEXP = Column(Integer)
+    ReqVEXP = Column(Integer)
     Role = Column(BigInteger, primary_key=True)
+    #Role = Column(ARRAY(BigInteger), primary_key=True)
     Stacked = Column(Boolean)
+    Type = Column(String, primary_key=True) #AND || OR || COMBINED
 
     def __init__(self, GuildID=None, Level=None, Role=None, Stacked=None):
         self.GuildID = GuildID
@@ -374,7 +380,6 @@ class Users(Base):
     Timezone = Column(String)
     Region = Column(String)
     
-
     def __init__(self, UserID, Language=None, Birthday=None, Color=None, Timezone=None):
         self.UserID = UserID
         self.Language = Language
