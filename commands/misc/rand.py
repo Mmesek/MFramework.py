@@ -25,7 +25,7 @@ async def randomquote(self, *args, data, **kwargs):
             file.write(raw.content)
     with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
         q = json.load(file)
-    r = random.randrange(len(q))
+    r = random.SystemRandom().randrange(len(q))
     await self.message(data.channel_id, '_'+q[r]["text"] + "_\n    ~" + q[r]["author"])
 
 
