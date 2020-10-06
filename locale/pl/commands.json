@@ -402,6 +402,10 @@
         "help":"help",
         "language":"Język",
         "birthday":"Urodziny",
+        "timezone":"Strefa Czasowa: %{timezone}",
+        "region":"Kraj: %{region}",
+        "currency":"Waluta: %{currency}",
+        "regional":"Region",
         "totalEXP":"Całkowity EXP",
         "totalVoiceTime":"Całkowity czas na Głosowym",
         "datesDiscord":"Na Discordzie od: %{discord}",
@@ -409,6 +413,7 @@
         "datesBoostStart":"Wzmacnia od: %{boost}",
         "datesJoined":"Dołączono",
         "notFoundRegion":"Nie można znaleźć regionu %{region}",
+        "notFoundCurrency":"Nie można znaleźć waluty %{currency}",
         "notFoundTimezone":"Nie można znaleźć strefy %{timezone}",
         "notFoundLanguage":"Nie można znaleźć języka %{language}"
     }

@@ -33,6 +33,16 @@ async def show_profile(self, *args, data, language, **kwargs):
         e.addField(tr('commands.profile.totalVoiceTime', language), secondsToText(total_vexp, language.upper()), True)
     if u.Color is not None:
         e.setColor(u.Color)
+    regional = []
+    if u.Timezone is not None:
+        regional.append(tr('commands.profile.timezone', language, timezone=u.Timezone))
+    if u.Region is not None:
+        regional.append(tr('commands.profile.region', language, region=u.Region))
+    if u.Currency is not None:
+        regional.append(tr('commands.profile.currency', language, currency=u.Currency))
+    if regional != []:
+        e.addField(tr('commands.profile.regional', language), '\n'.join(regional))
+                
     dates = tr('commands.profile.datesDiscord', language, discord=created(data.author.id).strftime('%Y-%m-%d %H:%M:%S')) + '\n'
     dates += tr('commands.profile.datesServer', language, server=datetime.fromisoformat(data.member.joined_at).strftime('%Y-%m-%d %H:%M:%S'))
     #"Discord: {discord}\nServer: {server}".format(discord=created(data.author.id).strftime('%Y-%m-%d %H:%M:%S'), server=datetime.fromisoformat(data.member.joined_at).strftime('%Y-%m-%d %H:%M:%S'))
@@ -103,5 +113,18 @@ async def region(self, region, *args, data, language, **kwargs):
     except LookupError:
         return await self.message(data.channel, tr('commands.profile.notFoundRegion', language, region=region))#f"Couldn't find region {region}")
     c.Region = region
+    s.merge(c)
+    s.commit()
+
+@subcommand(profile)
+async def currency(self, currency, *args, data, language, **kwargs):
+    s = self.db.sql.session()
+    c = query_user(s, data.author.id)
+    import pycountry
+    try:
+        region = pycountry.currencies.lookup(currency).alpha_3
+    except LookupError:
+        return await self.message(data.channel, tr('commands.profile.notFoundCurrency', language, currency=currency))
+    c.Currency = currency
     s.merge(c)
     s.commit()
