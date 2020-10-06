@@ -164,11 +164,11 @@ async def guild_member_update(self, data):
         "<@{user}> Thank you for boosting the server.", "<@{user}>, Hey, Thanks for boosting!",
         "<@{user}> Hello, thanks for boosting the server.", "Thank you, <@{user}> for boosting.",
         "<@{user}> Thanks for boosting.", "Hello <@{user}>, thank you for boosting!",
-        "Hey <@{user}>! Thank you for boosting our server!", "<@{user}>, Welcome in the cool club."]
+        "Hey <@{user}>! Thank you for boosting our server!", "<@{user}>, Welcome to the cool club."]
 
         color=[
         "As a booster, you can have your own custom role that you can choose the name and the color of.", 
-        "As a booster you can have a role with your name and colour of choice.", "Since you are boosting, you are eligible to have your own custom role (within ruleset)."
+        "As a booster you can have a role with your name and colour of choice.", "Since you are boosting, you are eligible to have your own custom role (within ruleset).",
         "Alongside access to this channel, you can also get a custom role with any name (within ruleset) and any color.",
         "You can have a custom role as long as your boost persists."]
 
@@ -187,7 +187,7 @@ async def guild_member_update(self, data):
         #"If you want one, just tell a staff member the name and color code you want for it."]
 
         ending = [
-        "then ask moderator to move your role.", "after doing so, ask Moderator to move your role.", "and ask moderator to move your role."]
+        "then ask one of the moderators to move your role.", "after doing so, ask one of the Moderators to move your role.", "and ask one of the moderators to move your role."]
         note = [
         "You can change name of the role at any moment as well as color using the same command again."]
         from random import choice
