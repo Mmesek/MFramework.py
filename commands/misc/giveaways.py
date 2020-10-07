@@ -95,3 +95,23 @@ async def giveaway_end(self, message_id, *args, data, language, **kwargs):
     task = session.query(db.Tasks).filter(db.Tasks.GuildID == data.guild_id).filter(db.Tasks.Finished == False).filter(db.Tasks.MessageID == int(message_id)).first()
     task.TimestampEnd = datetime.now(tz=timezone.utc)
     await giveaway(self, task)
+
+@register(group='Admin', help='Rerolls giveaway', alias='', category='')
+async def reroll(self, message_id, *amount, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    s = self.db.sql.session()
+    task = s.query(db.Tasks).filter(db.Tasks.GuildID == data.guild_id).filter(db.Tasks.Type == 'giveaway').filter(db.Tasks.MessageID == message_id).first()
+    from MFramework.utils.utils import get_all_reactions
+    users = await get_all_reactions(self, task.ChannelID, task.MessageID, '🎉')
+    sample = SystemRandom().sample
+
+    if task.WinnerCount > len(users) and (amount !=() and int(amount[0]) > len(users)):
+        winnerCount = len(users)
+    elif amount != ():
+        winnerCount = int(amount[0])
+    else:
+        winnerCount = task.WinnerCount
+
+    _winners = [f'<@{i.id}>' for i in sample(users, winnerCount)]
+    winners = ', '.join(_winners)
+    await self.message(task.ChannelID, tr("commands.giveaway.rerollMessage", language, count=len(_winners), winners=winners, prize=task.Prize, participants=len(users), server=task.GuildID, channel=task.ChannelID, message=task.MessageID))

@@ -366,6 +366,11 @@
             "zero":"Could not determine winner for giveaway https://discordapp.com/channels/%{server}/%{channel}/%{message}",
             "one":"Congratulations to %{winners}!\nYou won %{prize}!\n\nTotal participants: %{participants}",
             "many":"Congratulations, %{winners}!\nYou won %{prize}!\n\nTotal participants: %{participants}"
+        },
+        "rerollMessage":{
+            "zero":"Could not reroll winner for giveaway https://discordapp.com/channels/%{server}/%{channel}/%{message}",
+            "one":"Congratulations to %{winners}!\nYou won %{prize} after reroll!\n\nTotal participants: %{participants}",
+            "many":"Congratulations, %{winners}!\nYou won %{prize} after reroll!\n\nTotal participants: %{participants}"
         }
     },
     "currency_exchange":{
