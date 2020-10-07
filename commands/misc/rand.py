@@ -526,6 +526,9 @@ async def chord(self, *chords, data, language, **kwargs):
     for _chord in chords:
         text = "```\n"
         c = _chords[_chord]
+        if len(c) > 6 and c[0] != '1':
+            text = "Starting fret: " + c[0] +'\n' + text
+            c = c[1:]
         for x, string in enumerate(c):
             text += string if string == 'x' else base_notes[x]
         text+='\n'
