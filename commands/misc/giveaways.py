@@ -8,7 +8,7 @@ from MFramework.database import alchemy as db
 
 from random import SystemRandom
 
-@register(group='Admin', help='Duration: digits followed by s, m, h, d or w', alias='', category='')
+@register(group='Mod', help='Duration: digits followed by s, m, h, d or w', alias='', category='')
 async def giveaway(self, duration, winner_count, *prize, data, channel, language, **kwargs):
     '''Extended description to use with detailed help command'''
     channel = channel[0]
@@ -57,15 +57,17 @@ async def giveaway(self, t):
     sample = SystemRandom().sample
 
     if task.WinnerCount > len(users):
-        task.WinnerCount = len(users)
+        winnerCount = len(users)
+    else:
+        winnerCount = task.WinnerCount
 
-    _winners = [f'<@{i.id}>' for i in sample(users, task.WinnerCount)]
+    _winners = [f'<@{i.id}>' for i in sample(users, winnerCount)]
     winners = ', '.join(_winners)
     try:
         chance = '{:.3%}'.format(1 / len(users)).replace('.000', '')
     except ZeroDivisionError:
         chance = ''
-    e = createGiveawayEmbed(language, task.TimestampEnd, task.Prize, task.WinnerCount, True, winners, chance)
+    e = createGiveawayEmbed(language, task.TimestampEnd, task.Prize, winnerCount, True, winners, chance)
     await self.edit_message(task.ChannelID, task.MessageID, '', e)
     await self.message(task.ChannelID, tr("commands.giveaway.endMessage", language, count=len(_winners), winners=winners, prize=task.Prize, participants=len(users), server=task.GuildID, channel=task.ChannelID, message=task.MessageID))
     task.Finished = True
