@@ -366,6 +366,11 @@
             "zero":"Nie można było wyłonić zywcięzcy w losowaniu https://discordapp.com/channels/%{server}/%{channel}/%{message}",
             "one":"Gratulacje, %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}",
             "many":"Gratulacje dla %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}"
+        },
+        "rerollMessage":{
+            "zero":"Nie można było wyłonić nowego zywcięzcy w losowaniu https://discordapp.com/channels/%{server}/%{channel}/%{message}",
+            "one":"Gratulacje, %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}",
+            "many":"Gratulacje dla %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}"
         }
     },
     "currency_exchange":{
