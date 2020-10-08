@@ -104,6 +104,7 @@ async def how(self, *query, data, **kwargs):
 async def today(self, *difference, data, language, **kwargs):
     s = sun.sun(lat=51.15, long=22.34)
     today = datetime.datetime.now()
+    d = ""
     if difference != ():
         d = ''.join(difference)
         d = '-'+d if '+' not in d else d
@@ -140,13 +141,12 @@ async def today(self, *difference, data, language, **kwargs):
     embed.addField(tr("commands.today.sun", language), tr("commands.today.sunStates", language, rise=s.sunrise(t), noon=s.solarnoon(t), set=s.sunset(t)), True)
     # embed.addField('Moon', f"Rise:\nIllumination:\nSet:", True)
     # embed.addField("Lunar Phase", f"", True)
-    # embed.addField("Game releases", f"", True)
-    # embed.addField("Movie releases", f"", True)
+    color = random.randint(0, 16777215)
+    embed.addField(tr("commands.today.color", language), str(hex(color)).replace("0x", "#"), True).setColor(color)
+    embed.addField('\u200b', '\u200b', True)
     # embed.addField("TV Show Episodes", f"", True)
     # embed.addField("New on Spotify", f"", True)
     # embed.addField("Song for today", f"", True)
-    color = random.randint(0, 16777215)
-    embed.addField(tr("commands.today.color", language), str(hex(color)).replace("0x", "#"), True).setColor(color)
     embed.addField(tr("commands.today.quote", language), quote["text"] + "\n- " + quote["author"])
     await self.embed(data.channel_id, "", embed.embed)
 
@@ -515,7 +515,7 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
     await self.embed(data.channel_id, "", e.embed)
 
 @register(group='Global', help='Shows guitar chord(s) diagram(s)', alias='', category='')
-async def chord(self, *chords, data, language, **kwargs):
+async def chord(self, *chords, data, language, all=False, **kwargs):
     '''Extended description to use with detailed help command'''
     import json
     with open('data/chords.json','r',newline='',encoding='utf-8') as file:
@@ -523,12 +523,30 @@ async def chord(self, *chords, data, language, **kwargs):
     #_chords = {"Em": "022000", "C": "x32010", "A":"x02220", "G": "320033", "E": "022100", "D": "xx0232", "F": "x3321x", "Am": "x02210", "Dm": "xx0231"}
     base_notes = "EADGBE"
     e = Embed()
+    if all:
+        _all = []
+        for _chord in chords:
+            for x in range(7):
+                if x == 0:
+                    if _chord in chords:
+                        _all.append(f"{_chord}")
+                        for i in range(5):
+                            if _chord + f'_a{i+1}' in _chords:
+                                _all.append(f"{_chord}_a{i+1}")    
+                if _chord + f'_{x+1}' in _chords:
+                    _all.append(f"{_chord}_{x+1}")
+                    for i in range(5):
+                        if _chord + f'_{x+1}_a{i+1}' in _chords:
+                            _all.append(f"{_chord}_{x+1}_a{i+1}")
+        chords = _all
     for _chord in chords:
         text = "```\n"
-        c = _chords[_chord]
-        if len(c) > 6 and c[0] != '1':
-            text = "Starting fret: " + c[0] +'\n' + text
-            c = c[1:]
+        try:
+            _c = _chords[_chord]
+        except:
+            return await self.message(data.channel_id, f"Chord {_chord} not found")
+        if len(_c) > 6:
+            c = _c[-6:]
         for x, string in enumerate(c):
             text += string if string == 'x' else base_notes[x]
         text+='\n'
@@ -540,6 +558,9 @@ async def chord(self, *chords, data, language, **kwargs):
                     text += '|'
             text += '\n'
         text+= '```'
+        if len(_c) == 7 and _c[0] not in ['0', '1']:
+            #text += "\nStarting fret: " + _c[0:-6]
+            _chord += f' (Fret: {_c[0:-6]})'
         e.addField(_chord, text, True)
     await self.embed(data.channel_id, "", e.embed)
 
@@ -551,3 +572,11 @@ async def add_chord(self, chord, *frets, data, language, **kwargs):
     _chords[chord] = ''.join(frets)
     with open('data/chords.json','w',newline='',encoding='utf-8') as file:
         json.dump(_chords, file)
+
+'''
+|_E_|_A_|_C_|_G_|_B_|_E_|
+| _ | _ | _ | _ | _ | _ |
+| _ | O | O | _ | _ | _ |
+| _ | _ | _ | _ | _ | _ |
+| _ | _ | _ | _ | _ | _ |
+'''
