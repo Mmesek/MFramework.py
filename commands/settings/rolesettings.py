@@ -21,5 +21,6 @@ async def level(self, reqEXP=0, reqVEXP=0, type='AND', stacked=False, *args, dat
     role.Type = type
     s.merge(role)
     s.commit()
-    self.cache[data.guild_id].levels = [i for i in self.cache[data.guild_id].levels if i.Role != role.Role]
-    self.cache[data.guild_id].levels.append(role)
+    levels = [i for i in self.cache[data.guild_id].levels if i.Role != role.Role]
+    levels.append(role)
+    self.cache[data.guild_id].levels = sorted(levels, key=lambda i: i.ReqEXP+i.ReqVEXP, reverse=True)
