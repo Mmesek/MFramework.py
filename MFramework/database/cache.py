@@ -96,9 +96,9 @@ class Cache:
                 pr[i.RoleGroup][i.Presence] = []
             pr[i.RoleGroup][i.Presence] += [i.RoleID]
             self.presenceRoles = pr
-        self.levels = session.query(db.LevelRoles).filter(db.Servers.GuildID == guildID).all()
-        self.webhooks = session.query(db.Webhooks).filter(db.Servers.GuildID == guildID).all()
-        self.responses = session.query(db.Regex).filter(db.Servers.GuildID == guildID).all()
+        self.levels = session.query(db.LevelRoles).filter(db.LevelRoles.GuildID == guildID).all()
+        self.webhooks = session.query(db.Webhooks).filter(db.Webhooks.GuildID == guildID).all()
+        self.responses = session.query(db.Regex).filter(db.Regex.GuildID == guildID).all()
         self.recompileTriggers(datab, guildID)
 
         self.color = g.Color
