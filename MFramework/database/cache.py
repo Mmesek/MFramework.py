@@ -97,6 +97,7 @@ class Cache:
             pr[i.RoleGroup][i.Presence] += [i.RoleID]
             self.presenceRoles = pr
         self.levels = session.query(db.LevelRoles).filter(db.LevelRoles.GuildID == guildID).all()
+        self.levels = sorted(self.levels, key=lambda i: i.ReqEXP+i.ReqVEXP, reverse=True)
         self.webhooks = session.query(db.Webhooks).filter(db.Webhooks.GuildID == guildID).all()
         self.responses = session.query(db.Regex).filter(db.Regex.GuildID == guildID).all()
         self.recompileTriggers(datab, guildID)
