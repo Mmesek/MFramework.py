@@ -157,6 +157,8 @@ Dodatkowe informacje mogą zostać znalezione w opisach pokoi.""").setImage("htt
                 elif i == "items":
                     if ',' in self.answers[i]:
                         self._items = ['- ' + upperfirst(i.strip()) for i in self.answers[i].split(',')]
+                    elif '\n- ' in self.answers[i]:
+                        self._items = ['- ' + upperfirst(i.strip()) for i in self.answers[i].split('\n- ')]
                     else:
                         self._items = ['- ' + upperfirst(i.strip()) for i in self.answers[i].split('\n')]
                     deduplicated_items = Counter(self._items)
