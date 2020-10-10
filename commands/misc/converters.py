@@ -338,3 +338,12 @@ async def currency_exchange(self, amount='1', currency='EUR', to_currency='USD',
                 result = r.json().get('error','Error')
     r = tr('commands.currency_exchange.result', language, result=result, to_currency=to_currency, amount=amount, currency=currency)
     await self.message(data.channel_id, r)
+
+@register(group='Global', help='Reverses letters', alias='', category='')
+async def reverse(self, *message, data, language, inplace=False, **kwargs):
+    '''Extended description to use with detailed help command'''
+    if in_place:
+        r = ' '.join([i[::-1] for i in message])
+    else:
+        r = ' '.join(message)[::-1]
+    await self.message(data.channel_id, r)
