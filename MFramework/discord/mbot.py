@@ -24,6 +24,9 @@ def onDispatch(obj):
 
 class Opcodes:
     async def dispatch(self, data):
+        if data['t'] not in self.counters:
+            self.counters[data['t']] = 0
+        self.counters[data['t']] += 1
         try:
             await getattr(Dispatch, data["t"].lower(), Invalid)(self, data['d'])
         except TypeError as ex:
@@ -67,7 +70,7 @@ class Opcodes:
 
 class Bot(EndpointWrappers, Endpoints):
     __slots__ = ('token', 'startTime', 'patterns', 'session_id', 'user_id', 'keepConnection', 'state', 'stayConnected', 'alias', 'presence', 'sub', 'presenceType', 'shards', 'db', 'cache', 'csession', 'ws',
-    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild', 'url', 'intents', 'errorchannel', 'context')
+    'last_sequence', 'heartbeating', 'username', 'lock', 'latency', 'heartbeat_sent', 'servers', '_zlib', '_buffer', 'chords', 'primary_guild', 'url', 'intents', 'errorchannel', 'context', 'counters')
     opcodes = {
         0: Opcodes.dispatch,
         7: Opcodes.reconnect,
@@ -114,6 +117,7 @@ class Bot(EndpointWrappers, Endpoints):
         self.lock = {"global": False}
         self._buffer = bytearray()
         self._zlib = zlib.decompressobj()
+        self.counters = {}
         print("\nInitating Bot with token: ", self.token)
 
     async def _api_call(self, path, method="GET", reason="", **kwargs):
@@ -155,7 +159,10 @@ class Bot(EndpointWrappers, Endpoints):
                     self.lock['global'] = True
                 else:
                     self.lock[bucket] = True
-                await asyncio.sleep(r['retry_after'])# / 1000)
+                if r['retry_after'] > 10:
+                    await asyncio.sleep(r['retry_after'] / 1000)
+                else:
+                    await asyncio.sleep(r['retry_after'])
                 if r['global'] is True:
                     self.lock['global'] = False
                 else:

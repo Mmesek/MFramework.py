@@ -185,3 +185,13 @@ async def version(self, *args, data, **kwargs):
 async def remaining(self, *args, data, **kwargs):
     '''Extended description to use with detailed help command'''
     print(await self.get_gateway_bot())
+
+@register(group='System', help='Short description to use with help command', alias='', category='')
+async def stats(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    msg = ''
+    e = Embed()
+    for counter in self.counters:
+        msg += f"\n`{counter}`: {self.counters[counter]}"
+    e.setDescription(msg)
+    await self.embed(data.channel_id, "", e.embed)
