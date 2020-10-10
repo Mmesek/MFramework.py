@@ -342,7 +342,7 @@ async def currency_exchange(self, amount='1', currency='EUR', to_currency='USD',
 @register(group='Global', help='Reverses letters', alias='', category='')
 async def reverse(self, *message, data, language, inplace=False, **kwargs):
     '''Extended description to use with detailed help command'''
-    if in_place:
+    if inplace:
         r = ' '.join([i[::-1] for i in message])
     else:
         r = ' '.join(message)[::-1]

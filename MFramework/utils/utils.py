@@ -12,12 +12,12 @@ class Embed:
 
     def setTitle(self, title):
         self.embed['title'] = title
-        self.total_characters += len(title)
+        self.total_characters += len(str(title))
         return self
 
     def setDescription(self, description):
         self.embed['description'] = description
-        self.total_characters += len(description)
+        self.total_characters += len(str(description))
         return self
 
     def setColor(self, color):
@@ -38,7 +38,7 @@ class Embed:
 
     def setFooter(self, icon, text):
         self.embed['footer'] = {"icon_url": icon, "text": text}
-        self.total_characters += len(text)
+        self.total_characters += len(str(text))
         return self
 
     def setTimestamp(self, timestamp):
@@ -47,13 +47,13 @@ class Embed:
 
     def setAuthor(self, name, url, icon):
         self.embed['author'] = {"name": name, "url": url, "icon_url": icon}
-        self.total_characters += len(name)
+        self.total_characters += len(str(name))
         return self
 
     def addField(self, name, value, inline=False):
         self.embed['fields'] += [{"name": name,
                                   "value": value, "inline": inline}]
-        self.total_characters += len(name) + len(value)
+        self.total_characters += len(str(name)) + len(str(value))
         return self
     
     def addFields(self, title, text, inline=False):
