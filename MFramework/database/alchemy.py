@@ -103,7 +103,8 @@ class LevelRoles(Base):
     Role = Column(BigInteger, primary_key=True)
     #Role = Column(ARRAY(BigInteger), primary_key=True)
     Stacked = Column(Boolean)
-    Type = Column(String, primary_key=True) #AND || OR || COMBINED
+    Type = Column(String, primary_key=True)  #AND || OR || COMBINED
+    ReqRoles = Column(ARRAY(BigInteger))
 
     def __init__(self, GuildID=None, Level=None, Role=None, Stacked=None):
         self.GuildID = GuildID

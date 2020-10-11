@@ -19,7 +19,7 @@ async def handle_exp(self, data, e=None):
     if l == []:
         return
     for x, levelRole in enumerate(l):
-        if levelRole.Role not in data.member.roles:
+        if levelRole.Role not in data.member.roles and all(i in data.member.roles for i in levelRole.ReqRoles):
             if levelRole.Type == 'AND' and (e.EXP >= levelRole.ReqEXP and e.vEXP >= levelRole.ReqVEXP):
                 await handle_roles(self, data, l, levelRole, x, user_id)
             elif levelRole.Type == 'OR' and (e.EXP >= levelRole.ReqEXP or e.vEXP >= levelRole.ReqVEXP):
