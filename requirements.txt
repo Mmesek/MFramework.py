@@ -16,3 +16,4 @@ pandas
 gitpython
 upsidedown
 pycountry
+howlongtobeatpy
