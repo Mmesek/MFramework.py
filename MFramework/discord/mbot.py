@@ -117,7 +117,7 @@ class Bot(EndpointWrappers, Endpoints):
         self.lock = {"global": False}
         self._buffer = bytearray()
         self._zlib = zlib.decompressobj()
-        self.counters = {}
+        self.counters = {"EXECUTED_COMMANDS":0}
         print("\nInitating Bot with token: ", self.token)
 
     async def _api_call(self, path, method="GET", reason="", **kwargs):

@@ -317,6 +317,7 @@ async def execute(self, data):
                 r = None
             elif await commandList[group].get(lower_cmd, Invalid)(self, *args, **kwargs) == None:
                 r = None
+            self.counters["EXECUTED_COMMANDS"] += 1
         #elif await parse(self, data) == None:
             #r = None
         except TypeError as ex:
