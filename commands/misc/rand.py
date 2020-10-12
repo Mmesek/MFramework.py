@@ -380,6 +380,22 @@ async def add_chord(self, chord, *frets, data, language, **kwargs):
     with open('data/chords.json','w',newline='',encoding='utf-8') as file:
         json.dump(_chords, file)
 
+@register(group='Global', help='Shows chords on frets for specified tuning', alias='', category='')
+async def tuning(self, *tuning, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    base = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
+    if tuning == ():
+        tuning = ["E", "B", "G", "D", "A", "E"]
+    else:
+        tuning = [i.upper() for i in tuning]
+    final = ""
+    for note in tuning:
+        n = base.index(note)
+        final += '\n' + ' | '.join([i+' ' if len(i) == 1 else i for i in base[n:] + base[:n]])
+    await self.message(data.channel_id, f"```{final}```")
+
+
+
 '''
 |_E_|_A_|_C_|_G_|_B_|_E_|
 | _ | _ | _ | _ | _ | _ |
