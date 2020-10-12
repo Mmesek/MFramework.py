@@ -403,3 +403,20 @@ async def tuning(self, *tuning, data, language, **kwargs):
 | _ | _ | _ | _ | _ | _ |
 | _ | _ | _ | _ | _ | _ |
 '''
+
+@register(group='Global', help='Shows How Long to Beat', alias='', category='')
+async def hltb(self, *game, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    game = ' '.join(game)
+    e = Embed().setTitle(game)
+    from howlongtobeatpy import HowLongToBeat
+    results = await HowLongToBeat().async_search(game)
+    if results is not None and len(results) > 0:
+        g = max(results, key=lambda element: element.similarity)
+        e.setTitle(g.game_name).setUrl(g.game_web_link).setThumbnail(g.game_image_url)
+        e.addField(g.gameplay_main_label, f"{g.gameplay_main} {g.gameplay_main_unit}", True)
+        e.addField(g.gameplay_main_extra_label, f"{g.gameplay_main_extra} {g.gameplay_main_extra_unit}", True)
+        e.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
+        from MFramework.utils.utils import get_main_color
+        e.setFooter("", f"Title Similiarity: {g.similarity}").setColor(get_main_color(g.game_image_url))
+    await self.embed(data.channel_id, "", e.embed)

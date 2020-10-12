@@ -109,6 +109,7 @@ def getGGDealsLowPrice(game, language):
 async def game(self, *game, data, language, **kwargs):
     if isEmpty(game):
         return await self.message(data.channel_id, 'Game was not provided. Example usage: `game game title`')
+    _game = game
     async for game, appid in steamParse(self, "details", language, *game):
         embed = Embed()
         embed.setDescription(game.get("short_description")).setTitle(game.get("name"))
@@ -156,6 +157,21 @@ async def game(self, *game, data, language, **kwargs):
         publishers = game.get("publishers")
         if publishers != devs:
             embed.addField(tr("commands.game.publishers", language, count=len(publishers)), ", ".join(publishers), True)
+        from howlongtobeatpy import HowLongToBeat
+        results = await HowLongToBeat().async_search(' '.join(_game))
+        if results is not None and len(results) > 0:
+            if len(embed.fields) != 0 and len(embed.fields) % 3 != 0:
+                while len(embed.fields) % 3 != 0:
+                    if len(embed.fields) == 25:
+                        break
+                    embed.addField("\u200b", "\u200b", True)
+            g = max(results, key=lambda element: element.similarity)
+            if g.gameplay_main != -1:
+                embed.addField(g.gameplay_main_label, f"{g.gameplay_main} {g.gameplay_main_unit}", True)
+            if g.gameplay_main_extra != -1:
+                embed.addField(g.gameplay_main_extra_label, f"{g.gameplay_main_extra} {g.gameplay_main_extra_unit}", True)
+            if g.gameplay_completionist != -1:
+                embed.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
         await self.embed(data.channel_id, "", embed.embed)
 
 
