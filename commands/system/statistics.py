@@ -193,5 +193,21 @@ async def stats(self, *args, data, language, **kwargs):
     e = Embed()
     for counter in self.counters:
         msg += f"\n`{counter}`: {self.counters[counter]}"
+
+    from MFramework.commands import commandList
+    groups = list(commandList)
+    groups.reverse()
+    cmds = ""
+    for x, group in enumerate(groups):
+        if x != 0:
+            l = commandList[groups[x - 1]]
+            l = len(l)
+        else:
+            l = 0
+        c = commandList[group]
+        cmds += f"\n`{group}`: {len(c)-l}"
+    cmds += f"\n`Total`: {len(commandList['System'])}"
+    e.addField("Registered Commands", cmds)
+    
     e.setDescription(msg)
     await self.embed(data.channel_id, "", e.embed)
