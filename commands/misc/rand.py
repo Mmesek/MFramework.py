@@ -144,6 +144,53 @@ async def today(self, *difference, data, language, **kwargs):
     color = random.randint(0, 16777215)
     embed.addField(tr("commands.today.color", language), str(hex(color)).replace("0x", "#"), True).setColor(color)
     embed.addField('\u200b', '\u200b', True)
+    #alternative today sources:
+    #https://www.kalbi.pl/kalendarz-swiat-nietypowych
+    #https://www.kalendarzswiat.pl/dzisiaj
+    game_releases_url = "https://www.gry-online.pl/daty-premier-gier.asp?PLA=1"
+    if '+' in d:
+        game_releases_url += "&CZA=2"
+    r = requests.get(game_releases_url)
+    if r.status_code == 200:
+        soup = BeautifulSoup(r.content, "html.parser").find('div',class_='daty-premier-2017')
+    else:
+        return await self.message(data.channel_id, "Error")
+    games = ''
+    for release in soup.find_all('a', class_='box'):
+        lines = release.find_all('div')
+        release_date = lines[0].text
+        if str(today.day) not in release_date:
+            break
+        p = release.find('p', class_='box-sm')
+        previous_release = None
+        if p:
+            previous_release = p.text.replace('PC','')
+        game = lines[1].contents[0]
+        platform = lines[-1].text.replace(', Pudełko','')
+        games += f'\n- {game} ({platform})'
+        if previous_release is not None:
+            games += ' | Poprzednio wydane:\n*' + previous_release.replace('\n\n', ' - ').replace('\n', '') + '*'
+    if games != '':
+        embed.addField("Game releases", games[:1024], True)
+
+    r = requests.get("https://www.ign.com/upcoming/movies",
+    headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"})
+    if r.status_code == 200:
+        soup = BeautifulSoup(r.content, "html.parser").find('div',class_='jsx-3629687597 four-grid')
+    else:
+        return await self.message(data.channel_id, "Error")
+    movies = ''
+    if soup is not None:
+        for movie in soup.find_all('a', class_='card-link'):
+            lines = movie.find('div', class_='jsx-2539949385 details')#.find_all('div')
+            release = lines.find('div', class_='jsx-2539949385 release-date').text
+            if today.strftime("%b %d, %Y").replace(' 0', ' ') not in release:
+                continue
+            name = lines.find('div', class_='jsx-2539949385 name').text
+            platform = lines.find('div', class_='jsx-2539949385 platform').text
+            movies += f'\n- {name}' #({platform})'
+    if movies != '':
+        embed.addField("Movie releases", movies[:1024], True)
     # embed.addField("TV Show Episodes", f"", True)
     # embed.addField("New on Spotify", f"", True)
     # embed.addField("Song for today", f"", True)
