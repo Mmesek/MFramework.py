@@ -422,11 +422,11 @@ async def hltb(self, *game, data, language, **kwargs):
     await self.embed(data.channel_id, "", e.embed)
 
 
-@register(group='Global', help='Short description to use with help command', alias='', category='')
+@register(group='Global', help='Rolls a percentage chance', alias='', category='')
 async def roll(self, *argument, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    import random
+    from random import seed, randint
     statement = ' '.join(argument)
-    random.seed(statement)
-    await self.message(data.channel_id, f"{random.randint(1, 100)}% {statement}")
+    seed(statement)
+    await self.message(data.channel_id, f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}")
     
