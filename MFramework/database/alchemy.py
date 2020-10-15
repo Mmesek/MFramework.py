@@ -403,6 +403,7 @@ class HalloweenClasses(Base):
     LastAction = Column(TIMESTAMP(True))
     LastUser = Column(BigInteger)
     LastVictim = Column(BigInteger)
+    TurnCount = Column(Integer)
 
     def __init__(self, GuildID, UserID, CurrentClass='Human'):
         self.GuildID = GuildID
@@ -414,3 +415,4 @@ class HalloweenClasses(Base):
         self.VampireHunterStats = 0
         self.HuntsmanStats = 0
         self.ZombieSlayerStats = 0
+        self.TurnCount = 0
