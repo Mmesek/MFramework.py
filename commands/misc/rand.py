@@ -475,5 +475,5 @@ async def roll(self, *argument, data, language, **kwargs):
     from random import seed, randint
     statement = ' '.join(argument)
     seed(statement)
-    await self.message(data.channel_id, f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}")
+    await self.message(data.channel_id, f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}", allowed_mentions={"parse":[]})
     
