@@ -388,3 +388,29 @@ class Users(Base):
         self.Birthday = Birthday
         self.Color = Color
         self.Timezone = Timezone
+
+class HalloweenClasses(Base):
+    __tablename__ = 'HalloweenStats'
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    UserID = Column(BigInteger, primary_key=True)
+    CurrentClass = Column(String)
+    VampireStats = Column(Integer)
+    WerewolfStats = Column(Integer)
+    ZombieStats = Column(Integer)
+    VampireHunterStats = Column(Integer)
+    HuntsmanStats = Column(Integer)
+    ZombieSlayerStats = Column(Integer)
+    LastAction = Column(TIMESTAMP(True))
+    LastUser = Column(BigInteger)
+    LastVictim = Column(BigInteger)
+
+    def __init__(self, GuildID, UserID, CurrentClass='Human'):
+        self.GuildID = GuildID
+        self.UserID = UserID
+        self.CurrentClass = CurrentClass
+        self.VampireStats = 0
+        self.WerewolfStats = 0
+        self.ZombieStats = 0
+        self.VampireHunterStats = 0
+        self.HuntsmanStats = 0
+        self.ZombieSlayerStats = 0
