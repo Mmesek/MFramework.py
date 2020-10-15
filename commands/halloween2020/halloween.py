@@ -65,6 +65,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                 if (target_user is not None and target_user.CurrentClass not in monsters) or target_user is None:
                     if target_user is None:
                         target_user = db.HalloweenClasses(data.guild_id, data.author.id, 'Human')
+                        _target_user = None
                     if immune_table.get(target_user.CurrentClass, '') != self_user.CurrentClass:
                         target_user.CurrentClass = self_user.CurrentClass
                         target_user.LastUser = self_user.UserID
@@ -77,7 +78,10 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                         elif self_user.CurrentClass == 'Zombie':
                             self_user.ZombieStats += 1
                         target_user.TurnCount += 1
-                        s.merge(target_user)
+                        if _target_user is None:
+                            s.add(target_user)
+                        else:
+                            s.merge(target_user)
                         await self.message(data.channel_id, f'Successfully turned <@{target}> into {self_user.CurrentClass}', allowed_mentions={"parse":[]})
                     else:
                         await self.message(data.channel_id, "Your target is immune to that")
