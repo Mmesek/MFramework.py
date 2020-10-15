@@ -37,12 +37,12 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
             self_user = db.HalloweenClasses(data.guild_id, data.author.id)
             self_user.CurrentClass = _class.capitalize()
             self.db.sql.add(self_user)
-            await self.message(data.channel_id, "Welcme to the Dark Side™. You can now use `bite` command.")
+            await self.message(data.channel_id, "Welcome to the Dark Side™. You can now use `bite` command.")
         elif _class.lower() in ['vampire hunter', 'huntsman', 'zombie slayer']:
             self_user = db.HalloweenClasses(data.guild_id, data.author.id)
             self_user.CurrentClass = _class.title()
             self.db.sql.add(self_user)
-            await self.message(data.channel_id, "You have successfully joined ranks on hunters. You can now use `cure` command.")
+            await self.message(data.channel_id, "You have successfully joined ranks of hunters. You can now use `cure` command.")
         else:
             if cmd in ['drink'] and self_user is None:
                 await self.message(data.channel_id, 'Available drinks:\n- Bloody Red Wine (Become Vampire)\n- Moonshine (Become Werewolf)\n- Vodka "Braaaainzz?" (Become Zombie)')
@@ -50,12 +50,14 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                 await self.message(data.channel_id, "Sorry. Drinks are only available to freshbloods")
             elif cmd in ['enlist']:
                 await self.message(data.channel_id, 'Available classes:\n- Vampire Hunter\n- Huntsman\n- Zombie Slayer')
-    elif cmd in ['drink', 'enlist']:
+    elif cmd in ['drink']:
+        await self.message(data.channel_id, "Sorry. Drinks are only available to freshbloods")
+    elif cmd in ['enlist']:
         await self.message(data.channel_id, "You have to be human to use that!")
     else:
         if self_user.LastAction == None or (datetime.now(tz=timezone.utc) - self_user.LastAction > timedelta(hours=8)):
             if class_or_user != ():
-                target = parseMention(' '.join(class_or_user))
+                target = parseMention(class_or_user[0])
                 if target.isdigit():
                     target = int(target)
             else:
@@ -63,6 +65,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
             target_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == target).first()
             if cmd in ['bite'] and self_user.CurrentClass in monsters:
                 if (target_user is not None and target_user.CurrentClass not in monsters) or target_user is None:
+                    _target_user = False
                     if target_user is None:
                         target_user = db.HalloweenClasses(data.guild_id, target, 'Human')
                         _target_user = None
