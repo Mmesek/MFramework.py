@@ -178,7 +178,12 @@ async def leaderboard(self, *args, data, language, **kwargs):
     totalPopulation = {}
     totalBites = 0
     for v in total:
-        u = self.cache[data.guild_id].members[v.UserID].user.username
+        try:
+            u = self.cache[data.guild_id].members[v.UserID].user.username
+        except:
+            u = await self.get_guild_member(data.guild_id, v.UserID)
+            self.cache[data.guild_id].members[v.UserID] = u
+            u = u.user.username
         if v.VampireStats > 0:
             vampireStats.append((u, v.VampireStats))
         if v.WerewolfStats > 0:
