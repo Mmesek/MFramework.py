@@ -181,7 +181,10 @@ async def leaderboard(self, *args, data, language, **kwargs):
         try:
             u = self.cache[data.guild_id].members[v.UserID].user.username
         except:
-            u = await self.get_guild_member(data.guild_id, v.UserID)
+            try:
+                u = await self.get_guild_member(data.guild_id, v.UserID)
+            except:
+                continue
             self.cache[data.guild_id].members[v.UserID] = u
             u = u.user.username
         if v.VampireStats > 0:
