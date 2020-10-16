@@ -161,3 +161,58 @@ async def addRoles(self, *args, data, language, **kwargs):
     users = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
     for user in users:
         await self.add_guild_member_role(data.guild_id, user.UserID, roles.get(user.CurrentClass, ""), "Halloween Minigame")
+
+from MFramework.utils.utils import Embed
+@register(group='Global', help='Shows leaderboards', alias='', category='')
+async def leaderboard(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    session = self.db.sql.session()
+    total = session.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).order_by(db.HalloweenClasses.TurnCount.desc()).all()
+    e = Embed().setTitle("Bitesboard")
+    vampireStats = []
+    werewolfStats = []
+    zombieStats = []
+    vampireHunterStats = []
+    huntsmanStats = []
+    zombieSlayerStats = []
+    totalPopulation = {}
+    totalBites = 0
+    for v in total:
+        if v.VampireStats > 0:
+            vampireStats.append((v.UserID, v.VampireStats))
+        if v.WerewolfStats > 0:
+            werewolfStats.append((v.UserID, v.WerewolfStats))
+        if v.ZombieStats > 0:
+            zombieStats.append((v.UserID, v.ZombieStats))
+        if v.VampireHunterStats > 0:
+            vampireHunterStats.append((v.UserID, v.VampireHunterStats))
+        if v.HuntsmanStats > 0:
+            huntsmanStats.append((v.UserID, v.HuntsmanStats))
+        if v.ZombieSlayerStats > 0:
+            zombieSlayerStats.append((v.UserID, v.ZombieSlayerStats))
+        if v.CurrentClass not in totalPopulation:
+            totalPopulation[v.CurrentClass] = 0
+        totalPopulation[v.CurrentClass] += 1
+        if v.TurnCount > 0:
+            totalBites += 1
+    if vampireStats != []:
+        vampireStats.sort(key=lambda i: i[1])
+        e.addField("Vampires", '- ' + '\n- '.join('<@{}> - {}'.format(i[0], i[1]) for i in vampireStats[:10]))
+    if werewolfStats != []:
+        werewolfStats.sort(key=lambda i: i[1])
+        e.addField("Werewolves", '- ' + '\n- '.join('<@{}> - {}'.format(i[0], i[1]) for i in werewolfStats[:10]))
+    if zombieStats != []:
+        zombieStats.sort(key=lambda i: i[1])
+        e.addField("Zombies", '- ' + '\n- '.join('<@{}> - {}'.format(i[0], i[1]) for i in zombieStats[:10]))
+    if vampireHunterStats != []:
+        vampireHunterStats.sort(key=lambda i: i[1])
+        e.addField("Vampire Hunters", '- ' + '\n- '.join('<@{}> - {}'.format(i[0], i[1]) for i in vampireHunterStats[:10]))
+    if huntsmanStats != []:
+        huntsmanStats.sort(key=lambda i: i[1])
+        e.addField("Huntsmans", '- ' + '\n- '.join('<@{}> - {}'.format(i[0], i[1]) for i in huntsmanStats[:10]))
+    if zombieSlayerStats != []:
+        zombieSlayerStats.sort(key=lambda i: i[1])
+        e.addField("Zombie Slayers", '- ' + '\n- '.join('<@{}> - {}'.format(i[0], i[1]) for i in zombieSlayerStats[:10]))
+
+    e.setDescription(f"Total Bites: {totalBites}\n"+'\n'.join('{}s: {}'.format(i if i != 'Werewolf' else 'Werewolve', totalPopulation[i]) for i in totalPopulation))
+    await self.embed(data.channel_id, "", e.embed)
