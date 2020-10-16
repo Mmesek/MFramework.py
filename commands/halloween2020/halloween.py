@@ -32,6 +32,8 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
     roles = s.query(db.HalloweenRoles).filter(db.HalloweenRoles.GuildID == data.guild_id).all()
     roles = {i.RoleName: i.RoleID for i in roles}
     if self_user is None or self_user.CurrentClass == 'Human':
+        if cmd in ['bite', 'cure']:
+            await self.message(data.channel_id, "This action is outside your expertise")
         _class = ' '.join(class_or_user)
         if cmd in ['drink'] and self_user is None and (_class.lower() in ['vampire', 'werewolf', 'zombie'] or _class.lower() in drinks):
             if _class.lower() in drinks:
@@ -104,6 +106,10 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                         await self.message(data.channel_id, "Your target is immune to that")
                 else:
                     await self.message(data.channel_id, "Your target is immune to that")
+            elif cmd in ['bite'] and self_user.CurrentClass in hunters:
+                await self.message(data.channel_id, "You are not doing such savage actions! You cure others from that!")
+            elif cmd in ['cure'] and self_user.CurrentClass in monsters:
+                await self.message(data.channel_id, "Cure? Cure from what? You bite others!")
             elif cmd in ['cure'] and self_user.CurrentClass in hunters:
                 if target_user is not None and target_user.CurrentClass not in hunters:
                     if immune_table.get(target_user.CurrentClass) == self_user.CurrentClass:
