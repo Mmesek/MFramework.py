@@ -416,3 +416,14 @@ class HalloweenClasses(Base):
         self.HuntsmanStats = 0
         self.ZombieSlayerStats = 0
         self.TurnCount = 0
+
+class HalloweenRoles(Base):
+    __tablename__ = 'HalloweenRoles'
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    RoleName = Column(String)
+    RoleID = Column(BigInteger)
+
+    def __init__(self, GuildID, RoleName, RoleID):
+        self.GuildID = GuildID
+        self.RoleName = RoleName
+        self.RoleID = RoleID
