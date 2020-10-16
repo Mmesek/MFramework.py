@@ -29,6 +29,8 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
     if self_user is not None and self_user.LastAction is not None and ' '.join(class_or_user) == 'cooldown':
         cooldown = datetime.now(tz=timezone.utc) - self_user.LastAction
         return await self.message(data.channel_id, f"Remaining Cooldown: {timedelta(hours=8) - cooldown}")
+    roles = s.query(db.HalloweenRoles).filter(db.HalloweenRoles.GuildID == data.guild_id).all()
+    roles = {i.RoleName: i.RoleID for i in roles}
     if self_user is None or self_user.CurrentClass == 'Human':
         _class = ' '.join(class_or_user)
         if cmd in ['drink'] and self_user is None and (_class.lower() in ['vampire', 'werewolf', 'zombie'] or _class.lower() in drinks):
@@ -37,11 +39,17 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
             self_user = db.HalloweenClasses(data.guild_id, data.author.id)
             self_user.CurrentClass = _class.capitalize()
             self.db.sql.add(self_user)
+            if roles != {}:
+                role_id = roles.get(self_user.CurrentClass, "")
+                await self.add_guild_member_role(data.guild_id, data.author.id, role_id, "Halloween Minigame")
             await self.message(data.channel_id, "Welcome to the Dark Side™. You can now use `bite` command.")
         elif _class.lower() in ['vampire hunter', 'huntsman', 'zombie slayer']:
             self_user = db.HalloweenClasses(data.guild_id, data.author.id)
             self_user.CurrentClass = _class.title()
             self.db.sql.add(self_user)
+            if roles != {}:
+                role_id = roles.get(self_user.CurrentClass, "")
+                await self.add_guild_member_role(data.guild_id, data.author.id, role_id, "Halloween Minigame")
             await self.message(data.channel_id, "You have successfully joined ranks of hunters. You can now use `cure` command.")
         else:
             if cmd in ['drink'] and self_user is None:
@@ -70,6 +78,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                         target_user = db.HalloweenClasses(data.guild_id, target, 'Human')
                         _target_user = None
                     if immune_table.get(target_user.CurrentClass, '') != self_user.CurrentClass:
+                        previousClass = target_user.CurrentClass
                         target_user.CurrentClass = self_user.CurrentClass
                         target_user.LastUser = self_user.UserID
                         self_user.LastVictim = target_user.UserID
@@ -85,6 +94,11 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                             self.db.sql.add(target_user)
                         else:
                             s.merge(target_user)
+                        if roles != {}:
+                            role_id = roles.get(previousClass, "")
+                            await self.remove_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
+                            role_id = roles.get(self_user.CurrentClass, "")
+                            await self.add_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
                         await self.message(data.channel_id, f'Successfully turned <@{target}> into {self_user.CurrentClass}', allowed_mentions={"parse":[]})
                     else:
                         await self.message(data.channel_id, "Your target is immune to that")
@@ -106,6 +120,11 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                             self_user.ZombieSlayerStats += 1
                         target_user.TurnCount += 1
                         s.merge(target_user)
+                        if roles != {}:
+                            role_id = roles.get(previousClass, "")
+                            await self.remove_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
+                            role_id = roles.get(target_user.CurrentClass, "")
+                            await self.add_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
                         await self.message(data.channel_id, f'Successfully cured <@{target}> from {previousClass}', allowed_mentions={"parse":[]})
                     else:
                         await self.message(data.channel_id, f"Provided user is not {immune_table.get(self_user.CurrentClass)}")
@@ -119,3 +138,26 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
             cooldown = datetime.now(tz=timezone.utc) - self_user.LastAction
             await self.message(data.channel_id, f"Last action was done less than 8h ago! Remaining Cooldown: {timedelta(hours=8) - cooldown}")
     s.commit()
+
+@register(group='System', help='Creates roles', alias='', category='')
+async def createHalloweenRoles(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    roles = ["Human",
+    "Vampire", "Werewolf",
+    "Zombie", "Vampire Hunter",
+    "Huntsman", "Zombie Slayer"]
+    s = self.db.sql.session()
+    for name in roles:
+        role = await self.create_guild_role(data.guild_id, name, 0, None, False, False, "Created Role for Halloween Minigame")
+        s.merge(db.HalloweenRoles(data.guild_id, role.name, role.id))
+    s.commit()
+
+@register(group='System', help='Adds roles', alias='', category='')
+async def addRoles(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    s = self.db.sql.session()
+    roles = s.query(db.HalloweenRoles).filter(db.HalloweenRoles.GuildID == data.guild_id).all()
+    roles = {i.RoleName: i.RoleID for i in roles}
+    users = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
+    for user in users:
+        await self.add_guild_member_role(data.guild_id, user.UserID, roles.get(user.CurrentClass, ""), "Halloween Minigame")
