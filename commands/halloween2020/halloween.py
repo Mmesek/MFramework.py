@@ -46,9 +46,15 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                 await self.add_guild_member_role(data.guild_id, data.author.id, role_id, "Halloween Minigame")
             await self.message(data.channel_id, "Welcome to the Dark Side™. You can now use `bite` command.")
         elif _class.lower() in ['vampire hunter', 'huntsman', 'zombie slayer']:
-            self_user = db.HalloweenClasses(data.guild_id, data.author.id)
+            _new = False
+            if self_user is None:
+                _new = True
+                self_user = db.HalloweenClasses(data.guild_id, data.author.id)
             self_user.CurrentClass = _class.title()
-            self.db.sql.add(self_user)
+            if not _new:
+                s.merge(self_user)
+            else:
+                self.db.sql.add(self_user)
             if roles != {}:
                 role_id = roles.get(self_user.CurrentClass, "")
                 await self.add_guild_member_role(data.guild_id, data.author.id, role_id, "Halloween Minigame")
