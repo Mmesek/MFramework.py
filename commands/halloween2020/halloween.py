@@ -214,22 +214,22 @@ async def leaderboard(self, *args, data, language, **kwargs):
     cureboard = "```md\nCures | User\n============================\n{}```"
     if vampireStats != []:
         vampireStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Vampires", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in vampireStats[:10])))
+        e.addField("Vampire Bites", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in vampireStats[:10])))
     if werewolfStats != []:
         werewolfStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Werewolves", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in werewolfStats[:10])))
+        e.addField("Werewolf Bites", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in werewolfStats[:10])))
     if zombieStats != []:
         zombieStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Zombies", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in zombieStats[:10])))
+        e.addField("Zombie Bites", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in zombieStats[:10])))
     if vampireHunterStats != []:
         vampireHunterStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Vampire Hunters", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in vampireHunterStats[:10])))
+        e.addField("Vampire Hunter Cures", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in vampireHunterStats[:10])))
     if huntsmanStats != []:
         huntsmanStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Huntsmans", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in huntsmanStats[:10])))
+        e.addField("Huntsman Cures", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in huntsmanStats[:10])))
     if zombieSlayerStats != []:
         zombieSlayerStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Zombie Slayers", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in zombieSlayerStats[:10])))
+        e.addField("Zombie Slayer Cures", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in zombieSlayerStats[:10])))
 
     e.setDescription(f"Total Bites: {totalBites}\n"+'\n'.join('{}s: {}'.format(i if i != 'Werewolf' else 'Werewolve', totalPopulation[i]) for i in totalPopulation))
     await self.embed(data.channel_id, "", e.embed)
