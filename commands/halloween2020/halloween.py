@@ -248,7 +248,7 @@ async def leaderboard(self, *args, data, language, **kwargs):
 async def hhistory(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
-    history = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.UserID == db.author.id).all()
+    history = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.UserID == data.author.id).all()
     s = ""
     for x, entry in enumerate(history):
         try:
