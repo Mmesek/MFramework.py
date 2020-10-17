@@ -41,6 +41,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
             self_user = db.HalloweenClasses(data.guild_id, data.author.id)
             self_user.CurrentClass = _class.capitalize()
             self.db.sql.add(self_user)
+            s.add(db.HalloweenLog(data.guild_id, self_user.UserID, "Human", self_user.CurrentClass, self_user.UserID, datetime.now(tz=timezone.utc)))
             if roles != {}:
                 role_id = roles.get(self_user.CurrentClass, "")
                 await self.add_guild_member_role(data.guild_id, data.author.id, role_id, "Halloween Minigame")
@@ -55,6 +56,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                 s.merge(self_user)
             else:
                 self.db.sql.add(self_user)
+            s.add(db.HalloweenLog(data.guild_id, self_user.UserID, "Human", self_user.CurrentClass, self_user.UserID, datetime.now(tz=timezone.utc)))
             if roles != {}:
                 role_id = roles.get(self_user.CurrentClass, "")
                 await self.add_guild_member_role(data.guild_id, data.author.id, role_id, "Halloween Minigame")
@@ -102,6 +104,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                             self.db.sql.add(target_user)
                         else:
                             s.merge(target_user)
+                        s.add(db.HalloweenLog(data.guild_id, target_user.UserID, previousClass, target_user.CurrentClass, self_user.UserID, self_user.LastAction))
                         if roles != {}:
                             role_id = roles.get(previousClass, "")
                             await self.remove_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
@@ -132,6 +135,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                             self_user.ZombieSlayerStats += 1
                         target_user.TurnCount += 1
                         s.merge(target_user)
+                        s.add(db.HalloweenLog(data.guild_id, target_user.UserID, previousClass, target_user.CurrentClass, self_user.UserID, self_user.LastAction))
                         if roles != {}:
                             role_id = roles.get(previousClass, "")
                             await self.remove_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
@@ -238,4 +242,28 @@ async def leaderboard(self, *args, data, language, **kwargs):
         e.addField("Zombie Slayer Cures", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in zombieSlayerStats[:10])))
 
     e.setDescription(f"Total Bites/Cures: {totalBites}\n"+'\n'.join('{}s: {}'.format(i if i != 'Werewolf' else 'Werewolve', totalPopulation[i]) for i in totalPopulation))
+    await self.embed(data.channel_id, "", e.embed)
+
+@register(group='Global', help='Shows bites/cures history', alias='', category='')
+async def hhistory(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    session = self.db.sql.session()
+    history = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.UserID == db.author.id).all()
+    s = ""
+    for x, entry in enumerate(history):
+        try:
+            u = self.cache[data.guild_id].members[entry.ByUser].user.username
+        except:
+            try:
+                u = await self.get_guild_member(data.guild_id, entry.ByUser)
+            except:
+                continue
+            self.cache[data.guild_id].members[entry.ByUser] = u
+            u = u.user.username
+        i = f'\n`[{entry.Timestamp.strftime("%Y/%m/%d %H:%M")}]` Turned from `{entry.FromClass}` into `{entry.ToClass}` by `{u}`'
+        if len(i) + len(s) > 2048:
+            break
+        else:
+            s += i
+    e = Embed().setDescription(s)
     await self.embed(data.channel_id, "", e.embed)

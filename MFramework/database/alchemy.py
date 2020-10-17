@@ -427,3 +427,20 @@ class HalloweenRoles(Base):
         self.GuildID = GuildID
         self.RoleName = RoleName
         self.RoleID = RoleID
+
+class HalloweenLog(Base):
+    __tablename__ = 'HalloweenLog'
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    UserID = Column(BigInteger, primary_key=True)
+    FromClass = Column(String)
+    ToClass = Column(String)
+    ByUser = Column(BigInteger, primary_key=True)
+    Timestamp = Column(TIMESTAMP(True), primary_key=True)
+
+    def __init__(self, GuildID, UserID, FromClass, ToClass, ByUser, Timestamp):
+        self.GuildID = GuildID
+        self.UserID = UserID
+        self.FromClass = FromClass
+        self.ToClass = ToClass
+        self.ByUser = ByUser
+        self.Timestamp = Timestamp
