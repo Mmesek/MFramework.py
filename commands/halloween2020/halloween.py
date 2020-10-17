@@ -244,7 +244,7 @@ async def leaderboard(self, *args, data, language, **kwargs):
     e.setDescription(f"Total Bites/Cures: {totalBites}\n"+'\n'.join('{}s: {}'.format(i if i != 'Werewolf' else 'Werewolve', totalPopulation[i]) for i in totalPopulation))
     await self.embed(data.channel_id, "", e.embed)
 
-@register(group='Global', help='Shows bites/cures history', alias='', category='')
+@register(group='Global', help='Shows bites/cures history', alias='bitehistory, curehistory', category='')
 async def hhistory(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
@@ -265,5 +265,26 @@ async def hhistory(self, *args, data, language, **kwargs):
             break
         else:
             s += i
-    e = Embed().setDescription(s)
+    e = Embed()
+    if s != '':
+        e.setDescription(s)
+    my_bites = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.ByUser == data.author.id).all()
+    s = ""
+    for x, entry in enumerate(my_bites):
+        try:
+            u = self.cache[data.guild_id].members[entry.UserID].user.username
+        except:
+            try:
+                u = await self.get_guild_member(data.guild_id, entry.UserID)
+            except:
+                continue
+            self.cache[data.guild_id].members[entry.UserID] = u
+            u = u.user.username
+        i = f'\n`[{entry.Timestamp.strftime("%Y/%m/%d %H:%M")}]` Turned `{u}` from `{entry.FromClass}` into `{entry.ToClass}`'
+        if len(i) + len(s) > 1024:
+            break
+        else:
+            s += i
+    if s != '':
+        e.addField("Your actions", s)
     await self.embed(data.channel_id, "", e.embed)
