@@ -215,7 +215,7 @@ async def leaderboard(self, *args, data, language, **kwargs):
             totalPopulation[v.CurrentClass] = 0
         totalPopulation[v.CurrentClass] += 1
         if v.TurnCount > 0:
-            totalBites += 1
+            totalBites += v.TurnCount
     biteboard = "```md\nBites | User\n============================\n{}```"
     cureboard = "```md\nCures | User\n============================\n{}```"
     if vampireStats != []:
@@ -237,5 +237,5 @@ async def leaderboard(self, *args, data, language, **kwargs):
         zombieSlayerStats.sort(key=lambda i: i[1], reverse=True)
         e.addField("Zombie Slayer Cures", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in zombieSlayerStats[:10])))
 
-    e.setDescription(f"Total Bites: {totalBites}\n"+'\n'.join('{}s: {}'.format(i if i != 'Werewolf' else 'Werewolve', totalPopulation[i]) for i in totalPopulation))
+    e.setDescription(f"Total Bites/Cures: {totalBites}\n"+'\n'.join('{}s: {}'.format(i if i != 'Werewolf' else 'Werewolve', totalPopulation[i]) for i in totalPopulation))
     await self.embed(data.channel_id, "", e.embed)
