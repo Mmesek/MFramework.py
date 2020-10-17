@@ -28,7 +28,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
     self_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == data.author.id).first()
     if self_user is not None and self_user.LastAction is not None and ' '.join(class_or_user) == 'cooldown':
         cooldown = datetime.now(tz=timezone.utc) - self_user.LastAction
-        return await self.message(data.channel_id, f"Remaining Cooldown: {timedelta(hours=8) - cooldown}")
+        return await self.message(data.channel_id, f"Remaining Cooldown: {timedelta(hours=4) - cooldown}")
     roles = s.query(db.HalloweenRoles).filter(db.HalloweenRoles.GuildID == data.guild_id).all()
     roles = {i.RoleName: i.RoleID for i in roles}
     if self_user is None or self_user.CurrentClass == 'Human':
@@ -73,7 +73,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
     elif cmd in ['enlist']:
         await self.message(data.channel_id, "You have to be human to use that!")
     else:
-        if self_user.LastAction == None or (datetime.now(tz=timezone.utc) - self_user.LastAction > timedelta(hours=8)):
+        if self_user.LastAction == None or (datetime.now(tz=timezone.utc) - self_user.LastAction > timedelta(hours=4)):
             if class_or_user != ():
                 target = parseMention(class_or_user[0])
                 if target.isdigit():
@@ -152,7 +152,7 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
                 await self.message(data.channel_id, f"You can't do that!")
         else:
             cooldown = datetime.now(tz=timezone.utc) - self_user.LastAction
-            await self.message(data.channel_id, f"Last action was done less than 8h ago! Remaining Cooldown: {timedelta(hours=8) - cooldown}")
+            await self.message(data.channel_id, f"Last action was done less than 4h ago! Remaining Cooldown: {timedelta(hours=4) - cooldown}")
     s.commit()
 
 @register(group='System', help='Creates roles', alias='', category='')
