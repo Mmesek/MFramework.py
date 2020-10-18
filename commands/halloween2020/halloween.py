@@ -248,7 +248,7 @@ async def leaderboard(self, *args, data, language, **kwargs):
 async def hhistory(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
-    history = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.UserID == data.author.id).all()
+    history = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.UserID == data.author.id).order_by(db.HalloweenLog.Timestamp.desc()).all()
     s = ""
     for x, entry in enumerate(history):
         try:
@@ -268,7 +268,7 @@ async def hhistory(self, *args, data, language, **kwargs):
     e = Embed()
     if s != '':
         e.setDescription(s)
-    my_bites = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.ByUser == data.author.id).all()
+    my_bites = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.ByUser == data.author.id).order_by(db.HalloweenLog.Timestamp.desc()).all()
     s = ""
     for x, entry in enumerate(my_bites):
         try:
