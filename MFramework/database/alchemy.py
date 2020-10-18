@@ -420,7 +420,7 @@ class HalloweenClasses(Base):
 class HalloweenRoles(Base):
     __tablename__ = 'HalloweenRoles'
     GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
-    RoleName = Column(String)
+    RoleName = Column(String, primary_key=True)
     RoleID = Column(BigInteger)
 
     def __init__(self, GuildID, RoleName, RoleID):
