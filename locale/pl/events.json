@@ -1,0 +1,106 @@
+{
+    "halloween":{
+        "cmd_bite":"ugryź",
+        "cmd_cure":"wylecz",
+        "cmd_leaderboard":"tabela",
+        "cmd_history":"historia",
+        "cmd_enlist":"dołącz",
+        "cmd_drink":"wypij",
+        "bite":{
+            "one":"ugryzienie",
+            "many":"ugryzienia"
+        },
+        "cure":{
+            "one":"wyleczenie",
+            "many":"wyleczenia"
+        },
+        "human":{
+            "one":"człowiek",
+            "many":"ludzie"
+        },
+        "vampire":{
+            "one":"wampir",
+            "many":"wampiry"
+        },
+        "werewolf":{
+            "one":"wilkołak",
+            "many":"wilkołaki"
+        },
+        "zombie":{
+            "one":"zombie",
+            "many":"zombie"
+        },
+        "vampire_hunter":{
+            "one":"łowca wampirów",
+            "many":"łowcy wampirów"
+        },
+        "huntsman":{
+            "one":"łowczy",
+            "many":"łowcy"
+        },
+        "zombieSlayer":{
+            "one":"zaklinacz",
+            "many":"zaklinaczy"
+        },
+        "denominator_human":{
+            "one":"człowieka",
+            "many":"ludzi"
+        },
+        "denominator_vampire":{
+            "one":"wampira",
+            "many":"wampirów"
+        },
+        "denominator_werewolf":{
+            "one":"wilkołaka",
+            "many":"wilkołaków"
+        },
+        "denominator_zombie":{
+            "one":"zombie",
+            "many":"zombie"
+        },
+        "denominator_vampireHunter":{
+            "one":"łowcy wampirów",
+            "many":"łowców wampirów"
+        },
+        "denominator_huntsman":{
+            "one":"łowczego",
+            "many":"łowczych"
+        },
+        "denominator_zombieSlayer":{
+            "one":"zaklinacza",
+            "many":"zaklinaczy"
+        },
+        "cant_enlist":"Musisz być człowiekiem aby to zrobić!",
+        "cant_drink":"Przykro mi. Drinki są dostępne tylko dla świeżych krwii",
+        "cant_bite":"Nie czynisz tak bestialiskich rzeczy! Leczysz innych z tego!",
+        "cant_cure":"Wyleczyć? Wyleczyć z czego? Gryziesz innych!",
+        "cant_generic":"Nie możesz tego zrobić!",
+        "success_enlist":"Z Powodzeniem dołączyłeś w szeregi łowców. Od teraz możesz korzystać z komendy `wylecz`.",
+        "success_drink":"Witamy w Siłach Mroku™. Od teraz możesz korzystać z komendy `ugryź`.",
+        "success_bite":"Z Powodzeniem zamieniono <@%{target}> w %{currentClass}",
+        "success_cure":"Z Powodzeniem wyleczono <@%{target}> z %{previousClass}",
+        "success_generic":"",
+        "error_enlist":"",
+        "error_drink":"",
+        "error_bite":"",
+        "error_cure":"Podany użytkownik nie jest %{currentClass}",
+        "error_generic":"",
+        "availableClasses":"Dostępne klasy:\n- Vampire Hunter\n- Huntsman\n- Zombie Slayer",
+        "availableDrinks":"Dostępne drinki:\n- Krwawo Czerwone Wino (Zostań Wampirem)\n- Moonshine (Zostań Wilkołakiem)\n- Wódka \"Móóózgii?\" (Zostań Zombie)",
+        "outsideExpertise":"Ta akcja jest poza twoja eksperyzą",
+        "targetImmune":"Twój cel jest na to odporny",
+        "remainingCooldown":"Pozostały Cooldown: %{cooldown}",
+        "cooldownFinished":"Cooldown skończony.",
+        "cooldown":"Ostatnia akcja została wykonana %{elapsed} temu! Pozostały Cooldown: %{cooldown}",
+        "turnedHistory":"\n`[%{timestamp}]` Zamieniono z `%{fromClass}` w `%{toClass}` przez `%{u}`",
+        "turnedVictims":"\n`[%{timestamp}]` Zamieniono `%{u}` z `%{fromClass}` w `%{toClass}`",
+        "Bitesboard":"Tabela Ugryzień",
+        "leaderboardBites":"Ugryzienia | Użytkownik",
+        "leaderboardCures":"Wyleczenia | Użytkownik",
+        "drink_wine":"Krwawo Czerwone Wino",
+        "drink_moonshine":"Moonshine",
+        "drink_vodka":"Wódka \"Móóózgii?\"",
+        "your_actions":"Twoja Akcje",
+        "your_history":"Twoja Historia"
+    }
+}
