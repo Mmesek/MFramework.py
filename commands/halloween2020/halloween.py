@@ -1,7 +1,7 @@
 from MFramework.commands import register
 from MFramework.database import alchemy as db
 from datetime import datetime, timedelta, timezone
-from MFramework.utils.utils import parseMention
+from MFramework.utils.utils import parseMention, tr
 immune_table = {
     "Vampire": "Vampire Hunter",
     "Werewolf": "Huntsman",
@@ -19,8 +19,8 @@ drinks = {
     "vodka": "Zombie",
     'vodka braaaainzz?':"Zombie"    
 }
-@register(group='Global', help='HALLOWEEN COMMAND', alias='bite, drink, cure, enlist', category='')
-async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
+@register(group='Global', help='HALLOWEEN COMMAND', alias='', category='', notImpl=True)
+async def _halloween(self, *class_or_user, data, language, cmd, **kwargs):
     '''Extended description to use with detailed help command'''
     if ' '.join(class_or_user) == 'help':
         await self.message(data.channel_id, 'Available commands are:\nenlist [class] - Join Hunters\ndrink [drink] - Drink an elixir to join the Dark Side™\nbite [user] - Bite someone!\ncure [user] - Bring them back to The Light!')
@@ -155,6 +155,170 @@ async def halloween(self, *class_or_user, data, language, cmd, **kwargs):
             await self.message(data.channel_id, f"Last action was done less than 4h ago! Remaining Cooldown: {timedelta(hours=4) - cooldown}")
     s.commit()
 
+def get_user_and_roles(data, s):
+    self_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == data.author.id).first()
+    roles = s.query(db.HalloweenRoles).filter(db.HalloweenRoles.GuildID == data.guild_id).all()
+    roles = {i.RoleName: i.RoleID for i in roles}
+    return self_user, roles
+
+def get_cooldown(user):
+    if user is not None and user.LastAction is not None:
+        return datetime.now(tz=timezone.utc) - user.LastAction
+    return 0
+
+async def join_logic(self, data, _class, classes, first_only=False):
+    s = self.db.sql.session()
+    self_user, roles = get_user_and_roles(data, s)
+    if first_only and self_user is not None:
+        return None
+    if self_user is None or self_user.CurrentClass == 'Human':
+        _class = ' '.join(_class) if type(_class) is tuple else _class
+        if _class.lower() in classes:
+            _new = False
+            if self_user is None:
+                _new = True
+                self_user = db.HalloweenClasses(data.guild_id, data.author.id)
+            self_user.CurrentClass = _class.title()
+            if not _new:
+                s.merge(self_user)
+            else:
+                self.db.sql.add(self_user)
+            s.add(db.HalloweenLog(data.guild_id, self_user.UserID, "Human", self_user.CurrentClass, self_user.UserID, datetime.now(tz=timezone.utc)))
+            if roles != {}:
+                role_id = roles.get(self_user.CurrentClass, "")
+                await self.add_guild_member_role(data.guild_id, data.author.id, role_id, "Halloween Minigame")
+            s.commit()
+            return True
+        return None
+    return False
+
+async def turning_logic(self, data, target, side, hunters=False, action_cooldown=timedelta(hours=4)):
+    s = self.db.sql.session()
+    self_user, roles = get_user_and_roles(data, s)
+    if self_user.LastAction != None:
+        cooldown = get_cooldown(self_user)
+    else:
+        cooldown = 0
+    if self_user.LastAction == None or (cooldown > action_cooldown):
+        target = parseMention(target[0])
+        if target.isdigit():
+            target = int(target)
+        else:
+            return None
+        target_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == target).first()
+        if self_user.CurrentClass in side:
+            if (target_user is not None and target_user.CurrentClass not in side) or target_user is None:
+                _target_user = False
+                if target_user is None:
+                    target_user = db.HalloweenClasses(data.guild_id, target, 'Human')
+                    _target_user = None
+                
+                if (
+                    (hunters and immune_table.get(target_user.CurrentClass) == self_user.CurrentClass) or
+                    (hunters is False and immune_table.get(target_user.CurrentClass, '') != self_user.CurrentClass)
+                ):
+                    previousClass = target_user.CurrentClass
+                    target_user.CurrentClass = self_user.CurrentClass if not hunters else 'Human'
+                    target_user.LastUser = self_user.UserID
+                    self_user.LastVictim = target_user.UserID
+                    self_user.LastAction = datetime.now(tz=timezone.utc)
+                    if self_user.CurrentClass == 'Vampire':
+                        self_user.VampireStats += 1
+                    elif self_user.CurrentClass == 'Werewolf':
+                        self_user.WerewolfStats += 1
+                    elif self_user.CurrentClass == 'Zombie':
+                        self_user.ZombieStats += 1
+                    elif self_user.CurrentClass == 'Vampire Hunter':
+                        self_user.VampireHunterStats += 1
+                    elif self_user.CurrentClass == 'Huntsman':
+                        self_user.HuntsmanStats += 1
+                    elif self_user.CurrentClass == 'Zombie Slayer':
+                        self_user.ZombieSlayerStats += 1
+                    target_user.TurnCount += 1
+                    if _target_user is None:
+                        self.db.sql.add(target_user)
+                    else:
+                        s.merge(target_user)
+                    s.add(db.HalloweenLog(data.guild_id, target_user.UserID, previousClass, target_user.CurrentClass, self_user.UserID, self_user.LastAction))
+                    s.commit()
+                    if roles != {}:
+                        role_id = roles.get(previousClass, "")
+                        await self.remove_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
+                        role_id = roles.get(self_user.CurrentClass, "")
+                        await self.add_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
+                    return (True, target, previousClass, target_user.CurrentClass, cooldown)
+                return None
+        return (False, None, None, self_user.CurrentClass, cooldown)
+    return (1, None, None, None, cooldown)
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def enlist(self, *_class, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    r = join_logic(self, data, _class, ['vampire hunter', 'huntsman', 'zombie slayer'])
+    if r:
+        await self.message(data.channel_id, tr("events.halloween.success_enlist", language))
+    elif r is None:
+        await self.message(data.channel_id, tr("events.halloween.availableClasses", language))#'Available classes:\n- Vampire Hunter\n- Huntsman\n- Zombie Slayer')
+    else:
+        await self.message(data.channel_id, tr("events.halloween.cant_enlist", language))
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def drink(self, *drink, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    _class = ' '.join(drink)
+    if _class.lower() in drinks:
+        _class = drinks.get(_class.lower())
+    r = join_logic(self, data, _class, ['vampire', 'werewolf', 'zombie'], True)
+    if r:
+        await self.message(data.channel_id, tr("events.halloween.success_drink", language))
+    elif r is False:
+        await self.message(data.channel_id, tr("events.halloween.availableDrinks", language))#'Available drinks:\n- Bloody Red Wine (Become Vampire)\n- Moonshine (Become Werewolf)\n- Vodka "Braaaainzz?" (Become Zombie)')
+    else:
+        await self.message(data.channel_id, tr("events.halloween.cant_drink", language))
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def bite(self, *target, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    r = turning_logic(self, data, target, monsters)
+    if type(r) is tuple:
+        target = r[1]
+        newClass = r[3]
+        cooldown = r[4]
+        r = r[0]
+    if r:
+        await self.message(data.channel_id, tr("events.halloween.success_bite", language, target=target, currentClass=newClass), allowed_mentions={"parse": []})
+    elif r == 1:
+        cooldown = timedelta(hours=4) - cooldown
+        if cooldown.total_seconds < 0:
+            await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
+        await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed="4h", cooldown=cooldown))
+    elif r is None:
+        await self.message(data.channel_id, tr("events.halloween.targetImmune", language))
+    else:
+        await self.message(data.channel_id, tr("events.halloween.targetImmune", language))
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def cure(self, *target, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    r = turning_logic(self, data, target, hunters, True)
+    if type(r) is tuple:
+        target = r[1]
+        oldClass = r[2]
+        currentClass = r[3]
+        cooldown = r[4]
+        r = r[0]
+    if r:
+        await self.message(data.channel_id, tr("events.halloween.success_cure", language, target=target, previousClass=oldClass), allowed_mentions={"parse": []})
+    elif r == 1:
+        cooldown = timedelta(hours=4) - cooldown
+        if cooldown.total_seconds < 0:
+            await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
+        await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed="4h", cooldown=cooldown))
+    elif r is None:
+        await self.message(data.channel_id, tr("events.halloween.error_cure", language, currentClass=immune_table.get(currentClass)))
+    else:
+        await self.message(data.channel_id, tr("events.halloween.error_cure", language, currentClass=immune_table.get(currentClass)))
+
 @register(group='System', help='Creates roles', alias='', category='')
 async def createHalloweenRoles(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
@@ -244,6 +408,19 @@ async def leaderboard(self, *args, data, language, **kwargs):
     e.setDescription(f"Total Bites/Cures: {totalBites}\n"+'\n'.join('{}s: {}'.format(i if i != 'Werewolf' else 'Werewolve', totalPopulation[i]) for i in totalPopulation))
     await self.embed(data.channel_id, "", e.embed)
 
+async def get_usernames(self, data, user_id):
+    try:
+        u = self.cache[data.guild_id].members[user_id].user.username
+    except:
+        try:
+            u = await self.get_guild_member(data.guild_id, user_id)
+        except:
+            return None
+        self.cache[data.guild_id].members[user_id] = u
+        u = u.user.username
+    return u
+
+
 @register(group='Global', help='Shows bites/cures history', alias='bitehistory, curehistory', category='')
 async def hhistory(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
@@ -251,15 +428,9 @@ async def hhistory(self, *args, data, language, **kwargs):
     history = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.UserID == data.author.id).order_by(db.HalloweenLog.Timestamp.desc()).all()
     s = ""
     for x, entry in enumerate(history):
-        try:
-            u = self.cache[data.guild_id].members[entry.ByUser].user.username
-        except:
-            try:
-                u = await self.get_guild_member(data.guild_id, entry.ByUser)
-            except:
-                continue
-            self.cache[data.guild_id].members[entry.ByUser] = u
-            u = u.user.username
+        u = await get_usernames(self, data, entry.ByUser)
+        if u is None:
+            continue
         i = f'\n`[{entry.Timestamp.strftime("%Y/%m/%d %H:%M")}]` Turned from `{entry.FromClass}` into `{entry.ToClass}` by `{u}`'
         if len(i) + len(s) > 2048:
             break
@@ -271,15 +442,9 @@ async def hhistory(self, *args, data, language, **kwargs):
     my_bites = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.ByUser == data.author.id).order_by(db.HalloweenLog.Timestamp.desc()).all()
     s = ""
     for x, entry in enumerate(my_bites):
-        try:
-            u = self.cache[data.guild_id].members[entry.UserID].user.username
-        except:
-            try:
-                u = await self.get_guild_member(data.guild_id, entry.UserID)
-            except:
-                continue
-            self.cache[data.guild_id].members[entry.UserID] = u
-            u = u.user.username
+        u = await get_usernames(self, data, entry.UserID)
+        if u is None:
+            continue
         i = f'\n`[{entry.Timestamp.strftime("%Y/%m/%d %H:%M")}]` Turned `{u}` from `{entry.FromClass}` into `{entry.ToClass}`'
         if len(i) + len(s) > 1024:
             break
