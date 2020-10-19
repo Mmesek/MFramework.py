@@ -207,7 +207,7 @@ async def stats(self, *args, data, language, **kwargs):
         c = commandList[group]
         cmds += f"\n`{group}`: {len(c)-l}"
     cmds += f"\n`Total`: {len(commandList['System'])}"
-    e.addField("Registered Commands", cmds)
-    
-    e.setDescription(msg)
+
+    e.addField("Events Received", msg, True)
+    e.addField("Registered Commands", cmds, True)    
     await self.embed(data.channel_id, "", e.embed)
