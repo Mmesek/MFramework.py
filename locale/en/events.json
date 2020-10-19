@@ -1,0 +1,106 @@
+{
+    "halloween":{
+        "cmd_bite":"bite",
+        "cmd_cure":"cure",
+        "cmd_leaderboard":"leaderboard",
+        "cmd_history":"history",
+        "cmd_enlist":"enlist",
+        "cmd_drink":"drink",
+        "bite":{
+            "one":"bite",
+            "many":"bites"
+        },
+        "cure":{
+            "one":"cure",
+            "many":"cures"
+        },
+        "human":{
+            "one":"human",
+            "many":"humans"
+        },
+        "vampire":{
+            "one":"vampire",
+            "many":"vampires"
+        },
+        "werewolf":{
+            "one":"werewolf",
+            "many":"werewolves"
+        },
+        "zombie":{
+            "one":"zombie",
+            "many":"zombies"
+        },
+        "vampire_hunter":{
+            "one":"vampire hunter",
+            "many":"vampire hunters"
+        },
+        "huntsman":{
+            "one":"huntsman",
+            "many":"huntsmen"
+        },
+        "zombieSlayer":{
+            "one":"zombie slayer",
+            "many":"zombie slayers"
+        },
+        "denominator_human":{
+            "one":"human's",
+            "many":"human's"
+        },
+        "denominator_vampire":{
+            "one":"vampire's",
+            "many":"vampires's"
+        },
+        "denominator_werewolf":{
+            "one":"werewolf's",
+            "many":"werewolves's"
+        },
+        "denominator_zombie":{
+            "one":"zombie's",
+            "many":"zombie's"
+        },
+        "denominator_vampireHunter":{
+            "one":"vampire hunter's",
+            "many":"vampire hunters's"
+        },
+        "denominator_huntsman":{
+            "one":"huntsman's",
+            "many":"huntsmen's"
+        },
+        "denominator_zombieSlayer":{
+            "one":"zombie slayer's",
+            "many":"zombie slayers's"
+        },
+        "cant_enlist":"You have to be human to use that!",
+        "cant_drink":"Sorry. Drinks are only available to freshbloods",
+        "cant_bite":"You are not doing such savage actions! You cure others from that!",
+        "cant_cure":"Cure? Cure from what? You bite others!",
+        "cant_generic":"You can't do that!",
+        "success_enlist":"You have successfully joined ranks of hunters. You can now use `cure` command.",
+        "success_drink":"Welcome to the Dark Side™. You can now use `bite` command.",
+        "success_bite":"Successfully turned <@%{target}> into %{currentClass}",
+        "success_cure":"Successfully cured <@%{target}> from %{previousClass}",
+        "success_generic":"",
+        "error_enlist":"",
+        "error_drink":"",
+        "error_bite":"",
+        "error_cure":"Provided user is not %{currentClass}",
+        "error_generic":"",
+        "availableClasses":"Available classes:\n- Vampire Hunter\n- Huntsman\n- Zombie Slayer",
+        "availableDrinks":"Available drinks:\n- Bloody Red Wine (Become Vampire)\n- Moonshine} (Become Werewolf)\n- Vodka \"Braaaainzz?\" (Become Zombie)",
+        "outsideExpertise":"This action is outside your expertise",
+        "targetImmune":"Your target is immune to that",
+        "remainingCooldown":"Remaining Cooldown: %{cooldown}",
+        "cooldownFinished":"Cooldown finished.",
+        "cooldown":"Last action was done less than %{elapsed} ago! Remaining Cooldown: %{cooldown}",
+        "turnedHistory":"\n`[%{timestamp}]` Turned from `%{fromClass}` into `%{toClass}` by `%{u}`",
+        "turnedVictims":"\n`[%{timestamp}]` Turned `%{u}` from `%{fromClass}` into `%{toClass}`",
+        "Bitesboard":"Bitesboard",
+        "leaderboardBites":"Bites | User",
+        "leaderboardCures":"Cures | User",
+        "drink_wine":"Bloody Red Wine",
+        "drink_moonshine":"Moonshine",
+        "drink_vodka":"Vodka \"Braaaainzz?\"",
+        "your_actions":"Your actions",
+        "your_history":"Your History"
+    }
+}
