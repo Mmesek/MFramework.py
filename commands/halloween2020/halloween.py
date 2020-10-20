@@ -222,13 +222,27 @@ async def turning_logic(self, data, target, side, hunters=False, action_cooldown
                     (hunters and immune_table.get(target_user.CurrentClass) == self_user.CurrentClass) or
                     (hunters is False and immune_table.get(target_user.CurrentClass, '') != self_user.CurrentClass)
                 ):
+                    timestamp = datetime.now(tz=timezone.utc)
+                    if not skip_cooldown:
+                        self_user.LastAction = timestamp
+                    if hunters is False and target_user.CurrentClass != 'Human':
+                        users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
+                        others = 0
+                        _current_race = 0
+                        for i in users:
+                            if i.CurrentClass == self_user.CurrentClass:
+                                _current_race += 1
+                            elif i.CurrentClass in monsters:
+                                others +=1
+                        if others // 2 < _current_race:
+                            difference = _current_race - others // 2
+                            roll = SystemRandom().randint(0, 25)
+                            if roll < difference:
+                                return -2
                     previousClass = target_user.CurrentClass
                     target_user.CurrentClass = self_user.CurrentClass if not hunters else 'Human'
                     target_user.LastUser = self_user.UserID
                     self_user.LastVictim = target_user.UserID
-                    timestamp = datetime.now(tz=timezone.utc)
-                    if not skip_cooldown:
-                        self_user.LastAction = timestamp
                     if self_user.CurrentClass == 'Vampire':
                         self_user.VampireStats += 1
                     elif self_user.CurrentClass == 'Werewolf':
@@ -303,6 +317,8 @@ async def bite(self, *target, data, language, **kwargs):
         await self.message(data.channel_id, tr("events.halloween.targetImmune", language))
     elif r == -1:
         await self.message(data.channel_id, tr("events.halloween.cant_bite", language))
+    elif r == -2:
+        await self.message(data.channel_id, tr("events.halloween.failed_bite", language))
     else:
         await self.message(data.channel_id, tr("events.halloween.error_generic", language))
 

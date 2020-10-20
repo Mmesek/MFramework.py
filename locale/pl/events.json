@@ -84,6 +84,7 @@
         "success_defend":"Zaprzyjaźniony Łowca jest chroniony przez najbliższe %{duration} minut",
         "success_betray":"Udało się przekonać do zdrady i zostania łowcą.",
         "success_generic":"",
+        "failed_bite":"Nie udało się ugryźć ofiary!",
         "error_enlist":"",
         "error_drink":"",
         "error_bite":"",

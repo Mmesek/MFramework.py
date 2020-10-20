@@ -84,6 +84,7 @@
         "success_defend":"Provided user is protected for next %{duration} minutes",
         "success_betray":"Successfuly convinced them to betray their kind and join hunters",
         "success_generic":"",
+        "failed_bite":"Failed to bite the victim!",
         "error_enlist":"",
         "error_drink":"",
         "error_bite":"",
