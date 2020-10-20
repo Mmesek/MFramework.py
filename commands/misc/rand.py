@@ -438,8 +438,11 @@ async def tuning(self, *tuning, data, language, **kwargs):
     final = ""
     for note in tuning:
         n = base.index(note)
-        final += '\n' + ' | '.join([i+' ' if len(i) == 1 else i for i in base[n:] + base[:n]])
-    await self.message(data.channel_id, f"```{final}```")
+        final += '\n' + ' | '.join([i + ' ' if len(i) == 1 else i for i in base[n:] + base[:n+1]])
+    fret_numbers = ""
+    fret_numbers += ' | '.join([str(i)+' ' if len(str(i)) == 1 else str(i) for i in range(len(base)+1)])
+    separator = '-' * len(fret_numbers)
+    await self.message(data.channel_id, f"```md\n{fret_numbers}\n{separator}{final}```")
 
 
 
