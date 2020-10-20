@@ -404,6 +404,9 @@ class HalloweenClasses(Base):
     LastUser = Column(BigInteger)
     LastVictim = Column(BigInteger)
     TurnCount = Column(Integer)
+    ActionCooldownEnd = Column(TIMESTAMP(True))
+    ProtectedBy = Column(BigInteger)
+    ProtectionEnds = Column(TIMESTAMP(True))
 
     def __init__(self, GuildID, UserID, CurrentClass='Human'):
         self.GuildID = GuildID
