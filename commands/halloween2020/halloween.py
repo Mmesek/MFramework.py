@@ -2,6 +2,7 @@ from MFramework.commands import register
 from MFramework.database import alchemy as db
 from datetime import datetime, timedelta, timezone
 from MFramework.utils.utils import parseMention, tr
+from random import SystemRandom
 immune_table = {
     "Vampire": "Vampire Hunter",
     "Werewolf": "Huntsman",
@@ -192,19 +193,23 @@ async def join_logic(self, data, _class, classes, first_only=False):
         return None
     return False
 
-async def turning_logic(self, data, target, side, hunters=False, action_cooldown=timedelta(hours=4)):
+async def turning_logic(self, data, target, side, hunters=False, action_cooldown=timedelta(hours=3), skip_cooldown=False):
     s = self.db.sql.session()
     self_user, roles = get_user_and_roles(data, s)
+    if self_user is None:
+        return None
+    if self_user.CurrentClass not in side:
+        return -1
     if self_user.LastAction != None:
         cooldown = get_cooldown(self_user)
     else:
         cooldown = 0
-    if self_user.LastAction == None or (cooldown > action_cooldown):
-        target = parseMention(target[0])
-        if target.isdigit():
+    if self_user.LastAction == None or (cooldown > action_cooldown) or skip_cooldown:
+        try:
+            target = parseMention(target[0])
             target = int(target)
-        else:
-            return None
+        except:
+            return (1, None, None, None, cooldown)
         target_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == target).first()
         if self_user.CurrentClass in side:
             if (target_user is not None and target_user.CurrentClass not in side) or target_user is None:
@@ -221,7 +226,9 @@ async def turning_logic(self, data, target, side, hunters=False, action_cooldown
                     target_user.CurrentClass = self_user.CurrentClass if not hunters else 'Human'
                     target_user.LastUser = self_user.UserID
                     self_user.LastVictim = target_user.UserID
-                    self_user.LastAction = datetime.now(tz=timezone.utc)
+                    timestamp = datetime.now(tz=timezone.utc)
+                    if not skip_cooldown:
+                        self_user.LastAction = timestamp
                     if self_user.CurrentClass == 'Vampire':
                         self_user.VampireStats += 1
                     elif self_user.CurrentClass == 'Werewolf':
@@ -239,7 +246,7 @@ async def turning_logic(self, data, target, side, hunters=False, action_cooldown
                         self.db.sql.add(target_user)
                     else:
                         s.merge(target_user)
-                    s.add(db.HalloweenLog(data.guild_id, target_user.UserID, previousClass, target_user.CurrentClass, self_user.UserID, self_user.LastAction))
+                    s.add(db.HalloweenLog(data.guild_id, target_user.UserID, previousClass, target_user.CurrentClass, self_user.UserID, timestamp))
                     s.commit()
                     if roles != {}:
                         role_id = roles.get(previousClass, "")
@@ -248,7 +255,7 @@ async def turning_logic(self, data, target, side, hunters=False, action_cooldown
                         await self.add_guild_member_role(data.guild_id, target, role_id, "Halloween Minigame")
                     return (True, target, previousClass, target_user.CurrentClass, cooldown)
                 return None
-        return (False, None, None, self_user.CurrentClass, cooldown)
+        return (-1, None, None, self_user.CurrentClass, cooldown)
     return (1, None, None, None, cooldown)
 
 @register(group='Global', help='Short description to use with help command', alias='', category='')
@@ -279,45 +286,150 @@ async def drink(self, *drink, data, language, **kwargs):
 @register(group='Global', help='Short description to use with help command', alias='', category='')
 async def bite(self, *target, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    r = turning_logic(self, data, target, monsters)
+    r = await turning_logic(self, data, target, monsters)
     if type(r) is tuple:
         target = r[1]
         newClass = r[3]
         cooldown = r[4]
         r = r[0]
-    if r:
+    if r is True:
         await self.message(data.channel_id, tr("events.halloween.success_bite", language, target=target, currentClass=newClass), allowed_mentions={"parse": []})
     elif r == 1:
-        cooldown = timedelta(hours=4) - cooldown
-        if cooldown.total_seconds < 0:
-            await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
+        cooldown = timedelta(hours=3) - cooldown
+        if cooldown.total_seconds() < 0:
+            return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
         await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed="4h", cooldown=cooldown))
     elif r is None:
         await self.message(data.channel_id, tr("events.halloween.targetImmune", language))
+    elif r == -1:
+        await self.message(data.channel_id, tr("events.halloween.cant_bite", language))
     else:
-        await self.message(data.channel_id, tr("events.halloween.targetImmune", language))
+        await self.message(data.channel_id, tr("events.halloween.error_generic", language))
 
 @register(group='Global', help='Short description to use with help command', alias='', category='')
 async def cure(self, *target, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    r = turning_logic(self, data, target, hunters, True)
+    r = await turning_logic(self, data, target, hunters, True, timedelta(hours=2))
     if type(r) is tuple:
         target = r[1]
         oldClass = r[2]
         currentClass = r[3]
         cooldown = r[4]
         r = r[0]
-    if r:
+    if r is True:
         await self.message(data.channel_id, tr("events.halloween.success_cure", language, target=target, previousClass=oldClass), allowed_mentions={"parse": []})
     elif r == 1:
-        cooldown = timedelta(hours=4) - cooldown
-        if cooldown.total_seconds < 0:
-            await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
+        cooldown = timedelta(hours=2) - cooldown
+        if cooldown.total_seconds() < 0:
+            return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
         await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed="4h", cooldown=cooldown))
     elif r is None:
         await self.message(data.channel_id, tr("events.halloween.error_cure", language, currentClass=immune_table.get(currentClass)))
+    elif r == -1:
+        await self.message(data.channel_id, tr("events.halloween.cant_cure", language))
     else:
-        await self.message(data.channel_id, tr("events.halloween.error_cure", language, currentClass=immune_table.get(currentClass)))
+        await self.message(data.channel_id, tr("events.halloween.error_generic", language))#, currentClass=immune_table.get(currentClass)))
+
+def get_user_id(user):
+    return int(parseMention(user[0]))
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def defend(self, *user, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    s = self.db.sql.session()
+    self_user, roles = get_user_and_roles(data, s)
+    if self_user is None or self_user.CurrentClass not in hunters:
+        return
+    if self_user.ActionCooldownEnd is not None:
+        if datetime.now(tz=timezone.utc) < self_user.ActionCooldownEnd:
+            cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
+            return await self.message(data.channel_id, tr("events.halloween.remainingCooldown", language, cooldown=cooldown))
+    target = get_user_id(user)
+    target_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == target).first()
+    if target_user.CurrentClass in hunters:
+        if target_user.ProtectionEnds is None or target_user.ProtectionEnds < datetime.now(tz=timezone.utc):
+            duration = SystemRandom().randint(5, 40)
+            delta = datetime.now(tz=timezone.utc) + timedelta(minutes=duration)
+            target_user.ProtectedBy = data.author.id
+            target_user.ProtectionEnds = delta
+            self_user.ActionCooldownEnd = datetime.now(tz=timezone.utc) + timedelta(hours=1)
+            s.add(db.HalloweenLog(data.guild_id, target_user.UserID, target_user.CurrentClass, target_user.CurrentClass, self_user.UserID, datetime.now(tz=timezone.utc)))
+            s.commit()
+            return await self.message(data.channel_id, tr("events.halloween.success_defend", language, duration=duration))
+        return await self.message(data.channel_id, tr("events.halloween.error_defend", language))
+    return await self.message(data.channel_id, tr("events.halloween.cant_defend", language))
+    
+        
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def betray(self, *user, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    s = self.db.sql.session()
+    self_user, roles = get_user_and_roles(data, s)
+    if self_user is None or self_user.CurrentClass not in hunters:
+        return
+    if self_user.ActionCooldownEnd is not None:
+        if datetime.now(tz=timezone.utc) < self_user.ActionCooldownEnd:
+            cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
+            return await self.message(data.channel_id, tr("events.halloween.remainingCooldown", language, cooldown=cooldown))
+    roll = SystemRandom().randint(0, 100)
+    if roll > 97:
+        self_user.ActionCooldownEnd = datetime.now(tz=timezone.utc)
+        s.commit()
+        await turning_logic(self, data, user, hunters, True, skip_cooldown=True)
+        return await self.message(data.channel_id, tr("events.halloween.success_betray", language))
+    return await self.message(data.channel_id, tr("events.halloween.error_betray", language))
+    
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def cooldown(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    s = self.db.sql.session()
+    self_user, roles = get_user_and_roles(data, s)
+    cooldown = get_cooldown(self_user)
+    cooldown = datetime.now(tz=timezone.utc) - self_user.LastAction
+    if self_user.CurrentClass in hunters:
+        cooldown = timedelta(hours=2) - cooldown
+        action_cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
+        if cooldown.total_seconds() < 0:
+            cooldown = "Ready"
+        if action_cooldown.total_seconds() < 0:
+            action_cooldown = "Ready"
+        return await self.message(data.channel_id, tr("events.halloween.remainingCooldowns", language, cooldown=cooldown, action=action_cooldown))
+    cooldown = timedelta(hours=3) - cooldown
+    if cooldown.total_seconds() < 0:
+        return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
+    await self.message(data.channel_id, tr("events.halloween.remainingCooldown", language, cooldown=cooldown))
+    
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def hprofile(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    s = self.db.sql.session()
+    self_user, roles = get_user_and_roles(data, s)
+    if self_user is not None:
+        e = Embed()
+        if self_user.CurrentClass in hunters:
+            t = "Profession"
+        else:
+            t = "Race"
+        e.addField(t, self_user.CurrentClass, True)
+        bites = 0
+        cures = 0
+        for i in [self_user.VampireHunterStats, self_user.HuntsmanStats, self_user.ZombieSlayerStats]:
+            cures += i
+        for i in [self_user.WerewolfStats, self_user.VampireStats, self_user.ZombieStats]:
+            bites += i
+        e.addField("Total Bites", str(bites), True).addField("Total Cures", str(cures), True).addField("Total turns", str(self_user.TurnCount), True)
+        if self_user.LastAction is not None:
+            e.setFooter("", "Last action").setTimestamp(self_user.LastAction.isoformat())
+        effects = ""
+        if self_user.ProtectionEnds is not None and datetime.now(timezone.utc) < self_user.ProtectionEnds:
+            u = get_usernames(self, data, self_user.ProtectedBy)
+            effects += "Protected from biting by "+u
+        if effects != "":
+            e.addField("Active effects", effects, True)
+        await self.embed(data.channel_id, "", e.embed)
 
 @register(group='System', help='Creates roles', alias='', category='')
 async def createHalloweenRoles(self, *args, data, language, **kwargs):
