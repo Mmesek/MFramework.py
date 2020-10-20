@@ -392,9 +392,9 @@ async def cooldown(self, *args, data, language, **kwargs):
         cooldown = timedelta(hours=2) - cooldown
         action_cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
         if cooldown.total_seconds() < 0:
-            cooldown = "Ready"
+            cooldown = tr("events.halloween.ready", language)
         if action_cooldown.total_seconds() < 0:
-            action_cooldown = "Ready"
+            action_cooldown = tr("events.halloween.ready", language)
         return await self.message(data.channel_id, tr("events.halloween.remainingCooldowns", language, cooldown=cooldown, action=action_cooldown))
     cooldown = timedelta(hours=3) - cooldown
     if cooldown.total_seconds() < 0:
@@ -410,9 +410,9 @@ async def hprofile(self, *args, data, language, **kwargs):
     if self_user is not None:
         e = Embed()
         if self_user.CurrentClass in hunters:
-            t = "Profession"
+            t = tr("events.halloween.Profession", language)
         else:
-            t = "Race"
+            t = tr("events.halloween.Race", language)
         e.addField(t, self_user.CurrentClass, True)
         bites = 0
         cures = 0
@@ -420,15 +420,17 @@ async def hprofile(self, *args, data, language, **kwargs):
             cures += i
         for i in [self_user.WerewolfStats, self_user.VampireStats, self_user.ZombieStats]:
             bites += i
-        e.addField("Total Bites", str(bites), True).addField("Total Cures", str(cures), True).addField("Total turns", str(self_user.TurnCount), True)
+        e.addField(tr("events.halloween.totalBites", language), str(bites), True)
+        e.addField(tr("events.halloween.totalCures", language), str(cures), True)
+        e.addField(tr("events.halloween.totalTurns", language), str(self_user.TurnCount), True)
         if self_user.LastAction is not None:
-            e.setFooter("", "Last action").setTimestamp(self_user.LastAction.isoformat())
+            e.setFooter("", tr("events.halloween.lastAction", language)).setTimestamp(self_user.LastAction.isoformat())
         effects = ""
         if self_user.ProtectionEnds is not None and datetime.now(timezone.utc) < self_user.ProtectionEnds:
             u = get_usernames(self, data, self_user.ProtectedBy)
-            effects += "Protected from biting by "+u
+            effects += tr("events.halloween.effect_biteProtection", language, user=u)
         if effects != "":
-            e.addField("Active effects", effects, True)
+            e.addField(tr("events.halloween.activeEffects", language), effects, True)
         await self.embed(data.channel_id, "", e.embed)
 
 @register(group='System', help='Creates roles', alias='', category='')
