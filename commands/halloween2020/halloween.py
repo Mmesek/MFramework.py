@@ -167,7 +167,7 @@ def get_cooldown(user):
         return datetime.now(tz=timezone.utc) - user.LastAction
     return 0
 
-async def join_logic(self, data, _class, classes, first_only=False):
+async def _join_logic(self, data, _class, classes, first_only=False):
     s = self.db.sql.session()
     self_user, roles = get_user_and_roles(data, s)
     if first_only and self_user is not None:
@@ -193,7 +193,7 @@ async def join_logic(self, data, _class, classes, first_only=False):
         return None
     return False
 
-async def turning_logic(self, data, target, side, hunters=False, action_cooldown=timedelta(hours=3), skip_cooldown=False):
+async def _turning_logic(self, data, target, side, hunters=False, action_cooldown=timedelta(hours=3), skip_cooldown=False):
     s = self.db.sql.session()
     self_user, roles = get_user_and_roles(data, s)
     if self_user is None:
@@ -225,15 +225,20 @@ async def turning_logic(self, data, target, side, hunters=False, action_cooldown
                     timestamp = datetime.now(tz=timezone.utc)
                     if not skip_cooldown:
                         self_user.LastAction = timestamp
-                    if hunters is False and target_user.CurrentClass != 'Human':
+                    if hunters is False or (hunters is False and target_user.CurrentClass != 'Human'):
                         users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
                         others = 0
                         _current_race = 0
+                        _hunters = {}
                         for i in users:
                             if i.CurrentClass == self_user.CurrentClass:
                                 _current_race += 1
                             elif i.CurrentClass in monsters:
-                                others +=1
+                                others += 1
+                            elif i.CurrentClass != "Human":
+                                if i.CurrentClass not in _hunters:
+                                    _hunters[i.CurrentClass] = 0
+                                _hunters[i.CurrentClass] += 1
                         if others // 2 < _current_race:
                             difference = _current_race - others // 2
                             roll = SystemRandom().randint(0, 25)
@@ -271,6 +276,99 @@ async def turning_logic(self, data, target, side, hunters=False, action_cooldown
                 return None
         return (-1, None, None, self_user.CurrentClass, cooldown)
     return (1, None, None, None, cooldown)
+
+async def turning_logic(self, data, target, side, _hunters=False, action_cooldown=timedelta(hours=3), skip_cooldown=False, to_same_class=True):
+    s = self.db.sql.session()
+    self_user, roles = get_user_and_roles(data, s)
+    if self_user is None:
+        return None #"User doesn't have a class"
+    if self_user.CurrentClass not in side:
+        return -1 #"User is not a monster or a hunter"
+    if self_user.LastAction != None:
+        cooldown = get_cooldown(self_user)
+        if not skip_cooldown and cooldown < action_cooldown:
+            return (1, None, None, None, cooldown) #"Cooldown not ready"
+    try:
+        target = int(parseMention(target[0]))
+    except:
+        return (1, None, None, None, cooldown) #"Target is either not specified or wrongly specified"
+    target_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == target).first()
+    if target_user is None:
+        target_user = db.HalloweenClasses(data.guild_id, target, "Human")
+    elif target_user.CurrentClass in side:
+        return (-1, None, None, self_user.CurrentClass, cooldown) #"Target is on the same side"
+    if ((_hunters and immune_table.get(target_user.CurrentClass) != self_user.CurrentClass) or
+        (_hunters is False and immune_table.get(target_user.CurrentClass, '') == self_user.CurrentClass)):
+        return None #"Target is immune"
+    timestamp = datetime.now(tz=timezone.utc)
+    if not skip_cooldown:
+        self_user.LastAction = timestamp
+    if not _hunters:
+        users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
+        others = 0
+        _current_race = 0
+        _current_target = 0
+        for i in users:
+            if i.CurrentClass == self_user.CurrentClass:
+                _current_race += 1
+            elif i.CurrentClass in monsters:
+                others += 1
+            elif i.CurrentClass != "Human" and i.CurrentClass == target_user.CurrentClass:
+                _current_target += 1
+        if others // 2 < _current_race:
+            difference = _current_race - others // 2
+            roll = SystemRandom().randint(0, 25)
+            if roll < difference:
+                return -2 #"Failed to bite"
+        if _current_target == 1:
+            return -2 #"Failed to bite"
+    if target_user.ProtectionEnds > timestamp:
+        return -2 #"Target is protected"
+    previousClass = target_user.CurrentClass
+    target_user.CurrentClass = self_user.CurrentClass if to_same_class else "Human"
+    target_user.LastUser = self_user.UserID
+    self_user.LastVictim = target_user.UserID
+    if self_user.CurrentClass == 'Vampire':
+        self_user.VampireStats += 1
+    elif self_user.CurrentClass == 'Werewolf':
+        self_user.WerewolfStats += 1
+    elif self_user.CurrentClass == 'Zombie':
+        self_user.ZombieStats += 1
+    elif self_user.CurrentClass == 'Vampire Hunter':
+        self_user.VampireHunterStats += 1
+    elif self_user.CurrentClass == 'Huntsman':
+        self_user.HuntsmanStats += 1
+    elif self_user.CurrentClass == 'Zombie Slayer':
+        self_user.ZombieSlayerStats += 1
+    target_user.TurnCount += 1
+    await add_and_log(self, data, target_user, roles, s, previousClass, self_user, timestamp)
+    return (True, target, previousClass, target_user.CurrentClass, cooldown) #"Target Bitten successfuly"
+
+async def join_logic(self, data, _class, classes, first_only=False):
+    s = self.db.sql.session()
+    self_user, roles = get_user_and_roles(data, s)
+    if first_only and self_user is not None:
+        return None #"This action is only for first timers"
+    if self_user is None:
+        self_user = db.HalloweenClasses(data.guild_id, data.author.id)
+    elif self_user.CurrentClass != "Human":
+        return False #"Not a human"
+    _class = ' '.join(_class) if type(_class) is tuple else _class
+    if _class.lower() not in classes:
+        return None #"Invalid class"
+    self_user.CurrentClass = _class.title()
+    add_and_log(self, data, self_user, roles, s, "Human", self_user)
+    return True #"Successfully joined"
+
+async def add_and_log(self, data, target, roles, s, previousClass, self_user, timestamp=datetime.now(tz=timezone.utc)):
+    s.merge(target)
+    s.add(db.HalloweenLog(data.guild_id, target.UserID, previousClass, target.CurrentClass, self_user.UserID, timestamp))
+    s.commit()
+    if roles != {}:
+        role_id = roles.get(previousClass, "")
+        await self.remove_guild_member_role(data.guild_id, target.UserID, role_id, "Halloween Minigame")
+        role_id = roles.get(self_user.CurrentClass, "")
+        await self.add_guild_member_role(data.guild_id, target.UserID, role_id, "Halloween Minigame")
 
 @register(group='Global', help='Short description to use with help command', alias='', category='')
 async def enlist(self, *_class, data, language, **kwargs):
@@ -325,7 +423,7 @@ async def bite(self, *target, data, language, **kwargs):
 @register(group='Global', help='Short description to use with help command', alias='', category='')
 async def cure(self, *target, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    r = await turning_logic(self, data, target, hunters, True, timedelta(hours=2))
+    r = await turning_logic(self, data, target, hunters, True, timedelta(hours=2), to_same_class=False)
     if type(r) is tuple:
         target = r[1]
         oldClass = r[2]
