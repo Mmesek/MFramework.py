@@ -46,3 +46,30 @@ async def language(self, new_language, *args, data, language, channel_id, **kwar
     s.merge(c)
     s.commit()
     self.cache[data.guild_id].language_overwrites[int(channel_id)] = new_language
+
+@subcommand(settings, 'Admin')
+async def track(self, command, *args, data, language, group, **kwargs):
+    _command = await check_if_command(self, track, command, group, data)
+    await _command(self, *args, data=data, language=language, group=group, **kwargs)
+
+@subcommand(track, 'Admin')
+async def voice(self, *args, data, language, **kwargs):
+    s = self.db.sql.session()
+    server = s.query(db.Servers).filter(db.Servers.GuildID == data.guild_id).first()
+    if server.TrackVoice:
+        server.TrackVoice = False
+    else:
+        server.TrackVoice = True
+    s.commit()
+    self.cache[data.guild_id].trackVoice = server.TrackVoice
+
+@subcommand(track, 'Admin')
+async def presence(self, *args, data, language, **kwargs):
+    s = self.db.sql.session()
+    server = s.query(db.Servers).filter(db.Servers.GuildID == data.guild_id).first()
+    if server.TrackPresence:
+        server.TrackPresence = False
+    else:
+        server.TrackPresence = True
+    s.commit()
+    self.cache[data.guild_id].trackPresence = server.TrackPresence
