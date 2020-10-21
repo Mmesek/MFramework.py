@@ -342,6 +342,7 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
         self_user.ZombieSlayerStats += 1
     target_user.TurnCount += 1
     await add_and_log(self, data, target_user, roles, s, previousClass, self_user, timestamp)
+    s.commit()
     return (True, target, previousClass, target_user.CurrentClass, cooldown) #"Target Bitten successfuly"
 
 async def join_logic(self, data, _class, classes, first_only=False):
@@ -352,12 +353,16 @@ async def join_logic(self, data, _class, classes, first_only=False):
     if self_user is None:
         self_user = db.HalloweenClasses(data.guild_id, data.author.id)
     elif self_user.CurrentClass != "Human":
-        return False #"Not a human"
+        users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.CurrentClass == ' '.join(_class)).all()
+        if not (users is None or users == []):
+            return False #"Not a human"
+    previousClass = self_user.CurrentClass
     _class = ' '.join(_class) if type(_class) is tuple else _class
     if _class.lower() not in classes:
         return None #"Invalid class"
     self_user.CurrentClass = _class.title()
-    add_and_log(self, data, self_user, roles, s, "Human", self_user)
+    add_and_log(self, data, self_user, roles, s, previousClass, self_user)
+    s.commit()
     return True #"Successfully joined"
 
 async def add_and_log(self, data, target, roles, s, previousClass, self_user, timestamp=datetime.now(tz=timezone.utc)):
