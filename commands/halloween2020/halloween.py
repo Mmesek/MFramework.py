@@ -493,9 +493,9 @@ async def betray(self, *user, data, language, **kwargs):
             cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
             return await self.message(data.channel_id, tr("events.halloween.remainingCooldown", language, cooldown=cooldown))
     roll = SystemRandom().randint(0, 100)
+    self_user.ActionCooldownEnd = datetime.now(tz=timezone.utc) + timedelta(hours=4)
+    s.commit()
     if roll > 97:
-        self_user.ActionCooldownEnd = datetime.now(tz=timezone.utc) + timedelta(hours=4)
-        s.commit()
         await turning_logic(self, data, user, hunters, True, skip_cooldown=True)
         return await self.message(data.channel_id, tr("events.halloween.success_betray", language))
     return await self.message(data.channel_id, tr("events.halloween.error_betray", language))
