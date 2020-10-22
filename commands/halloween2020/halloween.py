@@ -344,7 +344,7 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
     target_user.TurnCount += 1
     await add_and_log(self, data, target_user, roles, s, previousClass, self_user, timestamp)
     s.commit()
-    return (True, target, previousClass, target_user.CurrentClass, cooldown) #"Target Bitten successfuly"
+    return (True, target, previousClass, target_user.CurrentClass, timestamp) #"Target Bitten successfuly"
 
 async def join_logic(self, data, _class, classes, first_only=False):
     s = self.db.sql.session()
@@ -533,7 +533,8 @@ async def hprofile(self, *args, data, language, **kwargs):
             t = tr("events.halloween.Profession", language)
         else:
             t = tr("events.halloween.Race", language)
-        e.addField(t, self_user.CurrentClass, True)
+        r = self_user.CurrentClass.lower().replace(' ', '_')
+        e.addField(t, tr("events.halloween."+r, language, count=1).title(), True)
         bites = 0
         cures = 0
         for i in [self_user.VampireHunterStats, self_user.HuntsmanStats, self_user.ZombieSlayerStats]:
