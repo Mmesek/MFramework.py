@@ -351,14 +351,14 @@ async def join_logic(self, data, _class, classes, first_only=False):
     self_user, roles = get_user_and_roles(data, s)
     if first_only and self_user is not None:
         return None #"This action is only for first timers"
+    _class = ' '.join(_class) if type(_class) is tuple else _class
     if self_user is None:
         self_user = db.HalloweenClasses(data.guild_id, data.author.id)
     elif self_user.CurrentClass != "Human":
-        users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.CurrentClass == ' '.join(_class)).all()
+        users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.CurrentClass == _class).all()
         if not (users is None or users == []):
             return False #"Not a human"
     previousClass = self_user.CurrentClass
-    _class = ' '.join(_class) if type(_class) is tuple else _class
     if _class.lower() not in classes:
         return None #"Invalid class"
     self_user.CurrentClass = _class.title()
@@ -373,7 +373,7 @@ async def add_and_log(self, data, target, roles, s, previousClass, self_user, ti
     if roles != {}:
         role_id = roles.get(previousClass, "")
         await self.remove_guild_member_role(data.guild_id, target.UserID, role_id, "Halloween Minigame")
-        role_id = roles.get(self_user.CurrentClass, "")
+        role_id = roles.get(target.CurrentClass, "")
         await self.add_guild_member_role(data.guild_id, target.UserID, role_id, "Halloween Minigame")
 
 @register(group='Global', help='Short description to use with help command', alias='', category='')
