@@ -322,7 +322,7 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
                 return -2 #"Failed to bite"
         if _current_target == 1:
             return -2 #"Failed to bite"
-    if target_user.ProtectionEnds > timestamp:
+    if target_user.ProtectionEnds is not None and target_user.ProtectionEnds > timestamp:
         return -2 #"Target is protected"
     previousClass = target_user.CurrentClass
     target_user.CurrentClass = self_user.CurrentClass if to_same_class else "Human"
