@@ -296,7 +296,7 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
     if target_user is None:
         target_user = db.HalloweenClasses(data.guild_id, target, "Human")
     elif target_user.CurrentClass in side:
-        return (-1, None, None, self_user.CurrentClass, cooldown) #"Target is on the same side"
+        return (None, None, None, self_user.CurrentClass, cooldown) #"Target is on the same side"
     if ((_hunters and immune_table.get(target_user.CurrentClass) != self_user.CurrentClass) or
         (_hunters is False and immune_table.get(target_user.CurrentClass, '') == self_user.CurrentClass)):
         return None #"Target is immune"
