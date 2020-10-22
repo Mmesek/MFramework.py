@@ -361,7 +361,7 @@ async def join_logic(self, data, _class, classes, first_only=False):
     if _class.lower() not in classes:
         return None #"Invalid class"
     self_user.CurrentClass = _class.title()
-    add_and_log(self, data, self_user, roles, s, previousClass, self_user)
+    await add_and_log(self, data, self_user, roles, s, previousClass, self_user)
     s.commit()
     return True #"Successfully joined"
 
@@ -378,7 +378,7 @@ async def add_and_log(self, data, target, roles, s, previousClass, self_user, ti
 @register(group='Global', help='Short description to use with help command', alias='', category='')
 async def enlist(self, *_class, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    r = join_logic(self, data, _class, ['vampire hunter', 'huntsman', 'zombie slayer'])
+    r = await join_logic(self, data, _class, ['vampire hunter', 'huntsman', 'zombie slayer'])
     if r:
         await self.message(data.channel_id, tr("events.halloween.success_enlist", language))
     elif r is None:
@@ -392,7 +392,7 @@ async def drink(self, *drink, data, language, **kwargs):
     _class = ' '.join(drink)
     if _class.lower() in drinks:
         _class = drinks.get(_class.lower())
-    r = join_logic(self, data, _class, ['vampire', 'werewolf', 'zombie'], True)
+    r = await join_logic(self, data, _class, ['vampire', 'werewolf', 'zombie'], True)
     if r:
         await self.message(data.channel_id, tr("events.halloween.success_drink", language))
     elif r is False:
