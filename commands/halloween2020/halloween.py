@@ -523,8 +523,10 @@ async def cooldown(self, *args, data, language, **kwargs):
     
 
 @register(group='Global', help='Short description to use with help command', alias='', category='')
-async def hprofile(self, *args, data, language, **kwargs):
+async def hprofile(self, *user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
+    if user != ():
+        data.author.id = get_user_id(user)
     s = self.db.sql.session()
     self_user, roles = get_user_and_roles(data, s)
     if self_user is not None:
