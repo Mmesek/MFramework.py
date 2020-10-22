@@ -362,11 +362,11 @@ async def join_logic(self, data, _class, classes, first_only=False):
     if _class.lower() not in classes:
         return None #"Invalid class"
     self_user.CurrentClass = _class.title()
-    await add_and_log(self, data, self_user, roles, s, previousClass, self_user)
+    await add_and_log(self, data, self_user, roles, s, previousClass, self_user, datetime.now(tz=timezone.utc))
     s.commit()
     return True #"Successfully joined"
 
-async def add_and_log(self, data, target, roles, s, previousClass, self_user, timestamp=datetime.now(tz=timezone.utc)):
+async def add_and_log(self, data, target, roles, s, previousClass, self_user, timestamp):
     s.merge(target)
     s.add(db.HalloweenLog(data.guild_id, target.UserID, previousClass, target.CurrentClass, self_user.UserID, timestamp))
     s.commit()
