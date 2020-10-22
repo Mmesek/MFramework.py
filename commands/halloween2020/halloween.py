@@ -416,7 +416,7 @@ async def bite(self, *target, data, language, **kwargs):
         cooldown = timedelta(hours=3) - cooldown
         if cooldown.total_seconds() < 0:
             return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
-        await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed="4h", cooldown=cooldown))
+        await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed="3h", cooldown=cooldown))
     elif r is None:
         await self.message(data.channel_id, tr("events.halloween.targetImmune", language))
     elif r == -1:
@@ -442,7 +442,7 @@ async def cure(self, *target, data, language, **kwargs):
         cooldown = timedelta(hours=2) - cooldown
         if cooldown.total_seconds() < 0:
             return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
-        await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed="4h", cooldown=cooldown))
+        await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed="2h", cooldown=cooldown))
     elif r is None:
         await self.message(data.channel_id, tr("events.halloween.error_cure", language, currentClass=immune_table.get(currentClass)))
     elif r == -1:
