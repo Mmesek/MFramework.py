@@ -372,7 +372,7 @@ async def join_logic(self, data, _class, classes, first_only=False):
         races = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
         c = {}
         for i in races:
-            if i.CurrentClass not in classes:
+            if i.CurrentClass.lower() not in classes:
                 continue
             if i.CurrentClass not in c:
                 c[i.CurrentClass] = 0
