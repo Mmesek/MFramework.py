@@ -527,7 +527,10 @@ async def cooldown(self, *args, data, language, **kwargs):
     cooldown = datetime.now(tz=timezone.utc) - self_user.LastAction
     if self_user.CurrentClass in hunters:
         cooldown = timedelta(hours=2) - cooldown
-        action_cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
+        if self_user.ActionCooldownEnd is not None:
+            action_cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
+        else:
+            action_cooldown = timedelta(seconds=-1)
         if cooldown.total_seconds() < 0:
             cooldown = tr("events.halloween.ready", language)
         if action_cooldown.total_seconds() < 0:
