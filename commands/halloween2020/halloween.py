@@ -301,7 +301,8 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
     try:
         target = get_user_id(target)
     except:
-        return (-1, None, None, None, None) #"Target is either not specified or wrongly specified"
+        cooldown = get_cooldown(self_user)
+        return (1, None, None, None, cooldown) #"Target is either not specified or wrongly specified"
     target_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == target).first()
     if target_user is None:
         target_user = db.HalloweenClasses(data.guild_id, target, "Human")
