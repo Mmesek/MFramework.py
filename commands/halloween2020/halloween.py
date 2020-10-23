@@ -364,7 +364,7 @@ async def join_logic(self, data, _class, classes, first_only=False):
         self_user = db.HalloweenClasses(data.guild_id, data.author.id)
     elif self_user.CurrentClass != "Human":
         users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.CurrentClass == _class).all()
-        if not (users is None or users == []):
+        if users != []:
             return False #"Not a human"
     previousClass = self_user.CurrentClass
     if _class == 'random':
