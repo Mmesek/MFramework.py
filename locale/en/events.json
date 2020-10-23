@@ -38,7 +38,7 @@
             "one":"huntsman",
             "many":"huntsmen"
         },
-        "zombieSlayer":{
+        "zombie_slayer":{
             "one":"zombie slayer",
             "many":"zombie slayers"
         },
@@ -77,7 +77,7 @@
         "cant_defend":"Provided user is not a hunter",
         "cant_betray":"",
         "cant_generic":"You can't do that!",
-        "success_enlist":"You have successfully joined ranks of hunters. You can now use `cure` command.",
+        "success_enlist":"You have successfully joined ranks of hunters. You can now use `cure`, `defend` and `betray` commands.",
         "success_drink":"Welcome to the Dark Side™. You can now use `bite` command.",
         "success_bite":"Successfully turned <@%{target}> into %{currentClass}",
         "success_cure":"Successfully cured <@%{target}> from %{previousClass}",

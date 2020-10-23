@@ -38,7 +38,7 @@
             "one":"łowczy",
             "many":"łowcy"
         },
-        "zombieSlayer":{
+        "zombie_slayer":{
             "one":"zaklinacz",
             "many":"zaklinaczy"
         },
@@ -77,7 +77,7 @@
         "cant_defend":"Podany użytkownik nie jest Łowcą",
         "cant_betray":"",
         "cant_generic":"Nie możesz tego zrobić!",
-        "success_enlist":"Z Powodzeniem dołączyłeś w szeregi łowców. Od teraz możesz korzystać z komendy `wylecz`.",
+        "success_enlist":"Z Powodzeniem dołączyłeś w szeregi łowców. Od teraz możesz korzystać z komendy `wylecz`, `ochroń` oraz `zdradź`.",
         "success_drink":"Witamy w Siłach Mroku™. Od teraz możesz korzystać z komendy `ugryź`.",
         "success_bite":"Z Powodzeniem zamieniono <@%{target}> w %{currentClass}",
         "success_cure":"Z Powodzeniem wyleczono <@%{target}> z %{previousClass}",
