@@ -751,5 +751,5 @@ async def hstats(self, *args, data, language, **kwargs):
     total = session.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).order_by(db.HalloweenClasses.TurnCount.desc()).all()
     e = Embed()
     totalBites, totalPopulation = get_total(self, data, total)
-    e.setDescription(f"Total Bites/Cures: {totalBites}\n"+'\n'.join('{}: {}'.format(tr("events.halloween."+i.lower().replace(' ','_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
+    e.setDescription(tr("events.halloween.totalBites", language)+'/'+tr("events.halloween.totalCures", language)+f": {totalBites}\n"+'\n'.join('{}: {}'.format(tr("events.halloween."+i.lower().replace(' ','_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
     await self.embed(data.channel_id, "", e.embed)
