@@ -277,6 +277,20 @@ async def _turning_logic(self, data, target, side, hunters=False, action_cooldow
         return (-1, None, None, self_user.CurrentClass, cooldown)
     return (1, None, None, None, cooldown)
 
+def get_race_counts(s, data, self_user, target_user):
+    users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
+    others = 0
+    _current_race = 0
+    _current_target = 0
+    for i in users:
+        if i.CurrentClass == self_user.CurrentClass:
+            _current_race += 1
+        elif i.CurrentClass in monsters:
+            others += 1
+        elif i.CurrentClass != "Human" and i.CurrentClass == target_user.CurrentClass:
+            _current_target += 1
+    return others, _current_race, _current_target
+
 async def turning_logic(self, data, target, side, _hunters=False, action_cooldown=timedelta(hours=3), skip_cooldown=False, to_same_class=True):
     s = self.db.sql.session()
     self_user, roles = get_user_and_roles(data, s)
@@ -284,19 +298,31 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
         return None #"User doesn't have a class"
     if self_user.CurrentClass not in side:
         return -1 #"User is not a monster or a hunter"
-    if self_user.LastAction != None:
-        cooldown = get_cooldown(self_user)
-        if not skip_cooldown and cooldown < action_cooldown:
-            return (1, None, None, None, cooldown) #"Cooldown not ready"
     try:
-        target = int(parseMention(target[0]))
+        target = get_user_id(target)
     except:
-        return (1, None, None, None, cooldown) #"Target is either not specified or wrongly specified"
+        return (-1, None, None, None, None) #"Target is either not specified or wrongly specified"
     target_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == target).first()
     if target_user is None:
         target_user = db.HalloweenClasses(data.guild_id, target, "Human")
     elif target_user.CurrentClass in side:
-        return (None, None, None, self_user.CurrentClass, cooldown) #"Target is on the same side"
+        return (None, None, None, self_user.CurrentClass, None) #"Target is on the same side"
+    others, _current_race, _current_target = get_race_counts(s, data, self_user, target_user)
+    if not _hunters:
+        if others // 2 < _current_race:
+            difference = _current_race - others // 2
+            roll = SystemRandom().randint(0, 75)
+            if roll < difference:
+                return -2 #"Failed to bite"
+        elif _current_target == 1:
+            return -2 #"Failed to bite"
+        else:
+            difference = (_current_race - others // 2) * 2
+        action_cooldown += timedelta(minutes=difference*3)
+    if self_user.LastAction != None:
+        cooldown = get_cooldown(self_user)
+        if not skip_cooldown and cooldown < action_cooldown:
+            return (1, None, None, None, cooldown) #"Cooldown not ready"
     if ((_hunters and immune_table.get(target_user.CurrentClass) != self_user.CurrentClass) or
         (_hunters is False and immune_table.get(target_user.CurrentClass, '') == self_user.CurrentClass)):
         return None #"Target is immune"
@@ -304,25 +330,6 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
     if not skip_cooldown:
         self_user.LastAction = timestamp
         s.commit()
-    if not _hunters:
-        users = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
-        others = 0
-        _current_race = 0
-        _current_target = 0
-        for i in users:
-            if i.CurrentClass == self_user.CurrentClass:
-                _current_race += 1
-            elif i.CurrentClass in monsters:
-                others += 1
-            elif i.CurrentClass != "Human" and i.CurrentClass == target_user.CurrentClass:
-                _current_target += 1
-        if others // 2 < _current_race:
-            difference = _current_race - others // 2
-            roll = SystemRandom().randint(0, 25)
-            if roll < difference:
-                return -2 #"Failed to bite"
-        if _current_target == 1:
-            return -2 #"Failed to bite"
     if target_user.ProtectionEnds is not None and target_user.ProtectionEnds > timestamp:
         return -2 #"Target is protected"
     previousClass = target_user.CurrentClass
