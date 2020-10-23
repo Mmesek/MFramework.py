@@ -356,7 +356,7 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
 async def join_logic(self, data, _class, classes, first_only=False):
     s = self.db.sql.session()
     self_user, roles = get_user_and_roles(data, s)
-    if first_only and self_user is not None:
+    if first_only and self_user is not None and _class != 'random':
         return None #"This action is only for first timers"
     _class = ' '.join(_class) if type(_class) is tuple else _class
     if self_user is None:
@@ -366,7 +366,17 @@ async def join_logic(self, data, _class, classes, first_only=False):
         if not (users is None or users == []):
             return False #"Not a human"
     previousClass = self_user.CurrentClass
-    if _class.lower() not in classes:
+    if _class == 'random':
+        races = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
+        c = {}
+        for i in races:
+            if i not in classes:
+                continue
+            if i not in c:
+                c[i] = 0
+            c[i] += 1
+        _class = sorted(c.items(), key=lambda i: i[1])[0][0]
+    elif _class.lower() not in classes:
         return None #"Invalid class"
     self_user.CurrentClass = _class.title()
     await add_and_log(self, data, self_user, roles, s, previousClass, self_user, datetime.now(tz=timezone.utc))
