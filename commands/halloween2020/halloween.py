@@ -320,7 +320,7 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
             return -2 #"Failed to bite"
         else:
             difference = (_current_race - others // 2) * 2
-        action_cooldown += timedelta(minutes=difference*3)
+        cooldown += timedelta(minutes=difference*3)
     if self_user.LastAction != None:
         cooldown = get_cooldown(self_user)
         if not skip_cooldown and cooldown < action_cooldown:
@@ -527,7 +527,7 @@ async def cooldown(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
     self_user, roles = get_user_and_roles(data, s)
-    cooldown = get_cooldown(self_user)
+    #cooldown = get_cooldown(self_user)
     cooldown = datetime.now(tz=timezone.utc) - self_user.LastAction
     if self_user.CurrentClass in hunters:
         cooldown = timedelta(hours=2) - cooldown
@@ -546,8 +546,8 @@ async def cooldown(self, *args, data, language, **kwargs):
             difference = _current_race - others // 2
         else:
             difference = (_current_race - others // 2) * 2
-        cooldown += timedelta(minutes=difference*3)
-    cooldown = timedelta(hours=3) - cooldown
+        _cooldown = timedelta(minutes=difference*3)
+    cooldown = timedelta(hours=3)+_cooldown - cooldown
     if cooldown.total_seconds() < 0:
         return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
     await self.message(data.channel_id, tr("events.halloween.remainingCooldown", language, cooldown=cooldown))
