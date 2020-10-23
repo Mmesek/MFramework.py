@@ -18,7 +18,8 @@ drinks = {
     "bloody red wine": "Vampire",
     "moonshine": "Werewolf",
     "vodka": "Zombie",
-    'vodka braaaainzz?':"Zombie"    
+    'vodka braaaainzz?': "Zombie",
+    "nightmare":"random"
 }
 @register(group='Global', help='HALLOWEEN COMMAND', alias='', category='', notImpl=True)
 async def _halloween(self, *class_or_user, data, language, cmd, **kwargs):
@@ -429,7 +430,7 @@ async def bite(self, *target, data, language, **kwargs):
         cooldown = r[4]
         r = r[0]
     if r is True:
-        await self.message(data.channel_id, tr("events.halloween.success_bite", language, target=target, currentClass=newClass), allowed_mentions={"parse": []})
+        await self.message(data.channel_id, tr("events.halloween.success_bite", language, author=data.author.id, target=target, currentClass=newClass), allowed_mentions={"parse": []})
     elif r == 1:
         cooldown = timedelta(hours=3) - cooldown
         if cooldown.total_seconds() < 0:
@@ -455,7 +456,7 @@ async def cure(self, *target, data, language, **kwargs):
         cooldown = r[4]
         r = r[0]
     if r is True:
-        await self.message(data.channel_id, tr("events.halloween.success_cure", language, target=target, previousClass=oldClass), allowed_mentions={"parse": []})
+        await self.message(data.channel_id, tr("events.halloween.success_cure", language, author=data.author.id, target=target, previousClass=oldClass), allowed_mentions={"parse": []})
     elif r == 1:
         cooldown = timedelta(hours=2) - cooldown
         if cooldown.total_seconds() < 0:
@@ -471,7 +472,7 @@ async def cure(self, *target, data, language, **kwargs):
 def get_user_id(user):
     return int(parseMention(user[0]))
 
-@register(group='Global', help='Short description to use with help command', alias='', category='')
+@register(group='Global', help='Short description to use with help command', alias='protect', category='')
 async def defend(self, *user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
@@ -483,6 +484,8 @@ async def defend(self, *user, data, language, **kwargs):
             cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
             return await self.message(data.channel_id, tr("events.halloween.remainingCooldown", language, cooldown=cooldown))
     target = get_user_id(user)
+    if target == data.author.id:
+        return await self.message(data.channel_id, tr("events.halloween.failed_defend", language))
     target_user = s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id, db.HalloweenClasses.UserID == target).first()
     if target_user.CurrentClass in hunters:
         if target_user.ProtectionEnds is None or target_user.ProtectionEnds < datetime.now(tz=timezone.utc):
@@ -537,6 +540,13 @@ async def cooldown(self, *args, data, language, **kwargs):
         if action_cooldown.total_seconds() < 0:
             action_cooldown = tr("events.halloween.ready", language)
         return await self.message(data.channel_id, tr("events.halloween.remainingCooldowns", language, cooldown=cooldown, action=action_cooldown))
+    elif self_user.CurrentClass in monsters:
+        others, _current_race, _current_target = get_race_counts(s, data, self_user, self_user)
+        if others // 2 < _current_race:
+            difference = _current_race - others // 2
+        else:
+            difference = (_current_race - others // 2) * 2
+        cooldown += timedelta(minutes=difference*3)
     cooldown = timedelta(hours=3) - cooldown
     if cooldown.total_seconds() < 0:
         return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
@@ -571,7 +581,7 @@ async def hprofile(self, *user, data, language, **kwargs):
             e.setFooter("", tr("events.halloween.lastAction", language)).setTimestamp(self_user.LastAction.isoformat())
         effects = ""
         if self_user.ProtectionEnds is not None and datetime.now(timezone.utc) < self_user.ProtectionEnds:
-            u = get_usernames(self, data, self_user.ProtectedBy)
+            u = await get_usernames(self, data, self_user.ProtectedBy)
             effects += tr("events.halloween.effect_biteProtection", language, user=u)
         if effects != "":
             e.addField(tr("events.halloween.activeEffects", language), effects, True)

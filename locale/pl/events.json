@@ -35,8 +35,8 @@
             "many":"łowcy wampirów"
         },
         "huntsman":{
-            "one":"łowczy",
-            "many":"łowcy"
+            "one":"myśliwy",
+            "many":"myśliwi"
         },
         "zombie_slayer":{
             "one":"zaklinacz",
@@ -79,12 +79,13 @@
         "cant_generic":"Nie możesz tego zrobić!",
         "success_enlist":"Z Powodzeniem dołączyłeś w szeregi łowców. Od teraz możesz korzystać z komendy `wylecz`, `ochroń` oraz `zdradź`.",
         "success_drink":"Witamy w Siłach Mroku™. Od teraz możesz korzystać z komendy `ugryź`.",
-        "success_bite":"Z Powodzeniem zamieniono <@%{target}> w %{currentClass}",
-        "success_cure":"Z Powodzeniem wyleczono <@%{target}> z %{previousClass}",
+        "success_bite":"<@%{author}>, Z Powodzeniem zamieniono <@%{target}> w %{currentClass}",
+        "success_cure":"<@%{author}>, Z Powodzeniem wyleczono <@%{target}> z %{previousClass}",
         "success_defend":"Zaprzyjaźniony Łowca jest chroniony przez najbliższe %{duration} minut",
         "success_betray":"Udało się przekonać do zdrady i zostania łowcą.",
         "success_generic":"",
         "failed_bite":"Nie udało się ugryźć ofiary!",
+        "failed_defend":"Nie możesz chronić samego siebie w tym przypadku",
         "error_enlist":"",
         "error_drink":"",
         "error_bite":"",
@@ -93,7 +94,7 @@
         "error_betray":"Nie udało się namówić do zdrady.",
         "error_generic":"Nie podano użytkownika",
         "availableClasses":"Dostępne klasy:\n- Vampire Hunter\n- Huntsman\n- Zombie Slayer",
-        "availableDrinks":"Dostępne drinki:\n- Krwawo Czerwone Wino (Zostań Wampirem)\n- Moonshine (Zostań Wilkołakiem)\n- Wódka \"Móóózgii?\" (Zostań Zombie)",
+        "availableDrinks":"Dostępne drinki:\n- Krwawo Czerwone Wino (Zostań Wampirem)\n- Moonshine (Zostań Wilkołakiem)\n- Wódka \"Móóózgii?\" (Zostań Zombie)\n- Koszmar (Można wypić pomimo bycia wcześniej ugryzionym bądź dołączenia do Łowców)",
         "outsideExpertise":"Ta akcja jest poza twoja eksperyzą",
         "targetImmune":"Twój cel jest na to odporny",
         "remainingCooldown":"Pozostały Cooldown: %{cooldown}",
