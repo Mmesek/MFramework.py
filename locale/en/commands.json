@@ -416,7 +416,7 @@
         "datesDiscord":"Discord: %{discord}",
         "datesServer":"Server: %{server}",
         "datesBoostStart":"Booster: %{boost}",
-        "datesJoinedServer":"Joined: %{joined}",
+        "datesJoined":"Joined",
         "notFoundRegion":"Couldn't find region %{region}",
         "notFoundCurrency":"Couldn't find currency %{currency}",
         "notFoundTimezone":"Couldn't find timezone %{timezone}",
