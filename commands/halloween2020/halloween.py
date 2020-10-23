@@ -676,8 +676,12 @@ async def get_usernames(self, data, user_id):
 
 
 @register(group='Global', help='Shows bites/cures history', alias='bitehistory, curehistory', category='')
-async def hhistory(self, *args, data, language, **kwargs):
+async def hhistory(self, *user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
+    not_self=False
+    if user != ():
+        not_self = True
+        data.author.id = get_user_id(user)
     session = self.db.sql.session()
     history = session.query(db.HalloweenLog).filter(db.HalloweenLog.GuildID == data.guild_id, db.HalloweenLog.UserID == data.author.id).order_by(db.HalloweenLog.Timestamp.desc()).all()
     s = ""
@@ -705,5 +709,8 @@ async def hhistory(self, *args, data, language, **kwargs):
         else:
             s += i
     if s != '':
-        e.addField("Your actions", s)
+        if not_self:
+            e.addField("Their actions", s)
+        else:
+            e.addField("Your actions", s)
     await self.embed(data.channel_id, "", e.embed)
