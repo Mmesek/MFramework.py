@@ -714,3 +714,25 @@ async def hhistory(self, *user, data, language, **kwargs):
         else:
             e.addField("Your actions", s)
     await self.embed(data.channel_id, "", e.embed)
+
+def get_total(self, data, total):
+    totalPopulation = {}
+    totalBites = 0
+    for v in total:
+        if v.CurrentClass not in totalPopulation:
+            totalPopulation[v.CurrentClass] = 0
+        totalPopulation[v.CurrentClass] += 1
+        if v.TurnCount > 0:
+            totalBites += v.TurnCount
+    return totalBites, totalPopulation
+
+
+@register(group='Global', help='Shows faction statistics', alias='', category='')
+async def hstats(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    session = self.db.sql.session()
+    total = session.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).order_by(db.HalloweenClasses.TurnCount.desc()).all()
+    e = Embed()
+    totalBites, totalPopulation = get_total(self, data, total)
+    e.setDescription(f"Total Bites/Cures: {totalBites}\n"+'\n'.join('{}: {}'.format(tr("events.halloween."+i.lower().replace(' ','_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
+    await self.embed(data.channel_id, "", e.embed)
