@@ -320,7 +320,7 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
             return -2 #"Failed to bite"
         else:
             difference = (_current_race - others // 2) * 2
-        cooldown += timedelta(minutes=difference*3)
+        cooldown = get_cooldown(self_user) + timedelta(minutes=difference*3)
     if self_user.LastAction != None:
         cooldown = get_cooldown(self_user)
         if not skip_cooldown and cooldown < action_cooldown:
@@ -372,12 +372,15 @@ async def join_logic(self, data, _class, classes, first_only=False):
         races = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
         c = {}
         for i in races:
-            if i not in classes:
+            if i.CurrentClass not in classes:
                 continue
-            if i not in c:
-                c[i] = 0
-            c[i] += 1
-        _class = sorted(c.items(), key=lambda i: i[1])[0][0]
+            if i.CurrentClass not in c:
+                c[i.CurrentClass] = 0
+            c[i.CurrentClass] += 1
+        if c != []:
+            _class = sorted(c.items(), key=lambda i: i[1])[0][0]
+        else:
+            _class = SystemRandom().choice(c)
     elif _class.lower() not in classes:
         return None #"Invalid class"
     self_user.CurrentClass = _class.title()
