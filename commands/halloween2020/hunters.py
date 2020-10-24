@@ -5,7 +5,7 @@ from random import SystemRandom
 
 from .helpers import *
 
-@Hunters(alias='protect')
+@Hunters(alias='protect', help="Protects fellow hunter from being bitten")
 async def defend(self, *user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
@@ -39,7 +39,7 @@ async def defend(self, *user, data, language, **kwargs):
 
     return await self.message(data.channel_id, _t("error_defend", language))
 
-@Hunters()
+@Hunters(help="Tries to convince a monster you are hunting to join the cause and fight with darkness")
 async def betray(self, *user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()

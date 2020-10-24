@@ -4,7 +4,7 @@ from MFramework.utils.utils import Embed
 from .helpers import *
 from .helpers.utils import _t
 
-@Humans(cmd='drink', alias='enlist')
+@Humans(cmd='drink', alias='enlist', help="Joins a side")
 async def drink(self, *class_drink, data, language, cmd, **kwargs):
     '''Extended description to use with detailed help command'''
     _class = ' '.join(class_drink)
@@ -22,8 +22,8 @@ async def drink(self, *class_drink, data, language, cmd, **kwargs):
     else:
         await self.message(data.channel_id, _t("cant_"+cmd, language))
 
-@Monsters(cmd='bite')
-@Hunters(cmd='cure')
+@Monsters(cmd='bite', help="Turns your target")
+@Hunters(cmd='cure', help="Cures a monster")
 async def turn(self, *target, data, language, cmd, **kwargs):
     '''Extended description to use with detailed help command'''
     if cmd == 'cure':
