@@ -122,6 +122,12 @@
         "your_actions":"Your actions",
         "your_history":"Your History",
         "their_actions":"Their Actions",
-        "their_history":"Their History"
+        "their_history":"Their History",
+        "bites_vampire":"Vampire Bites",
+        "bites_werewolf":"Werewolf Bites",
+        "bites_zombie":"Zombie Bites",
+        "cures_vampire_hunter":"Vampire Hunter Cures",
+        "cures_huntsman":"Huntsman Cures",
+        "cures_zombie_slayer":"Zombie Slayer Cures"
     }
 }
