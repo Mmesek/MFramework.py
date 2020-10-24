@@ -7,7 +7,7 @@ async def halloween_createRoles(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
     for name in ROLES:
-        role = await self.create_guild_role(data.guild_id, tr("events.halloween."+name.lower().replace(' ','_'), language, count=1).title(), 0, None, False, False, "Created Role for Halloween Minigame")
+        role = await self.create_guild_role(data.guild_id, _t(name.lower().replace(' ','_'), language, count=1).title(), 0, None, False, False, "Created Role for Halloween Minigame")
         s.merge(db.HalloweenRoles(data.guild_id, role.name, role.id))
     s.commit()
 

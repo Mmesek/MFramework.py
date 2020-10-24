@@ -122,6 +122,12 @@
         "your_actions":"Twoja Akcje",
         "your_history":"Twoja Historia",
         "their_actions":"Ich Akcje",
-        "their_history":"Ich Historia"
+        "their_history":"Ich Historia",
+        "bites_vampire":"Ugryzienia Wampirów",
+        "bites_werewolf":"Ugryzienia Wilkołaków",
+        "bites_zombie":"Ugryzienia Zombie",
+        "cures_vampire_hunter":"Wyleczenia Łowców",
+        "cures_huntsman":"Wyleczenia Myśliwych",
+        "cures_zombie_slayer":"Wyleczenia Zaklinaczy"
     }
 }

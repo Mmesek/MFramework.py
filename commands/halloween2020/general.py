@@ -1,12 +1,13 @@
 from MFramework.database import alchemy as db
-from MFramework.utils.utils import tr, Embed
+from MFramework.utils.utils import Embed
 
 from .helpers import *
+from .helpers.utils import _t
 
 @Humans(cmd='drink', alias='enlist')
 async def drink(self, *class_drink, data, language, cmd, **kwargs):
     '''Extended description to use with detailed help command'''
-    _class = ' '.join(class_drink)    
+    _class = ' '.join(class_drink)
     if cmd == 'enlist':
         r = await join_logic(self, data, _class, HUNTERS)
     else:
@@ -15,11 +16,11 @@ async def drink(self, *class_drink, data, language, cmd, **kwargs):
         r = await join_logic(self, data, _class, MONSTERS, True)
 
     if r is Responses.SUCCESS:
-        await self.message(data.channel_id, tr("events.halloween.success_"+cmd, language))
+        await self.message(data.channel_id, _t("success_"+cmd, language))
     elif r is Responses.AVAILABLE:
-        await self.message(data.channel_id, tr("events.halloween.available_"+cmd, language))
+        await self.message(data.channel_id, _t("available_"+cmd, language))
     else:
-        await self.message(data.channel_id, tr("events.halloween.cant_"+cmd, language))
+        await self.message(data.channel_id, _t("cant_"+cmd, language))
 
 @Monsters(cmd='bite')
 @Hunters(cmd='cure')
@@ -33,22 +34,22 @@ async def turn(self, *target, data, language, cmd, **kwargs):
         OPCODE, r = OPCODE
     if OPCODE is Responses.SUCCESS:
         target, oldClass, currentClass = r
-        await self.message(data.channel_id, tr("events.halloween.success_"+cmd, language, author=data.author.id, target=target, previousClass=oldClass, currentClass=currentClass), allowed_mentions={"parse": []})
+        await self.message(data.channel_id, _t("success_"+cmd, language, author=data.author.id, target=target, previousClass=oldClass, currentClass=currentClass), allowed_mentions={"parse": []})
     elif OPCODE is Responses.COOLDOWN:
         cooldown = COOLDOWNS[cmd] - r
         if cooldown.total_seconds() <= 0:
-            return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
-        await self.message(data.channel_id, tr("events.halloween.cooldown", language, elapsed=COOLDOWNS[cmd], cooldown=cooldown))
+            return await self.message(data.channel_id, _t("cooldownFinished", language))
+        await self.message(data.channel_id, _t("cooldown", language, elapsed=COOLDOWNS[cmd], cooldown=cooldown))
     elif OPCODE is Responses.IMMUNE or OPCODE is Responses.PROTECTED:
-        await self.message(data.channel_id, tr("events.halloween.targetImmune", language))
+        await self.message(data.channel_id, _t("targetImmune", language))
     elif OPCODE is Responses.CANT:
-        await self.message(data.channel_id, tr("events.halloween.cant_"+cmd, language))
+        await self.message(data.channel_id, _t("cant_"+cmd, language))
     elif OPCODE is Responses.FAILED:
-        await self.message(data.channel_id, tr("events.halloween.failed_"+cmd, language))
+        await self.message(data.channel_id, _t("failed_"+cmd, language))
     elif OPCODE is Responses.ERROR:
-        await self.message(data.channel_id, tr("events.halloween.error_"+cmd, language, currentClass=immune_table.get(r)))
+        await self.message(data.channel_id, _t("error_"+cmd, language, currentClass=immune_table.get(r)))
     else:
-        await self.message(data.channel_id, tr("events.halloween.error_generic", language))
+        await self.message(data.channel_id, _t("error_generic", language))
 
 @Monsters(help='Shows bitesboard', cmd='bitesboard', alias='biteboard')
 @Hunters(help='Shows curesboard', cmd='cureboard', alias='curesboard')
@@ -57,7 +58,7 @@ async def hleaderboard(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     session = self.db.sql.session()
     total = session.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).order_by(db.HalloweenClasses.TurnCount.desc()).all()
-    e = Embed().setTitle("Bitesboard")
+    e = Embed().setTitle(_t("Bitesboard", language))
     vampireStats = []
     werewolfStats = []
     zombieStats = []
@@ -67,15 +68,7 @@ async def hleaderboard(self, *args, data, language, **kwargs):
     totalPopulation = {}
     totalBites = 0
     for v in total:
-        try:
-            u = self.cache[data.guild_id].members[v.UserID].user.username
-        except:
-            try:
-                u = await self.get_guild_member(data.guild_id, v.UserID)
-            except:
-                continue
-            self.cache[data.guild_id].members[v.UserID] = u
-            u = u.user.username
+        u = await get_usernames(self, data.guild_id, v.UserID)
         if v.VampireStats > 0:
             vampireStats.append((u, v.VampireStats))
         if v.WerewolfStats > 0:
@@ -93,28 +86,32 @@ async def hleaderboard(self, *args, data, language, **kwargs):
         totalPopulation[v.CurrentClass] += 1
         if v.TurnCount > 0:
             totalBites += v.TurnCount
-    biteboard = "```md\nBites | User\n============================\n{}```"
-    cureboard = "```md\nCures | User\n============================\n{}```"
+    _bites = _t("bite", language, count=2).title()
+    _cures = _t("cure", language, count=2).title()
+    _user = _t("user", language).title()
+    biteboard = "```md\n"+_bites+" | "+_user+"\n============================\n{}```"
+    cureboard = "```md\n"+_cures+" | "+_user+"\n============================\n{}```"
     if vampireStats != []:
         vampireStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Vampire Bites", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in vampireStats[:10])))
+        e.addField(_t("bites_vampire", language), biteboard.format('\n'.join(('{0:'+str(len(_bites)-1)+'}. | {1:}').format(i[1], i[0]) for i in vampireStats[:10])))
     if werewolfStats != []:
         werewolfStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Werewolf Bites", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in werewolfStats[:10])))
+        e.addField(_t("bites_werewolf", language), biteboard.format('\n'.join(('{0:'+str(len(_bites)-1)+'}. | {1:}').format(i[1], i[0]) for i in werewolfStats[:10])))
     if zombieStats != []:
         zombieStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Zombie Bites", biteboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in zombieStats[:10])))
+        e.addField(_t("bites_zombie", language), biteboard.format('\n'.join(('{0:'+str(len(_bites)-1)+'}. | {1:}').format(i[1], i[0]) for i in zombieStats[:10])))
     if vampireHunterStats != []:
         vampireHunterStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Vampire Hunter Cures", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in vampireHunterStats[:10])))
+        e.addField(_t("cures_vampire_hunter", language), cureboard.format('\n'.join(('{0:'+str(len(_cures)-1)+'}. | {1:}').format(i[1], i[0]) for i in vampireHunterStats[:10])))
     if huntsmanStats != []:
         huntsmanStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Huntsman Cures", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in huntsmanStats[:10])))
+        e.addField(_t("cures_huntsman", language), cureboard.format('\n'.join(('{0:'+str(len(_cures)-1)+'}. | {1:}').format(i[1], i[0]) for i in huntsmanStats[:10])))
     if zombieSlayerStats != []:
         zombieSlayerStats.sort(key=lambda i: i[1], reverse=True)
-        e.addField("Zombie Slayer Cures", cureboard.format('\n'.join('{0:4}. | {1:}'.format(i[1], i[0]) for i in zombieSlayerStats[:10])))
+        e.addField(_t("cures_zombie_slayer", language), cureboard.format('\n'.join(('{0:'+str(len(_cures)-1)+'}. | {1:}').format(i[1], i[0]) for i in zombieSlayerStats[:10])))
 
-    e.setDescription(f"Total Bites/Cures: {totalBites}\n"+'\n'.join('{}s: {}'.format(i if i != 'Werewolf' else 'Werewolve', totalPopulation[i]) for i in totalPopulation))
+    e.setDescription(_t("total_bites", language)+'/'+_t("total_cures", language)+f": {totalBites}\n"+'\n'.join('{}: {}'.format(_t(i.lower().replace(' ','_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
+
     await self.embed(data.channel_id, "", e.embed)
 
 @HalloweenEvent(help='Shows bites/cures history', alias='bitehistory, curehistory')
@@ -131,7 +128,7 @@ async def hhistory(self, *user, data, language, **kwargs):
         u = await get_usernames(self, data.guild_id, entry.ByUser)
         if u is None:
             continue
-        i = f'\n`[{entry.Timestamp.strftime("%Y/%m/%d %H:%M")}]` Turned from `{entry.FromClass}` into `{entry.ToClass}` by `{u}`'
+        i = _t("turned_history", language, timestamp=entry.Timestamp.strftime("%Y/%m/%d %H:%M"), fromClass=entry.FromClass, toClass=entry.ToClass, u=u)
         if len(i) + len(s) > 2048:
             break
         else:
@@ -145,16 +142,16 @@ async def hhistory(self, *user, data, language, **kwargs):
         u = await get_usernames(self, data.guild_id, entry.UserID)
         if u is None:
             continue
-        i = f'\n`[{entry.Timestamp.strftime("%Y/%m/%d %H:%M")}]` Turned `{u}` from `{entry.FromClass}` into `{entry.ToClass}`'
+        i = _t("turned_victims", language, timestamp=entry.Timestamp.strftime("%Y/%m/%d %H:%M"), fromClass=entry.FromClass, toClass=entry.ToClass, u=u)
         if len(i) + len(s) > 1024:
             break
         else:
             s += i
     if s != '':
         if not_self:
-            e.addField("Their actions", s)
+            e.addField(_t("their_actions", language), s)
         else:
-            e.addField("Your actions", s)
+            e.addField(_t("your_actions", language), s)
     await self.embed(data.channel_id, "", e.embed)
 
 @HalloweenEvent(help='Shows faction statistics')
@@ -164,7 +161,7 @@ async def hstats(self, *args, data, language, **kwargs):
     total = session.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).order_by(db.HalloweenClasses.TurnCount.desc()).all()
     e = Embed()
     totalBites, totalPopulation = get_total(self, data, total)
-    e.setDescription(tr("events.halloween.total_bites", language)+'/'+tr("events.halloween.total_cures", language)+f": {totalBites}\n"+'\n'.join('{}: {}'.format(tr("events.halloween."+i.lower().replace(' ','_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
+    e.setDescription(_t("total_bites", language)+'/'+_t("total_cures", language)+f": {totalBites}\n"+'\n'.join('{}: {}'.format(_t(i.lower().replace(' ','_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
     await self.embed(data.channel_id, "", e.embed)
 
 @HalloweenEvent(help='Shows current cooldowns')
@@ -177,16 +174,16 @@ async def cooldown(self, *args, data, language, **kwargs):
         cooldown = COOLDOWNS['cure'] - elapsed
         action_cooldown = get_action_cooldown_left(self_user)
         if cooldown.total_seconds() <= 0:
-            cooldown = tr("events.halloween.ready", language)
+            cooldown = _t("ready", language)
         if action_cooldown.total_seconds() <= 0:
-            action_cooldown = tr("events.halloween.ready", language)
-        return await self.message(data.channel_id, tr("events.halloween.remaining_cooldowns", language, cooldown=cooldown, action=action_cooldown))
+            action_cooldown = _t("ready", language)
+        return await self.message(data.channel_id, _t("remaining_cooldowns", language, cooldown=cooldown, action=action_cooldown))
     elif self_user.CurrentClass in MONSTERS:
         cooldown = COOLDOWNS["bite"] + calc_cooldown_var(s, data, self_user)
         cooldown = cooldown - elapsed
         if cooldown.total_seconds() <= 0:
-            return await self.message(data.channel_id, tr("events.halloween.cooldown_finished", language))
-        await self.message(data.channel_id, tr("events.halloween.remaining_cooldown", language, cooldown=cooldown))
+            return await self.message(data.channel_id, _t("cooldown_finished", language))
+        await self.message(data.channel_id, _t("remaining_cooldown", language, cooldown=cooldown))
     
 @HalloweenEvent(help="Shows user's profile")
 async def hprofile(self, *user, data, language, **kwargs):
@@ -198,26 +195,26 @@ async def hprofile(self, *user, data, language, **kwargs):
     if self_user is not None:
         e = Embed()
         if self_user.CurrentClass in HUNTERS:
-            t = tr("events.halloween.Profession", language)
+            t = _t("Profession", language)
         else:
-            t = tr("events.halloween.Race", language)
+            t = _t("Race", language)
         r = self_user.CurrentClass.lower().replace(' ', '_')
-        e.addField(t, tr("events.halloween."+r, language, count=1).title(), True)
+        e.addField(t, _t(r, language, count=1).title(), True)
         bites = 0
         cures = 0
         for i in [self_user.VampireHunterStats, self_user.HuntsmanStats, self_user.ZombieSlayerStats]:
             cures += i
         for i in [self_user.WerewolfStats, self_user.VampireStats, self_user.ZombieStats]:
             bites += i
-        e.addField(tr("events.halloween.total_bites", language), str(bites), True)
-        e.addField(tr("events.halloween.total_cures", language), str(cures), True)
-        e.addField(tr("events.halloween.total_turns", language), str(self_user.TurnCount), True)
+        e.addField(_t("total_bites", language), str(bites), True)
+        e.addField(_t("total_cures", language), str(cures), True)
+        e.addField(_t("total_turns", language), str(self_user.TurnCount), True)
         if self_user.LastAction is not None:
-            e.setFooter("", tr("events.halloween.last_action", language)).setTimestamp(self_user.LastAction.isoformat())
+            e.setFooter("", _t("last_action", language)).setTimestamp(self_user.LastAction.isoformat())
         effects = ""
         if self_user.ProtectionEnds is not None and get_current_time() < self_user.ProtectionEnds:
             u = await get_usernames(self, data, self_user.ProtectedBy)
-            effects += tr("events.halloween.effect_bite_protection", language, user=u)
+            effects += _t("effect_bite_protection", language, user=u)
         if effects != "":
-            e.addField(tr("events.halloween.active_effects", language), effects, True)
+            e.addField(_t("active_effects", language), effects, True)
         await self.embed(data.channel_id, "", e.embed)
