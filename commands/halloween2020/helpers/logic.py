@@ -26,18 +26,15 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
     elif target_user.CurrentClass in side:
         return Responses.IMMUNE #"Target is on the same side"
 
-    others, _current_race, _current_target = get_race_counts(s, data, self_user, target_user)
     if not _hunters:
-        if others // 2 < _current_race:
-            difference = _current_race - others // 2
-            roll = SystemRandom().randint(0, 75)
-            if roll < difference:
-                return Responses.FAILED #"Failed to bite"
-        elif _current_target == 1:
+        others, _current_race, _current_target = get_race_counts(s, data, self_user, target_user)
+        if _current_target == 1:
             return Responses.FAILED #"Failed to bite"
-        else:
-            difference = (_current_race - others // 2) * 2
-        cooldown = get_elapsed(self_user) + timedelta(minutes=difference*3)
+        elif is_top_faction(others, _current_race):
+            roll = SystemRandom().randint(0, 75)
+            if roll < get_difference(_current_race, others):
+                return Responses.FAILED #"Failed to bite"
+        cooldown = get_elapsed(self_user) + cooldown_var(others, _current_race)
 
     if self_user.LastAction != None:
         cooldown = get_elapsed(self_user)

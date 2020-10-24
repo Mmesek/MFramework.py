@@ -1,12 +1,12 @@
 from MFramework.database import alchemy as db
-from MFramework.utils.utils import parseMention
+from MFramework.utils.utils import parseMention, tr
 from datetime import datetime, timedelta, timezone
 
 #from .constants import *
-from .constants import MONSTERS, _HGROUPS, _HHELP
+from .constants import MONSTERS, HUNTERS, _HGROUPS, _HHELP
 from MFramework.commands import register
 
-def HalloweenEvent(cmd='', help='', alias='', race='None', group='Global', _f=None, **kwargs):
+def HalloweenEvent(cmd='', help='', alias='', race='None', group='Global', hijak=None, **kwargs):
     def inner(f, *arg, **kwarg):
         if race not in _HGROUPS:
             _HGROUPS[race] = []
@@ -26,28 +26,44 @@ def HalloweenEvent(cmd='', help='', alias='', race='None', group='Global', _f=No
                 _HHELP[race][g.strip()] = help
         if cmd != '':
             f.__name__ = cmd
-        register(alias=alias, group=group, **kwargs)(f)
+        register(alias=alias, group=group, hijak=hijak, hijak_coroutine=True, **kwargs)(f)
         return f
-    if _f is not None:
-        return inner(_f)
-    else:
-        return inner
+    return inner
 
 def Monsters(cmd='', help='', alias='', *args, **kwargs):
     def inner(f, *arg, **kwarg):
-        HalloweenEvent(_f=f, race='Monsters', cmd=cmd, help=help, alias=alias, *args, **kwargs)
+        HalloweenEvent(race='Monsters', cmd=cmd, help=help, alias=alias, *args, hijak=check_monster, **kwargs)(f)
         return f
     return inner
 def Hunters(cmd='', help='', alias='', *args, **kwargs):
     def inner(f, *arg, **kwarg):
-        HalloweenEvent(_f=f, race='Hunters', cmd=cmd, help=help, alias=alias, *args, **kwargs)
+        HalloweenEvent(race='Hunters', cmd=cmd, help=help, alias=alias, *args, hijak=check_hunter, **kwargs)(f)
         return f
     return inner
 def Humans(cmd='', help='', alias='', *args, **kwargs):
     def inner(f,*arg, **kwarg):
-        HalloweenEvent(_f=f, race='Humans', cmd=cmd, help=help, alias=alias, *args, **kwargs)
+        HalloweenEvent(race='Humans', cmd=cmd, help=help, alias=alias, *args, hijak=check_human, **kwargs)(f)
         return f
     return inner
+
+def check_hunter(self, f, *args, data, **kwargs):
+    if generic_check(self, data, HUNTERS):
+        return f(self, *args, data=data, **kwargs)
+
+def check_monster(self, f, *args, data, **kwargs):
+    if generic_check(self, data, MONSTERS):
+        return f(self, *args, data=data, **kwargs)
+
+def check_human(self, f, *args, data, **kwargs):
+    if generic_check(self, data, ["Human"]):
+        return f(self, *args, data=data, **kwargs)
+
+def generic_check(self, data, classes):
+    s = self.db.sql.session()
+    self_user = get_user(data.guild_id, data.author.id, s)
+    if self_user is None or self_user.CurrentClass not in classes:
+        return False
+    return True
 
 def get_user(guild_id: int, user_id: int, s) -> db.HalloweenClasses:
     return s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == guild_id, db.HalloweenClasses.UserID == user_id).first()
@@ -66,6 +82,31 @@ def get_elapsed(user: db.HalloweenClasses) -> timedelta:
         return datetime.now(tz=timezone.utc) - user.LastAction
     except:
         return timedelta(seconds=0)
+
+def get_action_cooldown_left(user: db.HalloweenClasses) -> timedelta:
+    try:
+        return user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
+    except:
+        return timedelta(seconds=0)
+
+def is_top_faction(others, _current_race):
+    if others // 2 < _current_race:
+        return True
+    return False
+
+def get_difference(_current_race, others):
+    return _current_race - others // 2
+
+def cooldown_var(others, _current_race):
+    difference = get_difference(_current_race, others)
+    if not is_top_faction(others, _current_race):
+        difference = difference * 2
+    return timedelta(minutes=difference * 3)
+
+def calc_cooldown_var(s, data, self_user):
+    others, _current_race, _current_target = get_race_counts(s, data, self_user, self_user)
+    return calc_cooldown_var(others, _current_race)
+
 
 def get_user_id(user) -> int:
     return int(parseMention(user[0]))
@@ -120,3 +161,6 @@ async def add_and_log(self, data, target, s, previousClass, self_user, timestamp
         await self.remove_guild_member_role(data.guild_id, target.UserID, role_id, "Halloween Minigame")
         role_id = roles.get(target.CurrentClass, "")
         await self.add_guild_member_role(data.guild_id, target.UserID, role_id, "Halloween Minigame")
+
+def _t(key, language, **kwargs):
+    return tr("events.halloween."+key, language, **kwargs)
