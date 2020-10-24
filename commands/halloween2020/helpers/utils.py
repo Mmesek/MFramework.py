@@ -105,7 +105,7 @@ def cooldown_var(others, _current_race):
 
 def calc_cooldown_var(s, data, self_user):
     others, _current_race, _current_target = get_race_counts(s, data, self_user, self_user)
-    return calc_cooldown_var(others, _current_race)
+    return cooldown_var(others, _current_race)
 
 
 def get_user_id(user) -> int:
@@ -162,5 +162,5 @@ async def add_and_log(self, data, target, s, previousClass, self_user, timestamp
         role_id = roles.get(target.CurrentClass, "")
         await self.add_guild_member_role(data.guild_id, target.UserID, role_id, "Halloween Minigame")
 
-def _t(key, language, **kwargs):
+def _t(key, language='en', **kwargs):
     return tr("events.halloween."+key, language, **kwargs)
