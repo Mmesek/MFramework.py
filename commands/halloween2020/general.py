@@ -1,8 +1,6 @@
 from MFramework.database import alchemy as db
 from MFramework.utils.utils import tr, Embed
 
-from datetime import datetime, timedelta, timezone
-
 from .helpers import *
 
 @Humans(cmd='drink', alias='enlist')
@@ -28,9 +26,9 @@ async def drink(self, *class_drink, data, language, cmd, **kwargs):
 async def turn(self, *target, data, language, cmd, **kwargs):
     '''Extended description to use with detailed help command'''
     if cmd == 'cure':
-        OPCODE = await turning_logic(self, data, target, HUNTERS, True, timedelta(hours=2), to_same_class=False)
+        OPCODE = await turning_logic(self, data, target, HUNTERS, True, COOLDOWNS[cmd], to_same_class=False)
     else:
-        OPCODE = await turning_logic(self, data, target, MONSTERS)
+        OPCODE = await turning_logic(self, data, target, MONSTERS, False, COOLDOWNS[cmd])
     if type(OPCODE) is tuple:
         OPCODE, r = OPCODE
     if OPCODE is Responses.SUCCESS:
@@ -166,7 +164,7 @@ async def hstats(self, *args, data, language, **kwargs):
     total = session.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).order_by(db.HalloweenClasses.TurnCount.desc()).all()
     e = Embed()
     totalBites, totalPopulation = get_total(self, data, total)
-    e.setDescription(tr("events.halloween.totalBites", language)+'/'+tr("events.halloween.totalCures", language)+f": {totalBites}\n"+'\n'.join('{}: {}'.format(tr("events.halloween."+i.lower().replace(' ','_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
+    e.setDescription(tr("events.halloween.total_bites", language)+'/'+tr("events.halloween.total_cures", language)+f": {totalBites}\n"+'\n'.join('{}: {}'.format(tr("events.halloween."+i.lower().replace(' ','_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
     await self.embed(data.channel_id, "", e.embed)
 
 @HalloweenEvent(help='Shows current cooldowns')
@@ -174,29 +172,21 @@ async def cooldown(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
     self_user = get_user(data.guild_id, data.author.id, s)
-    cooldown = datetime.now(tz=timezone.utc) - self_user.LastAction
+    elapsed = get_elapsed(self_user)
     if self_user.CurrentClass in HUNTERS:
-        cooldown = timedelta(hours=2) - cooldown
-        if self_user.ActionCooldownEnd is not None:
-            action_cooldown = self_user.ActionCooldownEnd - datetime.now(tz=timezone.utc)
-        else:
-            action_cooldown = timedelta(seconds=-1)
-        if cooldown.total_seconds() < 0:
+        cooldown = COOLDOWNS['cure'] - elapsed
+        action_cooldown = get_action_cooldown_left(self_user)
+        if cooldown.total_seconds() <= 0:
             cooldown = tr("events.halloween.ready", language)
-        if action_cooldown.total_seconds() < 0:
+        if action_cooldown.total_seconds() <= 0:
             action_cooldown = tr("events.halloween.ready", language)
-        return await self.message(data.channel_id, tr("events.halloween.remainingCooldowns", language, cooldown=cooldown, action=action_cooldown))
+        return await self.message(data.channel_id, tr("events.halloween.remaining_cooldowns", language, cooldown=cooldown, action=action_cooldown))
     elif self_user.CurrentClass in MONSTERS:
-        others, _current_race, _current_target = get_race_counts(s, data, self_user, self_user)
-        if others // 2 < _current_race:
-            difference = _current_race - others // 2
-        else:
-            difference = (_current_race - others // 2) * 2
-        _cooldown = timedelta(minutes=difference*3)
-    cooldown = timedelta(hours=3)+_cooldown - cooldown
-    if cooldown.total_seconds() < 0:
-        return await self.message(data.channel_id, tr("events.halloween.cooldownFinished", language))
-    await self.message(data.channel_id, tr("events.halloween.remainingCooldown", language, cooldown=cooldown))
+        cooldown = COOLDOWNS["bite"] + calc_cooldown_var(s, data, self_user)
+        cooldown = cooldown - elapsed
+        if cooldown.total_seconds() <= 0:
+            return await self.message(data.channel_id, tr("events.halloween.cooldown_finished", language))
+        await self.message(data.channel_id, tr("events.halloween.remaining_cooldown", language, cooldown=cooldown))
     
 @HalloweenEvent(help="Shows user's profile")
 async def hprofile(self, *user, data, language, **kwargs):
@@ -219,15 +209,15 @@ async def hprofile(self, *user, data, language, **kwargs):
             cures += i
         for i in [self_user.WerewolfStats, self_user.VampireStats, self_user.ZombieStats]:
             bites += i
-        e.addField(tr("events.halloween.totalBites", language), str(bites), True)
-        e.addField(tr("events.halloween.totalCures", language), str(cures), True)
-        e.addField(tr("events.halloween.totalTurns", language), str(self_user.TurnCount), True)
+        e.addField(tr("events.halloween.total_bites", language), str(bites), True)
+        e.addField(tr("events.halloween.total_cures", language), str(cures), True)
+        e.addField(tr("events.halloween.total_turns", language), str(self_user.TurnCount), True)
         if self_user.LastAction is not None:
-            e.setFooter("", tr("events.halloween.lastAction", language)).setTimestamp(self_user.LastAction.isoformat())
+            e.setFooter("", tr("events.halloween.last_action", language)).setTimestamp(self_user.LastAction.isoformat())
         effects = ""
-        if self_user.ProtectionEnds is not None and datetime.now(timezone.utc) < self_user.ProtectionEnds:
+        if self_user.ProtectionEnds is not None and get_current_time() < self_user.ProtectionEnds:
             u = await get_usernames(self, data, self_user.ProtectedBy)
-            effects += tr("events.halloween.effect_biteProtection", language, user=u)
+            effects += tr("events.halloween.effect_bite_protection", language, user=u)
         if effects != "":
-            e.addField(tr("events.halloween.activeEffects", language), effects, True)
+            e.addField(tr("events.halloween.active_effects", language), effects, True)
         await self.embed(data.channel_id, "", e.embed)
