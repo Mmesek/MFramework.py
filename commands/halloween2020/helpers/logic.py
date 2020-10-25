@@ -33,7 +33,9 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
         elif is_top_faction(others, _current_race):
             roll = SystemRandom().randint(0, 75)
             if roll < get_difference(_current_race, others):
-                return Responses.FAILED #"Failed to bite"
+                failed = True
+            else:
+                failed = False
         cooldown = get_elapsed(self_user) + cooldown_var(others, _current_race)
 
     if self_user.LastAction != None:
@@ -52,6 +54,9 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
         s.commit()
     if target_user.ProtectionEnds is not None and target_user.ProtectionEnds > timestamp:
         return Responses.PROTECTED #"Target is protected"
+
+    if failed:
+        return Responses.FAILED #"Failed to bite"
 
     previousClass = target_user.CurrentClass
     target_user.CurrentClass = self_user.CurrentClass if to_same_class else "Human"
