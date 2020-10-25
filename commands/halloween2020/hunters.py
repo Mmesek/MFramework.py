@@ -4,6 +4,7 @@ from datetime import timedelta
 from random import SystemRandom
 
 from .helpers import *
+from .helpers.utils import _t
 
 @Hunters(alias='protect', help="Protects fellow hunter from being bitten")
 async def defend(self, *user, data, language, **kwargs):
