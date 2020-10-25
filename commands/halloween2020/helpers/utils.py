@@ -3,29 +3,31 @@ from MFramework.utils.utils import parseMention, tr
 from datetime import datetime, timedelta, timezone
 
 #from .constants import *
-from .constants import MONSTERS, HUNTERS, _HGROUPS, _HHELP
+from .constants import MONSTERS, HUNTERS, _HHELP
 from MFramework.commands import register
-
+from inspect import signature
 def HalloweenEvent(cmd='', help='', alias='', race='None', group='Global', hijak=None, **kwargs):
     def inner(f, *arg, **kwarg):
-        if race not in _HGROUPS:
-            _HGROUPS[race] = []
-        _HGROUPS[race].append(f.__name__)
-        if alias != '':
-            cmds = [a for a in alias.split(',')]
+        nonlocal cmd, help, alias, race, group
+        if race not in _HHELP:
+            _HHELP[race] = {}
+        if cmd == '':
+            cmd = f.__name__
         else:
-            cmds = []
-        if cmd != '':
-            cmds.append(cmd)
-        else:
-            cmds.append(f.__name__)
-        for g in cmds:
-            if help != '':
-                if race not in _HHELP:
-                    _HHELP[race] = {}
-                _HHELP[race][g.strip()] = help
-        if cmd != '':
             f.__name__ = cmd
+        _HHELP[race][cmd] = {}
+
+        sig = signature(f)
+        s = str(sig).replace('(', '').replace('self, ', '').replace('*args', '').replace(')', '').replace('**kwargs', '').replace('*','\*').replace('group','').replace('_','\_').replace('language','').replace('cmd','')
+        si = s.split('data, ')
+        sig = si[0].split(', ')
+        sig = [f'[{a}]' if '=' not in a else f"({a})" if a.split('=', 1)[1] not in ['0', "''", 'None', 'False'] else f"({a.split('=',1)[0]})" for a in sig if a != '']
+        s = si[1].split(', ')
+        sig += [f"(-{i.split('=')[0]})" if '=False' in i else f"(--{i.split('=')[0]})" if '=' in i else f'[@{i}]' for i in s if i != '']
+        _HHELP[race][cmd]['sig'] = ' '.join(sig)
+        _HHELP[race][cmd]['alias'] = alias
+        _HHELP[race][cmd]['msg'] = help
+
         register(alias=alias, group=group, hijak=hijak, hijak_coroutine=True, **kwargs)(f)
         return f
     return inner

@@ -4,7 +4,8 @@ from MFramework.utils.utils import Embed
 from .helpers import *
 from .helpers.utils import _t
 
-@Humans(cmd='drink', alias='enlist', help="Joins a side")
+@Humans(cmd='enlist', help='Join a hunters side')
+@Humans(cmd='drink', help="Drink an unknown beverage to become a monster")
 async def drink(self, *class_drink, data, language, cmd, **kwargs):
     '''Extended description to use with detailed help command'''
     _class = ' '.join(class_drink)
@@ -114,7 +115,9 @@ async def hleaderboard(self, *args, data, language, **kwargs):
 
     await self.embed(data.channel_id, "", e.embed)
 
-@HalloweenEvent(help='Shows bites/cures history', alias='bitehistory, curehistory')
+@Monsters(help="Shows bites history", cmd='bitehistory')
+@Hunters(help="Shows cures history", cmd='curehistory')
+@HalloweenEvent(help='Shows bites/cures history')
 async def hhistory(self, *user, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     not_self=False
