@@ -85,7 +85,9 @@ async def join_logic(self, data, _class, classes, first_only=False):
     self_user = get_user(data.guild_id, data.author.id, s)
     if first_only and self_user is not None and _class != 'random':
         return Responses.FAILED #"This action is only for first timers"
-    _class = ' '.join(_class) if type(_class) is tuple else _class
+    elif _class == ():
+        return Responses.AVAILABLE
+    _class = ' '.join(_class).title() if type(_class) is tuple else _class.title()
 
     if self_user is None:
         self_user = db.HalloweenClasses(data.guild_id, data.author.id)
@@ -95,11 +97,11 @@ async def join_logic(self, data, _class, classes, first_only=False):
             return Responses.CANT #"Not a human"
 
     previousClass = self_user.CurrentClass
-    if _class == 'random':
+    if _class == 'Random':
         races = s.query(db.HalloweenClasses.CurrentClass).filter(db.HalloweenClasses.GuildID == data.guild_id).all()
         c = {}
         for i in races:
-            if i.CurrentClass.lower() not in classes:
+            if i.CurrentClass not in classes:
                 continue
             if i.CurrentClass not in c:
                 c[i.CurrentClass] = 0
@@ -108,7 +110,7 @@ async def join_logic(self, data, _class, classes, first_only=False):
             _class = sorted(c.items(), key=lambda i: i[1])[0][0]
         else:
             _class = SystemRandom().choice(c)
-    elif _class.lower() not in classes:
+    elif _class not in classes:
         return Responses.ERROR #"Invalid class"
 
     self_user.CurrentClass = _class.title()

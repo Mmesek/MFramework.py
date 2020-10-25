@@ -18,7 +18,7 @@ async def drink(self, *class_drink, data, language, cmd, **kwargs):
 
     if r is Responses.SUCCESS:
         await self.message(data.channel_id, _t("success_"+cmd, language))
-    elif r is Responses.AVAILABLE:
+    elif r is Responses.AVAILABLE or r is Responses.ERROR:
         await self.message(data.channel_id, _t("available_"+cmd, language))
     else:
         await self.message(data.channel_id, _t("cant_"+cmd, language))
