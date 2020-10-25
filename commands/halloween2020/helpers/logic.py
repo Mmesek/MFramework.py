@@ -43,9 +43,9 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
         if not skip_cooldown and cooldown < action_cooldown:
             return Responses.COOLDOWN, cooldown #"Cooldown not ready"
 
-    if _hunters and immune_table.get(target_user.CurrentClass) != self_user.CurrentClass:
+    if _hunters and IMMUNE_TABLE.get(target_user.CurrentClass) != self_user.CurrentClass:
         return Responses.IMMUNE  #"Target is immune"
-    elif _hunters is False and immune_table.get(target_user.CurrentClass, '') == self_user.CurrentClass:
+    elif _hunters is False and IMMUNE_TABLE.get(target_user.CurrentClass, '') == self_user.CurrentClass:
         return Responses.ERROR, self_user.CurrentClass
 
     timestamp = datetime.now(tz=timezone.utc)
