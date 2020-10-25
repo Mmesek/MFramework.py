@@ -25,18 +25,24 @@ async def hhelp(self, *args, data, language, **kwargs):
     s = self.db.sql.session()
     user = get_user(data.guild_id, data.author.id, s)
     if user.CurrentClass in MONSTERS:
-        _race = 'Monsters'
+        race = 'Monsters'
     elif user.CurrentClass in HUNTERS:
-        _race = 'Hunters'
+        race = 'Hunters'
     else:
-        _race = "Humans"
-    e = Embed()
+        race = "Humans"
+    e = Embed().setDescription("[Optional argument]")
     s = {}
-    for race in _HHELP:
+    def iterate(race):
+        s = ''
         for h in _HHELP[race]:
-            if race not in s:
-                s[race] = ''
-            s[race] += f'\n`{h}` - ' + _HHELP[race][h]
+            if _HHELP[race][h]['msg'] == '':
+                continue
+            s += '\n`'+h+'` ' + _HHELP[race][h]['sig'] + ' - ' + _HHELP[race][h]['msg']
+            if _HHELP[race][h]['alias'] != '':
+                s+=' - Aliases: `'+ _HHELP[race][h]['alias'] + '`'
+        return s
+    s[race] = iterate(race)
+    s['Global'] = iterate('None')
     for race in s:
         e.addField(race if race != 'None' else 'Global', s[race])
     await self.embed(data.channel_id, '', e.embed)
