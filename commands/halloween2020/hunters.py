@@ -18,7 +18,7 @@ async def defend(self, *user, data, language, **kwargs):
     if self_user.ActionCooldownEnd is not None:
         if now < self_user.ActionCooldownEnd:
             cooldown = self_user.ActionCooldownEnd - now
-            return await self.message(data.channel_id, _t("remainingCooldown", language, cooldown=cooldown))
+            return await self.message(data.channel_id, _t("remaining_cooldown", language, cooldown=cooldown))
 
     target = get_user_id(user)
     if target == data.author.id:
@@ -50,7 +50,7 @@ async def betray(self, *user, data, language, **kwargs):
     now = get_current_time()
     if self_user.ActionCooldownEnd is not None and now < self_user.ActionCooldownEnd:
         cooldown = self_user.ActionCooldownEnd - now
-        return await self.message(data.channel_id, _t("remainingCooldown", language, cooldown=cooldown))
+        return await self.message(data.channel_id, _t("remaining_cooldown", language, cooldown=cooldown))
     roll = SystemRandom().randint(0, 100)
     self_user.ActionCooldownEnd = now + timedelta(hours=4)
     s.commit()
