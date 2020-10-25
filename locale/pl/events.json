@@ -102,7 +102,7 @@
         "remaining_cooldowns":"Pozostały Cooldown: %{cooldown}\nCooldown Akcji: %{action}",
         "ready":"Gotowe",
         "cooldown_finished":"Cooldown skończony.",
-        "cooldown":"Ostatnia akcja została wykonana %{elapsed} temu! Pozostały Cooldown: %{cooldown}",
+        "cooldown":"Ostatnia akcja została wykonana mniej niż %{elapsed} temu! Pozostały Cooldown: %{cooldown}",
         "turned_history":"\n`[%{timestamp}]` Zamieniono z `%{fromClass}` w `%{toClass}` przez `%{u}`",
         "turned_victims":"\n`[%{timestamp}]` Zamieniono `%{u}` z `%{fromClass}` w `%{toClass}`",
         "Profession":"Profesja",
