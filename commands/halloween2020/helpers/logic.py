@@ -109,6 +109,8 @@ async def join_logic(self, data, _class, classes, first_only=False):
         for i in classes:
             if i not in c:
                 c[i] = 0
+        if all(c[i] != 0 for i in c) and self_user.CurrentClass != "Human":
+            return Responses.CANT
         if c != []:
             _class = sorted(c.items(), key=lambda i: i[1])[0][0]
         else:
