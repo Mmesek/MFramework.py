@@ -27,7 +27,7 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
         return Responses.IMMUNE #"Target is on the same side"
 
     failed = False
-    cooldown = get_elapsed(self_user)
+    elapsed = get_elapsed(self_user)
     if not _hunters:
         others, _current_race, _current_target = get_race_counts(s, data, self_user, target_user)
         if _current_target == 1:
@@ -36,10 +36,11 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
             roll = SystemRandom().randint(0, 75)
             if roll < get_difference(_current_race, others):
                 failed = True
-        cooldown += cooldown_var(others, _current_race)
+        action_cooldown += cooldown_var(others, _current_race)
 
     if self_user.LastAction != None:
-        if not skip_cooldown and cooldown < action_cooldown:
+        cooldown = action_cooldown - elapsed
+        if not skip_cooldown and cooldown.total_seconds() > 0:
             return Responses.COOLDOWN, cooldown #"Cooldown not ready"
 
     if _hunters and IMMUNE_TABLE.get(target_user.CurrentClass) != self_user.CurrentClass:
