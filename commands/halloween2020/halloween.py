@@ -30,7 +30,11 @@ async def hhelp(self, *args, data, language, **kwargs):
         race = 'Hunters'
     else:
         race = "Humans"
-    e = Embed().setDescription("[Optional argument]")
+    e = Embed().setTitle("Rules").setDescription("- Monsters can bite any non monster that is not hunting them.\nVampire can bite Human, Huntsman and Zombie Slayer but not Vampire Hunter.\n\n- Hunters can only cure what they hunt.\nVampire Hunter can only cure Vampires")
+    e.addField("Drinking or Enlisting", "- You can choose your `drink` only if you weren't bitten/enlisted before. Otherwise you can only drink random drink.\n\n- You can `enlist` only while being Human unless there is no hunter in profession you want to enlist to.")
+    e.addField("Last of the Kind", "You can't bite/cure someone if turning them means the group will have 0 members")
+    e.addField("Joining game", "To begin, if you weren't bitten by someone already, either `drink` to become a Monster or `enlist` to join Hunters")
+    e.addField("Command Arguments", "[Optional argument]")
     s = {}
     def iterate(race):
         s = ''
