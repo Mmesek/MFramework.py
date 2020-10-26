@@ -106,6 +106,9 @@ async def join_logic(self, data, _class, classes, first_only=False):
             if i.CurrentClass not in c:
                 c[i.CurrentClass] = 0
             c[i.CurrentClass] += 1
+        for i in classes:
+            if i not in c:
+                c[i] = 0
         if c != []:
             _class = sorted(c.items(), key=lambda i: i[1])[0][0]
         else:
