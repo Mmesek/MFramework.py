@@ -37,10 +37,10 @@ async def turn(self, *target, data, language, cmd, **kwargs):
         target, oldClass, currentClass = r
         await self.message(data.channel_id, _t("success_"+cmd, language, author=data.author.id, target=target, previousClass=oldClass, currentClass=currentClass), allowed_mentions={"parse": []})
     elif OPCODE is Responses.COOLDOWN:
-        cooldown = COOLDOWNS[cmd] - r
+        action_cooldown, cooldown = r
         if cooldown.total_seconds() <= 0:
             return await self.message(data.channel_id, _t("cooldown_finished", language))
-        await self.message(data.channel_id, _t("cooldown", language, elapsed=COOLDOWNS[cmd], cooldown=cooldown))
+        await self.message(data.channel_id, _t("cooldown", language, elapsed=action_cooldown, cooldown=cooldown))
     elif OPCODE is Responses.IMMUNE or OPCODE is Responses.PROTECTED:
         await self.message(data.channel_id, _t("target_immune", language))
     elif OPCODE is Responses.CANT:
