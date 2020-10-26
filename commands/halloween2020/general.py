@@ -48,7 +48,7 @@ async def turn(self, *target, data, language, cmd, **kwargs):
     elif OPCODE is Responses.FAILED:
         await self.message(data.channel_id, _t("failed_"+cmd, language))
     elif OPCODE is Responses.ERROR:
-        await self.message(data.channel_id, _t("error_"+cmd, language, currentClass=immune_table.get(r)))
+        await self.message(data.channel_id, _t("error_"+cmd, language, currentClass=IMMUNE_TABLE.get(r)))
     else:
         await self.message(data.channel_id, _t("error_generic", language))
 
