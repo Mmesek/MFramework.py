@@ -54,7 +54,7 @@ async def betray(self, *user, data, language, **kwargs):
     roll = SystemRandom().randint(0, 100)
     self_user.ActionCooldownEnd = now + timedelta(hours=4)
     s.commit()
-    if roll > 97:
+    if roll > 92:
         await turning_logic(self, data, user, HUNTERS, True, skip_cooldown=True)
         return await self.message(data.channel_id, _t("success_betray", language))
     return await self.message(data.channel_id, _t("error_betray", language))
