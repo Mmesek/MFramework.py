@@ -1,5 +1,5 @@
 import inspect, re
-from .utils.utils import timed
+from .utils.utils import timed, tr
 
 
 async def Invalid(*args, **kwargs):
@@ -9,6 +9,7 @@ async def Invalid(*args, **kwargs):
 groups = ["System", "Admin", "Mod", "Nitro", "Vip", "Global", "dm"]
 commandList, helpList, extHelpList = {}, {}, {}
 contextCommandList = {}
+localizedCommands = {'en':{}, 'pl':{}}
 
 for i in groups:
     commandList.update({i: {}})
@@ -130,6 +131,17 @@ def register(**kwargs):
                 break
 
         # Register to command's list
+        for l in localizedCommands:
+            _n = kwargs.get('cmd_trigger', f"commands.{f.__name__.lower()}.cmd_trigger")
+            n = tr(_n, l)
+            if n == l+'.'+_n:
+                n = f.__name__.lower()
+            localizedCommands[l][n] = f.__name__.lower()
+            aliases = kwargs.get('localized_aliases', f"commands.{f.__name__.lower()}.cmd_alias")
+            n = tr(aliases, l)
+            if n != l + '.' + aliases:
+                for i in aliases.split(','):
+                    localizedCommands[l][i.strip()] = f.__name__.lower()
         for g in group:
             commandList[g][f"{f.__name__.lower()}"] = f
             if "alias" in kwargs:
@@ -266,6 +278,19 @@ async def execute(self, data):
         args = [t.strip() for t in self.patterns['args'].split(cmd) if t is not None and t != '']
         cmd = cmd.split(' ', 1)
         lower_cmd = cmd[0].lower()
+
+        l_overwrites = self.cache[data.guild_id].language_overwrites
+#        if data.author.id in users:
+#            if users[data.author.id].language is not None:
+#                _language = users[data.author.id].language
+        if data.channel_id in l_overwrites:
+            _language = l_overwrites[data.channel_id]
+        else:
+            _language = self.cache[data.guild_id].language
+
+        if lower_cmd in localizedCommands[_language]:
+            lower_cmd = localizedCommands[_language][lower_cmd]
+
         if lower_cmd not in commandList[group] and lower_cmd not in contextCommandList[group]:
             continue
         try:
@@ -277,14 +302,6 @@ async def execute(self, data):
         except:
             continue
         
-        l_overwrites = self.cache[data.guild_id].language_overwrites
-#        if data.author.id in users:
-#            if users[data.author.id].language is not None:
-#                _language = users[data.author.id].language
-        if data.channel_id in l_overwrites:
-            _language = l_overwrites[data.channel_id]
-        else:
-            _language = self.cache[data.guild_id].language
         kwargs = {
            'data': data,
            'group': group,
