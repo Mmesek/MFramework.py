@@ -28,6 +28,11 @@ def HalloweenEvent(cmd='', help='', alias='', race='None', group='Global', hijak
         _HHELP[race][cmd]['alias'] = alias
         _HHELP[race][cmd]['msg'] = help
 
+        n = _translate('cmd_', 'en', cmd, '0')
+        if n != '0':
+            kwargs['cmd_trigger'] = 'events.halloween.cmd_' + cmd
+            kwargs['localized_aliases'] = 'events.halloween.alias_' + cmd
+
         register(alias=alias, group=group, hijak=hijak, hijak_coroutine=True, **kwargs)(f)
         return f
     return inner
@@ -166,3 +171,9 @@ async def add_and_log(self, data, target, s, previousClass, self_user, timestamp
 
 def _t(key, language='en', **kwargs):
     return tr("events.halloween."+key, language, **kwargs)
+
+def _translate(_key, _language, name, default=''):
+    n = _t(_key+name, language=_language)
+    if n == _language + '.events.halloween.' + _key + name:
+        return default
+    return n

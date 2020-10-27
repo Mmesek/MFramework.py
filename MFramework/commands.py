@@ -139,7 +139,7 @@ def register(**kwargs):
             localizedCommands[l][n] = f.__name__.lower()
             aliases = kwargs.get('localized_aliases', f"commands.{f.__name__.lower()}.cmd_alias")
             n = tr(aliases, l)
-            if n != l + '.' + aliases:
+            if n != l + '.' + aliases and aliases != '':
                 for i in aliases.split(','):
                     localizedCommands[l][i.strip()] = f.__name__.lower()
         for g in group:
