@@ -1,6 +1,7 @@
 from MFramework.database import alchemy as db
 from MFramework.utils.utils import Embed
 from .helpers import *
+from .helpers.utils import _translate
 @HalloweenEvent(group="System")
 async def halloween_createRoles(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
@@ -39,11 +40,14 @@ async def hhelp(self, *args, data, language, **kwargs):
     def iterate(race):
         s = ''
         for h in _HHELP[race]:
-            if _HHELP[race][h]['msg'] == '':
+            _m = _translate('help_', language, h, _HHELP[race][h]['msg'])
+            if _m == '':
                 continue
-            s += '\n`'+h+'` ' + _HHELP[race][h]['sig'] + ' - ' + _HHELP[race][h]['msg']
-            if _HHELP[race][h]['alias'] != '':
-                s+=' - Aliases: `'+ _HHELP[race][h]['alias'] + '`'
+            _h = _translate('cmd_', language, h, h)
+            s += '\n`' + _h + '` ' + _HHELP[race][h]['sig'] + ' - ' + _m
+            _a = _translate('alias_', language, h, _HHELP[race][h]['alias'])
+            if _a != '':
+                s+=' - Aliases: `'+ _a + '`'
         return s
     s[race] = iterate(race)
     s['Global'] = iterate('None')
