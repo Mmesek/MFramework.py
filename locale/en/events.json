@@ -170,6 +170,6 @@
         "race_humans":"Humans",
         "race_hunters":"Hunters",
         "race_monsters":"Monsters",
-        "race_none":"Global"
+        "race_global":"Global"
     }
 }
