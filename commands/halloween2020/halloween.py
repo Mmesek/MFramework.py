@@ -1,7 +1,7 @@
 from MFramework.database import alchemy as db
 from MFramework.utils.utils import Embed
 from .helpers import *
-from .helpers.utils import _translate
+from .helpers.utils import _translate, _t
 @HalloweenEvent(group="System")
 async def halloween_createRoles(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
@@ -31,11 +31,13 @@ async def hhelp(self, *args, data, language, **kwargs):
         race = 'Hunters'
     else:
         race = "Humans"
-    e = Embed().setTitle("Rules").setDescription("- Monsters can bite any non monster that is not hunting them.\nVampire can bite Human, Huntsman and Zombie Slayer but not Vampire Hunter.\n\n- Hunters can only cure what they hunt.\nVampire Hunter can only cure Vampires")
-    e.addField("Drinking or Enlisting", "- You can choose your `drink` only if you weren't bitten/enlisted before. Otherwise you can only drink random drink.\n\n- You can `enlist` only while being Human unless there is no hunter in profession you want to enlist to.")
-    e.addField("Last of the Kind", "You can't bite/cure someone if turning them means the group will have 0 members")
-    e.addField("Joining game", "To begin, if you weren't bitten by someone already, either `drink` to become a Monster or `enlist` to join Hunters")
-    e.addField("Command Arguments", "[Optional argument]")
+    rules_main = [_t('rules_main_monsters', language), _t('rules_main_hunters', language)]
+    e = Embed().setTitle(_t('rules_title', language)).setDescription('\n\n'.join(rules_main))
+    rules_drinking = [_t('rules_drinking', language, drink_cmd=_t('cmd_drink', language), enlist_cmd=_t('cmd_enlist', language)), _t('rules_enlisting', language, drink_cmd=_t('cmd_drink', language), enlist_cmd=_t('cmd_enlist', language))]
+    e.addField(_t('rules_drinking_title', language), '\n\n'.join(rules_drinking))
+    e.addField(_t('rules_last_protection_title', language), _t('rules_last_protection', language))
+    e.addField(_t('rules_joining_title', language), _t('rules_joining', language, drink_cmd=_t('cmd_drink', language), enlist_cmd=_t('cmd_enlist', language)))
+    e.addField(_t('rules_command_args_title', language), _t('rules_command_args', language))
     s = {}
     def iterate(race):
         s = ''
@@ -52,6 +54,7 @@ async def hhelp(self, *args, data, language, **kwargs):
     s[race] = iterate(race)
     s['Global'] = iterate('None')
     for race in s:
-        e.addField(race if race != 'None' else 'Global', s[race])
+        r = _t('race_'+race.lower(), language)
+        e.addField(r, s[race])
     await self.embed(data.channel_id, '', e.embed)
     
