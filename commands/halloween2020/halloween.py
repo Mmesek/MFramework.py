@@ -33,7 +33,7 @@ async def hhelp(self, *args, data, language, **kwargs):
         race = "Humans"
     rules_main = [_t('rules_main_monsters', language), _t('rules_main_hunters', language)]
     e = Embed().setTitle(_t('rules_title', language)).setDescription('\n\n'.join(rules_main))
-    rules_drinking = [_t('rules_drinking', language, drink_cmd=_t('cmd_drink', language), enlist_cmd=_t('cmd_enlist', language)), _t('rules_enlisting', language, drink_cmd=_t('cmd_drink', language), enlist_cmd=_t('cmd_enlist', language))]
+    rules_drinking = [_t('rules_drinking', language, drink_cmd=_t('cmd_drink', language), enlist_cmd=_t('cmd_enlist', language), drink_nightmare=_t('drink_nightmare', language)), _t('rules_enlisting', language, drink_cmd=_t('cmd_drink', language), enlist_cmd=_t('cmd_enlist', language))]
     e.addField(_t('rules_drinking_title', language), '\n\n'.join(rules_drinking))
     e.addField(_t('rules_last_protection_title', language), _t('rules_last_protection', language))
     e.addField(_t('rules_joining_title', language), _t('rules_joining', language, drink_cmd=_t('cmd_drink', language), enlist_cmd=_t('cmd_enlist', language)))
