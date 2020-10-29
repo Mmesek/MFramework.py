@@ -42,12 +42,12 @@
         "stats":"Rysowanie zajęło: %{total}s\n%{gather}s aby zebrać dane\n%{sort}s aby posortować\n%{convert}s aby przekonwertować\n%{imp}s aby zaimportować."
     },
     "rd":{
-        "cmd_trigger":"rd",
+        "cmd_trigger":"kostka",
         "number":"number",
         "help":"Rolls Random Number"
     },
     "randomquote":{
-        "cmd_trigger":"randomquote",
+        "cmd_trigger":"cytat",
         "help":"Sends random quote"
     },
     "anagram":{
@@ -55,7 +55,7 @@
         "help":"Assembles english words from provided letters/solves anagrams"
     },
     "word":{
-        "cmd_trigger":"word",
+        "cmd_trigger":"słowo",
         "word":"word",
         "letter_count":"letter_count",
         "help":"Checks if provided word exists"
@@ -65,7 +65,8 @@
         "query":"query"
     },
     "today":{
-        "cmd_trigger":"today",
+        "cmd_trigger":"dzisiaj",
+        "cmd_alias":"dziś",
         "help":"Summary of what is today",
         "sun":"Słońce",
         "sunStates":"Wschód: %{rise}\nPołudnie: %{noon}\nZachód: %{set}",
@@ -133,20 +134,21 @@
         "help":"Reacts to a message with emoji as a bot"
     },
     "warn":{
-        "cmd_trigger":"warn",
+        "cmd_trigger":"ostrzeż",
         "user":"user",
         "reason":"reason",
         "help":"Warns user."
     },
     "mute":{
-        "cmd_trigger":"mute",
+        "cmd_trigger":"wycisz",
         "user":"user",
         "time":"time",
         "reason":"reason",
         "help":"Mutes user."
     },
     "kick":{
-        "cmd_trigger":"kick",
+        "cmd_trigger":"wyrzuć",
+        "cmd_alias":"kopnij",
         "user":"user",
         "reason":"reason",
         "help":"Kicks user."
@@ -159,7 +161,7 @@
         "help":"Bans user."
     },
     "infractions":{
-        "cmd_trigger":"infractions",
+        "cmd_trigger":"wykroczenia",
         "users":"users",
         "help":"Shows Infractions of user."
     },
@@ -230,7 +232,7 @@
         "help":"Shows statistics related to bot and system"
     },
     "version":{
-        "cmd_trigger":"version",
+        "cmd_trigger":"wersja",
         "help":"Shows bot information"
     },
     "remaining":{
@@ -239,7 +241,7 @@
         "extHelp":"Extended description to use with detailed help command"
     },
     "shutdown":{
-        "cmd_trigger":"shutdown",
+        "cmd_trigger":"wyłącz",
         "help":"Shuts bot down."
     },
     "updateStatus":{
@@ -327,7 +329,7 @@
         }
     },
     "playercount":{
-        "cmd_trigger":"liczbagraczy",
+        "cmd_trigger":"liczba-graczy",
         "help":"Pokazuje liczbę graczy dla podanej gry (Bądź gier jeśli rozdzielone za pomocą `,`)",
         "for":"Liczba graczy dla ",
         "error":"Nie znaleziono: Gra jest niedostępna, nie wydana bądź wystąpił inny błąd\n"
@@ -336,7 +338,7 @@
         "singleWordError":"Witaj, wygląda na to że twoja wiadomość składa się tylko z jednego słowa, toteż nie przekażę jej dalej. Przekazuję twoje wiadomość tutaj automatycznie i <:%{emoji_success}> pod wiadomością oznacza że została dostarczona. Sforumułuj zdanie i spróbuj ponownie. Miłego mordeczko."
     },
     "giveaway":{
-        "cmd_trigger":"giveaway",
+        "cmd_trigger":"losowanie",
         "help":"help",
         "endTime":"Kończy się",
         "endTimeFinished":{
@@ -374,12 +376,12 @@
         }
     },
     "currency_exchange":{
-        "cmd_trigger":"currency_exchange",
+        "cmd_trigger":"waluta",
         "help":"help",
         "result":"%{result} %{to_currency} z kwoty %{amount} %{currency}"
     },
     "steamcalc":{
-        "cmd_trigger":"steamcalc",
+        "cmd_trigger":"kalkulator-steam",
         "help":"help",
         "notFound":"Nie znaleziono",
         "vanityURL":"Nie można znaleźć takiego użytkownika. Podaj albo końcówkę linka do profilu (VanityURL) albo SteamID",
@@ -397,13 +399,13 @@
         "games_desc":"Łącznie: %{game_count}\nZagrano: %{total_played}"
     },
     "timezone":{
-        "cmd_trigger":"timezone",
+        "cmd_trigger":"strefa-czasowa",
         "help":"help",
         "timezoneNotFound":"Nie można znaleźć strefy %{from_timezone}",
         "notFound":"Nie znaleziono"
     },
     "profile":{
-        "cmd_trigger":"profile",
+        "cmd_trigger":"profil",
         "help":"help",
         "language":"Język",
         "birthday":"Urodziny",
@@ -411,6 +413,7 @@
         "region":"Kraj: %{region}",
         "currency":"Waluta: %{currency}",
         "regional":"Region",
+        "gender":"Płeć",
         "totalEXP":"Całkowity EXP",
         "totalVoiceTime":"Całkowity czas na Głosowym",
         "datesDiscord":"Na Discordzie od: %{discord}",
@@ -420,6 +423,7 @@
         "notFoundRegion":"Nie można znaleźć regionu %{region}",
         "notFoundCurrency":"Nie można znaleźć waluty %{currency}",
         "notFoundTimezone":"Nie można znaleźć strefy %{timezone}",
-        "notFoundLanguage":"Nie można znaleźć języka %{language}"
+        "notFoundLanguage":"Nie można znaleźć języka %{language}",
+        "notFoundGender":"Mordko, płeć językowa w tym przypadku jest wymagana a nie emocjonalna"
     }
 }
