@@ -286,6 +286,8 @@ async def role(self, hex_color, *name, data, language, **kwargs):
         color = None
     if name.lower() in reserved_names:
         return await self.message(data.channel_id, "Sorry, choose different name")
+    if '(Nitro Booster)' not in name:
+        name += ' (Nitro Booster)'
     if c != None:
         await self.modify_guild_role(data.guild_id, c.RoleID, name, 0, color=color, audit_reason="Updated Role of Nitro user")
         role = c.RoleID
