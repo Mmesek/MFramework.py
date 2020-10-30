@@ -91,6 +91,19 @@ class PresenceRoles(Base):
         self.Presence = Presence
         self.RoleGroup = RoleGroup
 
+class ActivityRoles(Base):
+    __tablename__ = 'ActivityRoles'
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    RoleID = Column(BigInteger, primary_key=True)
+    ReqAvgActivity = Column(Integer, primary_key=True)
+    ActivityPeriod = Column(String, primary_key=True)
+    GracePeriod = Column(String)
+    def __init__(self, GuildID, RoleID, ReqAvgActivity, ActivityPeriod, GracePeriod=None):
+        self.GuildID = GuildID
+        self.RoleID = RoleID
+        self.ReqAvgActivity = ReqAvgActivity
+        self.ActivityPeriod = ActivityPeriod
+        self.GracePeriod = GracePeriod
 
 class LevelRoles(Base):
     __tablename__ = 'LevelRoles'
