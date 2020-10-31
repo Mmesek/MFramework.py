@@ -96,6 +96,22 @@ class BaseCtx:
         print('Context Ended. Clean should go there')
 
 
+def updateLocalizationFile(language, keys, default_value):
+    import json
+    key = keys.split('.')
+    jsonFile = open(f"locale/{language}/{key[0]}.json", "r", encoding='utf-8') # Open the JSON file for reading
+    data = json.load(jsonFile) # Read the JSON into the buffer
+    jsonFile.close() # Close the JSON file
+
+    ## Working with buffered content
+    if key[1] not in data:
+        data[key[1]] = {}
+    data[key[1]][key[2]] = default_value
+
+    ## Save our changes to JSON file
+    jsonFile = open(f"locale/{language}/{key[0]}.json", "w+", encoding='utf-8')
+    jsonFile.write(json.dumps(data, indent=4, ensure_ascii=False))
+    jsonFile.close()
 
 def register(**kwargs):
     """alias="alias"\nhelp="description of help message"\ngroup="Global|Vip|Nitro|Mod|Admin" - Default: Global\ncategory="Command's Category" - Default based on Directory"""
@@ -136,12 +152,17 @@ def register(**kwargs):
             n = tr(_n, l)
             if n == l+'.'+_n:
                 n = f.__name__.lower()
+                updateLocalizationFile(l, _n, n)
             localizedCommands[l][n] = f.__name__.lower()
             aliases = kwargs.get('localized_aliases', f"commands.{f.__name__.lower()}.cmd_alias")
             n = tr(aliases, l)
             if n != l + '.' + aliases and aliases != '':
                 for i in aliases.split(','):
                     localizedCommands[l][i.strip()] = f.__name__.lower()
+            _k = f'commands.{f.__name__.lower()}.help'
+            n = tr(_k, l)
+            if n == l+'.'+_k and kwargs.get('help','') != '':
+                updateLocalizationFile(l, _k, kwargs.get('help'))
         for g in group:
             commandList[g][f"{f.__name__.lower()}"] = f
             if "alias" in kwargs:
@@ -160,6 +181,7 @@ def register(**kwargs):
         sig += [f"(-{i.split('=')[0]})" if '=False' in i else f"(--{i.split('=')[0]})" if '=' in i else f'[@{i}]' for i in s if i != '']
         helpList[group[-1]][f"{f.__name__}"] = {}
         helpList[group[-1]][f"{f.__name__}"]['sig'] = ' '.join(sig)
+        #translations for signatures?
         if 'category' not in kwargs or kwargs['category'] == '':
             kwargs['category'] = 'Uncategorized'
         helpList[group[-1]][f"{f.__name__}"]['category'] = kwargs['category'].capitalize()
