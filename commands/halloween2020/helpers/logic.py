@@ -28,11 +28,11 @@ async def turning_logic(self, data, target, side, _hunters=False, action_cooldow
 
     failed = False
     elapsed = get_elapsed(self_user)
+    others, _current_race, _current_target = get_race_counts(s, data, self_user, target_user)
+    if _current_target == 1:
+        return Responses.FAILED #"Failed to bite"
     if not _hunters:
-        others, _current_race, _current_target = get_race_counts(s, data, self_user, target_user)
-        if _current_target == 1:
-            return Responses.FAILED #"Failed to bite"
-        elif is_top_faction(others, _current_race):
+        if is_top_faction(others, _current_race):
             roll = SystemRandom().randint(0, 75)
             if roll < get_difference(_current_race, others):
                 failed = True
