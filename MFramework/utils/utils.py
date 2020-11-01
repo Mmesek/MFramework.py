@@ -11,13 +11,16 @@ class Embed:
         self.total_characters = 0
 
     def setTitle(self, title):
-        self.embed['title'] = title
-        self.total_characters += len(str(title))
+        if self.total_characters + len(str(title)) <= 6000:
+            self.embed['title'] = title
+            self.total_characters += len(str(title))
         return self
 
     def setDescription(self, description):
-        self.embed['description'] = description
-        self.total_characters += len(str(description))
+        description = str(description)[:2024]
+        if self.total_characters + len(str(description)) <= 6000:
+            self.embed['description'] = description
+            self.total_characters += len(str(description))
         return self
 
     def setColor(self, color):
@@ -37,8 +40,9 @@ class Embed:
         return self
 
     def setFooter(self, icon, text):
-        self.embed['footer'] = {"icon_url": icon, "text": text}
-        self.total_characters += len(str(text))
+        if self.total_characters + len(str(text)) <= 6000:
+            self.embed['footer'] = {"icon_url": icon, "text": text}
+            self.total_characters += len(str(text))
         return self
 
     def setTimestamp(self, timestamp):
@@ -46,14 +50,17 @@ class Embed:
         return self
 
     def setAuthor(self, name, url, icon):
-        self.embed['author'] = {"name": name, "url": url, "icon_url": icon}
-        self.total_characters += len(str(name))
+        if self.total_characters + len(str(name)) <= 6000:
+            self.embed['author'] = {"name": name, "url": url, "icon_url": icon}
+            self.total_characters += len(str(name))
         return self
 
     def addField(self, name, value, inline=False):
-        self.embed['fields'] += [{"name": name,
-                                  "value": value, "inline": inline}]
-        self.total_characters += len(str(name)) + len(str(value))
+        value = str(value)[:1024]
+        if self.total_characters + len(str(name)) + len(str(value)) <= 6000:
+            self.embed['fields'] += [{"name": name,
+                                      "value": value, "inline": inline}]
+            self.total_characters += len(str(name)) + len(str(value))
         return self
     
     def addFields(self, title, text, inline=False):
@@ -61,9 +68,11 @@ class Embed:
         for x, chunk in enumerate(wrap(text, 1024, replace_whitespace=False)):
             if len(self.fields) == 25:
                 break
-            if x == 0 and (len(title) + len(chunk) + self.total_characters) < 6000:
+            #if x == 0 and (len(title) + len(chunk) + self.total_characters) < 6000:
+            if x == 0:
                 self.addField(title, chunk, inline)
-            elif (len('\u200b') + len(chunk) + self.total_characters) < 6000:
+            #elif (len('\u200b') + len(chunk) + self.total_characters) < 6000:
+            else:
                 self.addField('\u200b', chunk, inline)
         return self
     
