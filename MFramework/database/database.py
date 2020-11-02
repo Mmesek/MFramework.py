@@ -53,10 +53,12 @@ from .alchemy import Base
 
 class SQL:
     __slots__ = ('engine', 'Session')
-    def __init__(self, db, user, password, location, port, name, echo):
-        #self.engine = create_engine("sqlite:///mbot.db", echo=False)#f'{db}://{user}:{password}@{location}:{port}/{name}', echo={echo})
-        #self.engine = create_engine("postgresql://postgres:postgres@r4:5432/mbot")
-        self.engine = create_engine(f'{db}://{user}:{password}@{location}:{port}/{name}', echo=echo)
+    def __init__(self, db, user, password, location, port, name, echo=False):
+        try:
+            self.engine = create_engine(f'{db}://{user}:{password}@{location}:{port}/{name}', echo=echo)
+        except Exception as ex:
+            print("Connecting to Database failed!", ex)
+            self.engine = create_engine("sqlite:///mbot.db", echo=echo)
         self.Session = sessionmaker(bind=self.engine)
     def create_tables(self):
         Base.metadata.create_all(self.engine)
