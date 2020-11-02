@@ -184,8 +184,11 @@ class Bot(EndpointWrappers, Endpoints):
         self._buffer = bytearray()
         self._zlib = zlib.decompressobj()
         self.state = True
-        from aiohttp.resolver import AsyncResolver
-        resolver = AsyncResolver(nameservers=['8.8.8.8','8.8.4.4'])
+        if 'linux' in platform.system().lower():
+            from aiohttp.resolver import AsyncResolver
+            resolver = AsyncResolver(nameservers=['8.8.8.8', '8.8.4.4'])
+        else:
+            resolver = None
         self.csession = aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False, resolver=resolver))
         gate = await self.get_gateway_bot()
         self.ws = await self.csession.ws_connect(f"{gate['url']}?v=6&encoding=json&compress=zlib-stream")
