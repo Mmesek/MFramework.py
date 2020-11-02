@@ -1,7 +1,7 @@
 python-i18n
 aiohttp
 aiohttp[speedups]
-influxdb
+influxdb-client
 sqlalchemy
 psycopg2
 beautifulsoup4
