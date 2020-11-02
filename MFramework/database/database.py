@@ -1,53 +1,51 @@
-from influxdb import InfluxDBClient
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS 
 import datetime
 
 class Influx:
-    __slots__ = ('influx')
-    def __init__(self, host, name):
-        self.influx = InfluxDBClient(host=host, database=name)
+    __slots__ = ('influx', 'write_api', 'query_api')
+    def __init__(self):
+        self.influx = InfluxDBClient.from_config_file("data/secrets.ini")
+        self.write_api = self.influx.write_api(write_options=SYNCHRONOUS)
+        self.query_api = self.influx.query_api()
 
     async def influxMember(self, serverID, userID, joined_or_left, timestamp=datetime.datetime.now()):
-        self.influx.write_points(
-            [
-                {
-                    "measurement": "MemberChange",
-                    "tags": {"server": serverID, "user": userID},
-                    "time": timestamp,
-                    "fields": {"change": joined_or_left},
-                }
-            ]
+        self.write_api.write(bucket="Members", record=(
+            Point("MemberChange")
+            .tag("server", serverID)
+            .tag("user", userID)
+            .field("change", joined_or_left))
         )
 
     async def influxMembers(self, serverID, users: tuple):
         """Users = [(UserID, timestamp)]"""
-        jsons = []
         for user in users:
-            jsons += [
-                {
-                    "measurement": "MemberChange",
-                    "tags": {"server": serverID, "user": user[0]},
-                    "time": user[1],
-                    "fields": {"change": True},
-                }
-            ]
-        self.influx.write_points(jsons)
+            await self.influxMember(serverID, user[0], True)
 
     async def influxGetMember(self, server):
-        return self.influx.query(
-            "select change from MemberChange where server=$server;", bind_params={"server": server}
-        )
+        return self.query_api.query_data_frame(f'from(bucket:"MemberChange") |> filter(server={server})')
 
     def commitVoiceSession(self, server, channel, user, delta, timestamp=datetime.datetime.now().isoformat()):
-        self.influx.write_points([{"measurement":"VoiceSession", "tags":{"server":server, "channel":channel, "user":user}, "time":timestamp, "fields":{"session":delta}}])
+        self.write_api.write(bucket="Sessions", record=(
+            Point("VoiceSession")
+            .tag("server", server)
+            .tag("channel", channel)
+            .tag("user", user)
+            .field("session", delta)
+        ))
     def commitPresence(self, server, user, game, delta, timestamp=datetime.datetime.now().isoformat()):
-        self.influx.write_points([{"measurement":"GamePresence", "tags":{"server":server, "game":game, "user":user}, "time":timestamp, "fields":{"session":delta}}])
+        self.write_api.write(bucket="Sessions", record=(
+            Point("GamePresence")
+            .tag("server", server)
+            .tag("game", game)
+            .tag("user", user)
+            .field("session", delta)
+        ))
     def getSession(self, user, interval):
-        return self.influx.query(
-            'SELECT * FROM "MFramework"."autogen"."VoiceSession" WHERE "user"=$user', bind_params={"user": user}
-        )
+        return self.query_api.query_data_frame(f'from(bucket:"Sessions/VoiceSession") |> filter(user={user}')
 
     async def influxPing(self):
-        return self.influx.ping()
+        return self.influx.health()
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -78,9 +76,8 @@ class SQL:
 class Database:
     def __init__(self, config):
         sql = config['Database']
-        influx = config['Influx']
         self.sql = SQL(sql['db'], sql['user'], sql['password'], sql['location'], sql['port'], sql['name'], sql['echo'])
-        self.influx = Influx(influx['host'],influx['db'])
+        self.influx = Influx()
 
 
 '''
