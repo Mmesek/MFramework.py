@@ -8,6 +8,8 @@ from MFramework.commands import register
 from inspect import signature
 def HalloweenEvent(cmd='', help='', alias='', race='None', group='Global', hijak=None, **kwargs):
     def inner(f, *arg, **kwarg):
+        if datetime.today().month != 10:
+            return
         nonlocal cmd, help, alias, race, group
         if race not in _HHELP:
             _HHELP[race] = {}
