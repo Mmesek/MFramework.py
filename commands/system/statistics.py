@@ -200,13 +200,13 @@ async def stats(self, *args, data, language, **kwargs):
     cmds = ""
     for x, group in enumerate(groups):
         if x != 0:
-            l = commandList[groups[x - 1]]
+            l = set(commandList[groups[x - 1]].values())
             l = len(l)
         else:
             l = 0
-        c = commandList[group]
+        c = set(commandList[group].values())
         cmds += f"\n`{group}`: {len(c)-l}"
-    cmds += f"\n`Total`: {len(commandList['System'])}"
+    cmds += f"\n`Total`: {len(set(commandList['System'].values()))}"
 
     e.addField("Events Received", msg, True)
     e.addField("Registered Commands", cmds, True)    
