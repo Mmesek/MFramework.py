@@ -6,10 +6,8 @@ async def graph(self, graph='all', resample='Y', locator='Month', interval=4, *a
     '''Possible arguments: graph=all/joined/created/boosters\nresample=W-MON/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth'''
     import time, asyncio
     b = time.time()
-    from io import BytesIO
+    from MFramework.utils import graphing
     import pandas as pd
-    import matplotlib.pyplot as plt
-    import matplotlib.dates as mdates
     from MFramework.utils.utils import created, truncate
     from datetime import date
     f = time.time()
@@ -78,33 +76,16 @@ async def graph(self, graph='all', resample='Y', locator='Month', interval=4, *a
             ax.plot(pr, pr.index, label=tr('commands.graph.boosters', language), marker='.')
 
 
-    #ax.fmt_xdata = mdates.DateFormatter('%m/%y')
-    ax.xaxis.set_major_locator(mdates.YearLocator())
-    locator = locator.lower()
-    if locator == 'month':
-        lctr = mdates.MonthLocator(interval=int(interval))
-    elif locator == 'year':
-        lctr = mdates.YearLocator()
+    graphing.set_locator(ax, locator, interval)
 
-    ax.xaxis.set_minor_locator(lctr)
-    
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%y'))
-    ax.xaxis.set_minor_formatter(mdates.DateFormatter('%m'))
-
-    #fig.tight_layout()
     fig.autofmt_xdate()
 
 
     #Set Names
-    ax.legend()
-    ax.set_title(tr('commands.graph.growth', language))#"Growth")
-    ax.set_ylabel(tr('commands.graph.memberCount', language))#'Member Count')
-    ax.set_xlabel(tr('commands.graph.dates', language))#'Dates (Y/M)')
+    graphing.set_legend(ax, tr('commands.graph.growth', language), tr('commands.graph.memberCount', language), tr('commands.graph.dates', language))
 
-
-    buffered = BytesIO()
-    fig.savefig(buffered)
-    img_str = buffered.getvalue()
+    fig.tight_layout()
+    img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
     await self.withFile(data.channel_id, img_str, f"growth-{date.today()}.png", stats)#f"Took ~{truncate(time.time()-d,2)}s\n{truncate(s-f,2)}s to gather\n{truncate(d-sd,2)}s to sort\n{truncate(sd-s,2)}s to convert\n{truncate(f-b,2)}s to import stuff")
 
@@ -113,10 +94,8 @@ async def graph_infractions(self, infraction_type='all', resample='D', locator='
     '''Extended description to use with detailed help command'''
     import time
     b = time.time()
-    from io import BytesIO
+    from MFramework.utils import graphing
     import pandas as pd
-    import matplotlib.pyplot as plt
-    import matplotlib.dates as mdates
     from MFramework.utils.utils import truncate
     from datetime import date
     f = time.time()
@@ -171,36 +150,14 @@ async def graph_infractions(self, infraction_type='all', resample='D', locator='
             df = pd.Series(total[i])
             ax.plot(df, df.index, label=i)#tr('commands.graph.infractions', language))
 
-
-    ax.xaxis.set_major_locator(mdates.MonthLocator())
-    locator = locator.lower()
-    if locator == 'day':
-        lctr = mdates.DayLocator(interval=int(interval))
-    elif locator == 'week':
-        lctr = mdates.WeekdayLocator(interval=int(interval))
-    elif locator == 'month':
-        lctr = mdates.MonthLocator(interval=int(interval))
-    elif locator == 'year':
-        lctr = mdates.YearLocator()
-
-    ax.xaxis.set_minor_locator(lctr)
-    
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%y'))
-    ax.xaxis.set_minor_formatter(mdates.DateFormatter('%d/%m'))
-
-    #fig.tight_layout()
+    graphing.set_locator(ax, locator, interval)
     fig.autofmt_xdate()
 
-
     #Set Names
-    ax.legend()
-    ax.set_title(tr('commands.graph.infractions', language))
-    ax.set_ylabel(tr('commands.graph.infractionCount', language))
-    ax.set_xlabel('Dates (D/M)')
-
-    buffered = BytesIO()
-    fig.savefig(buffered)
-    img_str = buffered.getvalue()
+    graphing.set_legend(ax, tr('commands.graph.infractions', language), tr('commands.graph.infractionCount', language), 'Dates (D/M)')
+    fig.tight_layout()
+    
+    img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
     await self.withFile(data.channel_id, img_str, f"growth-{date.today()}.png", stats)
 
@@ -209,10 +166,8 @@ async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10
     '''Extended description to use with detailed help command'''
     import time
     b = time.time()
-    from io import BytesIO
+    from MFramework.utils import graphing
     import pandas as pd
-    import matplotlib.pyplot as plt
-    import matplotlib.dates as mdates
     from MFramework.utils.utils import truncate
     from datetime import date
     f = time.time()
@@ -291,55 +246,14 @@ async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10
             df = pd.Series(total[i])
             ax.plot(df, df.index, label=i)#tr('commands.graph.infractions', language))
 
-
-    locator = locator.lower()
-    major = '%d/%m'
-    minor = '%H/%d'
-    if locator == 'minute':
-        ax.xaxis.set_major_locator(mdates.HourLocator())
-        lctr = mdates.MinuteLocator(interval=int(interval))
-        major = '%H/%d'
-        minor = '%M:%H'
-    elif locator == 'hour':
-        ax.xaxis.set_major_locator(mdates.DayLocator())
-        lctr = mdates.HourLocator(interval=int(interval))
-        major = '%d/%m'
-        minor = '%H'
-    elif locator == 'day':
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=7))
-        lctr = mdates.DayLocator(interval=int(interval))
-        major = '%d/%m'
-        minor = '%H/%d'
-    elif locator == 'week':
-        ax.xaxis.set_major_locator(mdates.MonthLocator())
-        lctr = mdates.WeekdayLocator(interval=int(interval))
-        major = '%m/%y'
-        minor = '%d'
-    elif locator == 'month':
-        ax.xaxis.set_major_locator(mdates.YearLocator())
-        lctr = mdates.MonthLocator(interval=int(interval))
-        major = '%y'
-        minor = '%m'
-    elif locator == 'year':
-        lctr = mdates.YearLocator()
-
-    ax.xaxis.set_minor_locator(lctr)
-    
-    ax.xaxis.set_major_formatter(mdates.DateFormatter(major))
-    ax.xaxis.set_minor_formatter(mdates.DateFormatter(minor))
-
-    #fig.tight_layout()
+    graphing.set_locator(ax, locator, interval)
     fig.autofmt_xdate()
 
-
     #Set Names
-    ax.legend()
-    ax.set_title(tr('commands.graph.words', language))
-    ax.set_ylabel(tr('commands.graph.wordCount', language))
-    ax.set_xlabel('Dates (D/M)')
+    graphing.set_legend(ax, tr('commands.graph.words', language), tr('commands.graph.wordCount', language), 'Dates (D/M)')
+    fig.tight_layout()
 
-    buffered = BytesIO()
-    fig.savefig(buffered)
-    img_str = buffered.getvalue()
+    img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
     await self.withFile(data.channel_id, img_str, f"growth-{date.today()}.png", f"Found {len(total[word_or_phrase])} messages containing `{word_or_phrase}` within {len(total_messages)} of total fetched messages. (Took {truncate(s-f,2)}s to fetch them)")
+
