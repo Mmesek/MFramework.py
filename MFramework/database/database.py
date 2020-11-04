@@ -8,6 +8,8 @@ class Influx:
         self.influx = InfluxDBClient.from_config_file("data/secrets.ini")
         self.write_api = self.influx.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.influx.query_api()
+    def point(self, measurement_name):
+        return Point(measurement_name)
 
     async def influxMember(self, serverID, userID, joined_or_left, timestamp=datetime.datetime.now()):
         self.write_api.write(bucket="Members", record=(
