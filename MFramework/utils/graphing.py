@@ -81,6 +81,13 @@ def set_locator(ax, locator, interval):
         lctr = mdates.WeekdayLocator(interval=int(interval))
         major = '%m/%y'
         minor = '%d'
+    elif locator == 'month':
+        ax.xaxis.set_major_locator(mdates.YearLocator())
+        lctr = mdates.MonthLocator(interval=int(interval))
+        major = '%y'
+        minor = '%m'
+    elif locator == 'year':
+        lctr = mdates.YearLocator()
 
     ax.xaxis.set_minor_locator(lctr)
     
