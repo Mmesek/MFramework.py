@@ -174,6 +174,11 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
             year = now.year
             month = now.month
             day = int(yymmdd[0])
+    elif yymmdd.lower() in ['tomorrow', 'yesterday']:
+        now += datetime.timedelta(days=1 if yymmdd == 'tomorrow' else -1)
+        year = now.year
+        month = now.month
+        day = now.day
     else:
         if yymmdd != 'YYYY-MM-DD':
             _timezones.append(yymmdd)
