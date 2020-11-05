@@ -52,7 +52,7 @@ def plot(data_to_plot, resample, growth, locator, interval):
 
 
     #Set Names
-    set_legend(ax, 'Halloween 2020 Summary', 'Population', 'Days')
+    set_legend(ax, 'Halloween 2020 Summary', 'Population', 'Days', loc='upper left', framealpha=255)
     fig.tight_layout()
 
     return create_image(fig)
@@ -94,11 +94,11 @@ def set_locator(ax, locator, interval):
     ax.xaxis.set_major_formatter(mdates.DateFormatter(major))
     ax.xaxis.set_minor_formatter(mdates.DateFormatter(minor))
 
-def set_legend(ax, title, y, x):
-    ax.legend(fontsize=16, loc='upper left', framealpha=255)
-    ax.set_title(title, color="tab:orange", size=25)
-    ax.set_ylabel(y, color="tab:orange", size=23)
-    ax.set_xlabel(x, color="tab:orange", size=23)
+def set_legend(ax, title, y, x, loc='best', framealpha=100, text_color="tab:orange"):
+    ax.legend(fontsize=16, loc=loc, framealpha=framealpha)
+    ax.set_title(title, color=text_color, size=25)
+    ax.set_ylabel(y, color=text_color, size=23)
+    ax.set_xlabel(x, color=text_color, size=23)
 
 def create_image(fig):
     buffered = BytesIO()
