@@ -33,7 +33,9 @@ def getUserID(self, data, game_or_user=''):
 @register(group='Global', help='Shows leaderboard', alias='', category='')
 async def top(self, limit=10, *args, data, games=False, voice=False, chat=False, count=False, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    if type(limit) != int and not limit.isdigit():
+    if type(limit) == str and limit.isdigit:
+        limit = int(limit)
+    elif type(limit) != int and not limit.isdigit():
         limit = 10
     session = self.db.sql.session()
     if voice and not games and not chat:
