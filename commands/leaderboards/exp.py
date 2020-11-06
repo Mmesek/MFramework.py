@@ -98,6 +98,8 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
         else:
             st = i[1]
         l = f'\n{x+1}. {p1} - {st}'
+        if i[0] == data.author.id:
+            l = '__'+l+'__'
         if (len(t) + len(l)) < 2024:
             t += l
         else:
