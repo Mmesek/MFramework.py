@@ -151,14 +151,15 @@ def register(**kwargs):
             _n = kwargs.get('cmd_trigger', f"commands.{f.__name__.lower()}.cmd_trigger")
             n = tr(_n, l)
             if n == l+'.'+_n:
-                n = f.__name__.lower()
-                updateLocalizationFile(l, _n, n)
+                updateLocalizationFile(l, _n, f.__name__.lower())
             localizedCommands[l][n] = f.__name__.lower()
             aliases = kwargs.get('localized_aliases', f"commands.{f.__name__.lower()}.cmd_alias")
             n = tr(aliases, l)
             if n != l + '.' + aliases and aliases != '':
                 for i in aliases.split(','):
                     localizedCommands[l][i.strip()] = f.__name__.lower()
+            elif n == l + '.' + aliases and kwargs.get('alias','') != '':
+                updateLocalizationFile(l, aliases, kwargs.get('alias'))
             _k = f'commands.{f.__name__.lower()}.help'
             n = tr(_k, l)
             if n == l+'.'+_k and kwargs.get('help','') != '':
