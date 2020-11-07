@@ -113,27 +113,33 @@ def updateLocalizationFile(language, keys, default_value):
     jsonFile.write(json.dumps(data, indent=4, ensure_ascii=False))
     jsonFile.close()
 
+from sys import argv
 def check_translation(k, l, default):
     n = tr(k, l)
     if n == l + '.' + k and default != '':
+        if '-generate-translation' in argv or '-update-translation' in argv:
+            updateLocalizationFile(l, k, default)
+        return default
+    elif l == 'en' and '-update-translation' in argv and default != '' and n != default:
         updateLocalizationFile(l, k, default)
         return default
     return n
 
-from sys import argv
 def register(group="Global", help="", alias="", category="", cmd_trigger="", notImpl=False, **kwargs):
     def inner(f, *arg, **kwarg):
         if notImpl:
             return
-        if '-generate-translation' in argv:
+        if '-generate-translation' in argv or '-update-translation' in argv:
             sig = inspect.signature(f)
             s = str(sig).replace('(', '').replace('self, ', '').replace('*args', '').replace(')', '').replace('**kwargs', '').replace('*','\*').replace('group','').replace('_','\_').replace('language','').replace('cmd','')
             si = s.split('data, ')
             sig = si[0].split(', ')
-            sig = [f'[{a}]' if '=' not in a else f"({a})" if a.split('=', 1)[1] not in ['0', "''", 'None', 'False'] else f"({a.split('=',1)[0]})" for a in sig if a != '']
+            arguments = [f'[{a}]' if '=' not in a else f"({a})" if a.split('=', 1)[1] not in ['0', "''", 'None', 'False'] else f"({a.split('=',1)[0]})" for a in sig if a != '']
             s = si[1].split(', ')
-            sig += [f"(-{i.split('=')[0]})" if '=False' in i else f"(--{i.split('=')[0]})" if '=' in i else f'[@{i}]' for i in s if i != '']
-            sig = ' '.join(sig)
+            flags = [f"(-{i.split('=')[0]})" if '=False' in i else f"(--{i.split('=')[0]})" if '=' in i else f'[@{i}]' for i in s if i != '']
+            arguments = [i.replace('\*','') if len(arguments) == 1 else i for i in arguments]
+            sig = ' '.join(arguments + flags)
+            sig = sig if sig != " " else ""
         
         fname = f.__name__.lower() if cmd_trigger == "" else cmd_trigger
         base = f'commands.{fname}.cmd_'
@@ -146,9 +152,9 @@ def register(group="Global", help="", alias="", category="", cmd_trigger="", not
                 for i in aliases.split(','):
                     localizedCommands[l][i.strip()] = fname
             
-            if '-generate-translation' in argv:
+            if '-generate-translation' in argv or '-update-translation' in argv:
                 check_translation(base + 'help', l, help if help != 'Short description to use with help command' else "")
-                check_translation(base + 'extended_help', l, f.__doc__ if f.__doc__ != 'Extended description to use with detailed help command' else "")
+                check_translation(base + 'extended_help', l, f.__doc__ if f.__doc__ != None and f.__doc__ != 'Extended description to use with detailed help command' else "")
                 check_translation(base + 'signature', l, sig)
         
         for i in groups:
