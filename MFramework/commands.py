@@ -138,12 +138,13 @@ def register(group="Global", help="", alias="", category="", cmd_trigger="", not
         fname = f.__name__.lower() if cmd_trigger == "" else cmd_trigger
         base = f'commands.{fname}.cmd_'
         for l in localizedCommands:
-            n = check_translation(base + 'trigger', l, cmd_trigger)
+            n = check_translation(base + 'trigger', l, fname)
             localizedCommands[l][n] = fname
             
             aliases = check_translation(base + 'alias', l, alias)
-            for i in aliases.split(','):
-                localizedCommands[l][i.strip()] = fname
+            if aliases != l + '.' + base + 'alias' and aliases != '':
+                for i in aliases.split(','):
+                    localizedCommands[l][i.strip()] = fname
             
             if '-generate-translation' in argv:
                 check_translation(base + 'help', l, help if help != 'Short description to use with help command' else "")
