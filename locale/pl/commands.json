@@ -1,429 +1,697 @@
 {
-    "help":{
-        "cmd_trigger":"pomoc",
-        "command":"komenda",
-        "category":"kategoria",
-        "categories":"kategorie",
-        "help":"Wysyła liste komend",
-        "extHelp":"Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage./nParameters: :command: - Command to show detailed help info for - Example: command/n:category: - Categories to show commands for - Example: Category another.../n:categories: - Shows list of categories - Example: -categories",
-		"title":"Pomoc dla: %{command}",
-		"reqPerm":"Wymagane uprawnienia",
-		"category_":"Kategoria",
-		"alias_":"Alias",
-		"alias_message":" - Alias: `%{alias}`",
-		"msg":" - %{msg}",
-		"noPerm":"Nie posiadasz uprawnień do użycia tej komendy.",
-		"yourPerm":"Twoje uprawnenia",
-		"example_usage":"Przykład użycia",
-		"parameters":"Parametery",
-		"short_desc":"Krótki Opis",
-		"available_categories":"Dostępne Kategorie"
+    "help": {
+        "cmd_trigger": "pomoc",
+        "command": "komenda",
+        "category": "kategoria",
+        "categories": "kategorie",
+        "cmd_help": "Wysyła liste komend",
+        "cmd_extended_help": "Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage./nParameters: :command: - Command to show detailed help info for - Example: command/n:category: - Categories to show commands for - Example: Category another.../n:categories: - Shows list of categories - Example: -categories",
+        "title": "Pomoc dla: %{command}",
+        "reqPerm": "Wymagane uprawnienia",
+        "category_": "Kategoria",
+        "alias_": "Alias",
+        "alias_message": " - Alias: `%{alias}`",
+        "msg": " - %{msg}",
+        "noPerm": "Nie posiadasz uprawnień do użycia tej komendy.",
+        "yourPerm": "Twoje uprawnenia",
+        "example_usage": "Przykład użycia",
+        "parameters": "Parametery",
+        "short_desc": "Krótki Opis",
+        "available_categories": "Dostępne Kategorie",
+        "cmd_signature": "[command]"
     },
-    "morse":{
-        "cmd_trigger":"morse",
-        "message":"wiadomość",
-        "decode":"dekoduj",
-        "help":"Dekoduje bądź koduje wiadomość w Morsie"
+    "morse": {
+        "cmd_trigger": "morse",
+        "message": "wiadomość",
+        "decode": "dekoduj",
+        "cmd_help": "Dekoduje bądź koduje wiadomość w Morsie",
+        "cmd_signature": "[message] (-decode)"
     },
-    "graph":{
-        "cmd_trigger":"graf",
-        "help":"Pokazuje graf zmian liczby osób na przestrzeni lat oraz daty utworzenia kont obecnych użytkowników.",
-        "extHelp":"Before you say something about it being slow, ~~obtainting~~ harvesting data of users from Discord takes quite a bit on bigger servers",
-        "joined":"Dołączyło",
-        "created":"Utworzonych kont",
-        "boosters":"Wzmacniaczy Nitro",
-        "growth":"Wzrost Użytkowników",
-        "infractions":"Ostrzeżenia",
-        "words":"Słowa",
-        "memberCount":"Liczba Osób",
-        "wordCount":"Liczba Słów",
-        "infractionCount":"Liczba Ostrzeżeń",
-        "dates":"Daty (M/R)",
-        "stats":"Rysowanie zajęło: %{total}s\n%{gather}s aby zebrać dane\n%{sort}s aby posortować\n%{convert}s aby przekonwertować\n%{imp}s aby zaimportować."
+    "graph": {
+        "cmd_trigger": "graf",
+        "cmd_help": "Pokazuje graf zmian liczby osób na przestrzeni lat oraz daty utworzenia kont obecnych użytkowników.",
+        "cmd_extended_help": "Before you say something about it being slow, ~~obtainting~~ harvesting data of users from Discord takes quite a bit on bigger servers",
+        "joined": "Dołączyło",
+        "created": "Utworzonych kont",
+        "boosters": "Wzmacniaczy Nitro",
+        "growth": "Wzrost Użytkowników",
+        "infractions": "Ostrzeżenia",
+        "words": "Słowa",
+        "memberCount": "Liczba Osób",
+        "wordCount": "Liczba Słów",
+        "infractionCount": "Liczba Ostrzeżeń",
+        "dates": "Daty (M/R)",
+        "stats": "Rysowanie zajęło: %{total}s\n%{gather}s aby zebrać dane\n%{sort}s aby posortować\n%{convert}s aby przekonwertować\n%{imp}s aby zaimportować.",
+        "cmd_signature": "(graph='all') (resample='Y') (locator='Month') (interval=4) (-growth)"
     },
-    "rd":{
-        "cmd_trigger":"kostka",
-        "number":"number",
-        "help":"Rolls Random Number"
+    "rd": {
+        "cmd_trigger": "kostka",
+        "number": "number",
+        "cmd_help": "Rolls Random Number",
+        "cmd_signature": "(number=20)"
     },
-    "randomquote":{
-        "cmd_trigger":"cytat",
-        "help":"Sends random quote"
+    "randomquote": {
+        "cmd_trigger": "cytat",
+        "cmd_help": "Sends random quote"
     },
-    "anagram":{
-        "cmd_trigger":"anagram",
-        "help":"Assembles english words from provided letters/solves anagrams"
+    "anagram": {
+        "cmd_trigger": "anagram",
+        "cmd_help": "Assembles english words from provided letters/solves anagrams"
     },
-    "word":{
-        "cmd_trigger":"słowo",
-        "word":"word",
-        "letter_count":"letter_count",
-        "help":"Checks if provided word exists"
+    "word": {
+        "cmd_trigger": "słowo",
+        "word": "word",
+        "letter_count": "letter_count",
+        "cmd_help": "Checks if provided word exists",
+        "cmd_signature": "[word] [letter\\_count]"
     },
-    "how":{
-        "cmd_trigger":"how",
-        "query":"query"
+    "how": {
+        "cmd_trigger": "how",
+        "query": "query"
     },
-    "today":{
-        "cmd_trigger":"dzisiaj",
-        "cmd_alias":"dziś",
-        "help":"Summary of what is today",
-        "sun":"Słońce",
-        "sunStates":"Wschód: %{rise}\nPołudnie: %{noon}\nZachód: %{set}",
-        "moon":"Moon",
-        "moonStates":"Wzejście: %{rise}\nIluminacja: %{illumination}\nZajście: %{set}",
-        "lunarPhase":"Faza Księżyca",
-        "color":"Kolor",
-        "quote":"Cytat dnia"
+    "today": {
+        "cmd_trigger": "dzisiaj",
+        "cmd_alias": "dziś",
+        "cmd_help": "Summary of what is today",
+        "sun": "Słońce",
+        "sunStates": "Wschód: %{rise}\nPołudnie: %{noon}\nZachód: %{set}",
+        "moon": "Moon",
+        "moonStates": "Wzejście: %{rise}\nIluminacja: %{illumination}\nZajście: %{set}",
+        "lunarPhase": "Faza Księżyca",
+        "color": "Kolor",
+        "quote": "Cytat dnia",
+        "cmd_signature": "[difference]"
     },
-    "refreshAppIndex":{
-        "cmd_trigger":"refreshAppIndex",
-        "help":"Updates Index of Steam Games"
+    "refreshAppIndex": {
+        "cmd_trigger": "refreshAppIndex",
+        "cmd_help": "Updates Index of Steam Games"
     },
-    "edit_message":{
-        "cmd_trigger":"edit_message",
-        "messageID":"messageID",
-        "newMessage":"newMessage",
-        "channel":"channel",
-        "help":"Edits bot's message"
+    "edit_message": {
+        "cmd_trigger": "edit_message",
+        "messageID": "messageID",
+        "newMessage": "newMessage",
+        "channel": "channel",
+        "cmd_help": "Edits bot's message",
+        "cmd_signature": "[messageID] [\\*newMessage] [@channel]"
     },
-    "edit_emoji":{
-        "cmd_trigger":"edit_emoji",
-        "emojis":"emojis",
-        "roles":"roles",
-        "help":"Allows only specific roles access to emoji's"
+    "edit_emoji": {
+        "cmd_trigger": "edit_emoji",
+        "emojis": "emojis",
+        "roles": "roles",
+        "cmd_help": "Allows only specific roles access to emoji's",
+        "cmd_signature": "[emojis] [roles]"
     },
-    "aemoji":{
-        "cmd_trigger":"aemoji",
-        "emoji_name":"emoji_name",
-        "help":"Sends animated emoji"
+    "aemoji": {
+        "cmd_trigger": "aemoji",
+        "emoji_name": "emoji_name",
+        "cmd_help": "Sends animated emoji"
     },
-    "list_emoji":{
-        "cmd_trigger":"list_emoji",
-        "help":"Lists all available emoji's in guild"
+    "list_emoji": {
+        "cmd_trigger": "list_emoji",
+        "cmd_help": "Lists all available emoji's in guild",
+        "cmd_signature": "(-all) (-regular)"
     },
-    "delete":{
-        "cmd_trigger":"delete",
-        "channel":"channel",
-        "message":"message",
-        "help":"Delete's message"
+    "delete": {
+        "cmd_trigger": "delete",
+        "channel": "channel",
+        "message": "message",
+        "cmd_help": "Delete's message",
+        "cmd_alias": "del, rm",
+        "cmd_extended_help": "meme/cannedresponse/rule/snippet",
+        "cmd_signature": "[name] (--typeof) (--user)"
     },
-    "getmessagesfromdm":{
-        "cmd_trigger":"getmessagesfromdm",
-        "user":"user",
-        "help":"Retrives messages from DM"
+    "getmessagesfromdm": {
+        "cmd_trigger": "getmessagesfromdm",
+        "user": "user",
+        "cmd_help": "Retrives messages from DM"
     },
-    "send_dm":{
-        "cmd_trigger":"send_dm",
-        "user":"user",
-        "message":"message",
-        "alias":"dm",
-        "help":"Sends user DM as a bot"
+    "send_dm": {
+        "cmd_trigger": "send_dm",
+        "user": "user",
+        "message": "message",
+        "alias": "dm",
+        "cmd_help": "Sends user DM as a bot"
     },
-    "send_message":{
-        "cmd_trigger":"send_message",
-        "channel":"channel",
-        "message":"message",
-        "help":"Sends message to a channel as a bot"
+    "send_message": {
+        "cmd_trigger": "send_message",
+        "channel": "channel",
+        "message": "message",
+        "cmd_help": "Sends message to a channel as a bot"
     },
-    "react":{
-        "cmd_trigger":"react",
-        "channel":"channel",
-        "messageID":"messageID",
-        "reactions":"reactions",
-        "help":"Reacts to a message with emoji as a bot"
+    "react": {
+        "cmd_trigger": "react",
+        "channel": "channel",
+        "messageID": "messageID",
+        "reactions": "reactions",
+        "cmd_help": "Reacts to a message with emoji as a bot",
+        "cmd_signature": "[messageID] [\\*reactions] [@channel]"
     },
-    "warn":{
-        "cmd_trigger":"ostrzeż",
-        "user":"user",
-        "reason":"reason",
-        "help":"Warns user."
+    "warn": {
+        "cmd_trigger": "ostrzeż",
+        "user": "user",
+        "reason": "reason",
+        "cmd_help": "Warns user.",
+        "cmd_alias": "tempmute, mute, kick, tempban, ban, unban, unmute",
+        "cmd_signature": "[user] [\\*reason]"
     },
-    "mute":{
-        "cmd_trigger":"wycisz",
-        "user":"user",
-        "time":"time",
-        "reason":"reason",
-        "help":"Mutes user."
+    "mute": {
+        "cmd_trigger": "wycisz",
+        "user": "user",
+        "time": "time",
+        "reason": "reason",
+        "cmd_help": "Mutes user."
     },
-    "kick":{
-        "cmd_trigger":"wyrzuć",
-        "cmd_alias":"kopnij",
-        "user":"user",
-        "reason":"reason",
-        "help":"Kicks user."
+    "kick": {
+        "cmd_trigger": "wyrzuć",
+        "cmd_alias": "kopnij",
+        "user": "user",
+        "reason": "reason",
+        "cmd_help": "Kicks user."
     },
-    "ban":{
-        "cmd_trigger":"ban",
-        "user":"user",
-        "time":"time",
-        "reason":"reason",
-        "help":"Bans user."
+    "ban": {
+        "cmd_trigger": "ban",
+        "user": "user",
+        "time": "time",
+        "reason": "reason",
+        "cmd_help": "Bans user."
     },
-    "infractions":{
-        "cmd_trigger":"wykroczenia",
-        "users":"users",
-        "help":"Shows Infractions of user."
+    "infractions": {
+        "cmd_trigger": "wykroczenia",
+        "users": "users",
+        "cmd_help": "Shows Infractions of user.",
+        "cmd_signature": "[user] (-show\\_all)"
     },
-    "userInfo":{
-        "cmd_trigger":"userInfo",
-        "users":"users",
-        "help":"Shows information about user."
+    "userInfo": {
+        "cmd_trigger": "userInfo",
+        "users": "users",
+        "cmd_help": "Shows information about user."
     },
-    "serverInfo":{
-        "cmd_trigger":"serverInfo",
-        "help":"Shows information about server."
+    "serverInfo": {
+        "cmd_trigger": "serverInfo",
+        "cmd_help": "Shows information about server."
     },
-    "roleInfo":{
-        "cmd_trigger":"roleInfo",
-        "roles":"roles",
-        "help":"Shows information about role."
+    "roleInfo": {
+        "cmd_trigger": "roleInfo",
+        "roles": "roles",
+        "cmd_help": "Shows information about role."
     },
-    "creationdate":{
-        "cmd_trigger":"creationdate",
-        "snowflake":"snowflake",
-        "help":"Shows creation date based on provided snowflakes"
+    "creationdate": {
+        "cmd_trigger": "creationdate",
+        "snowflake": "snowflake",
+        "cmd_help": "Shows creation date based on provided snowflakes",
+        "cmd_signature": "[snowflake]"
     },
-    "create_rr":{
-        "cmd_trigger":"create_rr",
-        "channel_slash_message":"channel_slash_message",
-        "role":"role",
-        "reaction":"reaction",
-        "":"",
-        "help":"Create reaction role"
+    "create_rr": {
+        "cmd_trigger": "create_rr",
+        "channel_slash_message": "channel_slash_message",
+        "role": "role",
+        "reaction": "reaction",
+        "": "",
+        "cmd_help": "Create reaction role"
     },
-    "remove_rr":{
-        "cmd_trigger":"remove_rr",
-        "channel":"channel",
-        "message":"message",
-        "reaction":"reaction",
-        "help":"Remove reaction role"
+    "remove_rr": {
+        "cmd_trigger": "remove_rr",
+        "channel": "channel",
+        "message": "message",
+        "reaction": "reaction",
+        "cmd_help": "Remove reaction role"
     },
-    "update_rr":{
-        "cmd_trigger":"update_rr",
-        "help":"Update reaction role"
+    "update_rr": {
+        "cmd_trigger": "update_rr",
+        "cmd_help": "Update reaction role"
     },
-    "add_cc":{
-        "cmd_trigger":"add_cc",
-        "name":"name",
-        "trigger":"trigger",
-        "response":"response",
-        "help":"Creates custom command/reaction",
-        "extHelp":"$execute$command/n$$"
+    "add_cc": {
+        "cmd_trigger": "add_cc",
+        "name": "name",
+        "trigger": "trigger",
+        "response": "response",
+        "cmd_help": "Creates custom command/reaction",
+        "cmd_extended_help": "$execute$command/n$$"
     },
-    "remove_cc":{
-        "cmd_trigger":"remove_cc",
-        "name":"name",
-        "trigger":"trigger",
-        "help":"Removes custom command/reaction"
+    "remove_cc": {
+        "cmd_trigger": "remove_cc",
+        "name": "name",
+        "trigger": "trigger",
+        "cmd_help": "Removes custom command/reaction"
     },
-    "customEmbed":{
-        "cmd_trigger":"customEmbed",
-        "embedName":"embedName",
-        "help":"Creates message with custom embed"
+    "customEmbed": {
+        "cmd_trigger": "customEmbed",
+        "embedName": "embedName",
+        "cmd_help": "Creates message with custom embed"
     },
-    "rtd":{
-        "cmd_trigger":"rtd",
-        "help":"Roll the Die"
+    "rtd": {
+        "cmd_trigger": "rtd",
+        "cmd_help": "Roll the Die"
     },
-    "status":{
-        "cmd_trigger":"status",
-        "no_ping":"no_ping",
-        "help":"Shows statistics related to bot and system"
+    "status": {
+        "cmd_trigger": "status",
+        "no_ping": "no_ping",
+        "cmd_help": "Shows statistics related to bot and system",
+        "cmd_signature": "(-no\\_ping)"
     },
-    "version":{
-        "cmd_trigger":"wersja",
-        "help":"Shows bot information"
+    "version": {
+        "cmd_trigger": "wersja",
+        "cmd_help": "Shows bot information"
     },
-    "remaining":{
-        "cmd_trigger":"remaining",
-        "help":"Short description to use with help command",
-        "extHelp":"Extended description to use with detailed help command"
+    "remaining": {
+        "cmd_trigger": "remaining",
+        "cmd_help": "Short description to use with help command",
+        "cmd_extended_help": "Extended description to use with detailed help command"
     },
-    "shutdown":{
-        "cmd_trigger":"wyłącz",
-        "help":"Shuts bot down."
+    "shutdown": {
+        "cmd_trigger": "wyłącz",
+        "cmd_help": "Shuts bot down."
     },
-    "updateStatus":{
-        "cmd_trigger":"updateStatus",
-        "status":"status",
-        "status_kind":"status_kind",
-        "status_type":"status_type",
-        "afk":"afk",
-        "help":"Changes Bot's status",
-        "extHelp":"Kind - Online/dnd/idle/invisible/offline/nType - 0 - Playing, 1 - Streaming, 2 - Listening, 3 - Watching"
+    "updateStatus": {
+        "cmd_trigger": "updateStatus",
+        "status": "status",
+        "status_kind": "status_kind",
+        "status_type": "status_type",
+        "afk": "afk",
+        "cmd_help": "Changes Bot's status",
+        "cmd_extended_help": "Kind - Online/dnd/idle/invisible/offline/nType - 0 - Playing, 1 - Streaming, 2 - Listening, 3 - Watching"
     },
-    "reloadCommands":{
-        "cmd_trigger":"reloadCommands",
-        "help":"Reloads commands files.",
-        "extHelp":"This probably needs to be placed in another file but well, it's here currently FOR SCIENCE."
+    "reloadCommands": {
+        "cmd_trigger": "reloadCommands",
+        "cmd_help": "Reloads commands files.",
+        "cmd_extended_help": "This probably needs to be placed in another file but well, it's here currently FOR SCIENCE."
     },
-    "add_rss":{
-        "cmd_trigger":"add_rss",
-        "name":"name",
-        "url":"url",
-        "language":"language",
-        "color":"color",
-        "avatar_url":"avatar_url",
-        "help":"Add RSS to watchlist"
+    "add_rss": {
+        "cmd_trigger": "add_rss",
+        "name": "name",
+        "url": "url",
+        "language": "language",
+        "color": "color",
+        "avatar_url": "avatar_url",
+        "cmd_help": "Add RSS to watchlist"
     },
-    "sub_rss":{
-        "cmd_trigger":"sub_rss",
-        "name":"name",
-        "webhook":"webhook",
-        "content":"content",
-        "regex":"regex",
-        "channel":"channel",
-        "help":"Sub current channel to a RSS source"
+    "sub_rss": {
+        "cmd_trigger": "sub_rss",
+        "name": "name",
+        "webhook": "webhook",
+        "content": "content",
+        "regex": "regex",
+        "channel": "channel",
+        "cmd_help": "Sub current channel to a RSS source",
+        "cmd_signature": "[name] (webhook) (content) (regex) [channel]"
     },
-    "addSpotify":{
-        "cmd_trigger":"addSpotify",
-        "spotifyID":"spotifyID",
-        "artist":"artist",
-        "help":"Add Artist to tracking new releases"
+    "addSpotify": {
+        "cmd_trigger": "addSpotify",
+        "spotifyID": "spotifyID",
+        "artist": "artist",
+        "cmd_help": "Add Artist to tracking new releases"
     },
-    "spotify":{
-        "cmd_trigger":"spotify",
-        "webhook":"webhook",
-        "help":"Fetch new spotify releases"
+    "spotify": {
+        "cmd_trigger": "spotify",
+        "webhook": "webhook",
+        "cmd_help": "Fetch new spotify releases"
     },
-    "fetch_rss":{
-        "cmd_trigger":"fetch_rss",
-        "help":"Fetch RSS manually"
+    "fetch_rss": {
+        "cmd_trigger": "fetch_rss",
+        "cmd_help": "Fetch RSS manually"
     },
-    "games":{
-        "cmd_trigger":"gry",
-        "help":"Pokazuje użytkowników którzy grali w podanę grę bądź vice versa",
-        "whoPlayed":"Użytkownicy którzy grali w %{query}",
-        "playedBy":"**Grane przez <@%{query}>:**\n",
-        "none":"Nie znaleziono"
+    "games": {
+        "cmd_trigger": "gry",
+        "cmd_help": "Pokazuje użytkowników którzy grali w podanę grę bądź vice versa",
+        "whoPlayed": "Użytkownicy którzy grali w %{query}",
+        "playedBy": "**Grane przez <@%{query}>:**\n",
+        "none": "Nie znaleziono",
+        "cmd_signature": "[game\\_or\\_user]"
     },
-    "exp":{
-        "cmd_trigger":"exp",
-        "help":"Pokazuje obecny stan punktów doświadczenia użytkownika",
-        "chat":"\nCzat: %{chat}",
-        "voice":"\nGłosowy: %{voice}",
-        "none":"Nie znaleziono bądź brak punktów doświadczenia"
+    "exp": {
+        "cmd_trigger": "exp",
+        "cmd_help": "Pokazuje obecny stan punktów doświadczenia użytkownika",
+        "chat": "\nCzat: %{chat}",
+        "voice": "\nGłosowy: %{voice}",
+        "none": "Nie znaleziono bądź brak punktów doświadczenia",
+        "cmd_signature": "[user\\_id]"
     },
-    "game":{
-        "cmd_trigger":"gra",
-        "help":"Pokazuje informacje o grze",
-        "release":"Data wydania: ",
-        "f2p":"Darmowe",
-        "price":"Cena",
-        "BazarPrice":"Bazar",
-        "CurrentLowPrice":"Obecnie Najniższa",
-        "HistLowPrice":"Historycznie Najniższa",
-        "recommendations":"Rekomendacje",
-        "players":"Liczba Graczy",
-        "achievements":"Osiągnięcia",
-        "age":"Wymagany wiek",
-        "dlc":"Dodatki",
-        "developers":{
-            "one":"Deweloper",
-            "many":"Deweloperzy"
+    "game": {
+        "cmd_trigger": "gra",
+        "cmd_help": "Pokazuje informacje o grze",
+        "release": "Data wydania: ",
+        "f2p": "Darmowe",
+        "price": "Cena",
+        "BazarPrice": "Bazar",
+        "CurrentLowPrice": "Obecnie Najniższa",
+        "HistLowPrice": "Historycznie Najniższa",
+        "recommendations": "Rekomendacje",
+        "players": "Liczba Graczy",
+        "achievements": "Osiągnięcia",
+        "age": "Wymagany wiek",
+        "dlc": "Dodatki",
+        "developers": {
+            "one": "Deweloper",
+            "many": "Deweloperzy"
         },
-        "publishers":{
-            "one":"Wydawca",
-            "many":"Wydawcy"
-        }
-    },
-    "playercount":{
-        "cmd_trigger":"liczba-graczy",
-        "help":"Pokazuje liczbę graczy dla podanej gry (Bądź gier jeśli rozdzielone za pomocą `,`)",
-        "for":"Liczba graczy dla ",
-        "error":"Nie znaleziono: Gra jest niedostępna, nie wydana bądź wystąpił inny błąd\n"
-    },
-    "dm":{
-        "singleWordError":"Witaj, wygląda na to że twoja wiadomość składa się tylko z jednego słowa, toteż nie przekażę jej dalej. Przekazuję twoje wiadomość tutaj automatycznie i <:%{emoji_success}> pod wiadomością oznacza że została dostarczona. Sforumułuj zdanie i spróbuj ponownie. Miłego mordeczko."
-    },
-    "giveaway":{
-        "cmd_trigger":"losowanie",
-        "help":"help",
-        "endTime":"Kończy się",
-        "endTimeFinished":{
-            "zero":"Zakończyło się",
-            "one":"Szansa: %{chance} | Zakończyło się",
-            "many":"Szansa: %{chance} x %{count} | Zakończyło się"
+        "publishers": {
+            "one": "Wydawca",
+            "many": "Wydawcy"
         },
-        "title":{
-            "one":"%{prize}",
-            "many":"%{prize} x %{count}"
-        },
-        "titleFinished":{
-            "zero":"[BRAK ZYWCIĘZCY] %{prize}",
-            "one":"[ZAKOŃCZONY] %{prize}",
-            "many":"[ZAKOŃCZONY] %{prize} x %{count}"
-        },
-        "description":{
-            "one":"Zareaguj za pomocą 🎉 aby dołączyć!",
-            "many":"Zareaguj za pomocą 🎉 aby dołączyć!\nLiczba Nagród: %{count}"
-        },
-        "descriptionFinished":{
-            "zero":"Nie można było wyłonić zwycięzcy :(",
-            "one":"Zwycięzca: %{winners}",
-            "many":"Zwycięzcy: %{winners}"
-        },
-        "endMessage":{
-            "zero":"Nie można było wyłonić zywcięzcy w losowaniu https://discordapp.com/channels/%{server}/%{channel}/%{message}",
-            "one":"Gratulacje, %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}",
-            "many":"Gratulacje dla %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}"
-        },
-        "rerollMessage":{
-            "zero":"Nie można było wyłonić nowego zywcięzcy w losowaniu https://discordapp.com/channels/%{server}/%{channel}/%{message}",
-            "one":"Gratulacje, %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}",
-            "many":"Gratulacje dla %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}"
-        }
+        "cmd_signature": "[game]"
     },
-    "currency_exchange":{
-        "cmd_trigger":"waluta",
-        "help":"help",
-        "result":"%{result} %{to_currency} z kwoty %{amount} %{currency}"
+    "playercount": {
+        "cmd_trigger": "liczba-graczy",
+        "cmd_help": "Pokazuje liczbę graczy dla podanej gry (Bądź gier jeśli rozdzielone za pomocą `,`)",
+        "for": "Liczba graczy dla ",
+        "error": "Nie znaleziono: Gra jest niedostępna, nie wydana bądź wystąpił inny błąd\n",
+        "cmd_signature": "[game]"
     },
-    "steamcalc":{
-        "cmd_trigger":"kalkulator-steam",
-        "help":"help",
-        "notFound":"Nie znaleziono",
-        "vanityURL":"Nie można znaleźć takiego użytkownika. Podaj albo końcówkę linka do profilu (VanityURL) albo SteamID",
-        "privateProfile":"Nie można znaleźć żadnych gier na podanym koncie. Możliwe że jest ustawione jako prywatne?",
-        "playtime":"Czas gry: %{hours}h",
-        "prices":"\nCeny: %{prices}",
-        "pricetaged":"\nDo kupienia: %{price_taged}",
-        "notAvailable":"\nNiedostępne w sklepie: %{unavailable}",
-        "total":"Łącznie",
-        "hoursPerGame":"Godziny na grę: %{avg}",
-        "pricePerGame":"\nCena na grę: %{price}",
-        "pricePerHour":"\nCena na godzinę: %{price}",
-        "avg":"Średnia",
-        "games":"Gry",
-        "games_desc":"Łącznie: %{game_count}\nZagrano: %{total_played}"
+    "dm": {
+        "singleWordError": "Witaj, wygląda na to że twoja wiadomość składa się tylko z jednego słowa, toteż nie przekażę jej dalej. Przekazuję twoje wiadomość tutaj automatycznie i <:%{emoji_success}> pod wiadomością oznacza że została dostarczona. Sforumułuj zdanie i spróbuj ponownie. Miłego mordeczko.",
+        "cmd_trigger": "dm",
+        "cmd_help": "Sends user DM as a bot",
+        "cmd_signature": "[user] [\\*message]"
     },
-    "timezone":{
-        "cmd_trigger":"strefa-czasowa",
-        "help":"help",
-        "timezoneNotFound":"Nie można znaleźć strefy %{from_timezone}",
-        "notFound":"Nie znaleziono"
+    "giveaway": {
+        "cmd_trigger": "losowanie",
+        "cmd_help": "cmd_help",
+        "endTime": "Kończy się",
+        "endTimeFinished": {
+            "zero": "Zakończyło się",
+            "one": "Szansa: %{chance} | Zakończyło się",
+            "many": "Szansa: %{chance} x %{count} | Zakończyło się"
+        },
+        "title": {
+            "one": "%{prize}",
+            "many": "%{prize} x %{count}"
+        },
+        "titleFinished": {
+            "zero": "[BRAK ZYWCIĘZCY] %{prize}",
+            "one": "[ZAKOŃCZONY] %{prize}",
+            "many": "[ZAKOŃCZONY] %{prize} x %{count}"
+        },
+        "description": {
+            "one": "Zareaguj za pomocą 🎉 aby dołączyć!",
+            "many": "Zareaguj za pomocą 🎉 aby dołączyć!\nLiczba Nagród: %{count}"
+        },
+        "descriptionFinished": {
+            "zero": "Nie można było wyłonić zwycięzcy :(",
+            "one": "Zwycięzca: %{winners}",
+            "many": "Zwycięzcy: %{winners}"
+        },
+        "endMessage": {
+            "zero": "Nie można było wyłonić zywcięzcy w losowaniu https://discordapp.com/channels/%{server}/%{channel}/%{message}",
+            "one": "Gratulacje, %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}",
+            "many": "Gratulacje dla %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}"
+        },
+        "rerollMessage": {
+            "zero": "Nie można było wyłonić nowego zywcięzcy w losowaniu https://discordapp.com/channels/%{server}/%{channel}/%{message}",
+            "one": "Gratulacje, %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}",
+            "many": "Gratulacje dla %{winners}!\nNagrodą jest %{prize}!\n\nOgólem uczestników: %{participants}"
+        },
+        "cmd_signature": "[duration] [winner\\_count] [\\*prize] [@channel]"
     },
-    "profile":{
-        "cmd_trigger":"profil",
-        "help":"help",
-        "language":"Język",
-        "birthday":"Urodziny",
-        "timezone":"Strefa Czasowa: %{timezone}",
-        "region":"Kraj: %{region}",
-        "currency":"Waluta: %{currency}",
-        "regional":"Region",
-        "gender":"Płeć",
-        "totalEXP":"Całkowity EXP",
-        "totalVoiceTime":"Całkowity czas na Głosowym",
-        "datesDiscord":"Na Discordzie od: %{discord}",
-        "datesServer":"Na serwerze od: %{server}",
-        "datesBoostStart":"Wzmacnia od: %{boost}",
-        "datesJoined":"Dołączono",
-        "notFoundRegion":"Nie można znaleźć regionu %{region}",
-        "notFoundCurrency":"Nie można znaleźć waluty %{currency}",
-        "notFoundTimezone":"Nie można znaleźć strefy %{timezone}",
-        "notFoundLanguage":"Nie można znaleźć języka %{language}",
-        "notFoundGender":"Mordko, płeć językowa w tym przypadku jest wymagana a nie emocjonalna"
+    "currency_exchange": {
+        "cmd_trigger": "waluta",
+        "cmd_help": "cmd_help",
+        "result": "%{result} %{to_currency} z kwoty %{amount} %{currency}",
+        "cmd_alias": "cc, currency",
+        "cmd_signature": "(amount='1') (currency='EUR') (to\\_currency='USD') (-fresh)"
+    },
+    "steamcalc": {
+        "cmd_trigger": "kalkulator-steam",
+        "cmd_help": "cmd_help",
+        "notFound": "Nie znaleziono",
+        "vanityURL": "Nie można znaleźć takiego użytkownika. Podaj albo końcówkę linka do profilu (VanityURL) albo SteamID",
+        "privateProfile": "Nie można znaleźć żadnych gier na podanym koncie. Możliwe że jest ustawione jako prywatne?",
+        "playtime": "Czas gry: %{hours}h",
+        "prices": "\nCeny: %{prices}",
+        "pricetaged": "\nDo kupienia: %{price_taged}",
+        "notAvailable": "\nNiedostępne w sklepie: %{unavailable}",
+        "total": "Łącznie",
+        "hoursPerGame": "Godziny na grę: %{avg}",
+        "pricePerGame": "\nCena na grę: %{price}",
+        "pricePerHour": "\nCena na godzinę: %{price}",
+        "avg": "Średnia",
+        "games": "Gry",
+        "games_desc": "Łącznie: %{game_count}\nZagrano: %{total_played}",
+        "cmd_signature": "[user] (--currency)"
+    },
+    "timezone": {
+        "cmd_trigger": "strefa-czasowa",
+        "cmd_help": "cmd_help",
+        "timezoneNotFound": "Nie można znaleźć strefy %{from_timezone}",
+        "notFound": "Nie znaleziono",
+        "cmd_signature": "(yymmdd='YYYY-MM-DD') (hhmm='HH:MM') [\\*timezones]"
+    },
+    "profile": {
+        "cmd_trigger": "profil",
+        "cmd_help": "cmd_help",
+        "language": "Język",
+        "birthday": "Urodziny",
+        "timezone": "Strefa Czasowa: %{timezone}",
+        "region": "Kraj: %{region}",
+        "currency": "Waluta: %{currency}",
+        "regional": "Region",
+        "gender": "Płeć",
+        "totalEXP": "Całkowity EXP",
+        "totalVoiceTime": "Całkowity czas na Głosowym",
+        "datesDiscord": "Na Discordzie od: %{discord}",
+        "datesServer": "Na serwerze od: %{server}",
+        "datesBoostStart": "Wzmacnia od: %{boost}",
+        "datesJoined": "Dołączono",
+        "notFoundRegion": "Nie można znaleźć regionu %{region}",
+        "notFoundCurrency": "Nie można znaleźć waluty %{currency}",
+        "notFoundTimezone": "Nie można znaleźć strefy %{timezone}",
+        "notFoundLanguage": "Nie można znaleźć języka %{language}",
+        "notFoundGender": "Mordko, płeć językowa w tym przypadku jest wymagana a nie emocjonalna",
+        "cmd_signature": "(command)"
+    },
+    "hsummary": {
+        "cmd_trigger": "hsummary",
+        "cmd_help": "Shows Halloween 2020 statistics graph",
+        "cmd_signature": "(--resample) (--locator) (--interval) (-growth)"
+    },
+    "top": {
+        "cmd_trigger": "top",
+        "cmd_help": "Shows leaderboard",
+        "cmd_signature": "(limit=10) (-games) (-voice) (-chat) (-count)"
+    },
+    "get_ban": {
+        "cmd_trigger": "get_ban",
+        "cmd_signature": "[userid]"
+    },
+    "api": {
+        "cmd_trigger": "api",
+        "cmd_help": "Search for API",
+        "cmd_signature": "[category] (-random) (--desc) (--title) (--cors) (--https) (--auth)"
+    },
+    "roman": {
+        "cmd_trigger": "roman",
+        "cmd_help": "Converts Roman to Int, or vice versa",
+        "cmd_extended_help": "Very simple and does not really work (Well, it works but if you mess up digit it does not really check that)",
+        "cmd_signature": "[value]"
+    },
+    "timeunits": {
+        "cmd_trigger": "timeunits",
+        "cmd_help": "Converts for example 3600s into 1h. Works with `s`, `m`, `h`, `d` and `w`",
+        "cmd_signature": "[duration]"
+    },
+    "upsidedown": {
+        "cmd_trigger": "upsidedown",
+        "cmd_help": "Makes text uʍop ǝpᴉsdn!",
+        "cmd_signature": "[text]"
+    },
+    "rot": {
+        "cmd_trigger": "rot",
+        "cmd_signature": "[key] (--shift) (--alphabet)"
+    },
+    "reverse": {
+        "cmd_trigger": "reverse",
+        "cmd_help": "Reverses letters",
+        "cmd_signature": "[message] (-inplace)"
+    },
+    "loadrules": {
+        "cmd_trigger": "loadrules",
+        "cmd_help": "Loads rules based on message. Default detects \"🔸 **1.** Rule\" as separate rule",
+        "cmd_signature": "[messagelink] (separate\\_rules='🔸') (rule\\_nr\\_ends\\_with='.\\*\\*')"
+    },
+    "embed": {
+        "cmd_trigger": "embed",
+        "cmd_help": "Embeds",
+        "cmd_signature": "[name]"
+    },
+    "add": {
+        "cmd_trigger": "add",
+        "cmd_alias": "sm",
+        "cmd_help": "Adds to db",
+        "cmd_extended_help": "meme/cannedresponse/rule/snippet/spotify/rss/regex\n    if rss: response = [uri color lang avatar_url]\n    if regex: response = [trigger required_role response]",
+        "cmd_signature": "[name] [\\*response] (--trigger) (--type)"
+    },
+    "ls": {
+        "cmd_trigger": "ls",
+        "cmd_alias": "meme, m, r, rule, s, snippet",
+        "cmd_help": "Lists currently stored snippets",
+        "cmd_extended_help": "meme/cannedresponse/rule/snippet",
+        "cmd_signature": "(type='meme') [\\*names] (--has)"
+    },
+    "edit": {
+        "cmd_trigger": "edit",
+        "cmd_alias": "em",
+        "cmd_help": "Edits entry",
+        "cmd_signature": "[name] [\\*new\\_response] (--trigger) (--type)"
+    },
+    "role": {
+        "cmd_trigger": "role",
+        "cmd_help": "Create self role. Only one per booster",
+        "cmd_signature": "[hex\\_color] [\\*name]"
+    },
+    "giveaway_delete": {
+        "cmd_trigger": "giveaway_delete",
+        "cmd_help": "Deletes Giveaway",
+        "cmd_signature": "[message\\_id]"
+    },
+    "giveaway_end": {
+        "cmd_trigger": "giveaway_end",
+        "cmd_help": "Ends Giveaway",
+        "cmd_signature": "[message\\_id]"
+    },
+    "reroll": {
+        "cmd_trigger": "reroll",
+        "cmd_help": "Rerolls giveaway",
+        "cmd_signature": "[message\\_id] [\\*amount]"
+    },
+    "graph_infractions": {
+        "cmd_trigger": "graph_infractions",
+        "cmd_help": "Plot infractions over days",
+        "cmd_signature": "(infraction\\_type='all') (resample='D') (locator='Week') (interval=1) (--moderator) (--user) (-growth)"
+    },
+    "graph_words": {
+        "cmd_trigger": "graph_words",
+        "cmd_help": "Plots word usage over days",
+        "cmd_signature": "[channel\\_id] [\\*word\\_or\\_phrase] (--limit\\_messages) (--resample) (--locator) (--interval) (-growth)"
+    },
+    "lyrics": {
+        "cmd_trigger": "lyrics",
+        "cmd_help": "Sends Lyrics for provided song",
+        "cmd_signature": "[artist] [song]"
+    },
+    "xkcdpassword": {
+        "cmd_trigger": "xkcdpassword",
+        "cmd_help": "Generates random xkcd 936 styled password"
+    },
+    "fileext": {
+        "cmd_trigger": "fileext",
+        "cmd_help": "Shows file extension details",
+        "cmd_signature": "[ext]"
+    },
+    "chord": {
+        "cmd_trigger": "chord",
+        "cmd_help": "Shows guitar chord(s) diagram(s)",
+        "cmd_signature": "[chords] (-all)"
+    },
+    "add_chord": {
+        "cmd_trigger": "add_chord",
+        "cmd_help": "Adds new chord",
+        "cmd_signature": "[chord] [\\*frets]"
+    },
+    "tuning": {
+        "cmd_trigger": "tuning",
+        "cmd_help": "Shows chords on frets for specified tuning",
+        "cmd_signature": "[tuning]"
+    },
+    "hltb": {
+        "cmd_trigger": "hltb",
+        "cmd_help": "Shows How Long to Beat",
+        "cmd_signature": "[game]"
+    },
+    "roll": {
+        "cmd_trigger": "roll",
+        "cmd_help": "Rolls a percentage chance",
+        "cmd_signature": "[argument]"
+    },
+    "ssearch": {
+        "cmd_trigger": "ssearch",
+        "cmd_help": "search spotify",
+        "cmd_signature": "[query]"
+    },
+    "stack_search": {
+        "cmd_trigger": "stack_search",
+        "cmd_help": "Search Stack Overflow",
+        "cmd_signature": "[search]"
+    },
+    "refreshappindex": {
+        "cmd_trigger": "refreshappindex",
+        "cmd_help": "Updates Index of Steam Games"
+    },
+    "steamlist": {
+        "cmd_trigger": "steamlist",
+        "cmd_help": "Lists closest matches in Steam Index",
+        "cmd_signature": "[game]"
+    },
+    "getmessages": {
+        "cmd_trigger": "getmessages",
+        "cmd_help": "Retrives messages from DM",
+        "cmd_signature": "[user]"
+    },
+    "say": {
+        "cmd_trigger": "say",
+        "cmd_help": "Sends message to a channel as a bot. DOES NOT SEND CHANNEL MENTIONS",
+        "cmd_signature": "[message] [@channel]"
+    },
+    "listmembers": {
+        "cmd_trigger": "listmembers",
+        "cmd_help": "Lists members with specified role",
+        "cmd_signature": "[role]"
+    },
+    "set_role": {
+        "cmd_trigger": "set_role",
+        "cmd_help": "Role settings",
+        "cmd_signature": "[role\\_id] (command) [@role\\_mentions]"
+    },
+    "settings": {
+        "cmd_trigger": "settings",
+        "cmd_help": "Server settings",
+        "cmd_signature": "(command)"
+    },
+    "dplay": {
+        "cmd_trigger": "dplay"
+    },
+    "dpause": {
+        "cmd_trigger": "dpause"
+    },
+    "dnext": {
+        "cmd_trigger": "dnext"
+    },
+    "dprevious": {
+        "cmd_trigger": "dprevious"
+    },
+    "dvolume": {
+        "cmd_trigger": "dvolume",
+        "cmd_signature": "[new\\_volume]"
+    },
+    "dplaying": {
+        "cmd_trigger": "dplaying"
+    },
+    "dhistory": {
+        "cmd_trigger": "dhistory"
+    },
+    "dlyrics": {
+        "cmd_trigger": "dlyrics"
+    },
+    "dstart": {
+        "cmd_trigger": "dstart"
+    },
+    "ping": {
+        "cmd_trigger": "ping",
+        "cmd_help": "Shows ping & Heartbeat latency",
+        "cmd_signature": "(-detailed)"
+    },
+    "stats": {
+        "cmd_trigger": "stats"
+    },
+    "updatestatus": {
+        "cmd_trigger": "updatestatus",
+        "cmd_help": "Changes Bot's status",
+        "cmd_extended_help": "Kind - Online/dnd/idle/invisible/offline\nType - 0 - Playing, 1 - Streaming, 2 - Listening, 3 - Watching",
+        "cmd_signature": "(status='How the World Burns') (status\\_kind='Online') (status\\_type=3) (afk)"
+    },
+    "update": {
+        "cmd_trigger": "update",
+        "cmd_help": "Pulls new commits"
+    },
+    "join": {
+        "cmd_trigger": "join"
     }
 }

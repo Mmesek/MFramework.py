@@ -31,6 +31,8 @@ def import_from(dirname):
             module = importlib.import_module(full_package_name)
     f = time.time()
     print("Loaded in:", f - t)
+    if '-generate-translation' in sys.argv or '-update-translation' in sys.argv:
+        exit()
 #import_from('commands')
 
 def import_commands(path='commands'):
