@@ -7,12 +7,12 @@ async def Invalid(*args, **kwargs):
 
 
 groups = ["System", "Admin", "Mod", "Nitro", "Vip", "Global", "dm"]
-commandList, helpList, extHelpList = {}, {}, {}
-contextCommandList = {}
+commandList, aliasesList, contextCommandList, helpList, extHelpList = {}, {}, {}, {}, {}
 localizedCommands = {'en':{}, 'pl':{}}
 
 for i in groups:
     commandList.update({i: {}})
+    aliasesList.update({i: {}})
     helpList.update({i: {}})
     extHelpList.update({i: {}})
     contextCommandList.update({i: {}})
@@ -113,7 +113,55 @@ def updateLocalizationFile(language, keys, default_value):
     jsonFile.write(json.dumps(data, indent=4, ensure_ascii=False))
     jsonFile.close()
 
-def register(**kwargs):
+def check_translation(k, l, default):
+    n = tr(k, l)
+    if n == l + '.' + k and default != '':
+        updateLocalizationFile(l, k, default)
+        return default
+    return n
+
+from sys import argv
+def register(group="Global", help="", alias="", category="", cmd_trigger="", notImpl=False, **kwargs):
+    def inner(f, *arg, **kwarg):
+        if notImpl:
+            return
+        if '-generate-translation' in argv:
+            sig = inspect.signature(f)
+            s = str(sig).replace('(', '').replace('self, ', '').replace('*args', '').replace(')', '').replace('**kwargs', '').replace('*','\*').replace('group','').replace('_','\_').replace('language','').replace('cmd','')
+            si = s.split('data, ')
+            sig = si[0].split(', ')
+            sig = [f'[{a}]' if '=' not in a else f"({a})" if a.split('=', 1)[1] not in ['0', "''", 'None', 'False'] else f"({a.split('=',1)[0]})" for a in sig if a != '']
+            s = si[1].split(', ')
+            sig += [f"(-{i.split('=')[0]})" if '=False' in i else f"(--{i.split('=')[0]})" if '=' in i else f'[@{i}]' for i in s if i != '']
+            sig = ' '.join(sig)
+        
+        fname = f.__name__.lower() if cmd_trigger == "" else cmd_trigger
+        base = f'commands.{fname}.cmd_'
+        for l in localizedCommands:
+            n = check_translation(base + 'trigger', l, cmd_trigger)
+            localizedCommands[l][n] = fname
+            
+            aliases = check_translation(base + 'alias', l, alias)
+            for i in aliases.split(','):
+                localizedCommands[l][i.strip()] = fname
+            
+            if '-generate-translation' in argv:
+                check_translation(base + 'help', l, help if help != 'Short description to use with help command' else "")
+                check_translation(base + 'extended_help', l, f.__doc__ if f.__doc__ != 'Extended description to use with detailed help command' else "")
+                check_translation(base + 'signature', l, sig)
+        
+        for i in groups:
+            commandList[i][fname] = f
+            if alias != "":
+                for a in alias.split(','):
+                    aliasesList[i][a.strip()] = fname
+            if group.capitalize() == i:
+                break
+
+        return f
+    return inner
+
+def _register(**kwargs):
     """alias="alias"\nhelp="description of help message"\ngroup="Global|Vip|Nitro|Mod|Admin" - Default: Global\ncategory="Command's Category" - Default based on Directory"""
 
     def inner(f, *arg, **kwarg):
