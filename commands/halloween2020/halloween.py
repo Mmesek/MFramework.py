@@ -73,6 +73,9 @@ async def hsummary(self, *args, data, resample='D', locator='Day', interval=1, g
     totalPopulation = sorted(totalPopulation.items(), key=lambda i: i[1], reverse=True)
     totalPopulation = {i[0]: i[1] for i in totalPopulation}
     e.setDescription(_t("total_bites", language) + '/' + _t("total_cures", language) + f": {totalBites}\n" + '\n'.join('{}: {}'.format(_t(i.lower().replace(' ', '_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
+    for i in ROLES:
+        if i not in totalPopulation:
+            totalPopulation[i] = 0
     total = {}
     _counts = {}
     _first = {}
