@@ -1,7 +1,7 @@
-from MFramework.commands import register, helpList, extHelpList, Groups
+from MFramework.commands import register, helpList, extHelpList, Groups, commandList
 from MFramework.utils.utils import Embed, replaceMultiple, tr
 
-@register(help='Sends list of commands')
+#@register(help='Sends list of commands')
 async def help(self, command=None, *category, group, data, categories=False, **kwargs):
     '''Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage.\nParameters: :command: - Command to show detailed help info for - Example: command\n:category: - Categories to show commands for - Example: Category another...\n:categories: - Shows list of categories - Example: -categories'''
     l = 'en'
@@ -146,13 +146,73 @@ Flags are removed from argument list therefore can be specifed anywhere
             elif categories is False and (cat != None and cat in category or len(category) == 0):
                 string += f"**{self.alias}{one}** {helpList[group][one]['sig']}"
                 if 'msg' in helpList[group][one]:
-                    string+= f" - {helpList[group][one]['msg']}"
+                    if helpList[group][one]['msg'] != "Short description to use with help command":
+                        string+= f" - {helpList[group][one]['msg']}"
                 if 'alias' in helpList[group][one]:
                     string+= ' - Alias: `'+helpList[group][one]['alias']+'`'
                 string+='\n'
         if string != '':
-            embed.addField(group, string[:1024])
+            embed.addFields(group, string)
     if categories:
         embed.setDescription('').setTitle(tr('commands.help.available_categories',l))
     embed.setColor(self.cache[data.guild_id].color)
+    await self.embed(data.channel_id, '', embed.embed)
+
+from MFramework.utils.utils import check_translation
+@register(help='Sends list of commands')
+async def help(self, *command, group, data, language, **kwargs):
+    '''Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage.
+    Parameters: 
+        :command: - Command to show detailed help info for - Example: command'''
+    embed = Embed()
+    if command != ():
+        cmd = ''.join(command)
+        translated_cmd = check_translation(f"commands.{cmd}.cmd_trigger", language, cmd)
+        embed.setTitle(tr("commands.help.title", language, command=translated_cmd))
+        embed.setDescription(check_translation(f'commands.{cmd}.cmd_extended_help', language, ""))
+        _h = check_translation(f'commands.{cmd}.cmd_help', language, '')
+        if _h != '':
+            embed.addField(tr('commands.help.short_desc', language), _h)
+        return await self.embed(data.channel_id, '', embed.embed)
+    embed.setTitle(tr('commands.help.available_triggers', language))
+    desc = tr('commands.help.available_triggers', language, botid=self.user_id, botname=self.username, alias=self.alias) + "\n"
+    if self.cache[data.guild_id].alias != self.alias:
+        desc += tr('commands.help.server_trigger', language, server_alias=self.cache[data.guild_id].alias) + "\n"
+    desc += "\n" + tr('commands.help.example_command', language, alias=self.alias) + "\n"
+    embed.setDescription(desc)
+    filtered = {i: {} for i in commandList}
+    groups = list(commandList)
+    groups.reverse()
+    for x, _group in enumerate(groups):
+        if x != 0:
+            l = set(commandList[groups[x - 1]].items())
+        else:
+            l = set()
+        c = set(commandList[_group].items()) - l
+        filtered[_group] = {i[0]: i[1] for i in c}
+    lower = False
+    for _group in filtered:
+        filtered[_group] = sorted(filtered[_group])
+    for g in filtered:
+        if group == g:
+            lower = True
+        elif lower == False:
+            continue
+        elif g == 'dm' and group != 'dm':
+            continue
+        string = ""
+        for cmd in filtered[g]:
+            _cmd = check_translation(f'commands.{cmd}.cmd_trigger', language, cmd)
+            _sig = check_translation(f'commands.{cmd}.cmd_signature', language, '')
+            _help = check_translation(f'commands.{cmd}.cmd_help', language, '')
+            string += f"**{self.alias}{_cmd}**"
+            string += f" {_sig}" if _sig != '' else ""
+            string += f" - {_help}" if _help != '' else ""
+            alias = check_translation(f'commands.{cmd}.cmd_alias', language, '')
+            if alias != '':
+                string += tr(f'commands.help.alias_message', language, alias=alias)
+            string += '\n'
+        if string != '':
+            embed.addFields(g, string)
+    embed.setColor(self.cache[data.guild_id].color).setFooter("", tr('commands.help.yourPerm', language, group=group))
     await self.embed(data.channel_id, '', embed.embed)

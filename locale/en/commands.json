@@ -13,12 +13,15 @@
         "alias_message": " - Alias: `%{alias}`",
         "msg": " - %{msg}",
         "noPerm": "You do not have permission to access this command.",
-        "yourPerm": "Your Permission Group",
+        "yourPerm": "Your Permission Group: %{group}",
         "example_usage": "Example Usage",
         "parameters": "Parameters",
-        "short_desc": "Short Description",
+        "short_desc": "Command's Description",
         "available_categories": "Available Categories",
-        "cmd_signature": "[command]"
+        "cmd_signature": "[command]",
+        "available_triggers": "Trigger can be any of: <@%{botid}>, `%{botname}` or `%{alias}`",
+        "server_trigger":"Server's Trigger Alias is set to: `%{server_alias}`",
+        "example_command":"`%{alias}command argument \"second argument\" last argument with multiple words -TrueFalseFlag --value_flag=\"new value\"`"
     },
     "morse": {
         "cmd_trigger": "morse",

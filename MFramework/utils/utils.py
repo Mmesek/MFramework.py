@@ -5,6 +5,12 @@ import i18n
 def tr(key, language='en', **kwargs):
     return i18n.t(f'{language}.{key}', **kwargs)
 
+def check_translation(k, l, default, **kwargs):
+    _k = tr(k, l, **kwargs)
+    if _k == l + '.' + k or _k == '':
+        return default
+    return _k
+
 class Embed:
     def __init__(self):
         self.embed = {"fields": []}
