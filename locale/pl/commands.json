@@ -348,6 +348,7 @@
             "one": "Wydawca",
             "many": "Wydawcy"
         },
+        "open": "Otwórz w Steam",
         "cmd_signature": "[game]"
     },
     "playercount": {

@@ -172,6 +172,7 @@ async def game(self, *game, data, language, **kwargs):
                 embed.addField(g.gameplay_main_extra_label, f"{g.gameplay_main_extra} {g.gameplay_main_extra_unit}", True)
             if g.gameplay_completionist != -1:
                 embed.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
+        embed.addField(tr("commands.game.open", language), f"steam://store/{appid}/")
         await self.embed(data.channel_id, "", embed.embed)
 
 

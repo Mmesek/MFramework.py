@@ -346,6 +346,7 @@
             "one": "Publisher",
             "many": "Publishers"
         },
+        "open": "Open in Steam",
         "cmd_signature": "[game]"
     },
     "playercount": {
