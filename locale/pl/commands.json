@@ -13,12 +13,15 @@
         "alias_message": " - Alias: `%{alias}`",
         "msg": " - %{msg}",
         "noPerm": "Nie posiadasz uprawnień do użycia tej komendy.",
-        "yourPerm": "Twoje uprawnenia",
+        "yourPerm": "Twoje uprawnenia: %{group}",
         "example_usage": "Przykład użycia",
         "parameters": "Parametery",
-        "short_desc": "Krótki Opis",
+        "short_desc": "Opis komendy",
         "available_categories": "Dostępne Kategorie",
-        "cmd_signature": "[command]"
+        "cmd_signature": "[komenda]",
+        "available_triggers": "Alias może być dowolnym z: <@%{botid}>, `%{botname}` albo `%{alias}`",
+        "server_trigger":"Serwerowy Alias: `%{server_alias}`",
+        "example_command":"`%{alias}komenda argument \"drugi argument\" ostatni argument z wieloma słowami -FlagaPrawdaFałsz --flaga_z_wartością=\"nowa wartość\"`"
     },
     "morse": {
         "cmd_trigger": "morse",
