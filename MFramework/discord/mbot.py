@@ -153,7 +153,7 @@ class Bot(EndpointWrappers, Endpoints):
             except:
                 if res.reason == 'No Content':
                     return None
-                print('Error sending request: ', res.reason)
+                return print('Error sending request: ', res.reason)
             if 'retry_after' in r:
                 if r['global'] is True:
                     self.lock['global'] = True
