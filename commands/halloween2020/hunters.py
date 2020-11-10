@@ -13,6 +13,8 @@ async def defend(self, *user, data, language, **kwargs):
     self_user = get_user(data.guild_id, data.author.id, s)
     if self_user is None or self_user.CurrentClass not in HUNTERS:
         return
+    if user == ():
+        return await self.message(data.channel_id, _t("error_generic"))
 
     now = get_current_time()
     if self_user.ActionCooldownEnd is not None:
@@ -47,6 +49,8 @@ async def betray(self, *user, data, language, **kwargs):
     self_user = get_user(data.guild_id, data.author.id, s)
     if self_user is None or self_user.CurrentClass not in HUNTERS:
         return
+    if user == ():
+        return await self.message(data.channel_id, _t("error_generic"))
     now = get_current_time()
     if self_user.ActionCooldownEnd is not None and now < self_user.ActionCooldownEnd:
         cooldown = self_user.ActionCooldownEnd - now
