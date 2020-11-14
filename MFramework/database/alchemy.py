@@ -394,6 +394,7 @@ class Users(Base):
     Timezone = Column(String)
     Region = Column(String)
     Currency = Column(String)
+    Gender = Column(Boolean)
 
     def __init__(self, UserID, Language=None, Birthday=None, Color=None, Timezone=None):
         self.UserID = UserID
@@ -459,4 +460,31 @@ class HalloweenLog(Base):
         self.FromClass = FromClass
         self.ToClass = ToClass
         self.ByUser = ByUser
+        self.Timestamp = Timestamp
+
+class Inventory(Base):
+    __tablename__ = 'Inventory'
+    UserID = Column(BigInteger, primary_key=True)
+    Economy = Column(Integer)
+    Wallet = Column(Integer)
+    Crypto = Column(Integer)
+    CryptoAddres = Column(String)
+    Bank = Column(Integer)
+    LastTransaction = Column(TIMESTAMP(True))
+    Inventory = Column(JSON)
+    def __init__(self, UserID):
+        self.UserID = UserID
+        self.Wallet = 0
+        self.Bank = 0
+
+class EconomyLog(Base):
+    __tablename__ = 'EconomyLog'
+    Timestamp = Column(TIMESTAMP(True), primary_key=True)
+    FromUser = Column(BigInteger, primary_key=True)
+    ToUser = Column(BigInteger, primary_key=True)
+    Quantity = Column(Integer)
+    TransferedType = Column(String)
+    def __init__(self, FromUser, ToUser, Timestamp):
+        self.FromUser = FromUser
+        self.ToUser = ToUser
         self.Timestamp = Timestamp
