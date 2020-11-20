@@ -172,6 +172,8 @@ async def cooldown(self, *args, data, language, **kwargs):
     '''Extended description to use with detailed help command'''
     s = self.db.sql.session()
     self_user = get_user(data.guild_id, data.author.id, s)
+    if self_user is None:
+        return
     elapsed = get_elapsed(self_user)
     if self_user.CurrentClass in HUNTERS:
         cooldown = COOLDOWNS['cure'] - elapsed
