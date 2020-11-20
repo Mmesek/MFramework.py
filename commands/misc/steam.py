@@ -29,7 +29,10 @@ async def steamParse(self, request, language, *game):
     if not hasattr(self, "index"):
         await loadSteamIndex(self)
     for game in games:
-        game = get_close_matches(game, self.index.keys(), 1)[0]
+        try:
+            game = get_close_matches(game, self.index.keys(), 1)[0]
+        except IndexError:
+            yield 0, game
         appid = self.index[game]
         if request == "playercount":
             playercount = await steam.CurrentPlayers(appid)
