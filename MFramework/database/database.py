@@ -28,7 +28,7 @@ class Influx:
         return self.query_api.query_data_frame(f'from(bucket:"MemberChange") |> filter(server={server})')
 
     def commitVoiceSession(self, server, channel, user, delta, timestamp=datetime.datetime.now().isoformat()):
-        self.write_api.write(bucket="Sessions", record=(
+        self.write_api.write(bucket="MFramework", record=(
             Point("VoiceSession")
             .tag("server", server)
             .tag("channel", channel)
@@ -36,12 +36,20 @@ class Influx:
             .field("session", delta)
         ))
     def commitPresence(self, server, user, game, delta, timestamp=datetime.datetime.now().isoformat()):
-        self.write_api.write(bucket="Sessions", record=(
+        self.write_api.write(bucket="MFramework", record=(
             Point("GamePresence")
             .tag("server", server)
             .tag("game", game)
             .tag("user", user)
             .field("session", delta)
+        ))
+    def commitMessage(self, server, channel, user, words):
+        self.write_api.write(bucket="MFramework", record=(
+            Point("MessageActivity")
+            .tag("server", server)
+            .tag("channel", channel)
+            .tag("user", user)
+            .field("words", words)
         ))
     def getSession(self, user, interval):
         return self.query_api.query_data_frame(f'from(bucket:"Sessions/VoiceSession") |> filter(user={user}')
