@@ -1,33 +1,8 @@
 import asyncio
 import MFramework
-#from os.path import dirname
-#import glob, time, importlib
-#__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
-#t = time.time()
-#sub_modules = glob.glob(''.join((dirname(__file__)+'/commands', '/**/*.py')), recursive=True)
-#fm = [one.replace(dirname(__file__)+'/commands','').replace('/','.').replace('\\','.')[:-3] for one in sub_modules if '__' not in one]
-#for o in fm:
-#    importlib.import_module(''.join(['commands', o]))
-#f = time.time()
-#print("Loaded in:",f-t)
-#print(fm)
+
 MFramework.import_from('commands')
 
-# Permission management with bit shifting?
-# Bit shifting for permission calculation of Discord roles
-# Better handling of starting multiple bots
-# Roleplay character management
-# Split Listener with Backend (Backend being sort of server and Listener being sort of a proxy)
-#Embeds, Modernise memes above, fix sending DMs, perhaps store Quotes in database? Also dockets as a sort of generic data, in Influx maybe? 
-#Sockets for Voice Connection
-#Context Commands for multimessage commands, i.e, character management, minigames like card games or panstwa-miasta
-#Stock simulation game?
-#User profiles (birthdays etc)
-#Spotify presence tracking
-#Wolfram Alpha integration/support?
-#Localized commands?
-#UI for admin panel?
-#Presence based on currently played song in Mopidy?
 
 def run(token):
     asyncio.run(main(token))
