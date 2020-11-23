@@ -474,3 +474,21 @@ async def creationdate(self, *snowflake, data, **kwargs):
             pass
         embed.addField("\u200b",f"<@{flake}>"+r)
     await self.embed(data.channel_id, '', embed.embed)
+
+@register(group='Mod', help='Allows set a slowmode to channel/server', alias='', category='')
+async def slowmode(self, limit, *args, data, all=False, duration=0, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    channels = {}
+    d = int(duration)
+    if all:
+        for channel in self.cache[data.guild_id].channels:
+            channels[channel.id] = channel.rate_limit_per_user
+            await self.rate_limit_channel(channel.id, limit, "Global Slow mode command")
+    else:
+        channels[data.channel_id] = limit
+        await self.rate_limit_channel(data.channel_id, limit, "Slow mode command")
+    if d > 0:
+        await asyncio.sleep(d)
+        for channel in channels:
+            previous_limit = channels[channel]
+            await self.rate_limit_channel(channel, previous_limit, "Slow mode expired")
