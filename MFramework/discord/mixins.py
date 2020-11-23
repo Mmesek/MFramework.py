@@ -56,3 +56,5 @@ class EndpointWrappers:
         r = await self.api_call(f'/channels/{channel_id}/messages/{message_id}/reactions/{emoji}', 'GET', params =p)
         from .objects import User
         return [User(i) for i in r]
+    async def rate_limit_channel(self, channel_id, rate_limit, audit_reason=''):
+        return await self.api_call(f'/channels/{channel_id}', 'PATCH', reason=audit_reason, json={'rate_limit_per_user':rate_limit})
