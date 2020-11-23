@@ -6,7 +6,7 @@ class Cache:
     __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language', 'connection',
     'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice', 'afk', 'afk_channel',
     'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence', 'dynamic_channels',
-    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks', 'rpg_channels', 'language_overwrites')
+    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks', 'rpg_channels', 'language_overwrites', 'trackActivity')
     groups: dict
     disabled_channels: tuple
     disabled_roles: tuple
@@ -57,6 +57,7 @@ class Cache:
         self.recompileCanned(datab, guildID)
         self.VoiceLink = g.VoiceLink
         self.trackVoice = g.TrackVoice
+        self.trackActivity = g.TrackActivity
         self.quoteWebhook = '706282832477028403/eZVXx3-iPfyrjQgJt3kZOfJVSt98ZRGI5VJe0t5SN32cNsgPOugZK8-AxUm0tKhD2dfJ'
         self.presence = {}
         self.afk = {}

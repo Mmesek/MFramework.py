@@ -73,7 +73,8 @@ async def message_create(self, data: Message):
                 self.cache[data.guild_id].exp[data.author.id] = timestamp
                 session.commit()
                 await levels.handle_exp(self, data, e)
-                self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(' '))))
+                if self.cache[data.guild_id].trackActivity:
+                    self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(' '))))
     elif data.author.bot is False and data.guild_id == 0:
         if 'dm' not in self.context:
             self.context['dm'] = {}
