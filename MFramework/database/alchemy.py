@@ -21,6 +21,7 @@ class Servers(Base):
     Language = Column(String)
     VoiceLink = Column(BigInteger)
     TrackVoice = Column(Boolean)
+    TrackActivity = Column(Boolean)
     DMCount = Column(Integer)
     DMCountForwarded = Column(Integer)
 
@@ -39,6 +40,7 @@ class Servers(Base):
         self.Language = Language
         self.VoiceLink = VoiceLink
         self.TrackVoice = TrackVoice
+        self.TrackActivity = None
         self.DMCount = 0
         self.DMCountForwarded = 0
 
@@ -95,13 +97,14 @@ class ActivityRoles(Base):
     __tablename__ = 'ActivityRoles'
     GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
     RoleID = Column(BigInteger, primary_key=True)
-    ReqAvgActivity = Column(Integer, primary_key=True)
-    ActivityPeriod = Column(String, primary_key=True)
+    ReqChatActivity = Column(Integer, primary_key=True)
+    ReqVoiceActivity = Column(Integer, primary_key=True)
+    ActivityPeriod = Column(Integer, primary_key=True) #Hours
     GracePeriod = Column(String)
     def __init__(self, GuildID, RoleID, ReqAvgActivity, ActivityPeriod, GracePeriod=None):
         self.GuildID = GuildID
         self.RoleID = RoleID
-        self.ReqAvgActivity = ReqAvgActivity
+        self.ReqChatActivity = ReqAvgActivity
         self.ActivityPeriod = ActivityPeriod
         self.GracePeriod = GracePeriod
 
@@ -132,7 +135,9 @@ class UserLevels(Base):
     UserID = Column(BigInteger, primary_key=True)
     EXP = Column(Integer)
     vEXP = Column(Integer)
-    LastMessage = Column(TIMESTAMP(True))#Integer)
+    LastMessage = Column(TIMESTAMP(True))  #Integer)
+    LastActivityCheck = Column(TIMESTAMP(True))
+    TopActivityPeriod = Column(Integer)
 
     def __init__(self, GuildID=None, UserID=None, EXP=None, vEXP=None, LastMessage=None):
         self.GuildID = GuildID
@@ -460,31 +465,4 @@ class HalloweenLog(Base):
         self.FromClass = FromClass
         self.ToClass = ToClass
         self.ByUser = ByUser
-        self.Timestamp = Timestamp
-
-class Inventory(Base):
-    __tablename__ = 'Inventory'
-    UserID = Column(BigInteger, primary_key=True)
-    Economy = Column(Integer)
-    Wallet = Column(Integer)
-    Crypto = Column(Integer)
-    CryptoAddres = Column(String)
-    Bank = Column(Integer)
-    LastTransaction = Column(TIMESTAMP(True))
-    Inventory = Column(JSON)
-    def __init__(self, UserID):
-        self.UserID = UserID
-        self.Wallet = 0
-        self.Bank = 0
-
-class EconomyLog(Base):
-    __tablename__ = 'EconomyLog'
-    Timestamp = Column(TIMESTAMP(True), primary_key=True)
-    FromUser = Column(BigInteger, primary_key=True)
-    ToUser = Column(BigInteger, primary_key=True)
-    Quantity = Column(Integer)
-    TransferedType = Column(String)
-    def __init__(self, FromUser, ToUser, Timestamp):
-        self.FromUser = FromUser
-        self.ToUser = ToUser
         self.Timestamp = Timestamp

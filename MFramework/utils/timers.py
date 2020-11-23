@@ -23,7 +23,8 @@ def finalize(self, guild, channel, user):
         else:
             l.vEXP += int(v)
         session.commit()
-        self.db.influx.commitVoiceSession(guild, channel, user, v)
+        if self.cache[guild].trackActivity:
+            self.db.influx.commitVoiceSession(guild, channel, user, v)
     _log(f'Removed {user} from {channel} after {v}')
     in_channel = self.cache[guild].voice[channel]
     if len(in_channel) == 1:
