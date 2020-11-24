@@ -198,7 +198,7 @@ async def guild_member_update(self, data):
         await self.message(nitro_channel, message)
     elif is_boosting is False and data.guild_id == 289739584546275339:
         s = self.db.sql.session()
-        c = s.query(db.CustomRoles).filter(db.CustomRoles.GuildID == data.guild_id).filter(db.CustomRoles.UserID == data.author.id).first()
+        c = s.query(db.CustomRoles).filter(db.CustomRoles.GuildID == data.guild_id).filter(db.CustomRoles.UserID == data.user.id).first()
         if c != None:
             await self.delete_guild_role(data.guild_id, c.RoleID, "User stopped boosting server")
             self.db.sql.delete(c)
