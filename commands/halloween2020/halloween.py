@@ -70,9 +70,10 @@ async def hsummary(self, *args, data, resample='D', locator='Day', interval=3, g
     _total = _s.query(db.HalloweenClasses).filter(db.HalloweenClasses.GuildID == data.guild_id).order_by(db.HalloweenClasses.TurnCount.desc()).all()
     e = Embed().setTitle("Thanks for participating!")
     totalBites, totalPopulation = get_total(self, data, _total)
+    totalCures = len([i for i in history if i.ToClass == 'Human'])
     totalPopulation = sorted(totalPopulation.items(), key=lambda i: i[1], reverse=True)
     totalPopulation = {i[0]: i[1] for i in totalPopulation}
-    e.setDescription(_t("total_bites", language) + '/' + _t("total_cures", language) + f": {totalBites}\n" + '\n'.join('{}: {}'.format(_t(i.lower().replace(' ', '_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
+    e.setDescription(_t("total_players", language) + f": {len(_total)}"+"\n---\n"+_t("total_turns", language) + f": {totalBites}"+"\n" + _t("total_bites", language) + f": {totalBites-totalCures}"+"\n" + _t("total_cures", language) + f": {totalCures}"+"\n\n" + '\n'.join('{}: {}'.format(_t(i.lower().replace(' ', '_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
 
     _vampireStats = []
     _werewolfStats = []
