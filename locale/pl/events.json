@@ -138,6 +138,7 @@
         "total_bites":"Ugryzienia",
         "total_cures":"Uleczenia",
         "total_turns":"Przemiany",
+        "total_players":"Uczestników",
         "last_action":"Ostatnia Akcja",
         "effect_bite_protection":"Chroniony przed ugryzieniami przez %{user}",
         "active_effects":"Aktywne Efekty",
