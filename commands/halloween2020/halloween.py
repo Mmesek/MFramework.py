@@ -59,7 +59,7 @@ async def hhelp(self, *args, data, language, **kwargs):
     await self.embed(data.channel_id, '', e.embed)
 
 @register(group='System', help='Shows Halloween 2020 statistics graph', alias='', category='')
-async def hsummary(self, *args, data, resample='D', locator='Day', interval=1, growth=False, language, **kwargs):
+async def hsummary(self, *args, data, resample='D', locator='Day', interval=3, growth=False, language, **kwargs):
     '''Extended description to use with detailed help command'''
     from datetime import date, datetime, timezone
     import MFramework.utils.graphing as graph
@@ -73,6 +73,54 @@ async def hsummary(self, *args, data, resample='D', locator='Day', interval=1, g
     totalPopulation = sorted(totalPopulation.items(), key=lambda i: i[1], reverse=True)
     totalPopulation = {i[0]: i[1] for i in totalPopulation}
     e.setDescription(_t("total_bites", language) + '/' + _t("total_cures", language) + f": {totalBites}\n" + '\n'.join('{}: {}'.format(_t(i.lower().replace(' ', '_'), language, count=totalPopulation[i]).title(), totalPopulation[i]) for i in totalPopulation))
+
+    _vampireStats = []
+    _werewolfStats = []
+    _zombieStats = []
+    _vampireHunterStats = []
+    _huntsmanStats = []
+    _zombieSlayerStats = []
+    _total_turns = []
+    _totalPopulation = {}
+    _totalBites = 0
+    for v in _total:
+        u = await get_usernames(self, data.guild_id, v.UserID)
+        if v.VampireStats > 0:
+            _vampireStats.append((u, v.VampireStats))
+        if v.WerewolfStats > 0:
+            _werewolfStats.append((u, v.WerewolfStats))
+        if v.ZombieStats > 0:
+            _zombieStats.append((u, v.ZombieStats))
+        if v.VampireHunterStats > 0:
+            _vampireHunterStats.append((u, v.VampireHunterStats))
+        if v.HuntsmanStats > 0:
+            _huntsmanStats.append((u, v.HuntsmanStats))
+        if v.ZombieSlayerStats > 0:
+            _zombieSlayerStats.append((u, v.ZombieSlayerStats))
+        if v.CurrentClass not in _totalPopulation:
+            _totalPopulation[v.CurrentClass] = 0
+        if v.TurnCount > 0:
+            _total_turns.append((u, v.TurnCount))
+            _totalBites += v.TurnCount
+    _vampireStats.sort(key=lambda i: i[1], reverse=True)
+    _werewolfStats.sort(key=lambda i: i[1], reverse=True)
+    _zombieStats.sort(key=lambda i: i[1], reverse=True)
+    _vampireHunterStats.sort(key=lambda i: i[1], reverse=True)
+    _huntsmanStats.sort(key=lambda i: i[1], reverse=True)
+    _zombieSlayerStats.sort(key=lambda i: i[1], reverse=True)
+    _total_turns.sort(key=lambda i: i[1], reverse=True)
+    try:
+        _z = '`{}` ({})'.format(*_zombieStats[0])
+    except:
+        _z = '-'
+    try:
+        _slayer = '`{}` ({})'.format(*_zombieSlayerStats[0])
+    except:
+        _slayer = '-'
+    e.addField(_t("most_bites_title", language), _t("most_bites", language, vampire='`{}` ({})'.format(*_vampireStats[0]), werewolf='`{}` ({})'.format(*_werewolfStats[0]), zombie=_z), True)
+    e.addField(_t("most_cures_title", language), _t("most_cures", language, vh='`{}` ({})'.format(*_vampireHunterStats[0]), huntsman='`{}` ({})'.format(*_huntsmanStats[0]), slayer=_slayer), True)
+    e.addField(_t("most_turns_title", language), _t("most_turns", language, user='`{}` ({})'.format(*_total_turns[0])), False)
+
     for i in ROLES:
         if i not in totalPopulation:
             totalPopulation[i] = 0
