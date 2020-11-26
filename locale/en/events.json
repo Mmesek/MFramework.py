@@ -170,6 +170,12 @@
         "race_humans":"Humans",
         "race_hunters":"Hunters",
         "race_monsters":"Monsters",
-        "race_global":"Global"
+        "race_global":"Global",
+        "most_cures_title":"Most Cures as",
+        "most_cures":"**Vampire Hunter**: %{vh}\n**Huntsman**: %{huntsman}\n**Zombie Slayer**: %{slayer}",
+        "most_bites_title":"Most Bites as",
+        "most_bites":"**Vampire**: %{vampire}\n**Werewolf**: %{werewolf}\n**Zombie**: %{zombie}",
+        "most_turns_title":"Mostly turned",
+        "most_turns":"%{user}"
     }
 }

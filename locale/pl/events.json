@@ -172,6 +172,12 @@
         "race_humans":"Ludzie",
         "race_hunters":"Łowcy",
         "race_monsters":"Potwory",
-        "race_global":"Globalne"
+        "race_global":"Globalne",
+        "most_cures_title":"Najwięcej uleczeń jako",
+        "most_cures":"**Łowca Wampirów**: %{vh}\n**Myśliwy**: %{huntsman}\n**Zaklinacz**: %{slayer}",
+        "most_bites_title":"Najwięcej ugryzień jako",
+        "most_bites":"**Wampir**: %{vampire}\n**Wilkołak**: %{werewolf}\n**Zombie**: %{zombie}",
+        "most_turns_title":"Najczęściej przemieniany",
+        "most_turns":"%{user}"
     }
 }
