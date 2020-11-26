@@ -12,7 +12,7 @@ class Influx:
         return Point(measurement_name)
 
     async def influxMember(self, serverID, userID, joined_or_left, timestamp=datetime.datetime.now()):
-        self.write_api.write(bucket="Members", record=(
+        self.write_api.write(bucket="MFramework", record=(
             Point("MemberChange")
             .tag("server", serverID)
             .tag("user", userID)
