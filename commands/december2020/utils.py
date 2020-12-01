@@ -8,7 +8,7 @@ _CHELP = []
 
 def DecemberEvent(cmd='', help='', alias='', group='Global', hijak=None, **kwargs):
     def inner(f, *arg, **kwarg):
-        if datetime.today().month != 11:
+        if datetime.today().month != 12:
             return
         _CHELP.append(f.__name__)
         n = _translate('cmd_', 'en', cmd, '0')
