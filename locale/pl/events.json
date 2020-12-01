@@ -189,6 +189,7 @@
         "user_not_specified":"Użytkownik nie został sprecyzowany. Upewnij się aby @wzmienić użytkownika docelowego.",
         "remaining_cooldown":"Pozostały Cooldown: %{cooldown}",
         "cookie_sent":"Ciasteczko wysłane!",
+        "cant_send_cookie_to_yourself":"Nie możesz podarować sam sobie ciasteczka :(",
         "advent_finished":"Kalendarz Adwentowy jest obecnie nie aktywny",
         "advent_claimed_successfully":"Odebrano pomyślnie. Łącznie odebrano: %{total}",
         "advent_already_claimed":"Już dzisiaj odebrano",

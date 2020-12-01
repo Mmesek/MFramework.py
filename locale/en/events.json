@@ -187,6 +187,7 @@
         "user_not_specified":"User was not specified. Make sure to @Mention them",
         "remaining_cooldown":"Remaining Cooldown: %{cooldown}",
         "cookie_sent":"Cookie sent successfully!",
+        "cant_send_cookie_to_yourself":"You can not send yourself a cookie :(",
         "advent_finished":"Advent is currently inactive",
         "advent_claimed_successfully":"You have claimed successfully. You have claimed %{total} in total.",
         "advent_already_claimed":"You have already claimed today",

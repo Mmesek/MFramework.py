@@ -10,6 +10,8 @@ async def gift(self, *user, data, language, **kwargs):
 
     _user = get_inventory(s, data.author.id)
     user = get_user_id(user)
+    if user == data.author.id:
+        return await self.message(data.channel_id, _t("cant_send_present_to_yourself", language))
 
     gift_type = db.Types.by_name(s, "Gift")
     own_present = False
@@ -50,7 +52,10 @@ async def cookie(self, *user, data, language, **kwargs):
     s = self.db.sql.session()
 
     _user = get_inventory(s, data.author.id)
-    user = get_inventory(s, get_user_id(user))
+    user = get_user_id(user)
+    if user == data.author.id:
+        return await self.message(data.channel_id, _t("cant_send_cookie_to_yourself", language))
+    user = get_inventory(s, user)
 
     cookie_type = s.query(db.Types).filter(db.Types.Name == 'Cookie').first()
     cookie_item = s.query(db.Items).filter(db.Items.Name == 'Cookie').first()
