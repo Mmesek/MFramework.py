@@ -136,3 +136,21 @@ async def multiple_add(self, *names, data, language, type='type', **kwargs):
         thing = things.get(type.lower(), db.Types)(i)
         s.add(thing)
     s.commit()
+
+@DecemberEvent()
+async def hat(self, *user, data, language, **kwargs):
+    from PIL import Image#, ImageDraw, ImageFilter
+    from io import BytesIO
+    import requests
+    if user != ():
+        url = f"https://cdn.discordapp.com/avatars/{data.mentions[0].id}/{data.mentions[0].avatar}.png?size=2048"
+        fd = requests.get(url).content
+    else:
+        fd = requests.get(f"https://cdn.discordapp.com/avatars/{data.author.id}/{data.author.avatar}.png?size=2048").content
+    img = Image.open(BytesIO(fd))
+    hat_image = Image.open("data/santa_hat.png")
+    img.paste(hat_image,(img.width-400,0), hat_image)
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = buffered.getvalue()
+    await self.withFile(data.channel_id, img_str, "avatar.png")
