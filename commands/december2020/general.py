@@ -85,7 +85,7 @@ async def advent(self, *args, data, language, **kwargs):
         advent_inventory = db.Inventory(advent_item, 1)
         transfer_item(s, data.guild_id, user, user, advent_type, None, advent_inventory, remove_item=False)
         s.commit()
-        await self.message(data.channel_id, _t('advent_claimed_successfully', language, total=len(claimed_total)))
+        await self.message(data.channel_id, _t('advent_claimed_successfully', language, total=len(claimed_total)+1))
     else:
         await self.message(data.channel_id, _t('advent_already_claimed', language))
 
