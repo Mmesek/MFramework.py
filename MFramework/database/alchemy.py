@@ -1,9 +1,24 @@
-from sqlalchemy import Column, String, Integer, JSON, ForeignKey, Boolean, BigInteger, ARRAY, TIMESTAMP, Date #, BLOB, PickleType, Date, create_engine, Table
-from sqlalchemy.ext.declarative import declarative_base
-#from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Column, String, Integer, JSON, ForeignKey, Boolean, BigInteger, ARRAY, TIMESTAMP, Date, Float, func #, BLOB, PickleType, Date, create_engine, Table
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import relationship, Query#, backref
 
-Base = declarative_base()
 
+class Base:
+    @declared_attr
+    def __tablename__(cls):
+        return cls.__name__  #.lower()
+    @classmethod
+    def filter(cls, session, **kwargs) -> Query:
+        ''':param kwargs: Column = Value''' 
+        return session.query(cls).filter_by(**kwargs)
+    @classmethod
+    def by_id(cls, s, id: int) -> object:
+        return cls.filter(s, id = id).first()
+    @classmethod
+    def by_name(cls, s, name: str) -> object:
+        return cls.filter(s, Name = name).first()
+
+Base = declarative_base(cls=Base)
 
 class Servers(Base):
     __tablename__ = 'Servers'
@@ -466,3 +481,118 @@ class HalloweenLog(Base):
         self.ToClass = ToClass
         self.ByUser = ByUser
         self.Timestamp = Timestamp
+
+class Default():
+    id = Column(Integer, primary_key=True)
+    Name = Column(String, unique=True, nullable=False)
+    def __init__(self, Name):
+        self.Name = Name
+
+class Types(Default, Base):
+    pass
+
+class Items(Default, Base):
+    _Type_id = Column(ForeignKey(Types.id), nullable=False) # One to One
+    _SubType_id = Column(ForeignKey(Types.id), nullable=False) # One to One
+    
+    GlobalLimit = Column(Integer)
+    Rarity = Column(Integer)
+    Worth = Column(Integer)
+    Durability = Column(Integer)
+    Repairs = Column(Integer)
+    Damage = Column(Integer)
+    Exclusive = Column(Boolean)
+    Stackable = Column(Boolean)
+    Tradeable = Column(Boolean)
+    Purchasable = Column(Boolean)
+    Special = Column(Boolean)
+    #ReqSkill = Column(ForeignKey('Skills._id'))
+
+    Type = relationship(Types, foreign_keys='Items._Type_id', uselist=False)
+    SubType = relationship(Types, foreign_keys='Items._SubType_id', uselist=False)
+
+    def __init__(self, Name):
+        self.Name = Name
+        self._Type_id = 0
+        self._SubType_id = 0
+
+    def __init__(self, Name, Type, SubType):
+        self.Name = Name
+        if type(Type) is Types:
+            self._Type_id = Type.id
+        elif type(Type) is int:
+            self._Type_id = Type
+        else:
+            self._Type_id = int(Type)
+
+        if type(SubType) is Types:
+            self._SubType_id = SubType.id
+        elif type(SubType) is int:
+            self._SubType_id = SubType
+        else:
+            self._SubType_id = int(SubType)
+
+class User(Base):
+    id = Column(BigInteger, primary_key=True)
+    Items = relationship('Inventory')
+
+    def __init__(self, id):
+        self.id = id
+
+    def add_item(self, Inventory):
+        for item in self.Items:
+            if Inventory.Item.Name == item.Item.Name:
+                item.Quantity += Inventory.Quantity
+                return
+        self.Items.append(Inventory)
+    
+    def add_items(self, *Items):
+        for i in Items:
+            self.add_item(i)
+    
+    def remove_item(self, Inventory):
+        for item in self.Items:
+            if Inventory.Item.Name == item.Item.Name:
+                item.Quantity -= Inventory.Quantity
+                if item.Quantity == 0:
+                    pass # Not Implemented. Remove from mapping/association or something
+                return
+    
+    def remove_items(self, *Items):
+        for i in Items:
+            self.remove_item(i)
+
+class Inventory(Base):
+    _User_id = Column(ForeignKey(User.id), primary_key=True)
+    _Item_id = Column(ForeignKey(Items.id), primary_key=True)
+    Quantity = Column(Integer)
+    Item = relationship(Items)
+    def __init__(self, Item=None, Quantity=1):
+        self.Item = Item
+        self.Quantity = Quantity
+
+class Log(Base):
+    GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
+    Timestamp = Column(TIMESTAMP(True), primary_key=True, default=func.now())
+    ByUser = Column(BigInteger, primary_key=True)
+    ToUser = Column(BigInteger, primary_key=True)
+    Sent_Quantity = Column(Integer)
+    Received_Quantity = Column(Integer)
+
+    _Type_id = Column(ForeignKey(Types.id))  # One to One
+    Type = relationship(Types, uselist=False)
+    _Sent_id = Column(ForeignKey(Items.id))  # One to Many
+    Sent = relationship(Items, foreign_keys='Log._Sent_id')
+    _Received_id = Column(ForeignKey(Items.id))  # One to Many
+    Received = relationship(Items, foreign_keys='Log._Received_id')
+    def __init__(self, GuildID: int, ByUser: User, ToUser: User, Type: Types, Sent: Inventory, Received: Inventory):
+        self.GuildID = GuildID
+        self.ByUser = ByUser.id
+        self.ToUser = ToUser.id
+        self._Type_id = Type.id
+        if Sent is not None:
+            self.Sent_Quantity = Sent.Quantity
+            self._Sent_id = Sent.Item.id
+        if Received is not None:
+            self.Received_Quantity = Received.Quantity
+            self._Received_id = Received.Item.id

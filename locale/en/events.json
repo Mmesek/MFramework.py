@@ -178,5 +178,19 @@
         "most_bites":"**Vampire**: %{vampire}\n**Werewolf**: %{werewolf}\n**Zombie**: %{zombie}",
         "most_turns_title":"Mostly turned",
         "most_turns":"%{user}"
+    },
+    "december":{
+        "present_already_sent":"You have already sent present to this person at %{timestamp}",
+        "not_enough_presents":"You do not have enough presents to sent!",
+        "present_sent_successfully":"Present to %{user} has been sent successfully.",
+        "cant_send_present_to_yourself":"You can not give yourself a gift :(",
+        "user_not_specified":"User was not specified. Make sure to @Mention them",
+        "remaining_cooldown":"Remaining Cooldown: %{cooldown}",
+        "cookie_sent":"Cookie sent successfully!",
+        "advent_finished":"Advent is currently inactive",
+        "advent_claimed_successfully":"You have claimed successfully. You have claimed %{total} in total.",
+        "advent_already_claimed":"You have already claimed today",
+        "stats_title":"Stats",
+        "stats_description":"Gifts\n---\nSent: %{gifts_sent}\nReceived: %{gifts_recv}\n\nCookies\n---\nSent: %{cookies_sent}\nReceived: %{cookies_recv}\n\nAdvent Progress: %{advent_progress}/25"
     }
 }
