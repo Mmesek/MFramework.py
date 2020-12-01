@@ -180,5 +180,19 @@
         "most_bites":"**Wampir**: %{vampire}\n**Wilkołak**: %{werewolf}\n**Zombie**: %{zombie}",
         "most_turns_title":"Najczęściej przemieniany",
         "most_turns":"%{user}"
+    },
+    "december":{
+        "present_already_sent":"Już wysłano prezent tej osobie o %{timestamp}",
+        "not_enough_presents":"Nie posiadasz wystarczająco prezentów!",
+        "present_sent_successfully":"Prezent do <@%{user}> został dostarczony pomyślnie.",
+        "cant_send_present_to_yourself":"Nie możesz podarować sam sobie prezentu :(",
+        "user_not_specified":"Użytkownik nie został sprecyzowany. Upewnij się aby @wzmienić użytkownika docelowego.",
+        "remaining_cooldown":"Pozostały Cooldown: %{cooldown}",
+        "cookie_sent":"Ciasteczko wysłane!",
+        "advent_finished":"Kalendarz Adwentowy jest obecnie nie aktywny",
+        "advent_claimed_successfully":"Odebrano pomyślnie. Łącznie odebrnano: %{total}",
+        "advent_already_claimed":"Już dzisiaj odebrano // A tak na marginesie, jakoś lepiej przydało by się to napisać...",
+        "stats_title":"Statystyki",
+        "stats_description":"Prezenty\n---\nWysłane: %{gifts_sent}\nOdebrane: %{gifts_recv}\n\nCiasteczka\n---\nWysłane: %{cookies_sent}\nOdebrane: %{cookies_recv}\n\nPostęp Kalendarza Adwentowego: %{advent_progress}/25"
     }
 }
