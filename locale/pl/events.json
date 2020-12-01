@@ -190,8 +190,8 @@
         "remaining_cooldown":"Pozostały Cooldown: %{cooldown}",
         "cookie_sent":"Ciasteczko wysłane!",
         "advent_finished":"Kalendarz Adwentowy jest obecnie nie aktywny",
-        "advent_claimed_successfully":"Odebrano pomyślnie. Łącznie odebrnano: %{total}",
-        "advent_already_claimed":"Już dzisiaj odebrano // A tak na marginesie, jakoś lepiej przydało by się to napisać...",
+        "advent_claimed_successfully":"Odebrano pomyślnie. Łącznie odebrano: %{total}",
+        "advent_already_claimed":"Już dzisiaj odebrano",
         "stats_title":"Statystyki",
         "stats_description":"Prezenty\n---\nWysłane: %{gifts_sent}\nOdebrane: %{gifts_recv}\n\nCiasteczka\n---\nWysłane: %{cookies_sent}\nOdebrane: %{cookies_recv}\n\nPostęp Kalendarza Adwentowego: %{advent_progress}/25"
     }
