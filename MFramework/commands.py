@@ -366,7 +366,8 @@ async def execute(self, data):
         else:
             _language = self.cache[data.guild_id].language
 
-        if lower_cmd in localizedCommands[_language] and _language != 'en':
+        _alias = lower_cmd
+        if lower_cmd in localizedCommands[_language]:
             lower_cmd = localizedCommands[_language][lower_cmd]
 
         if lower_cmd not in commandList[group] and lower_cmd not in contextCommandList[group]:
@@ -384,7 +385,7 @@ async def execute(self, data):
            'data': data,
            'group': group,
            'language': _language,
-           'cmd': lower_cmd,
+           'cmd': _alias,
            #'flags': flags,
            'channel': [t for t in self.patterns['channels'].findall(data.content) if t is not None],
            'user_mentions': [t for t in self.patterns['users'].findall(data.content) if t is not None],
