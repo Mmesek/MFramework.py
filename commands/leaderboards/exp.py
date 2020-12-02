@@ -61,7 +61,9 @@ async def top(self, limit=10, interval='1d', *args, data, games=False, voice=Fal
                 _r = int(results[result] / 60 / 10)
             else:
                 _r = int(results[result])
-            l = f'\n{x+1}. ' + await get_usernames(self, data.guild_id, int(result)) + f' - {_r}'
+            if _r == 0:
+                continue
+            l = f'{x+1}. ' + await get_usernames(self, data.guild_id, int(result)) + f' - {_r}\n'
             if int(result) == data.author.id:
                 l = '__' + l + '__'
             t += l
