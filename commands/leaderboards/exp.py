@@ -1,6 +1,6 @@
 from MFramework.commands import register
 from MFramework.database import alchemy as db
-from MFramework.utils.utils import Embed, secondsToText, tr
+from MFramework.utils.utils import Embed, secondsToText, tr, get_usernames
 
 import re
 @register(group='Global', help='Shows exp of specified user', alias='', category='')
@@ -31,14 +31,43 @@ def getUserID(self, data, game_or_user=''):
         return game_or_user
 
 @register(group='Global', help='Shows leaderboard', alias='', category='')
-async def top(self, limit=10, *args, data, games=False, voice=False, chat=False, count=False, language, **kwargs):
+async def top(self, limit=10, interval='1d', *args, data, games=False, voice=False, chat=False, count=False, activity=False, language, **kwargs):
     '''Extended description to use with detailed help command'''
     if type(limit) == str and limit.isdigit:
         limit = int(limit)
     elif type(limit) != int and not limit.isdigit():
         limit = 10
     session = self.db.sql.session()
-    if voice and not games and not chat:
+    embed = Embed()
+    t = ''
+    if activity:
+        server_messages = self.db.influx.get_server(limit, interval, data.guild_id, "VoiceSession" if voice else "GamePresence" if games else "MessageActivity", "count" if not voice and not games else "sum")
+        if not chat and not voice and not games:
+            server_messages += self.db.influx.get_server(limit, interval, data.guild_id, "VoiceSession", "sum", additional="|> map(fn: (r) => ({r with _value: r._value / 60.0 / 10.0}) )")
+        results={}
+        for table in server_messages:
+            for record in table.records:
+                user = record.values.get("user")
+                if user not in results:
+                    results[user] = 0
+                results[user] += record.get_value() or 0
+        r = sorted(results, key=lambda i: results[i], reverse=True)
+        for x, result in enumerate(r):
+            if x == limit:
+                break
+            if voice or games and not count:
+                _r = secondsToText(int(results[result]), language.upper())
+            elif voice and count:
+                _r = int(results[result] / 60 / 10)
+            else:
+                _r = int(results[result])
+            l = f'\n{x+1}. ' + await get_usernames(self, data.guild_id, int(result)) + f' - {_r}'
+            if int(result) == data.author.id:
+                l = '__' + l + '__'
+            t += l
+        embed.setDescription(t).setColor(self.cache[data.guild_id].color)
+        return await self.embed(data.channel_id, '', embed.embed)
+    elif voice and not games and not chat:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.vEXP.desc()).limit(limit).all()
     elif games and not voice and not chat:
         from sqlalchemy import func
@@ -49,12 +78,10 @@ async def top(self, limit=10, *args, data, games=False, voice=False, chat=False,
     else:
         total = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.EXP.desc()).limit(limit).all()
         if not chat:
-            t = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.vEXP.desc()).limit(limit).all()
+            _t = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).order_by(db.UserLevels.vEXP.desc()).limit(limit).all()
             nt = set(total)
-            nt.update(t)
+            nt.update(_t)
             total = list(nt)
-    embed = Embed()
-    t = ''
     a = []
     c = {}
     for r in total:

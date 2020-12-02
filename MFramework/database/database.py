@@ -52,7 +52,23 @@ class Influx:
             .field("words", words)
         ))
     def getSession(self, user, interval):
-        return self.query_api.query_data_frame(f'from(bucket:"Sessions/VoiceSession") |> filter(user={user}')
+        return self.query_api.query_data_frame(f'from(bucket:"Sessions/VoiceSession") |> filter(user={user})')
+    
+    def getMessages(self, user):
+        return self.query_api.query_data_frame(f'from(bucket:"Sessions/MessageActivity") |> filter(user={user})')
+    
+    def get(self, query):
+        return self.query_api.query('from(bucket:"MFramework")' + query)
+    
+    def get_server(self, limit, interval, guild_id, measurement, fn="count", additional=""):
+        return self.get(f'|> range(start: -{interval})\
+|> filter(fn: (r) => r["_measurement"] == "{measurement}")\
+|> filter(fn: (r) => r["server"] == {guild_id})\
+|> group(columns: ["user"], mode:"by")\
+|> aggregateWindow(every: {interval}, fn: {fn})\
+|> sum()\
+|> group()\
+|> top(columns: ["_value"], n: {limit})' + additional)
 
     async def influxPing(self):
         return self.influx.health()
