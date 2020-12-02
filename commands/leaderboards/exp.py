@@ -183,3 +183,32 @@ async def games(self, *game_or_user, data, language, **kwargs):
 # Bywalec - Postać && Chat + Voice 1000 || Chat+Voice 2000
 # Stały Bywalec - Postać && Chat 1000 && Voice 1000 || chat 2000 || voice 4000 + Chat 500
 # Legenda - Postać && Chat 5000 && Voice 5000 || Chat 3000 Voice 10000
+
+@register(group='Global', help='Short description to use with help command', alias='', category='')
+async def aoc(self, *args, data, language, **kwargs):
+    '''Extended description to use with detailed help command'''
+    import requests
+    from datetime import datetime
+    with open('data/aoc_cookie.txt','r',newline='',encoding='utf-8') as file:
+        cookie = file.readline()
+    r = requests.get("https://adventofcode.com/2020/leaderboard/private/view/1010436.json", cookies={"session": cookie})
+    r = r.json()
+    members = []
+    for member in r["members"]:
+        #for day in r["members"][member]["completion_day_level"]:
+        #    for task in r["members"][member]["completion_day_level"][day]:
+        #        r["members"][member]["completion_day_level"][day][task]["get_star_ts"]
+        members.append({"name": r["members"][member]["name"], "score": r["members"][member]["local_score"], "last_star": r["members"][member]["last_star_ts"], "stars": r["members"][member]["stars"]})
+    members = sorted(members, key= lambda i: i["score"], reverse=True)
+    t = "Wynik. Nick - Gwiazdki | Ostatnia\n\n"
+    for member in members:
+        l = f'{member["score"]}. {member["name"]} - {member["stars"]} | {datetime.fromtimestamp(int(member["last_star"])).strftime(" %d/%H:%M").replace(" 0"," ")}\n'
+        if member["name"] == data.author.username or member["name"] == data.member.nick:
+            l = '__' + l + '__'
+        if member["stars"] == 0:
+            continue
+        t += l
+    e = Embed().setFooter("", "1010436-ed148a8d")
+    e.setUrl("https://adventofcode.com").setTitle("Advent of Code")
+    e.setDescription(t).setColor(self.cache[data.guild_id].color)
+    await self.embed(data.channel_id, '', e.embed)
