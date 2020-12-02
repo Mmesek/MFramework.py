@@ -148,17 +148,7 @@ def get_race_counts(s, data, self_user, target_user):
             _current_target += 1
     return others, _current_race, _current_target
 
-async def get_usernames(self, guild_id: int, user_id: int) -> str:
-    try:
-        u = self.cache[guild_id].members[user_id].user.username
-    except:
-        try:
-            u = await self.get_guild_member(guild_id, user_id)
-        except:
-            return None
-        self.cache[guild_id].members[user_id] = u
-        u = u.user.username
-    return u
+from MFramework.utils.utils import get_usernames # noqa: F401
 
 async def add_and_log(self, data, target, s, previousClass, self_user, timestamp):
     s.merge(target)
