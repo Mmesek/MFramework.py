@@ -208,7 +208,7 @@ async def aoc(self, *args, data, language, **kwargs):
         if member["stars"] == 0:
             continue
         t += l
-    e = Embed().setFooter("", "1010436-ed148a8d")
+    e = Embed().setFooter("", "1010436-ed148a8d").addField("Uczestników", str(len(members)))
     e.setUrl("https://adventofcode.com").setTitle("Advent of Code")
     e.setDescription(t).setColor(self.cache[data.guild_id].color)
     await self.embed(data.channel_id, '', e.embed)
