@@ -19,7 +19,7 @@ i18n.load_path.append("././locale")
 i18n.set('filename_format','{namespace}.{format}')
 i18n.set('skip_locale_root_data', True)
 from .utils.utils import log # noqa: F401
-from .discord.mbot import Bot # noqa: F401
+from .discord.client import Client # noqa: F401
 
 def import_from(dirname):
     import importlib, time, pkgutil, sys, os

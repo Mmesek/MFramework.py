@@ -1,53 +1,39 @@
 import asyncio
+
 import MFramework
+MFramework.import_from('commands-slash')
+import MFramework.utils.config as config
+import MFramework.database.database
+cfg = config.cfg
 
-MFramework.import_from('commands')
+db = MFramework.database.database.Database(cfg)
+db.sql.create_tables()
+
+cache = {"dm": {}}  #MFramework.database.cache.MainCache(cfg)
 
 
-def run(token):
-    asyncio.run(main(token))
-
-async def main(token):
-    b = MFramework.Bot(token)
-    try:
-        while True:
-            try:
-                await b.connection()
-            except Exception as ex:
-                if "name resolution" in ex:
-                    await asyncio.sleep(10)
-                else:
-                    print(ex)
-            try:
-                await b.msg()
-                await asyncio.sleep(1)
-                if b.state:
-                    await b.close()
-            except Exception as ex:
-                if "name resolution" in ex:
-                    await asyncio.sleep(10)
-                else:
-                    print(ex)
-    except KeyboardInterrupt:
-        return
-    except Exception as ex:
-        MFramework.log(f"Main exception: {ex}")
-    finally:
+async def main(name):
+    b = MFramework.Client(name, cfg, db, cache)
+    while True:
         try:
-            await asyncio.sleep(1)
-            if b.state:
-                await b.close()
+            await b.connection()
+            await b.msg()
+        except KeyboardInterrupt:
+            return
         except Exception as ex:
-            MFramework.log(f"Clean up exception: {ex}")
+            MFramework.log(f"Uncaught Exception: {ex}")
+        finally:
+            await asyncio.sleep(1)
+            if b.connected:
+                await b.close()
+
+def run(name):
+    asyncio.run(main(name))
+
 from multiprocessing.dummy import Pool
 pool = Pool(3)
-from MFramework.utils.config import cfg
-tokens = []
-for token in cfg['DiscordTokens']:
-    tokens += [token]
-
 try:
     while True:
-        pool.map(run, tokens)
+        pool.map(run, cfg["DiscordTokens"])
 except KeyboardInterrupt:
     print("KeyboardInterrupt. Job done.")
