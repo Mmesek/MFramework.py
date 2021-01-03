@@ -19,6 +19,8 @@ def Invalid(*args, **kwargs):
 
 def onDispatch(f):
     def inner(f):
-        Dispatch[f"{f.__name__.upper()}"] = f
+        if f.__name__.upper() not in Dispatch:
+            Dispatch[f.__name__.upper()] = []
+        Dispatch[f.__name__.upper()].append(f)
         return f
     return inner(f)

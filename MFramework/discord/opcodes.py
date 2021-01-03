@@ -20,7 +20,8 @@ async def dispatch(self, data):
         self.counters[data['t']] = 0
     self.counters[data['t']] += 1
     try:
-        await Dispatch.get(data['t'], aInvalid)(self, data['d'])
+        for function in Dispatch.get(data['t'], [aInvalid]):
+            await function(self, data['d'])
     except Insufficient_Permissions as ex:
         print(ex)
     except TypeError as ex:
