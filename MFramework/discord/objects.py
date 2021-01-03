@@ -66,11 +66,11 @@ class DiscordObject:
                 "str": str
             }
             _type = types.get(_type, globals().get(_type))
-            if value is list:
-                continue
-                value = []
             if _type is None:
                 continue
+            elif value is list:
+                #continue
+                self.__setattr__(field, [])
             elif 'List' in __type:
                 try:
                     if issubclass(_type, Enum):
