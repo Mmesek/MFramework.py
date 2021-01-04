@@ -672,12 +672,12 @@ class Embed(DiscordObject):
         :author: author information
         :fields: fields information
     '''
-    title: str = ''
-    type: str = ''
-    description: str = ''
-    url: str = ''
-    timestamp: datetime = datetime.now().isoformat()
-    color: int = 0
+    title: str = None
+    type: str = None
+    description: str = None
+    url: str = None
+    timestamp: datetime = None
+    color: int = None
     footer: Embed_Footer = None
     image: Embed_Image = None
     thumbnail: Embed_Thumbnail = None
@@ -4052,7 +4052,7 @@ async def delete_webhook_with_token(Client, webhook_id: Snowflake, webhook_token
     '''
     await Client.api_call(path = f"/webhooks/{webhook_id}/{webhook_token}", method = "DELETE")
 
-async def execute_webhook(Client, webhook_id: Snowflake, webhook_token: int, wait: bool = None, content: str = None, username: str = None, avatar_url: str = None, tts: bool = None, file: bytes = None, embeds: List[Embed] = None, payload_json: str = None, allowed_mentions: Allowed_Mentions = None) -> Message:
+async def execute_webhook(Client, webhook_id: Snowflake, webhook_token: int, wait: bool = False, content: str = None, username: str = None, avatar_url: str = None, tts: bool = None, file: bytes = None, embeds: List[Embed] = None, payload_json: str = None, allowed_mentions: Allowed_Mentions = None) -> Message:
     '''
     > warn
     > This endpoint supports both JSON and form data bodies. It does require multipart/form-data requests instead of the normal JSON request type when uploading files. Make sure you set your `Content-Type` to `multipart/form-data` if you're doing that. Note that in that case, the `embeds` field cannot be used, but you can pass an url-encoded JSON body as a form value for `payload_json`.
@@ -4069,7 +4069,7 @@ async def execute_webhook(Client, webhook_id: Snowflake, webhook_token: int, wai
         :allowed_mentions: allowed mentions for the message
     '''
     r = await Client.api_call(path = f"/webhooks/{webhook_id}/{webhook_token}", method = "POST", params = {"wait": wait}, json = {"content": content, "username": username, "avatar_url": avatar_url, "tts": tts, "file": file, "embeds": embeds, "payload_json": payload_json, "allowed_mentions": allowed_mentions})
-    return Message(**r)
+    return Message(**r) if wait else None
 
 async def execute_slack_compatible_webhook(Client, webhook_id: Snowflake, webhook_token: int, wait: bool) -> None:
     '''
