@@ -52,7 +52,7 @@ class Client:
         print("\nInitating Bot with token: ", self.token)
 
     async def _api_call(self, path, method="GET", reason: str = None, **kwargs):
-        if "file" in kwargs:
+        if "file" in kwargs and kwargs['file'] is not None:
             data = aiohttp.FormData()
             data.add_field("payload_json", json.dumps(kwargs["json"]))
             data.add_field(
@@ -69,9 +69,15 @@ class Client:
         }
         if reason != None:
             defaults["headers"]["X-Audit-Log-Reason"] = reason
+        _kwargs = {}
         for kwarg in kwargs:
             if type(kwargs[kwarg]) == dict:
-                kwargs[kwarg] = as_dict(kwargs[kwarg])
+                _kwargs[kwarg] = as_dict(kwargs[kwarg])
+            elif kwargs[kwarg] is None:
+                continue
+            else:
+                _kwargs[kwarg] = kwargs[kwarg]
+        kwargs = _kwargs
         if "params" in kwargs:
             for param in kwargs["params"]:
                 kwargs["params"][param] = str(kwargs["params"][param])
