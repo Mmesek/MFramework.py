@@ -117,7 +117,7 @@ class Client:
                     self.lock[bucket] = False
                 return await self.api_call(path, method, reason, **kwargs)
             elif 'message' in r:
-                if res['code'] >= 500:
+                if res.status >= 500:
                     await asyncio.sleep(1)
                     return await self.api_call(path, method, reason, **kwargs)
                 print(f"[{res.reason}] [{r['code']}] - {r['message']}: [{method}] {path}")
