@@ -7,7 +7,7 @@ import MFramework.database.database
 cfg = config.cfg
 
 db = MFramework.database.database.Database(cfg)
-db.sql.create_tables()
+#db.sql.create_tables()
 
 cache = {"dm": {}}  #MFramework.database.cache.MainCache(cfg)
 
@@ -15,17 +15,13 @@ cache = {"dm": {}}  #MFramework.database.cache.MainCache(cfg)
 async def main(name):
     b = MFramework.Client(name, cfg, db, cache)
     while True:
-        try:
-            await b.connection()
-            await b.msg()
-        except KeyboardInterrupt:
-            return
-        except Exception as ex:
-            MFramework.log(f"Uncaught Exception: {ex}")
-        finally:
-            await asyncio.sleep(1)
-            if b.connected:
-                await b.close()
+        async with b:
+            try:
+                await b.receive()
+            except KeyboardInterrupt:
+                return
+            except Exception as ex:
+                MFramework.log(f"Uncaught Exception: {ex}")
 
 def run(name):
     asyncio.run(main(name))
