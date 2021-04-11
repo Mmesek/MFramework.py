@@ -5,11 +5,11 @@ MFramework
 
 Discord API framework with Database support.
 
-:copyright: (c) 2020 Mmesek
+:copyright: (c) 2020-2021 Mmesek
 
 '''
 __name__ = "MFramework"
-__version__ = "3.0"
+__version__ = "4.0"
 __package__ = "MFramework"
 __module__ = "MFramework"
 
@@ -18,37 +18,30 @@ i18n.load_path.append("././locale")
 #i18n.set('filename_format', '{locale}.{format}')
 i18n.set('filename_format','{namespace}.{format}')
 i18n.set('skip_locale_root_data', True)
-from .utils.utils import log # noqa: F401
-from .discord.client import Client # noqa: F401
-
-def import_from(dirname):
-    import importlib, time, pkgutil, sys, os
-    t = time.time()
-    dirname = [dirname]+[os.path.join(dirname,o) for o in os.listdir(dirname) if os.path.isdir(os.path.join(dirname, o)) and '__' not in o]
-    for importer, package_name, _ in pkgutil.iter_modules(dirname):
-        full_package_name = '.'.join([importer.path.replace('\\','.').replace('/','.'), package_name])
-        if full_package_name not in sys.modules:
-            module = importlib.import_module(full_package_name)
-    f = time.time()
-    print("Loaded in:", f - t)
-    if '-generate-translation' in sys.argv or '-update-translation' in sys.argv:
-        exit()
-#import_from('commands')
-
-def import_commands(path='commands'):
-    from os.path import dirname
-    import glob, time, importlib
-    t = time.time()
-    sub_modules = glob.glob(''.join((dirname(__file__)+'/.././'+path, '/**/*.py')), recursive=True)
-    fm = [one.replace(dirname(__file__)+'/.././'+path,'').replace('/','.').replace('\\','.')[:-3] for one in sub_modules if '__' not in one]
-    for o in fm:
-        importlib.import_module(''.join([path, o]))
-    f = time.time()
-    print("Loaded in:", f - t)
-#import_commands()
+i18n.set('file_format', 'json')
 
 import git, time
-commits = git.Repo().heads.Rework.log()
+commits = git.Repo().heads.Interactions.log()
 ver_msg = commits[-1].message
-__version__ = f"3.{len(commits)}"
+__version__ = f"4.{len(commits)}"
 ver_date = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(commits[-1].time[0]))
+
+
+from mdiscord import *
+class Bot(Client):
+    pass
+from .database.database import Database
+from .database.cache import Cache
+from .utils.utils import log # noqa: F401
+
+from typing import Dict
+
+class Bot(Client):
+    user_id: Snowflake = None
+    session_id: str = None
+    start_time: float = None
+
+    db: Database
+    cache: Dict[Snowflake, Cache]
+
+from .commands.interactions import register, Groups, Event # noqa: F401
