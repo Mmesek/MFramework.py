@@ -33,9 +33,10 @@ def getUserID(self, data, game_or_user=''):
 @register(group='Global', help='Shows leaderboard', alias='', category='')
 async def top(self, limit=10, interval='1d', *args, data, games=False, voice=False, chat=False, count=False, activity=False, language, **kwargs):
     '''Extended description to use with detailed help command'''
-    if type(limit) == str and limit.isdigit:
+    if type(limit) == str and limit.isdigit():
         limit = int(limit)
     elif type(limit) != int and not limit.isdigit():
+        interval = limit
         limit = 10
     session = self.db.sql.session()
     embed = Embed()
@@ -208,7 +209,7 @@ async def aoc(self, *args, data, language, **kwargs):
         if member["stars"] == 0:
             continue
         t += l
-    e = Embed().setFooter("", "1010436-ed148a8d")
+    e = Embed().setFooter("", "1010436-ed148a8d").addField("Uczestników", str(len(members)))
     e.setUrl("https://adventofcode.com").setTitle("Advent of Code")
     e.setDescription(t).setColor(self.cache[data.guild_id].color)
     await self.embed(data.channel_id, '', e.embed)

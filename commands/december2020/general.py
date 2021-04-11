@@ -44,7 +44,7 @@ async def gift(self, *user, data, language, **kwargs):
         s.commit()
         await self.message(data.channel_id, _t('present_sent_successfully', language))        
     else:
-        await self.message(data.channel_id, _t('remaining_cooldown', language))
+        await self.message(data.channel_id, _t('remaining_cooldown', language, cooldown=timedelta(hours=2) - (now - last_gift.Timestamp)))
 
 @DecemberEvent()
 async def cookie(self, *user, data, language, **kwargs):
