@@ -15,7 +15,7 @@ class Influx:
         self.write_api.write(bucket="MFramework", record=(
             Point("MemberChange")
             .tag("server", serverID)
-            .tag("user", userID)
+            .field("user", userID)
             .field("change", joined_or_left))
         )
 
@@ -81,7 +81,7 @@ class SQL:
     __slots__ = ('engine', 'Session')
     def __init__(self, db, user, password, location, port, name, echo=False):
         try:
-            self.engine = create_engine(f'{db}://{user}:{password}@{location}:{port}/{name}', echo=echo)
+            self.engine = create_engine(f'{db}://{user}:{password}@{location}:{port}/{name}', echo=echo, pool_size=10, max_overflow=20)
         except Exception as ex:
             print("Connecting to Database failed!", ex)
             self.engine = create_engine("sqlite:///mbot.db", echo=echo)
