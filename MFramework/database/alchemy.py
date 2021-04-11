@@ -571,6 +571,15 @@ class Inventory(Base):
         self.Item = Item
         self.Quantity = Quantity
 
+class Stats(Base):
+    id = Column(BigInteger, primary_key=True)
+    key = Column(String, primary_key=True)
+    value = Column(Integer, default=0)
+    def __init__(self, id, key, value=0) -> None:
+        self.id = id
+        self.key = key
+        self.value = value
+
 class Log(Base):
     GuildID = Column(BigInteger, ForeignKey('Servers.GuildID'), primary_key=True)
     Timestamp = Column(TIMESTAMP(True), primary_key=True, default=func.now())
