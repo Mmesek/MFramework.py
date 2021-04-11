@@ -1,7 +1,7 @@
 import inspect, re
-from .utils.utils import timed, tr
 
-
+from mlib.utils import timed
+from mlib.localization import tr
 async def Invalid(*args, **kwargs):
     return 0
 
@@ -418,7 +418,7 @@ async def execute(self, data):
             #r = None
         except TypeError as ex:
             if 'missing' in str(ex):
-                await self.message(data.channel_id, str(ex).split(" ", 1)[1].replace("'", '`').capitalize())
+                await self.create_message(data.channel_id, str(ex).split(" ", 1)[1].replace("'", '`').capitalize())
                 r = None
             else:
                 raise
@@ -435,7 +435,7 @@ Groups = {
     "System": 5
 }
 
-from .database import alchemy as db
+from ..database import alchemy as db
 #@timed
 async def parse(self, data):
     # parser:
