@@ -160,7 +160,7 @@ async def Infraction(self, data, user, type, reason, attachments=[]):
     embeds = []
     if webhook is None:
         return
-    string = f'{data.author.username} {type} ' 
+    string = f'{data.author.username} [{type}](<https://discord.com/channels/{data.guild_id}/{data.channel_id}/{data.id}>) '
     u = f'[<@{user}>'
     for mention in data.mentions:
         if mention.id == user:
