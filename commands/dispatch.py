@@ -1,5 +1,5 @@
 from MFramework.discord.mbot import onDispatch
-from MFramework.commands import execute, parse, compilePatterns, contextCommandList
+from MFramework.commands import execute, parse, compilePatterns, contextCommandList, register
 from MFramework.discord.objects import *
 from MFramework.database.cache import Cache, CacheDM
 from MFramework.utils import log, utils, levels
@@ -75,6 +75,7 @@ async def message_create(self, data: Message):
                 await levels.handle_exp(self, data, e)
                 if self.cache[data.guild_id].trackActivity:
                     self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(' '))))
+        await egg_hunt(self, data)
     elif data.author.bot is False and data.guild_id == 0:
         if 'dm' not in self.context:
             self.context['dm'] = {}
@@ -91,6 +92,48 @@ async def message_create(self, data: Message):
             self.cache["dm"][data.channel_id].message(data)
     return
 
+async def egg_hunt(ctx, data):
+    import random
+    if random.SystemRandom().randint(1, 100) < 2:
+        print("New Egg!")
+        import asyncio
+        await asyncio.sleep(random.SystemRandom().randint(0, 10))
+        await ctx.create_reaction(data.channel_id, data.id, "🥚")
+        await asyncio.sleep(random.SystemRandom().randint(15, 60))
+        users = await utils.get_all_reactions(ctx, data.channel_id, data.id, "🥚")
+        await ctx.delete_own_reaction(data.channel_id, data.id, "🥚")
+        s = ctx.db.sql.Session()
+        e_type = s.query(db.Types).filter(db.Types.Name == 'EasterEgg').first()
+        item = s.query(db.Items).filter(db.Items.Name == 'Easter Egg').first()
+        stat = s.query(db.Stats).filter(db.Stats.id == data.guild_id, db.Stats.key == "Easter Egg").first()
+        if not stat:
+            stat = db.Stats(id = data.guild_id, key="Easter Egg", value=0)
+            s.add(stat)
+        stat.value += 1
+        s.commit()
+        i = db.Inventory(item, 1)
+        for user in users:
+            from .december2020.utils import get_inventory
+            u = get_inventory(s, user.id)
+            from .december2020.general import transfer_item
+            transfer_item(s, data.guild_id, u, u, e_type, None, i, remove_item=False)
+            s.commit()
+        print(len(users),"claimed egg")
+
+@register()
+async def eleaderboard(ctx, data, *args, **kwargs):
+    s = ctx.db.sql.Session()
+    #e_type = s.query(db.Types).filter(db.Types.Name == 'EasterEgg').first()
+    item = s.query(db.Items).filter(db.Items.Name == 'Easter Egg').first()
+    inventories = s.query(db.Inventory).filter(db.Inventory._Item_id == item.id).order_by(db.Inventory.Quantity.desc()).limit(10).all()
+    inventory = s.query(db.Inventory).filter(db.Inventory._Item_id == item.id, db.Inventory._User_id == data.author.id).first()
+    total = s.query(db.Stats).filter(db.Stats.id == data.guild_id, db.Stats.key == "Easter Egg").first()
+
+    from MFramework.utils.utils import Embed
+    e = Embed()
+    e.setDescription("\n".join(f"{x+1}. <@{i._User_id}> - {i.Quantity}" for x, i in enumerate(inventories[:10])))
+    e.addField("Your Stats", inventory.Quantity if inventory else "None").addField("Total Eggs", total.value)
+    await ctx.embed(data.channel_id, "", e.embed)
 
 @onDispatch(Message)
 async def message_update(self, data):
@@ -127,9 +170,11 @@ async def message_update(self, data):
 @onDispatch(Guild)
 async def guild_create(self, guild):
     if guild.id not in self.cache:
+        start = time.time()
         self.cache[guild.id] = Cache(guild, self.db, self.user_id, self.alias)
         from MFramework.utils.scheduler import add_guild_tasks
         add_guild_tasks(self, guild.id)
+        print('Guild', guild.id, 'initialized in:', time.time() - start)
     if guild.id not in self.context:
         self.context[guild.id] = {}
     if len(self.cache[guild.id].members) < 10:
@@ -140,6 +185,7 @@ async def guild_create(self, guild):
 async def guild_member_add(self, data):
     await self.db.influx.influxMember(data.guild_id, data.user.id, True, data.joined_at)
     await log.UserJoinedGuild(self, data)
+    self.cache[data.guild_id].members[data.user.id] = data
     if data.guild_id == 463433273620824104:
         print('New user joined guild! :D')
         dm = await self.create_dm(data.user.id)
@@ -201,7 +247,8 @@ async def guild_member_update(self, data):
         c = s.query(db.CustomRoles).filter(db.CustomRoles.GuildID == data.guild_id).filter(db.CustomRoles.UserID == data.user.id).first()
         if c != None:
             await self.delete_guild_role(data.guild_id, c.RoleID, "User stopped boosting server")
-            self.db.sql.delete(c)
+            s.delete(c)
+            s.commit()
     await log.MutedChange(self, data)
 
 @onDispatch(Guild_Members_Chunk)
@@ -243,6 +290,22 @@ async def message_reaction_add(self, data):
             if (data.channel_id, data.user_id) in self.context['dm']:
                 return await self.context['dm'][(data.channel_id, data.user_id)].react(data=data)
         return
+    giveaways = self.cache[data.guild_id].giveaway_messages #s.query(db.Tasks).filter(db.Tasks.Type == 'hidden_giveaway', db.Tasks.MessageID == data.message_id).first()
+    #for msg in giveaways:
+    if data.message_id in giveaways:#== msg:
+            await self.delete_user_reaction(data.channel_id, data.message_id, f"{data.emoji.name}:{data.emoji.id}", data.user_id)
+            from .misc.giveaways import GiveawayParticipants
+            s = self.db.sql.session()
+            user = s.query(GiveawayParticipants).filter(GiveawayParticipants.MessageID == data.message_id, GiveawayParticipants.UserID == data.user_id).first()#, GiveawayParticipants.Reaction == f"{data.emoji.name}:{data.emoji.id}").first()
+            if user == None:
+                u = GiveawayParticipants()
+                u.GuildID = data.guild_id
+                u.MessageID = data.message_id
+                u.Reaction = f"{data.emoji.name}:{data.emoji.id}"
+                u.UserID = data.user_id
+                s.add(u)
+                s.commit()
+                #self.db.sql.add(u)
     roles = self.cache[data.guild_id].reactionRoles
     if roles == {}:
         return
