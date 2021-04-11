@@ -405,12 +405,12 @@ def grouper(iterable, n, fillvalue=None):
 async def get_all_reactions(self, channel_id, message_id, emoji='🎉'):
     msg = await self.get_channel_message(channel_id, message_id)
     for reaction in msg.reactions:
-        if reaction.emoji.name == emoji:
+        if reaction.emoji.name == emoji.split(':')[0]:
             count = reaction.count
     users = []
     last_id = None
     for chunk in range(int(count / 100) + (count % 100 > 0)):
-        users += await self.getreactions(channel_id, message_id, '🎉', when="after", snowflake=last_id)
+        users += await self.getreactions(channel_id, message_id, emoji, when="after", snowflake=last_id)
         last_id = users[-1].id
     users = [i for i in users if i.id != self.user_id]
     return list(set(users))
