@@ -449,6 +449,7 @@ async def parse(self, data):
     group = self.cache[server].cachedRoles(data.member.roles)
     if group == 'Muted':
         return
+    matched = []
     for each in Groups:
         if Groups[each] > Groups[group]:
             break
@@ -460,6 +461,10 @@ async def parse(self, data):
         #matches = words.findall(data['content'])
         for matches in words.finditer(data.content):
             match = matches.lastgroup
+            if match in matched:
+                continue
+            else:
+                matched.append(match)
             session = self.db.sql.session()
             response = session.query(db.Regex).filter(db.Regex.GuildID == server).filter(db.Regex.Name == match).first()
             r = response.Response.split('$')
@@ -476,6 +481,9 @@ async def parse(self, data):
                     await self.modify_guild_role(data.guild_id, r[x + 1], mentionable=False, audit_reason="Regex Mention")
                 elif "message" == command:
                     await self.message(data.channel_id, r[x + 1])
+                elif "message_or" == command:
+                    from random import SystemRandom as rand
+                    await self.message(data.channel_id, r[x + 1].split('|||',1)[0 if rand().randint(1,100) < 50 else 1])
                 elif "delete_match" == command:
                     await self.delete_message(data.channel_id, data.id, "Regex Trigger")
                 elif "embed" == command:
