@@ -2,8 +2,12 @@ from . import alchemy as db
 import datetime, time, re
 from ..discord.objects import *
 
+#https://github.com/seperman/redisworks
+#In theory, should allow us to keep using what we are using (perhaps with minor changes) but instead of what we have below, it'll be in stored Redis... in theory
+#https://gist.github.com/ryanermita/6371da82e1e2fd49806148cd3e54b979
+
 class Cache:
-    __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language', 'connection',
+    __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language', 'connection', 'giveaway_messages',
     'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice', 'afk', 'afk_channel',
     'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence', 'dynamic_channels',
     'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks', 'rpg_channels', 'language_overwrites', 'trackActivity')
@@ -102,6 +106,7 @@ class Cache:
         self.webhooks = session.query(db.Webhooks).filter(db.Webhooks.GuildID == guildID).all()
         self.responses = session.query(db.Regex).filter(db.Regex.GuildID == guildID).all()
         self.recompileTriggers(datab, guildID)
+        self.giveaway_messages = [i.MessageID for i in session.query(db.Tasks).filter(db.Tasks.Type == 'hidden_giveaway', db.Tasks.GuildID == guildID, db.Tasks.Finished == False).all() or []]
 
         self.color = g.Color
         self.fillCache(data, datab)
