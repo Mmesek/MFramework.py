@@ -26,6 +26,23 @@
 		],
 		"description": "Snippet for creating and registering new context command in MFramework"
 	},
+	"Register new interaction":{
+		"scope":"python",
+		"prefix":"@register",
+		"body":[
+			"@register(group=${1:Groups.GLOBAL})",
+			"async def ${2:commandTrigger}(ctx: Bot, interaction: Interaction, ${3:parameter}: ${4:type}, *args, language, **kwargs):",
+			"    '''",
+			"    ${5:Description to use with help command}",
+			"    Params",
+			"    ------",
+			"    ${3:parameter}:",
+			"        ${6:description}",
+			"    '''",
+			"    ${7:pass}"
+		],
+		"description": "Snippet for creating and registering new interaction command in MFramework"
+	},
 	"Virtual File":{
 		"scope":"python",
 		"prefix":"buffer",
