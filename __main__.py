@@ -1,19 +1,27 @@
-import asyncio
+import asyncio, sys
 
 import MFramework
-MFramework.import_from('commands-slash')
-import MFramework.utils.config as config
-import MFramework.database.database
-cfg = config.cfg
+from mlib.import_functions import import_from
+import_from('dispatch')
+import_from('commands_slash')
+import_from('commands')
+if '-generate-translation' in sys.argv or '-update-translation' in sys.argv:
+    exit()
 
-db = MFramework.database.database.Database(cfg)
+from mlib.config import ConfigToDict
+from os.path import dirname
+path = dirname(__file__)+"/data/secrets.ini"
+cfg = ConfigToDict(path)
+
+db = MFramework.Database(cfg)
 #db.sql.create_tables()
 
 cache = {"dm": {}}  #MFramework.database.cache.MainCache(cfg)
+#cache = MFramework.Cache(cfg)
 
 
 async def main(name):
-    b = MFramework.Client(name, cfg, db, cache)
+    b = MFramework.Bot(name, cfg, db, cache)
     while True:
         async with b:
             try:
