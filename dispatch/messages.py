@@ -11,7 +11,7 @@ async def message_create(self: Bot, data: Message):
         for emoji in EMOJI.findall(data.content):
             await responder(self, data, emoji)
         if data.channel_id in self.cache[data.guild_id].rpg_channels:
-            from commands.rpg import dice
+            from . import dice
             await dice.roll(self, data)
         await guild_message(self, data)
         await parse_reply(self, data)
