@@ -31,10 +31,10 @@ async def dm_message(self: Bot, data: Message):
 
 @onDispatch
 async def message_update(self: Bot, data: Message):
-    if not data.author or data.webhook_idor or not data.guild_id or not data.content:
+    if not data.author or data.webhook_id or not data.guild_id or not data.content:
         return
     from .actions import roll_dice
-    roll_dice(self, data, True)
+    await roll_dice(self, data, True)
 
     await self.cache[data.guild_id].logging["message_update"](data)
     self.cache[data.guild_id].messages.update(data)
