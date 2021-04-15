@@ -113,44 +113,7 @@ async def parse_reply(self: Bot, data: Message):
         return
     if data.referenced_message == None or data.referenced_message.id == 0:
         return
-    msg = data.referenced_message
-    from MFramework import Embed, Embed_Footer, Embed_Image
-    question = Embed(
-        title="Question", 
-        description=msg.content, 
-        url=f"https://discord.com/channels/{data.guild_id}/{msg.channel_id}/{msg.id}", 
-        timestamp=msg.timestamp, 
-        color=int("45f913", 16), 
-        footer = Embed_Footer(
-            text=msg.author.username, 
-            icon_url=msg.author.get_avatar()).as_dict, 
-            image=Embed_Image(
-                url=msg.attachments[0].url, 
-                proxy_url=None, 
-                height=None, 
-                width=None
-            ).as_dict if msg.attachments != [] else None
-        )
-
-    answer = Embed(
-        title="Answer", 
-        description=data.content, 
-        url=f"https://discord.com/channels/{data.guild_id}/{data.channel_id}/{data.id}", 
-        color=int("ec2025", 16), 
-        timestamp=data.timestamp, 
-        footer = Embed_Footer(
-            text=data.author.username, 
-            icon_url=data.author.get_avatar()).as_dict, 
-            image=Embed_Image(
-                url=data.attachments[0].url, 
-                proxy_url=None, 
-                height=None, 
-                width=None
-            ).as_dict if data.attachments != [] else None
-    )
-    WEBHOOK_ID = ''
-    WEBHOOK_TOKEN = ''
-    await self.execute_webhook(WEBHOOK_ID, WEBHOOK_TOKEN, embeds=[question.as_dict, answer.as_dict])
+    await self.cache[data.guild_id].logging["message_replay_qna"](data)
 
 async def dm_reply(ctx: Bot, msg: Message):
     from MFramework.utils.utils import parseMention, check_attachments
@@ -158,3 +121,22 @@ async def dm_reply(ctx: Bot, msg: Message):
     dm = await ctx.create_dm(user)
     await ctx.create_message(dm.id, msg.content, embed=check_attachments(msg))
     await msg.react(ctx.emoji['success'])
+
+async def deduplicate_messages(self: Bot, data: Message) -> bool:
+    c = self.cache[data.guild_id].messages
+    _last_message = c[-1] #c.last_message(data.channel_id)
+    if _last_message.content == data.content and _last_message.author.id == data.author.id:
+        await self.delete_message(data.channel_id, data.id)
+        return True
+    self.cache[data.guild_id].messages.store(data)
+    return False
+
+async def roll_dice(self: Bot, data: Message, update: bool = False):
+    if data.channel_id in self.cache[data.guild_id].rpg_channels:
+        from . import dice
+        await dice.roll(self, data, update)
+
+async def handle_level(self: Bot, data: Message):
+    if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
+        from MFramework.utils import levels
+        await levels.exp(self, data)

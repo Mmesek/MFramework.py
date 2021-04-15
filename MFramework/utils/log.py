@@ -3,7 +3,7 @@ import MFramework
 from typing import List, Dict
 
 class Log:
-    bot: MFramework.Bot
+    bot: object#MFramework.Bot
     guild_id: MFramework.Snowflake
     webhook_id: MFramework.Snowflake
     webhook_token: str
@@ -11,7 +11,7 @@ class Log:
     avatar: str = None
     _type: str = "all"
 
-    def __init__(self, bot: MFramework.Bot, guild_id: MFramework.Snowflake, type:str, id: MFramework.Snowflake, token: str) -> None:
+    def __init__(self, bot, guild_id: MFramework.Snowflake, type:str, id: MFramework.Snowflake, token: str) -> None:
         self.bot = bot
         self._type = self.__class__.__name__.lower()
         self.guild_id = guild_id
@@ -42,6 +42,8 @@ class Message(Log):
         embed.setFooter(f"ID: {msg.author.id}")
         embed.setAuthor(f"{msg.author.username}#{msg.author.discriminator}", None, msg.author.get_avatar())
         return embed
+    def user_in_footer(self, embed: MFramework.Embed, msg: MFramework.Message) -> MFramework.Embed:
+        return embed.setFooter(text=msg.author.username, icon_url=msg.author.get_avatar())
 
     def get_cached_message(self, channel_id, message_id) -> MFramework.Message:
         return self.bot.cache[self.guild_id].getMessage(message_id, channel_id)
@@ -90,7 +92,7 @@ class Infraction(Log):
     username = "Infraction Log"
     async def log(self, guild_id, channel_id, message_id, moderator, user_id, reason, type, duration=0, attachments=None) -> MFramework.Message:
         from MFramework import Discord_Paths
-        string = f'{moderator.author.username} [{type}](<{Discord_Paths.link(Discord_Paths.MessageLink).format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
+        string = f'{moderator.author.username} [{type}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
         u = f'[<@{user_id}>'
         try:
             user = self.bot.cache[guild_id].members[user_id].user
@@ -244,7 +246,7 @@ class Muted_Change(Member_Update):
                 self.cache[data.guild_id].members[data.user.id] = data
 
 class Direct_Message(Message):
-    def __init__(self, bot: MFramework.Bot, guild_id: MFramework.Snowflake, type: str, id: MFramework.Snowflake, token: str) -> None:
+    def __init__(self, bot, guild_id: MFramework.Snowflake, type: str, id: MFramework.Snowflake, token: str) -> None:
         super().__init__(bot, guild_id, type, id, token)
     async def log(self, msg) -> MFramework.Message:
         embed = self.set_metadata(msg)
@@ -278,13 +280,26 @@ class Direct_Message(Message):
         await self._log(content+f' <@!{msg.author.id}>', [embed], f"{msg.author.username}#{msg.author.discriminator}", avatar)
         await msg.react(self.bot.emoji['success'])
 
+class Message_Replay_QnA(Message):
+    username = None
+    async def log(self, msg: MFramework.types.Message) -> MFramework.Message:
+        rmsg = msg.referenced_message
+        question = self.set_metadata(rmsg).setTitle("Question")
+        question.author = None
+        question.setColor("#45f913")
+        question.setUrl(MFramework.Discord_Paths.MessageLink.link.format(
+            guild_id=rmsg.guild_id, channel_id=rmsg.channel_id, message_id=rmsg.id))
+        self.user_in_footer(question, rmsg)
+        if rmsg.attachments != []:
+            question.setImage(url=rmsg.attachments[0].url)
 
-from mlib.utils import all_subclasses
-def create_loggers(ctx: MFramework.Bot, guild_id: MFramework.Snowflake) -> Dict[str, Log]:
-    loggers = {}
-    webhooks = ctx.cache[guild_id].logging
-    _classes = {i.__name__.lower():i for i in all_subclasses(Log)}
-    for webhook in webhooks:
-        if webhook in _classes:
-            loggers[webhook] = _classes[webhook](ctx, guild_id, webhook, *webhooks[webhook])
-    return loggers
+        answer = self.set_metadata(msg).setTitle("Answer")
+        answer.author = None
+        answer.setColor("#ec2025")
+        answer.setUrl(MFramework.Discord_Paths.MessageLink.link.format(
+            guild_id=msg.guild_id, channel_id=msg.channel_id, message_id=msg.id))
+        self.user_in_footer(answer, msg)
+        if msg.attachments != []:
+            answer.setImage(url=msg.attachments[0].url)
+
+        await self._log(None, embeds=[question, answer])
