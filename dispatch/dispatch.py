@@ -6,7 +6,7 @@ async def ready(self: Bot, ready: Ready):
     self.user_id = ready.user.id
     self.username = ready.user.username
     import time
-    self.startTime = time.time()
+    self.start_time = time.time()
     print("Conntected as:", ready.user.username)
 
 @onDispatch

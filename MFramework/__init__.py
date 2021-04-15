@@ -37,7 +37,9 @@ from typing import Dict
 class Bot(Client):
     session_id: str = None
     start_time: float = None
-    
+    application: Application = None
+    registered: bool = False
+
     alias: str = "?"
     emoji: dict = dict
     primary_guild: Snowflake = 463433273620824104
