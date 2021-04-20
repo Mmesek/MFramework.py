@@ -54,5 +54,11 @@ class Bot(Client):
         self.primary_guild = cfg[name].get('primary_guild', 463433273620824104)
 
         super().__init__(name, cfg, shard=shard, total_shards=total_shards)
+    async def dispatch(self, data: Gateway_Payload):
+        await super().dispatch(data)
+        if hasattr(data.d, 'guild_id') or isinstance(data.d, Guild):
+            id = data.d.guild_id if hasattr(data.d, 'guild_id') else data.d.id
+            if id in self.cache:
+                await self.cache[id].logging[data.t.lower()](data.d)
 
 from .commands.interactions import register, Groups, Event # noqa: F401
