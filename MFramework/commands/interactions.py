@@ -1,42 +1,7 @@
 from MFramework import RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, GuildID
-from ._utils import Groups, commands, detect_group, find_command, is_nested, parse_docstring, parse_signature, iterate_commands
+from ._utils import detect_group, find_command, is_nested, iterate_commands
 
 from MFramework import Snowflake, Interaction, Guild#, create_guild_application_command, create_global_application_command, get_global_application_commands, get_guild_application_commands
-
-def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False, guild: Snowflake = None, choice=None, **kwargs):
-    '''Decorator for creating commands.
-    
-    Params
-    ------
-    group:
-        is a lowest group that can access this command (Highest digit). DM and Muted are special groups
-    interaction:
-        whether this function should be an interaction or not
-    main:
-        is a function pointer. 
-    guild: 
-        is used when command is exclusive to a specific guild'''
-    def inner(f):
-        _name = f.__name__.lower()
-        if main:
-            _name = main.__name__.lower()+'.'+_name
-        commands[group][_name] = {}
-        commands[group][_name]['function'] = f
-        _docstring = parse_docstring(f)
-        commands[group][_name]['help'] = (f'[{group.name}] ' if group.value < 5 else '')+ _docstring['_doc']
-        commands[group][_name]['arguments'] = parse_signature(f, _docstring)
-        commands[group][_name]['interaction'] = interaction
-        commands[group][_name]['master_command'] = main
-        commands[group][_name]['sub_commands'] = []
-        if main:
-            _groups = list(commands.keys())
-            for current_group in _groups[_groups.index(group):]:
-                if main.__name__.lower() in commands[current_group]:
-                    commands[current_group][main.__name__.lower()]['sub_commands'].append({"name":_name, "help":_docstring['_doc'], "arguments":parse_signature(f, _docstring), "function": f})
-                    break
-        commands[group][_name]['guild'] = guild
-        return f
-    return inner
 
 from mdiscord import onDispatch
 @onDispatch
@@ -130,31 +95,3 @@ async def guild_create(ctx, guild: Guild):
         print(f"Creating {_command['guild']} command")
         #FIXME 
         #await ctx.create_guild_application_command(ctx.application.id, _command['guild'] or guild.id, command, _command['help'][:100], options)
-
-
-def Event(*, month=None, day=None, hour=None, minute=None, year=None):
-    '''Executes command only if it's during provided timeframe'''
-    def inner(f):
-        def wrapped(*args, **kwargs):
-            from datetime import datetime
-            t = datetime.today()
-            d = datetime(year or t.year, month or t.month, day or t.day, hour if hour is not None else t.hour, minute if minute is not None else t.minute)
-            t = t.replace(second=0, microsecond=0)
-            if t == d:
-                return f(*args, **kwargs)
-        return wrapped
-    return inner
-
-def Cooldown(*, seconds=None, minutes=None, hours=None, days=None, weeks=None, logic=lambda x: x):
-    '''Applies a cooldown on command.
-    Use it with callable function accepting interaction returning boolean for conditional execution and datetime object with last execution timestamp for cooldown calculation'''
-    def inner(f):
-        def wrapped(interaction: Interaction= None, *args, **kwargs):
-            should_execute, last_execution = logic(interaction)
-            if should_execute:
-                from datetime import datetime, timedelta
-                cooldown = timedelta(days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks)
-                if (datetime.now() - last_execution) > cooldown:
-                    return f(interaction=interaction, *args, **kwargs)
-        return wrapped
-    return inner
