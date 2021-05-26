@@ -1,182 +1,121 @@
-from . import alchemy as db
-import datetime, time, re
-from ..discord.objects import *
+from mdiscord import *
+from ..commands._utils import Groups
+from .. import *
+from ..utils.log import Log
+from typing import List, Dict, Tuple, Union, DefaultDict
 
-#https://github.com/seperman/redisworks
-#In theory, should allow us to keep using what we are using (perhaps with minor changes) but instead of what we have below, it'll be in stored Redis... in theory
-#https://gist.github.com/ryanermita/6371da82e1e2fd49806148cd3e54b979
+from .cache_internal.models import *
+from .cache_internal.base import Cache, RDS
+import re
+from MFramework import log
+from .alchemy import models as db
+from .alchemy import types
 
-class Cache:
-    __slots__ = ('groups', 'disabled_channels', 'disabled_roles', 'logging', 'language', 'connection', 'giveaway_messages',
-    'alias', 'reactionRoles', 'levels', 'webhooks', 'responses', 'exp', 'trackVoice', 'afk', 'afk_channel',
-    'name', 'color', 'joined', 'member_count', 'quoteWebhook', 'VoiceLink', 'presence', 'dynamic_channels',
-    'messages', 'voice', 'channels', 'members', 'roles', 'reactions', 'bot', 'trackPresence', 'presenceRoles', 'canned', 'tasks', 'rpg_channels', 'language_overwrites', 'trackActivity')
-    groups: dict
-    disabled_channels: tuple
-    disabled_roles: tuple
-    logging: dict
+class GuildCache:
+    guild_id: Snowflake
+    logging: DefaultDict[str, Log]
+    
+    messages: Messages[Snowflake, Message]
+    channels: Channels[Snowflake, Channel]
+    roles: Roles[Snowflake, Role]
+    emojis: Cache[Snowflake, Emoji]
+    members: Members[Snowflake, Guild_Member]
+    voice: Dict[Snowflake, Dict[Snowflake, float]]
+    #voice_states: Dict[Snowflake, Voice_State] = {} #
+    #voice_states: Cache[Snowflake, Voice_State] = {} #TODO
+    #voice_channels: Dict[Snowflake, Dict[Snowflake, int]] = {}
+    webhooks: Cache[str, Tuple[Snowflake, str]]
+    presence: Presences[Snowflake, Tuple[str, int, Snowflake]]
+    groups: Dict[Groups, List[Snowflake]]
 
-    alias: str
-    reactionRoles: dict
-    levels: dict
-    webhooks: dict
-    responses: list
+    disabled_channels: List[Snowflake]
+    disabled_roles: List[Snowflake]
+
+    rpg_channels: List[Snowflake]
+    rpg_dices: List[str]
+
+    canned: Dict[str, re.Pattern]
+    responses: Dict[Snowflake, re.Pattern]
+    blacklisted_words: re.Pattern = None
+
+    nitro_channel: Snowflake
+    afk_channel: Snowflake
+    dynamic_channels: Dict[Snowflake, str]
+
+    custom_emojis: Dict[str, Union[str, Tuple]]
+
+    reaction_roles: Dict[str, Dict[Snowflake, Dict[str, List[Snowflake]]]]
+    presence_roles: Dict[str, Dict[Snowflake, Dict[str, List[Snowflake]]]]
+    level_roles: List #TODO
+
+    tracked_streams: List[str]
+
+    giveaway_messages: List[Snowflake]
+    last_messages: Dict[Snowflake, Message]
+
+    voice_link: Snowflake
+    tracking: int = 0
+    permissions: int = 0
+    language: str = 'en'
+    allowed_duplicated_messages: int = 1
 
     name: str
     color: int
-    joined: datetime
-    member_count: int
 
-    messages: dict
-    voice: list
-    channels: list
-    members: list
-    roles: list
-    reactions: list
+    bot: Guild_Member
 
-    bot: dict
-    def __init__(self, data, datab, user_id, alias):
-        guildID = data.id
-        session = datab.sql.session()
-        g = session.query(db.Servers).filter(db.Servers.GuildID == guildID).first()
-        if g == None:
-            self.initGuild(data, datab, user_id, alias)
-            g = session.query(db.Servers).filter(db.Servers.GuildID == guildID).first()
-        else:
-            self.setBot(data, user_id)
-        self.groups = {}
-
-        self.groups['Admin'] = g.AdminIDs
-        self.groups['Mod'] = g.ModIDs
-        self.groups['Vip'] = g.VipIDs
-        self.groups['Nitro'] = g.NitroIDs
-        self.groups['Muted'] = g.MutedIDs
-        self.disabled_channels = g.NoExpChannels
-        self.disabled_roles = g.NoExpRoles
-        l = session.query(db.Webhooks.Source, db.Webhooks.Webhook).filter(db.Webhooks.GuildID == guildID).filter(db.Webhooks.Source.contains('logging-')).all()
-        self.logging = {i.Source.replace('logging-',''): i.Webhook for i in l}  #g.Logging
-        self.trackPresence = g.TrackPresence
-        self.language = g.Language
-        self.canned = {}
-        self.recompileCanned(datab, guildID)
-        self.VoiceLink = g.VoiceLink
-        self.trackVoice = g.TrackVoice
-        self.trackActivity = g.TrackActivity
-        self.quoteWebhook = '706282832477028403/eZVXx3-iPfyrjQgJt3kZOfJVSt98ZRGI5VJe0t5SN32cNsgPOugZK8-AxUm0tKhD2dfJ'
-        self.presence = {}
-        self.afk = {}
-        self.tasks = {}
-        self.dynamic_channels = {'channels':[], 'counters':{}}
+    def __init__(self, bot, guild: Guild, rds: RDS = None):
+        self.guild_id = guild.id
+        self.groups = {i:[] for i in Groups}
+        r = RDS()
+        self.members = (#
+        {i.user.id:i for i in guild.members} #TODO
+        #Members(r).from_list(guild.members)
+        )
+        self.roles = {i.id:i for i in guild.roles} #Roles(r).from_list(guild.roles)
+        self.channels = {i.id:i for i in guild.channels} #Channels(r).from_list(guild.channels, guild_id = guild.id)
+        #for vs in guild.voice_states:
+            #from MFramework.utils.timers2 import _startTimer
+            #if not vs.self_mute and not vs.self_deaf:
+            #    _startTimer(self.voice_channels, vs.channel_id, vs.user_id) # Don't start if users are muted! TODO
+        #self.voice_states = {i.user_id:i for i in guild.voice_states}
+        self.afk_channel = guild.afk_channel_id
+        self.messages = Messages(r)
+        self.cooldowns = Cooldowns(r)
+        self.last_messages = {}
+        self.voice = {}
+        self.custom_emojis = {}
+        self.presence_roles = {}
+        self.reaction_roles = {}
+        self.level_roles = []
+        self.tracked_streams = []
+        self.giveaway_messages = []
+        self.last_messages = {}
+        self.rpg_dices = []
         self.rpg_channels = []
-        self.language_overwrites = {}
-        channels = session.query(db.Channels).filter(db.Channels.GuildID == guildID).all()
-        for channel in channels:
-            if channel.Type == 'dynamic':
-                self.dynamic_channels[channel.ChannelID] = channel.Template
-            elif channel.Type == 'rpg':
-                self.rpg_channels.append(channel.ChannelID)
-            if channel.Language is not None:
-                self.language_overwrites[channel.ChannelID] = channel.Language
-        self.alias = g.Alias
-        #self.reactionRoles = {i.RoleGroup:{i.MessageID:{i.Reaction:i.RoleID}} for i in session.query(db.ReactionRoles).filter(db.Servers.GuildID == guildID).all()}
-        self.reactionRoles = {}
-        for i in session.query(db.ReactionRoles).filter(db.ReactionRoles.GuildID == guildID).all():
-            rr = self.reactionRoles
-            if rr == {} or i.RoleGroup not in rr:
-                rr[i.RoleGroup] = {}
-            if i.MessageID not in rr[i.RoleGroup]:
-                rr[i.RoleGroup][i.MessageID] = {}
-            if i.RoleID not in rr[i.RoleGroup][i.MessageID]:
-                rr[i.RoleGroup][i.MessageID][i.Reaction] = []
-            rr[i.RoleGroup][i.MessageID][i.Reaction] += [i.RoleID]
-            self.reactionRoles = rr
-        self.presenceRoles = {}
-        for i in session.query(db.PresenceRoles).filter(db.PresenceRoles.GuildID == guildID).all():
-            pr = self.presenceRoles
-            if pr == {} or i.RoleGroup not in pr:
-                pr[i.RoleGroup] = {}
-            if i.Presence not in pr[i.RoleGroup]:
-                pr[i.RoleGroup][i.Presence] = {}
-            if i.RoleID not in pr[i.RoleGroup][i.Presence]:
-                pr[i.RoleGroup][i.Presence] = []
-            pr[i.RoleGroup][i.Presence] += [i.RoleID]
-            self.presenceRoles = pr
-        self.levels = session.query(db.LevelRoles).filter(db.LevelRoles.GuildID == guildID).all()
-        self.levels = sorted(self.levels, key=lambda i: i.ReqEXP+i.ReqVEXP, reverse=True)
-        self.webhooks = session.query(db.Webhooks).filter(db.Webhooks.GuildID == guildID).all()
-        self.responses = session.query(db.Regex).filter(db.Regex.GuildID == guildID).all()
-        self.recompileTriggers(datab, guildID)
-        self.giveaway_messages = [i.MessageID for i in session.query(db.Tasks).filter(db.Tasks.Type == 'hidden_giveaway', db.Tasks.GuildID == guildID, db.Tasks.Finished == False).all() or []]
-
-        self.color = g.Color
-        self.fillCache(data, datab)
-        self.messages = {}
-    def setBot(self, data, user_id):
-        for member in data.members:
-            if member.user.id == user_id:
-                self.bot = member
-                break
-    def initGuild(self, data, datab, user_id, alias):
-        self.setBot(data, user_id)
-        admin, mod, vip, nitro, muted, rnoexp, cnoexp = [], [], [], [], [], [], []
-        self.color = None
-        for role in data.roles:
-            #if (self.color is None and self.bot is not None) and
-            if (role.id in self.bot.roles):
-                #self.color = role['color']
-                if role.managed is True:
-                    self.color = (role.position, role.color, True)
-                elif self.color == None:
-                    self.color = (role.position, role.color, False)
-                elif role.position > self.color[0] and self.color[2] != True:
-                    self.color = (role.position, role.color, False)
-            
-            if role.name == "Admin" or role.name == "Administrator":
-                admin += [role.id]
-            elif role.name == "Moderator":
-                mod += [role.id]
-            elif role.name == "Nitro Booster" and role.managed is True:
-                nitro += [role.id]
-            elif role.name == "Muted":
-                muted += [role.id]
-            elif role.name.lower() in {"VIP", "Contributor"}:
-                vip += [role.id]
-            elif role.name == "No Exp":
-                rnoexp += [role.id]
-        if self.color != None:
-            self.color = self.color[1]
-        for channel in data.channels:
-            if "bot" in channel.name:
-                cnoexp += [channel.id]
-        guildID = data.id
-        session = datab.sql.session()
-        g = db.Servers(guildID, admin, mod, vip, nitro, muted, rnoexp, cnoexp, alias, self.color, False)
-        session.add(g)
-        session.commit()
-
-        
-    def fillCache(self, data: Guild, datab):
-        self.name = data.name#['name']
-        self.joined = data.joined_at#['joined_at']
-        self.member_count = data.member_count  #['member_count']
-        if getattr(self, 'voice', 0) == 0:
-            self.voice = {}  #[]
-        self.members = {}
-        self.exp = {}
-        session = datab.sql.session()
-        r = session.query(db.UserLevels.UserID, db.UserLevels.LastMessage).filter(db.UserLevels.GuildID == data.id).all()
-        for member in r:
-            self.exp[member[0]] = member[1]
-        for member in data.members:
-            self.members[member.user.id] = member
-        for vc in data.voice_states:
-            if self.members[vc.user_id].user.bot or not self.trackVoice:
+        self.disabled_channels = []
+        self.disabled_roles = []
+        self.dynamic_channels = {"channels":{}}
+        self.responses = {}
+        self.canned = {}
+        self.setBot(bot.user_id)
+        self.setColor()
+        self.setRoleGroups()
+        self.setChannels()
+        self.load_from_database(bot)
+        self.set_loggers(bot)
+        if self.is_tracking(types.Flags.Voice):
+            self.load_voice_states(guild.voice_states)
+    
+    def load_voice_states(self, voice_states):
+        for vc in voice_states:
+            if self.members[vc.user_id].user.bot:
                 continue
             if vc.channel_id not in self.voice:
                 self.voice[vc.channel_id] = {}
             if vc.user_id not in self.voice[vc.channel_id]:
                 import time
-                print(time.ctime(), 'init of user', vc.user_id)
+                log.debug('init of user %s', vc.user_id)
                 if vc.self_deaf:
                     i = -1
                 elif len(self.voice[vc.channel_id]) > 0:
@@ -190,98 +129,221 @@ class Cache:
                 self.voice[c][u] = 0
             elif len(self.voice[c]) > 1 and u == 0:
                 self.voice[c][u] = time.time()
-        #self.voice = data.voice_states
-        self.channels = []
-        for channel in data.channels:
-            self.channels += [channel]
-        #self.channels = data.channels
-        self.presence = {}
-        for presence in data.presences:
-            try:
-                if len(presence['client_status']) == 1 and 'web' in presence['client_status'] or not self.trackPresence:
-                    continue
-                elif presence['game'] is not None and presence['game']['type'] == 0 and 'application_id' in presence['game']:
-                    self.presence[int(presence['user']['id'])] = (presence['game']['name'], presence['game']['created_at'], int(presence['game']['application_id']))
-                    print('Init', self.presence[int(presence['user']['id'])])
-            except:
-                print(presence)
-        #self.members = data.presences
-        self.roles = []
-        for role in data.roles:
-            self.roles += [role]
-        #self.roles = data.roles
-        self.reactions = []
-        for reaction in data.emojis:
-            self.reactions += [reaction]
-        #self.reactions = data.emojis
-        if data.afk_channel_id != 0:
-            self.afk_channel = data.afk_channel_id
     
-    def message(self, message_id, data):
-        if data.channel_id not in self.messages:
-            self.messages[data.channel_id] = {}
-        self.messages[data.channel_id][message_id] = data
-    def getMessage(self, message_id, channel_id):
-        return self.messages[channel_id].pop(message_id, None)
+    def setBot(self, user_id):
+        self.bot = self.members[user_id]
+        self.calculate_permissions()
     
-    def update_server_data(self, data):
-        self.name = data.name
-        self.member_count = data.member_count
-        self.roles = data.roles
-        self.reactions = data.emojis
+    def new_guild(self, s):
+        return db.Server.fetch_or_add(s, id=self.guild_id)
 
-    def voice_(self, data):
-        if data.user_id not in self.voice:
-            self.voice[data.user_id] = time.time()
-        return
+    def get_guild(self, s) -> db.Server:
+        server = db.Server.filter(s, id=self.guild_id).first()
+        if server:
+            return server
+        print("Adding new guild...")
+        return self.save_to_database(s)
+        #return db.Server.fetch_or_add(s, id=self.guild_id)
 
+    def setColor(self):
+        color = None
+        for role_id in self.bot.roles:
+            role = self.roles[role_id]
+            if role.managed is True:
+                color = (role.position, role.color, True)
+            elif color == None:
+                color = (role.position, role.color, False)
+            elif role.position > color[0] and color[2] != True:
+                color = (role.position, role.color, False)
+        self.color = color[1] if color else None
+    
+    def calculate_permissions(self):
+        for role in self.bot.roles:
+            self.permissions |= int(self.roles[role].permissions)
+    
+    def setRoleGroups(self):
+        for id, role in self.roles.items():
+            if role.name in {"Admin", "Administrator"}:
+                _group = Groups.ADMIN
+            elif role.name == "Moderator":
+                _group = Groups.MODERATOR
+            elif role.name == "Nitro Booster" and role.managed is True:
+                _group = Groups.NITRO
+            elif role.name == "Muted":
+                _group = Groups.MUTED
+            elif role.name.lower() in {"VIP", "Contributor"}:
+                _group = Groups.VIP
+            elif role.name == 'Limbo':
+                _group = Groups.LIMBO
+            elif role.name == "No Exp":
+                self.disabled_roles.append(id)
+                continue
+            elif role.name == "Voice":
+                self.voice_link = id
+                continue
+            else:
+                continue
+            self.groups[_group].append(id)
+    
+    def setChannels(self):
+        for id, channel in self.channels.items():
+            if "bot" in channel.name:
+                self.disabled_channels.append(id)
+            elif "nitro" in channel.name:
+                self.nitro_channel = id
+    
     def cachedVoice(self, data):
         join = self.voice.pop(data.user_id, None)
-        now = time.time()
         if join is not None:
-            return now - join
+            import time
+            return time.time() - join
         return 0
 
     def cachedRoles(self, roles):
-        groups = self.groups
-        for group in groups:
-            if any(i in roles for i in groups[group]):
+        for group in self.groups:
+            if any(i in roles for i in self.groups[group]):
                 return group
-        return "Global"
+        return Groups.GLOBAL
 
-    def recompileTriggers(self, datab, server):
-        session = datab.sql.session()
-        reg = session.query(db.Regex).filter(db.Regex.GuildID == server).all()
-        #reg = await self.db.selectMultiple("Regex", "ReqRole, Name, Trigger", "WHERE GuildID=?", [server])
-        responses, triggers = {}, {}
-        for trig in reg:
-            if trig.ReqRole not in responses:
-                responses[trig.ReqRole] = {}
-            if trig.Name not in responses[trig.ReqRole]:
-                responses[trig.ReqRole][trig.Name] = trig.Trigger
+    def get_Custom_Emojis(self, session):
+        s = db.Snippet.filter(session, server_id = self.guild_id, type = types.Snippet.Emoji).all()
+        for emoji in s:
+            if not emoji.filename:
+                self.custom_emojis[emoji.name.lower()] = emoji.content
+            else: 
+                self.custom_emojis[emoji.name.lower()] = (emoji.filename, emoji.image)
+    
+    def recompile_Canned(self, session):
+        s = db.Snippet.filter(session, server_id = self.guild_id, type = types.Snippet.Canned_Response).all()
+        import re
+        self.canned = {}
+        self.canned['patterns'] = re.compile('|'.join([f'(?P<{re.escape(i.name)}>{i.trigger})' for i in s]))
+        self.canned['responses'] = {re.escape(i.name):i.content for i in s}
+    
+    def recompile_Triggers(self, session):
+        responses = {}
+        triggers = db.Snippet.filter(session, server_id = self.guild_id, type = types.Snippet.Regex).all()
+        for trig in triggers:
+            if trig.group not in responses:
+                responses[trig.group] = {}
+            if trig.name not in responses[trig.group]:
+                responses[trig.group][trig.name] = trig.trigger
             else:
-                responses[trig.ReqRole] = {trig.Name: trig.Trigger}
+                responses[trig.group] = {trig.name: trig.trigger}
+        import re
         for r in responses:
-            #for response in responses[r]:
-#                if response[0] == 'r':
-#                    responses[r][response[0]] = re.escape(response[1])
-            p = re.compile(r"(?:{})".format("|".join("(?P<{}>{})".format(k, f) for k, f in responses[r].items())))
-            # p = re.compile(r'(?:{})'.format('|'.join(map(re.escape, longest_first))))
-            triggers[r] = p
-        self.responses = triggers
-    def recompileCanned(self, datab, guildID):
-        session = datab.sql.session()
-        s = session.query(db.Snippets).filter(db.Snippets.GuildID == guildID).filter(db.Snippets.Type == 'cannedresponse')
-        self.canned['patterns'] = re.compile('|'.join([f'(?P<{re.escape(i.Name)}>{i.Trigger})' for i in s]))
-        self.canned['responses'] = {re.escape(i.Name):i.Response for i in s}
+            self.responses[r] = re.compile(r"(?:{})".format("|".join("(?P<{}>{})".format(k, f) for k, f in responses[r].items())))
+    
+    def get_Webhooks(self, session):
+        webhooks = session.query(db.Webhook).filter(db.Webhook.server_id == self.guild_id, db.Webhook.subscriptions.any(db.Subscription.source.contains('logging-'))).all()
+        self.webhooks = {
+            sub.source.replace('logging-','').replace('_log',''): (webhook.id, webhook.token)
+            for webhook in webhooks
+            for sub in webhook.subscriptions if 'logging-' in sub.source
+        }
+    
+    def get_Blacklisted_Words(self, session):
+        words = db.Snippet.filter(session, server_id = self.guild_id, type = types.Snippet.Blacklisted_Word).all()
+        if len(words) > 0:
+            self.blacklisted_words = re.compile(r"(?i){}".format("|".join(words)))
+
+    def get_reaction_roles(self, roles):
+        reactions = roles.filter(db.Role.settings.any(name=types.Setting.Reaction)).all()
+        _reactions = {}
+        for reaction in reactions:
+            if types.Setting.Group in reaction.settings:
+                group = reaction.settings[types.Setting.Group].str
+            else:
+                group = None
+            message = reaction.settings[types.Setting.MessageID].snowflake
+            _reaction = reaction.settings[types.Setting.Reaction].str
+            if group not in _reactions:
+                _reactions[group] = {}
+            if message not in _reactions[group]:
+                _reactions[group][message] = {}
+            if reaction not in _reactions[group][message]:
+                _reactions[group][message][_reaction] = []
+            _reactions[group][message][_reaction].append(reaction.id)
+        self.reaction_roles = _reactions
+    
+    def get_activity_roles(self, roles):
+        activitites = roles.filter(db.Role.settings.any(name=types.Setting.Presence)).all()
+        for presence in activitites:
+            self.presence_roles[presence.settings[types.Setting.Presence].str] = presence.id
+        
+    def get_role_groups(self, roles):
+        permissions = roles.filter(db.Role.settings.any(name=types.Setting.Permissions)).all()
+        for permission in permissions:
+            g = Groups.get(permission.settings[types.Setting.Permissions].int)
+            if g in self.groups:
+                self.groups[g].append(permission.id)
+    
+    def get_level_roles(self, roles):
+        levels = roles.filter(db.Role.settings.any(name=types.Setting.Level)).all() #TODO
+
+    def get_Roles(self, session):
+        roles = session.query(db.Role).filter(db.Role.server_id == self.guild_id)
+        self.get_reaction_roles(roles)
+        self.get_activity_roles(roles)
+        self.get_role_groups(roles)
+        self.get_level_roles(roles)
+        breakpoint
+
+    def set_loggers(self, ctx):
+        from mlib.types import aInvalid
+        from collections import defaultdict
+        self.logging = defaultdict(lambda: aInvalid)
+        from mlib.utils import all_subclasses
+        _classes = {i.__name__.lower():i for i in all_subclasses(Log)}
+        for webhook in self.webhooks:
+            if webhook in _classes:
+                self.logging[webhook] = _classes[webhook](ctx, self.guild_id, webhook, *self.webhooks[webhook])
+
+    def load_from_database(self, ctx):
+        with ctx.db.sql.Session.begin() as s:
+            g = self.get_guild(s)
+            if types.Setting.Flags in g.settings:
+                self.tracking = g.settings[types.Setting.Flags].int
+            if types.Setting.Voice_Link in g.settings:
+                self.voice_link = g.settings[types.Setting.Voice_Link].snowflake
+            self.recompile_Triggers(s)
+            self.recompile_Canned(s)
+            self.get_Webhooks(s)
+            self.get_Custom_Emojis(s)
+            self.get_Roles(s)
+            self.get_Blacklisted_Words(s)
+
+    def load_settings(self, guild):
+        for setting, value in guild.settings.items():
+            setattr(self, setting.name.lower(), getattr(value, setting.value[0].__name__, None))
+
+    def save_to_database(self, s):
+        #s = ctx.db.sql.Session()
+        guild = self.new_guild(s)
+        for channel in self.disabled_channels:
+            _channel = db.Channel.fetch_or_add(s, server_id=self.guild_id, id=channel)
+            _channel.add_setting(types.Setting.Exp, False)
+            s.add(_channel)
+        if hasattr(self, 'nitro_channel'):
+            nitro_channel = db.Channel.fetch_or_add(s, server_id=self.guild_id, id=self.nitro_channel)
+            nitro_channel.add_setting(types.Setting.Flags, types.Flags.Nitro)
+            s.add(nitro_channel)
+        for role in self.disabled_roles:
+            _role = db.Role.fetch_or_add(s, server_id=self.guild_id, id=role)
+            _role.add_setting(types.Setting.Exp, False)
+        for group in self.groups:
+            for role in self.groups[group]:
+                _role = db.Role.fetch_or_add(s, server_id=self.guild_id, id=role)
+                _role.add_setting(types.Setting.Permissions, group.value)
+                s.add(_role)
+        if hasattr(self, 'voice_link'):
+            guild.add_setting(types.Setting.Voice_Link, self.voice_link)
+        #s.add(guild) ?
+        #s.commit()
+        return guild
+    
+    def is_tracking(self, flag):
+        from mlib.utils import bitflag
+        return bitflag(self.tracking, flag)
 
 
-class CacheDM:
-    __slots__ = ("messages")
-    def __init__(self):
-        self.messages = {}
-    def message(self, data):
-        message_id = data.id
-        self.messages[message_id] = data
-    def getMessage(self, message_id):
-        return self.messages.pop(message_id, None)
