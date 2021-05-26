@@ -35,7 +35,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
         await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
 
-from MFramework.commands.interactions import Event, Chance
+from MFramework.commands.decorators import Event, Chance
 @Event(month=4)
 @Chance(2.5)
 async def egg_hunt(ctx: Bot, data: Message):
@@ -61,46 +61,74 @@ async def responder(ctx: Bot, msg: Message, emoji: str):
 async def parse_reply(self: Bot, data: Message):
     from MFramework.commands._utils import detect_group, Groups
     _g = detect_group(self, data.author.id, data.guild_id, data.member.roles)
-    if data.channel_id == 686371597895991327 and _g in [Groups.SYSTEM, Groups.ADMIN, Groups.MODERATOR]:
+    if data.referenced_message == None or data.referenced_message.id == 0:
+        return
+    if _g not in [Groups.SYSTEM, Groups.ADMIN, Groups.MODERATOR]:
+        return
+    if data.channel_id == 686371597895991327:
         return await dm_reply(self, data)
     if data.channel_id != 802092364008783893:
-        return
-    if _g not in [Groups.SYSTEM, Groups.MODERATOR, Groups.ADMIN]:
-        return
-    if data.referenced_message == None or data.referenced_message.id == 0:
         return
     await self.cache[data.guild_id].logging["message_replay_qna"](data)
 
 async def dm_reply(ctx: Bot, msg: Message):
-    from MFramework.utils.utils import parseMention, check_attachments
+    from MFramework.utils.utils import parseMention
+    if len(msg.referenced_message.embeds) == 0:
+        return
     user = parseMention(msg.referenced_message.embeds[0].footer.text)
     dm = await ctx.create_dm(user)
-    await ctx.create_message(dm.id, msg.content, embed=check_attachments(msg))
-    await msg.react(ctx.emoji['success'])
+    await ctx.create_message(dm.id, msg.content, embed=msg.attachments_as_embed())
+    await msg.react(ctx.emoji['success']) # _Client is apparently not set
 
 async def deduplicate_messages(self: Bot, data: Message) -> bool:
-    c = self.cache[data.guild_id].messages
-    _last_message = c[-1] #c.last_message(data.channel_id)
-    if _last_message.content == data.content and _last_message.author.id == data.author.id:
-        await self.delete_message(data.channel_id, data.id)
-        return True
-    self.cache[data.guild_id].messages.store(data)
+    c = self.cache[data.guild_id].last_messages
+    _last_message = c.get(data.channel_id, None)
+    if (_last_message and 
+        _last_message[0].content == data.content and 
+        _last_message[0].author.id == data.author.id and
+        _last_message[0].attachments == data.attachments
+        ):
+        if len(_last_message) >= self.cache[data.guild_id].allowed_duplicated_messages:
+            await self.delete_message(data.channel_id, data.id)
+            return True
+    else:
+        self.cache[data.guild_id].last_messages[data.channel_id] = []
+    from copy import copy
+    self.cache[data.guild_id].messages.store(copy(data))
+    self.cache[data.guild_id].last_messages[data.channel_id].append(data)# = data
     return False
 
-async def roll_dice(self: Bot, data: Message, update: bool = False):
+import re
+URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
+async def remove_links(self: Bot, data: Message) -> bool:
+    if len(data.member.roles) > 0:
+        return False
+    if URL_PATTERN.match(data.content):
+        await data.delete()
+        return True
+
+REPLACE_NOT_APLABETIC = re.compile(r'[^a-zA-Z ]')
+async def blocked_words(self: Bot, data: Message) -> bool:
+    BLACKLISTED_WORDS = self.cache[data.guild_id].blacklisted_words #re.compile(r"") #TODO: Source cached from Database!
+    if BLACKLISTED_WORDS:
+        if BLACKLISTED_WORDS.match(REPLACE_NOT_APLABETIC.sub('', data.content)):
+            await data.delete()
+            return True
+
+ACTION = re.compile(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))")
+ILLEGAL_ACTIONS = re.compile(r"(?i)zabij|wyryw|mord")
+async def roll_dice(self: Bot, data: Message, updated: bool = False):
     if data.channel_id not in self.cache[data.guild_id].rpg_channels:
         return
-    if update:
+    if updated:
         m = await self.get_channel_message(data.channel_id, data.id)
         if m.reactions:
             return
-    import re
-    ILLEGAL_ACTIONS = re.compile(r"(?i)zabij|wyryw|mord")
     DICE_REACTIONS = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣']
     DICE_EMOJIS = {0:'dice_0:761760091648294942',
         1:'dice_1:761760091971780628',2:'dice_2:761760091837825075',3:'dice_3:761760092206792750',
         4:'dice_4:761760092767911967',5:'dice_5:761760093435068446',6:'dice_6:761760093817143345'}
-    reg = re.findall(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))", data.content)
+    reg = ACTION.findall(data.content)
     if reg and set(reg) != {'*'}:
         if '*' in reg:
             reg = set(reg)
