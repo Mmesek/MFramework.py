@@ -1,4 +1,4 @@
-from MFramework import onDispatch, Bot, Ready
+from MFramework import onDispatch, Bot, Ready, log
 
 @onDispatch
 async def ready(self: Bot, ready: Ready):
@@ -7,16 +7,7 @@ async def ready(self: Bot, ready: Ready):
     self.username = ready.user.username
     import time
     self.start_time = time.time()
-    print("Conntected as:", ready.user.username)
-
-@onDispatch
-async def ready(self: Bot, ready: Ready):
-    if getattr(self, 'registered', False):
-        return
-    self.application = await self.get_current_application_information()
-    from MFramework.commands.interactions import register_interactions
-    await register_interactions(self)
-    self.registered = True
+    log.info("Connected as %s", ready.user.username)
 
 from MFramework import Presence_Update, Activity_Types
 

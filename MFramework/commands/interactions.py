@@ -1,18 +1,23 @@
-from MFramework import RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, GuildID
-from ._utils import detect_group, find_command, is_nested, iterate_commands
+from MFramework import (onDispatch,
+    RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake, 
+    Interaction, Guild, Application_Command,
+    Context, Bot, Groups, log)
 
-from MFramework import Snowflake, Interaction, Guild#, create_guild_application_command, create_global_application_command, get_global_application_commands, get_guild_application_commands
+from ._utils import user_group, find_command, is_nested, iterate_commands, set_default_arguments
 
-from mdiscord import onDispatch
 @onDispatch
-async def interaction_create(Client, interaction: Interaction):
+async def interaction_create(client: Bot, interaction: Interaction):
     '''Called after receiving event INTERACTION_CREATE from Discord'''
-    if interaction.member is None:
-        return # Command was issued in DM. While some commands could be used there, we don't support it right now
+    ctx = Context(client.cache, client, interaction)
     name = interaction.data.name
+    g = user_group(ctx)
 
-    g = detect_group(Client, interaction.member.user.id, interaction.guild_id, interaction.member.roles)
     f = find_command(g, name)
+    if not f:
+        log.debug("Command %s not found", name)
+        return
+    
+    ##########TODO##FIXME###TODO################################################################
     sub = name+'.'+interaction.data.options[0].name if len(interaction.data.options) > 0 and f['sub_commands'] != [] else name
     #TODO: Follow the rabbit hole if sub_commands are set
     if sub != name:
@@ -34,64 +39,62 @@ async def interaction_create(Client, interaction: Interaction):
             kwargs[option.name] = o
         if t is RoleID:
             print(issubclass(t, Snowflake))
-    #kwargs = {option.name:f['arguments'][option.name]['type'](option.value) for option in interaction.data.options} #TODO: Scrap subcommands?
+    ############################################################################################
     options = {i.name:f['arguments'] for i in interaction.data.options if i.name not in kwargs}
-    for arg in f['arguments']:
-        if arg not in kwargs:
-            t = f['arguments'][arg]['type']
-            if t is ChannelID:
-                i = interaction.channel_id
-            elif t is RoleID:
-                i = interaction.guild_id
-            elif t is UserID:
-                i = interaction.user.id
-            elif t is User:
-                i = interaction.user
-            elif t is Guild_Member:
-                i = interaction.member
-                i.user = interaction.user
-            elif t is GuildID:
-                i = interaction.guild_id
-            else:
-                continue
-            kwargs[arg] = i
 
-    await f['function'](Client, interaction=interaction, language='en', group=g, **kwargs)
+    kwargs = set_default_arguments(ctx, f, kwargs)
+    await f['function'](client, interaction=interaction, language='en', group=g, **kwargs)
 
-async def register_interactions(Client):
+
+import sys
+@onDispatch
+async def ready(client: Bot):
     '''Called after connecting with Discord. Preferably after receiving READY event'''
-    registered = await Client.get_global_application_commands(Client.application.id)
-#    for cmd in registered:
-#        await Client.delete_global_application_command(Client.application.id, cmd.id)
+    if getattr(client, 'registered', False):
+        return
+    client.application = await client.get_current_bot_application_information()
+
+    registered = await client.get_global_application_commands(client.application.id)
+
+    if '--clear_interactions' in sys.argv:
+        for cmd in registered:
+            log.info("Deleting Global command %s from bot %s", cmd, client.username)
+            await client.delete_global_application_command(client.application.id, cmd.id)
+        return
+    
+    new_commands = []
     for command, _command, options in iterate_commands(registered):
-        if not _command['interaction'] or _command['guild'] or _command['master_command']:
+        if not _command['interaction'] or _command['guild'] or _command.get('master_command', False):
+            log.debug("Skippging command %s from registering as Global. Eiter Guild-Only or it's a subCommand", command)
             continue
-        print("Creating global command", command)
-        #FIXME 
-        #try:
-        #await Client.create_global_application_command(Client.application.id, command, _command['help'][:100], options)
-        #except Exception as ex:
-        #    print(ex)
+        log.info("Registering Global command %s on bot %s", command, client.username)
+        new_commands.append(Application_Command(name=command, description=_command['help'][:100], options=options, default_permission=_command['group'] == Groups.GLOBAL))
+    if new_commands != []:
+        await client.bulk_overwrite_global_application_commands(client.application.id, new_commands)
 
 @onDispatch
-async def guild_create(ctx, guild: Guild):
-#async def register_guild_interactions(Client, guild_id: Snowflake):
+async def guild_create(client: Bot, guild: Guild):
     '''Called after GUILD_CREATE'''
     try:
-        app = ctx.application
+        app = client.application
     except:
         import asyncio
         await asyncio.sleep(3)
-        app = ctx.application
-    try:
-        registered = await ctx.get_guild_application_commands(app.id, guild.id)
-#        for cmd in registered:
-#            await ctx.delete_guild_application_command(ctx.application.id, guild.id, cmd.id)
-    except:
+        app = client.application
+
+    registered = await client.get_guild_application_commands(app.id, guild.id)
+
+    if '--clear_interactions' in sys.argv:
+        for cmd in registered:
+            log.info("Deleting Guild command %s from bot %s from %s", cmd.name, client.username, guild.id)
+            await client.delete_guild_application_command(client.application.id, guild.id, cmd.id)
         return
+
+    new_commands = []
     for command, _command, options in iterate_commands(registered):
         if not _command['interaction'] or _command['guild'] != guild.id or _command.get('master_command', False):
             continue
-        print(f"Creating {_command['guild']} command")
-        #FIXME 
-        #await ctx.create_guild_application_command(ctx.application.id, _command['guild'] or guild.id, command, _command['help'][:100], options)
+        log.info("Registering Guild command %s on bot %s for %s", command, client.username, guild.id)
+        new_commands.append(Application_Command(name=command, description=_command['help'][:100], options=options, default_permission=_command['group'] == Groups.GLOBAL))
+    if new_commands != []:
+        await client.bulk_overwrite_guild_application_commands(client.application.id, guild.id, new_commands)

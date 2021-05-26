@@ -2,9 +2,8 @@ from inspect import signature, Signature
 
 from mdiscord.types import GuildID
 
-from MFramework import Snowflake, ChannelID, UserID, RoleID, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type, Enum, Channel, User, Role, Guild_Member, Message
+from MFramework import Snowflake, ChannelID, UserID, RoleID, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type, Channel, User, Role, Guild_Member, Message, Enum
 
-#from enum import Enum
 class Groups(Enum):
     SYSTEM = 0
     ADMIN = 1
@@ -14,16 +13,7 @@ class Groups(Enum):
     GLOBAL = 5
     DM = 6
     MUTED = 7
-
-group_names = {
-    "System": 0,
-    "Admin": 1,
-    "Mod": 2,
-    "Nitro": 3,
-    "Vip": 4,
-    "Global": 5,
-    "Muted": 7
-}
+    LIMBO = 8
 
 commands = {}
 for group in Groups:
@@ -31,7 +21,7 @@ for group in Groups:
 
 def detect_group(Client, user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
     if user_id != 273499695186444289:
-        return Groups(group_names.get(Client.cache[guild_id].cachedRoles(roles).title(), 5)) #FIXME
+        return Client.cache[guild_id].cachedRoles(roles)
     return Groups.SYSTEM
 
 def find_command(group: Groups=Groups.GLOBAL, command: str="") -> dict:
@@ -154,3 +144,48 @@ def iterate_commands(registered: list=[]):
                 if any(command == i.name for i in registered):
                     continue
             yield command, _command, options
+
+
+def set_default_arguments(ctx, f, kwargs):
+    for arg in f['arguments']:
+        if arg not in kwargs:
+            _type = f['arguments'][arg]['type']
+            if _type is ChannelID:
+                i = ctx.channel_id
+            elif _type is RoleID:
+                i = ctx.guild_id
+            elif _type is UserID:
+                i = ctx.user_id
+            elif _type is User:
+                i = ctx.user
+            elif _type is Guild_Member:
+                i = ctx.member or Guild_Member()
+                i.user = ctx.user
+            elif _type is GuildID:
+                i = ctx.guild_id
+            else:
+                continue
+            kwargs[arg] = i
+    return kwargs
+
+from MFramework import Bot, Application_Command_Permissions, Application_Command_Permission_Type, log, Context
+async def set_permissions(client: Bot, guild_id: Snowflake):
+    groups = client.cache[guild_id].groups
+    permissions = []
+    for group, roles in groups.items():
+        for cmd in commands[group]:
+            for role in roles:
+                log.info("Adding permission for role %s for command %s", role, cmd.name)
+                permissions.append(Application_Command_Permissions(
+                    id=role,
+                    type=Application_Command_Permission_Type.ROLE,
+                    permission=True
+                ))
+    await client.batch_edit_application_command_permissions(client.application.id, guild_id, permissions)
+
+def user_group(ctx: Context):
+    if not ctx.is_dm:
+        if ctx.user_id != 273499695186444289:
+            return ctx.cache.cachedRoles(ctx.member.roles)
+        return Groups.SYSTEM
+    return Groups.DM
