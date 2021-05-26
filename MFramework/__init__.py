@@ -26,10 +26,13 @@ ver_msg = commits[-1].message
 __version__ = f"4.{len(commits)}"
 ver_date = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(commits[-1].time[0]))
 
+import logging
+from mlib import logger
+log = logging.getLogger("MFramework")
+log.setLevel(logger.log_level)
 
 from mdiscord import * # noqa: F401
 
-from .utils.utils import log # noqa: F401
 from .bot import * # noqa: F401
 from .commands.decorators import * # noqa: F401
-from .commands.interactions import Groups # noqa: F401
+from .commands._utils import Groups # noqa: F401

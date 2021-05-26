@@ -14,9 +14,9 @@ path = dirname(__file__)+"/data/secrets.ini"
 cfg = ConfigToDict(path)
 
 db = MFramework.Database(cfg)
-#db.sql.create_tables()
+db.sql.create_tables()
 
-cache = {"dm": {}}  #MFramework.database.cache.MainCache(cfg)
+cache = {0: {}}  #MFramework.database.cache.MainCache(cfg)
 #cache = MFramework.Cache(cfg)
 
 
@@ -29,7 +29,7 @@ async def main(name):
             except KeyboardInterrupt:
                 return
             except Exception as ex:
-                MFramework.log(f"Uncaught Exception: {ex}")
+                MFramework.log.critical(f"Uncaught Exception: {ex}")
 
 def run(name):
     asyncio.run(main(name))
