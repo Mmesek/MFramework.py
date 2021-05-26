@@ -1,6 +1,6 @@
 #from MFramework import Bot, Embed, Snowflake, Allowed_Mentions, Message
 import MFramework
-from typing import List, Dict
+from typing import List
 
 class Log:
     bot: object#MFramework.Bot
@@ -45,10 +45,11 @@ class Message(Log):
     def user_in_footer(self, embed: MFramework.Embed, msg: MFramework.Message) -> MFramework.Embed:
         return embed.setFooter(text=msg.author.username, icon_url=msg.author.get_avatar())
 
-    def get_cached_message(self, channel_id, message_id) -> MFramework.Message:
-        return self.bot.cache[self.guild_id].getMessage(message_id, channel_id)
+    def get_cached_message(self, key) -> MFramework.Message:
+        return self.bot.cache[self.guild_id].messages[key]
+        #return self.bot.cache[self.guild_id].messages.get(key, None) #getMessage(message_id, channel_id)
     def cached_message(self, msg) -> MFramework.Embed:
-        cached = self.get_cached_message(msg.channel_id, msg.id)
+        cached = self.get_cached_message(f"{msg.guild_id}.{msg.channel_id}.{msg.id}")
         if cached:
             embed = self.set_metadata(cached)
             if cached.attachments != None:
@@ -148,6 +149,40 @@ class Infraction_Event(Infraction):
             string += f' for "{reason}"'
         await self._log(string)
 
+    async def get_ban_data(self, data, type, audit_type):
+        import asyncio
+        await asyncio.sleep(3)
+        audit = await self.bot.get_guild_audit_log(data.guild_id, action_type=audit_type)
+        reason = None
+        for obj in audit.audit_log_entries:
+            #Try to find ban in Audit Log
+            if int(obj.target_id) == data.user.id:
+                moderator = obj.user_id
+                reason = obj.reason
+                break
+        if reason is None and type == 'ban':
+            #Fall back to fetching ban manually
+            reason = await self.bot.get_guild_ban(data.guild_id, data.user.id)
+            reason = reason.reason
+        r = None #TODO: Get from database
+        if r is None:
+            #TODO: Add to Databse
+            return reason, moderator
+        return False, False
+
+class Guild_Ban_Add(Infraction_Event):
+    async def log(self, data):
+        reason, moderator = await self.get_ban_data(self, data, "ban", 22) #TODO: Move it to log, actually turn it all into a logger instead of dispatch thing
+        # TODO: Hey! Idea, maybe make decorator like @onDispatch, but like @log or something to make it a logger and register etc?
+        if reason is not False:
+            await super().log(data, type="banned", reason=reason, by_user=moderator)
+
+class Guild_Ban_Remove(Infraction_Event):
+    async def log(self, data):
+        reason, moderator = await self.get_ban_data(self, data, "unban", 23)
+        if reason is not False:
+            await super().log(data, type="unbanned", reason=reason, by_user=moderator)
+
 class Voice(Log):
     username = "Voice Log"
     async def log(self, data, channel='', after=None) -> MFramework.Message:
@@ -188,7 +223,7 @@ class Member_Update(Log):
             case = 'removed'
         roles = ""
         for i in diff:
-            if i == ctx.cache[data.guild_id].VoiceLink:
+            if i == ctx.cache[data.guild_id].voice_link:
                 if len(diff) == 1:
                     return
                 continue
@@ -254,8 +289,7 @@ class Direct_Message(Message):
         embed.author.icon_url = None
         embed.footer.icon_url = avatar
         embed.footer.text = msg.author.id
-        from .utils import check_attachments
-        embed = check_attachments(msg, embed)
+        embed = msg.attachments_as_embed(embed)
 
         embed.setColor(self.bot.cache[self.guild_id].color)
         canned = self.bot.cache[self.guild_id].canned
@@ -264,9 +298,9 @@ class Direct_Message(Message):
         if (len(set(msg.content.lower().split(' '))) < 2) and len(msg.attachments) == 0:
             return await msg.reply(tr("commands.dm.singleWordError", self.bot.cache[self.guild_id].language, emoji_success=self.bot.emoji['success']))
 
-        if msg.channel_id in self.bot.cache['dm']:
-            s = list(self.bot.cache['dm'][msg.channel_id].messages.keys())
-            if self.bot.cache['dm'][msg.channel_id].messages[s[-1]].content == msg.content:
+        if msg.channel_id in self.bot.cache[0]:
+            s = list(self.bot.cache[0][msg.channel_id].messages.keys())
+            if self.bot.cache[0][msg.channel_id].messages[s[-1]].content == msg.content:
                 return await msg.reply(tr("commands.dm.sameMessageError", self.bot.cache[self.guild_id].language))
                 #"Please do not send same message multiple times in a row, thanks."
 
