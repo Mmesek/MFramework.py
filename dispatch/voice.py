@@ -1,4 +1,3 @@
-from mlib.types import Invalid
 from MFramework import onDispatch, Bot, Snowflake, Voice_State, Voice_Server_Update
 from MFramework.utils import levels, timers#, log
 
@@ -18,24 +17,22 @@ async def _handle_dynamic_channel(self: Bot, data: Voice_State):
 async def _user_left_voice_channel(self: Bot, data: Voice_State, channel: Snowflake, track_voice: bool=False):
     if track_voice:
         t = timers.finalize(self, data.guild_id, channel, data.user_id)
-        await self.cache[data.guild_id].logging.get("voice", Invalid)(data, channel, int(t[0]))
-        #await log.UserVoiceChannel(self, data, channel, int(t[0]))
+        await self.cache[data.guild_id].logging["voice"](data, channel, int(t[0]))
         if t[1][1] != 0:
             _data = data
             _data.user_id = t[1][0]
-            await self.cache[data.guild_id].logging.get("voice", Invalid)(_data, channel, int(t[1][1]))
-            #await log.UserVoiceChannel(self, _data, channel, int(t[1][1]))
+            await self.cache[data.guild_id].logging["voice"](_data, channel, int(t[1][1]))
             if int(((t[1][1]) / 60) / 10) > 1:
                 await levels.handle_exp(self, _data)
         if int((t[0]/60)/10) > 1:
             await levels.handle_exp(self, data)
     else:
         timers.checkLast(self, data.guild_id, channel, data.user_id)
-        await self.cache[data.guild_id].logging.get("voice", Invalid)(data, channel)
-        #await log.UserVoiceChannel(self, data, channel)
+        await self.cache[data.guild_id].logging["voice"](data, channel)
 
 async def _handle_voice_activity(self: Bot, data: Voice_State):
-    track_voice= True if self.cache[data.guild_id].trackVoice else False #_should_track_voice(self, data)
+    from MFramework.database.alchemy.types import Flags
+    track_voice = self.cache[data.guild_id].is_tracking(Flags.Voice)
     v = self.cache[data.guild_id].voice
     moved = False
     if not data.channel_id:
@@ -76,8 +73,7 @@ async def _handle_voice_activity(self: Bot, data: Voice_State):
             else:
                 timers.startTimer(self, data.guild_id, data.channel_id, data.user_id)
             if not moved:
-                await self.cache[data.guild_id].logging.get("voice", Invalid)(data)
-               #await log.UserVoiceChannel(self, data)
+                await self.cache[data.guild_id].logging["voice"](data)
 
         elif len(v[data.channel_id]) == 0:  #Joined empty channel
             if track_voice:
@@ -88,8 +84,7 @@ async def _handle_voice_activity(self: Bot, data: Voice_State):
             else:
                 timers.startTimer(self, data.guild_id, data.channel_id, data.user_id)
             if not moved:
-                await self.cache[data.guild_id].logging.get("voice", Invalid)(data)
-                #await log.UserVoiceChannel(self, data)
+                await self.cache[data.guild_id].logging["voice"](data)
 
         else: #Not a channel switch event
             print('???')
@@ -120,15 +115,15 @@ async def voice_state_update(ctx: Bot, state: Voice_State):
             state.channel_id = -1
         else:
             state.channel_id = 0
-    if ctx.cache[state.guild_id].dynamic_channels and state.channel_id in ctx.cache[state.guild_id].dynamic_channels:
+    if state.channel_id in ctx.cache[state.guild_id].dynamic_channels:
         state = await _handle_dynamic_channel(ctx, state)
-    if ctx.cache[state.guild_id].VoiceLink:
-        r = ctx.cache[state.guild_id].VoiceLink
+    if hasattr(ctx.cache[state.guild_id], 'voice_link'):
+        r = ctx.cache[state.guild_id].voice_link
         if state.channel_id != 0 and r not in state.member.roles:
             await ctx.add_guild_member_role(state.guild_id, state.user_id, r, "Voice Role")
         elif state.channel_id == 0 and r in state.member.roles:
             await ctx.remove_guild_member_role(state.guild_id, state.user_id, r, "Voice Role")
-    await _handle_voice_activity(ctx, state)
+    await _handle_voice_activity(ctx, state) #TODO
 
 @onDispatch
 async def voice_server_update(ctx: Bot, data: Voice_Server_Update):

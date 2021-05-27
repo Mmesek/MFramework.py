@@ -19,7 +19,7 @@ async def message_reaction_add(self: Bot, data: Message_Reaction_Add):
     for group in roles:
         for msg in roles[group]:
             if data.message_id == msg:
-                r = roles[group][data.message_id][f"{data.emoji.name}:{data.emoji.id}"]
+                r = roles[group][data.message_id][f"{data.emoji.name}:{data.emoji.id or 0}"]
                 if group == "None":
                     continue
                 elif all(i in data.member.roles for i in r):
@@ -44,7 +44,7 @@ async def message_reaction_remove(self: Bot, data: Message_Reaction_Remove):
     role = None
     for group in roles:
         if data.message_id in roles[group]:
-            role = roles[group][data.message_id][f"{data.emoji.name}:{data.emoji.id}"]
+            role = roles[group][data.message_id][f"{data.emoji.name}:{data.emoji.id or 0}"]
             if role == None:
                 return
             break
