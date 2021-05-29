@@ -2,7 +2,7 @@ from mdiscord import *
 from ..commands._utils import Groups
 from .. import *
 from ..utils.log import Log
-from typing import List, Dict, Tuple, Union, DefaultDict
+from typing import List, Dict, Set, Tuple, Union, DefaultDict
 
 from .cache_internal.models import *
 from .cache_internal.base import Cache, RDS
@@ -15,6 +15,8 @@ class GuildCache:
     guild_id: Snowflake
     logging: DefaultDict[str, Log]
     
+    guild: Guild
+
     messages: Messages[Snowflake, Message]
     channels: Channels[Snowflake, Channel]
     roles: Roles[Snowflake, Role]
@@ -26,7 +28,7 @@ class GuildCache:
     #voice_channels: Dict[Snowflake, Dict[Snowflake, int]] = {}
     webhooks: Cache[str, Tuple[Snowflake, str]]
     presence: Presences[Snowflake, Tuple[str, int, Snowflake]]
-    groups: Dict[Groups, List[Snowflake]]
+    groups: Dict[Groups, Set[Snowflake]]
 
     disabled_channels: List[Snowflake]
     disabled_roles: List[Snowflake]
@@ -36,6 +38,7 @@ class GuildCache:
 
     canned: Dict[str, re.Pattern]
     responses: Dict[Snowflake, re.Pattern]
+    cooldown_values: Dict[str, timedelta]
     blacklisted_words: re.Pattern = None
 
     nitro_channel: Snowflake
@@ -61,12 +64,14 @@ class GuildCache:
 
     name: str
     color: int
+    alias: str = '?'
 
     bot: Guild_Member
 
     def __init__(self, bot, guild: Guild, rds: RDS = None):
         self.guild_id = guild.id
-        self.groups = {i:[] for i in Groups}
+        self.guild = guild
+        self.groups = {i:set() for i in Groups}
         r = RDS()
         self.members = (#
         {i.user.id:i for i in guild.members} #TODO
@@ -82,6 +87,7 @@ class GuildCache:
         self.afk_channel = guild.afk_channel_id
         self.messages = Messages(r)
         self.cooldowns = Cooldowns(r)
+        self.cooldown_values = {}
         self.last_messages = {}
         self.voice = {}
         self.custom_emojis = {}
@@ -183,7 +189,7 @@ class GuildCache:
                 continue
             else:
                 continue
-            self.groups[_group].append(id)
+            self.groups[_group].add(id)
     
     def setChannels(self):
         for id, channel in self.channels.items():
@@ -223,7 +229,11 @@ class GuildCache:
     def recompile_Triggers(self, session):
         responses = {}
         triggers = db.Snippet.filter(session, server_id = self.guild_id, type = types.Snippet.Regex).all()
+        self.regex_responses = {}
         for trig in triggers:
+            if trig.cooldown:
+                self.cooldown_values[trig.name] = trig.cooldown
+            self.regex_responses[trig.name] = trig.content
             if trig.group not in responses:
                 responses[trig.group] = {}
             if trig.name not in responses[trig.group]:
@@ -276,7 +286,7 @@ class GuildCache:
         for permission in permissions:
             g = Groups.get(permission.settings[types.Setting.Permissions].int)
             if g in self.groups:
-                self.groups[g].append(permission.id)
+                self.groups[g].add(permission.id)
     
     def get_level_roles(self, roles):
         levels = roles.filter(db.Role.settings.any(name=types.Setting.Level)).all() #TODO
@@ -302,10 +312,7 @@ class GuildCache:
     def load_from_database(self, ctx):
         with ctx.db.sql.Session.begin() as s:
             g = self.get_guild(s)
-            if types.Setting.Flags in g.settings:
-                self.tracking = g.settings[types.Setting.Flags].int
-            if types.Setting.Voice_Link in g.settings:
-                self.voice_link = g.settings[types.Setting.Voice_Link].snowflake
+            self.load_settings(g)
             self.recompile_Triggers(s)
             self.recompile_Canned(s)
             self.get_Webhooks(s)
