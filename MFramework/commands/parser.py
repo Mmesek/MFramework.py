@@ -9,12 +9,22 @@ def command():
         return f
     return inner
 
-@command
+@command()
 async def react(ctx: Bot, data: Message, r: List[str], x: int):
     await data.react(r[x+1])
 
-@command
+@command()
 async def message(ctx: Bot, data: Message, r: List[str], x: int):
+    if '{OR}' in r[x+1]:
+        options = r[x+1].split('{OR}')
+        content = random().choice(options)
+    else:
+        content = r[x+1]
+    await data.send(content.format(user_id=data.author.id, 
+        username=data.author.username, nick=data.member.nick))
+
+@command()
+async def reply(ctx: Bot, data: Message, r: List[str], x: int):
     if '{OR}' in r[x+1]:
         options = r[x+1].split('{OR}')
         content = random().choice(options)
@@ -23,11 +33,11 @@ async def message(ctx: Bot, data: Message, r: List[str], x: int):
     await data.reply(content.format(user_id=data.author.id, 
         username=data.author.username, nick=data.member.nick))
 
-@command
+@command()
 async def delete(ctx: Bot, data: Message, r: List[str], x: int):
     await data.delete()
 
-@command
+@command()
 async def chance(ctx: Bot, data: Message, r: List[str], x: int) -> int:
     if random().random() < (r[x+1]/100):
         return 0
@@ -36,18 +46,24 @@ async def chance(ctx: Bot, data: Message, r: List[str], x: int) -> int:
 async def parse(ctx: Bot, data: Message):
     matched = []
     cache = ctx.cache[data.guild_id]
-    for role in set(data.member.roles) & set(cache.responses["triggers"]):
-        triggers = cache.responses["triggers"][role]
+    from ._utils import detect_group, Groups
+    g = detect_group(ctx, data.author.id, data.guild_id, data.member.roles)
+    #for role in set(data.member.roles) & set(cache.responses.keys()):
+    groups = [i for i in Groups if i.value >= g.value and i.value <= Groups.GLOBAL.value]
+    for group in groups:
+        triggers = cache.responses.get(group, None)
+        if not triggers:
+            continue
         for matches in triggers.finditer(data.content):
             match = matches.lastgroup
+            if match in ctx.cache[data.guild_id].cooldown_values:
+                if ctx.cache[data.guild_id].cooldowns.has(data.guild_id, 0, f"regex.{match}"):
+                    continue
+                ctx.cache[data.guild_id].cooldowns.store(data.guild_id, 0, f"regex.{match}", expire=int(ctx.cache[data.guild_id].cooldown_values[match].total_seconds()))
             if match in matched:
                 continue
             matched.append(match)
-            r = cache.responses["responses"].get(match, "").split("$")
-            #session = ctx.db.sql.session()
-            #models.Snippet.filter(session,
-            #    type = models.types.Snippet.Regex,
-            #    server_id = data.guild_id, name = match)
+            r = cache.regex_responses.get(match, "").split("$")
             should_skip = 0
             for x, command in enumerate(r):
                 if should_skip > 0:
