@@ -1,4 +1,5 @@
 from inspect import signature, Signature
+from mdiscord.models import Application_Command
 
 from mdiscord.types import GuildID
 
@@ -15,42 +16,74 @@ class Groups(Enum):
     MUTED = 7
     LIMBO = 8
 
-commands = {}
-for group in Groups:
-    commands[group] = {}
+from typing import List, Dict, Any
+class Argument:
+    default: str
+    type: type
+    help: str
+    choices: Dict[str, Any]
+    def __init__(self, default, type, help, choices) -> None:
+        self.default = default
+        self.type = type
+        self.help = help
+        self.choices =choices
+
+class Command:
+    name: str
+    func: object
+    help: str
+    arguments: Dict[str, Argument]
+    interaction: bool
+    master_command: object
+    group: Groups
+    sub_commands: List['Command']
+    choices: Dict[str, 'Command']
+    guild: Snowflake
+    def __init__(self, f, interaction: bool = True, main: object = False, group: Groups = Groups.GLOBAL, guild: Snowflake = None) -> None:
+        self.name = f.__name__
+        self.func = f
+        _docs = parse_docstring(f)
+        self.help = _docs['_doc']
+        self.arguments = parse_signature(f, _docs)
+        self.interaction = interaction
+        self.master_command = main
+        self.group = group
+        self.sub_commands = []
+        self.choices = {}
+        self.guild = guild
+    def add_subcommand(self, cmd: 'Command'):
+        self.sub_commands.append(cmd)
+    def add_choice(self, name: str, func: 'Command'):
+        self.choices[name] = func
+
+commands: Dict[str, Command] = {}
 
 def detect_group(Client, user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
     if user_id != 273499695186444289:
         return Client.cache[guild_id].cachedRoles(roles)
     return Groups.SYSTEM
 
-def find_command(group: Groups=Groups.GLOBAL, command: str="") -> dict:
-    _groups = list(commands.keys())
-    for current_group in list(_groups)[_groups.index(group):]:
-        if command in commands[current_group]:
-            return commands[current_group][command]
-
-def is_nested(group: Groups, command: dict, name: str) -> dict:
-    for sub_command in command["sub_commands"]:
-        f = find_command(group, sub_command['name'])
-        if name == sub_command['name']:
-            return f
-        if sub_command.get('sub_commands',[]) != []:
-            return is_nested(group, f, name)
+def is_nested(group: Groups, command: Command, name: str) -> Command:
+    for sub_command in command.sub_commands:
+        if name == sub_command.name:
+            return sub_command
+        if sub_command.sub_commands != []:
+            return is_nested(group, sub_command, name)
     return command
 
 def parse_signature(f, docstring):
     sig = signature(f).parameters
     parameters = {}
     for parameter in sig:
-        parameters[sig[parameter].name] = {
-            'default': sig[parameter].default,# if sig[parameter].default is not Signature.empty else False,
-            'type': sig[parameter].annotation,
-            'help': docstring.get(sig[parameter].name, 'MISSING DOCSTRING'),
-            'choices': docstring.get('choices').get(sig[parameter].name, []) 
+        arg = Argument(
+            default = sig[parameter].default,
+            type = sig[parameter].annotation,
+            help = docstring.get(sig[parameter].name, 'MISSING DOCSTRING'),
+            choices = docstring.get('choices').get(sig[parameter].name, []
                 if not issubclass(sig[parameter].annotation, Enum) 
-                else {k.name: k.value for k in sig[parameter]}
-        }
+                else {k.name: k.value for k in sig[parameter]})
+            )
+        parameters[sig[parameter].name] = arg
     return parameters
 
 def parse_docstring(f):
@@ -62,12 +95,6 @@ def parse_docstring(f):
     _params = []
     if len(doc) > 1:
         params = [i.strip() for i in doc[1].replace('-','').split('\n') if i.strip() != '']
-        #TODO #FIXME #DONE? Add support for choices. 
-        # Possible way: Split line if "Choices:"
-        # Choices:
-        #   A = 1
-        #   B = 2
-        #   C = 3
         for x, param in enumerate(params):
             if param.strip() == 'Choices:':
                 choices = {}
@@ -80,11 +107,6 @@ def parse_docstring(f):
                     choices.update({i.strip():j.strip() for i,j in [choice.split(' = ')]})
             elif param[-1] == ':':
                 _params.append((param.strip(':'),params[x+1]))
-        
-#    docstring = {
-#        '_doc':f.__doc__.strip().split('Params',1)[0] or 'MISSING DOCSTRING', 
-#        'choices':{'argument...':{'a':'e'}}, 
-#        'argument...':'...'} #FIXME
     for param in _params:
         docstring[param[0]] = param[1]
     return docstring
@@ -104,52 +126,51 @@ _types = {
     GuildID: Application_Command_Option_Type.STRING
 }
 
-def parse_arguments(_command: dict) -> list:
+def parse_arguments(_command: Command) -> list:
     options = []
-    for i in _command['arguments']:
+    for i in _command.arguments:
         if i.lower() in ['self', 'ctx', 'client', 'interaction']:
             continue
         elif i.lower() in ['data', 'args']:
             break
-        elif i.lower() == 'message' and _command['arguments'][i]['type'] is Message:
+        elif i.lower() == 'message' and _command.arguments[i].type is Message:
             break
-        _i = _command['arguments'][i]
+        _i = _command.arguments[i]
         choices = []
-        for choice in _i['choices']:
-            choices.append(Application_Command_Option_Choice(name=choice, value=_i['choices'][choice]))
+        for choice in _i.choices:
+            choices.append(Application_Command_Option_Choice(name=choice, value=_i.choices[choice]))
 
         options.append(Application_Command_Option(
-            type=_types.get(_i['type'], Application_Command_Option_Type.STRING).value,
-            name=i, description=_i['help'][:100], required=True if _i['default'] is Signature.empty else False, choices=choices, options=[] #FIXME default empty compare?
+            type=_types.get(_i.type, Application_Command_Option_Type.STRING).value,
+            name=i, description=_i.help[:100], required=True if _i.default is Signature.empty else False, choices=choices, options=[]
         ))
-    for i in _command.get('sub_commands',[]):
+    for i in _command.sub_commands:
         options.append(Application_Command_Option(
-            type= Application_Command_Option_Type.SUB_COMMAND if i.get('sub_commands', None) is None else Application_Command_Option_Type.SUB_COMMAND_GROUP,
-            name =i['name'], description=i['help'][:100], options=parse_arguments(i), choices=[]
+            type= Application_Command_Option_Type.SUB_COMMAND if i.sub_commands == [] else Application_Command_Option_Type.SUB_COMMAND_GROUP,
+            name=i.name, description=i.help[:100], options=parse_arguments(i), choices=[]
         ))
-    #TODO Support for subcommands #Done?
     return options
 
-def iterate_commands(registered: list=[]):
-    _groups = list(commands.keys())
-    for current_group in _groups[_groups.index(Groups.GLOBAL)::-1]:
-        for command in commands[current_group]:
-            _command = commands[current_group][command]
-            options = parse_arguments(_command)
-            for i in registered:
-                if command == i.name:
-                    if i.options != options:
-                        break
-            else:
-                if any(command == i.name for i in registered):
-                    continue
-            yield command, _command, options
+def iterate_commands(registered: List[Application_Command]=[], guild_id: Snowflake = None):
+    for command, cmd in commands.items():
+        if guild_id != cmd.guild or cmd.master_command:
+            continue
+        _command = commands[command]
+        options = parse_arguments(_command)
+        for i in registered:
+            if command == i.name:
+                if i.options != options:
+                    break
+        else:
+            if any(command == i.name for i in registered):
+                continue
+        yield command, _command, options
 
 
 def set_default_arguments(ctx, f, kwargs):
-    for arg in f['arguments']:
+    for arg in f.arguments:
         if arg not in kwargs:
-            _type = f['arguments'][arg]['type']
+            _type = f.arguments[arg].type
             if _type is ChannelID:
                 i = ctx.channel_id
             elif _type is RoleID:
@@ -168,24 +189,27 @@ def set_default_arguments(ctx, f, kwargs):
             kwargs[arg] = i
     return kwargs
 
-from MFramework import Bot, Application_Command_Permissions, Application_Command_Permission_Type, log, Context
-async def set_permissions(client: Bot, guild_id: Snowflake):
+from MFramework import Application_Command_Permissions, Application_Command_Permission_Type, log, Guild_Application_Command_Permissions
+async def set_permissions(client, guild_id: Snowflake, _commands):
     groups = client.cache[guild_id].groups
     permissions = []
-    for group, roles in groups.items():
-        for cmd in commands[group]:
-            for role in roles:
-                log.info("Adding permission for role %s for command %s", role, cmd.name)
-                permissions.append(Application_Command_Permissions(
-                    id=role,
-                    type=Application_Command_Permission_Type.ROLE,
-                    permission=True
-                ))
-    await client.batch_edit_application_command_permissions(client.application.id, guild_id, permissions)
-
-def user_group(ctx: Context):
-    if not ctx.is_dm:
-        if ctx.user_id != 273499695186444289:
-            return ctx.cache.cachedRoles(ctx.member.roles)
-        return Groups.SYSTEM
-    return Groups.DM
+    for cmd in _commands:
+        command_permissions = []
+        for group, roles in groups.items():
+            f = commands.get(cmd.name, None)
+            if f and f.group != Groups.GLOBAL and group.value <= f.group.value:
+                for role in roles:
+                    log.info("Adding permission for role %s [%s] for command %s", role, group.name, cmd.name)
+                    command_permissions.append(Application_Command_Permissions(
+                        id=role,
+                        type=Application_Command_Permission_Type.ROLE,
+                        permission=True
+                    ))
+        if command_permissions != []:
+            permissions.append(Guild_Application_Command_Permissions(
+                id = cmd.id,
+                permissions=command_permissions
+            ))
+    if permissions != []:
+        log.info("Editing permissions on server %s for #%s commands", guild_id, len(permissions))
+        await client.batch_edit_application_command_permissions(client.application.id, guild_id, permissions)

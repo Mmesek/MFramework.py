@@ -80,8 +80,8 @@ def regex(expression: str):
         return wrapped
     return inner
 
-from ._utils import Groups, commands, parse_docstring, parse_signature
-def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False, guild: Snowflake = None, choice=None, **kwargs):
+from ._utils import Groups, commands, Command
+def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False, guild: Snowflake = None, choice: bool=None, **kwargs):
     '''Decorator for creating commands.
     
     Params
@@ -93,25 +93,19 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
     main:
         is a function pointer. 
     guild: 
-        is used when command is exclusive to a specific guild'''
+        is used when command is exclusive to a specific guild
+    choice:
+        whether this should be triggered depending on choice on main function'''
     def inner(f):
         _name = f.__name__.lower()
-        if main:
-            _name = main.__name__.lower()+'.'+_name
-        commands[group][_name] = {}
-        commands[group][_name]['function'] = f
-        _docstring = parse_docstring(f)
-        commands[group][_name]['help'] = (f'[{group.name}] ' if group.value < 5 else '')+ _docstring['_doc']
-        commands[group][_name]['arguments'] = parse_signature(f, _docstring)
-        commands[group][_name]['interaction'] = interaction
-        commands[group][_name]['master_command'] = main
-        commands[group][_name]['sub_commands'] = []
-        if main:
-            _groups = list(commands.keys())
-            for current_group in _groups[_groups.index(group):]:
-                if main.__name__.lower() in commands[current_group]:
-                    commands[current_group][main.__name__.lower()]['sub_commands'].append({"name":_name, "help":_docstring['_doc'], "arguments":parse_signature(f, _docstring), "function": f})
-                    break
-        commands[group][_name]['guild'] = guild
+        _main  = main.__name__.lower() if main else None
+        cmd = Command(f, interaction, main, group, guild)
+        if main: #TODO: It doesn't support nesting!
+            if not choice:
+                commands[_main].add_subcommand(cmd)
+            else:
+                commands[_main].add_choice(_name, cmd)
+        else:
+            commands[_name] = cmd
         return f
     return inner
