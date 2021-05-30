@@ -1,16 +1,23 @@
 import asyncio, sys
 
+from mlib import arguments
+arguments.add("-clear_interactions", action='store_true', help="Specifies whether interactions should be cleared")
+arguments.add("-generate_translations", action='store_true', help="Specifies whether translation file should be generated")
+arguments.add("-update_translation", action='store_true', help="Specifies whether translation file should be updated")
+
 import MFramework
 from mlib.import_functions import import_from
 import_from('dispatch')
 import_from('commands_slash')
-import_from('commands')
+#import_from('commands')
+from MFramework.commands import interactions # noqa: F401
+
 if '-generate-translation' in sys.argv or '-update-translation' in sys.argv:
     exit()
 
 from mlib.config import ConfigToDict
-from os.path import dirname
-path = dirname(__file__)+"/data/secrets.ini"
+from os.path import dirname, realpath
+path = dirname(realpath('__file__'))+"/data/secrets.ini"
 cfg = ConfigToDict(path)
 
 db = MFramework.Database(cfg)
