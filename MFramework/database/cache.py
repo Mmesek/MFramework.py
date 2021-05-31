@@ -322,7 +322,7 @@ class GuildCache:
 
     def load_settings(self, guild):
         for setting, value in guild.settings.items():
-            setattr(self, setting.name.lower(), getattr(value, setting.value[0].__name__, None))
+            setattr(self, setting.name.lower(), getattr(value, setting.value[0].__name__.lower(), None))
 
     def save_to_database(self, s):
         #s = ctx.db.sql.Session()
