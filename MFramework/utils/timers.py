@@ -30,8 +30,13 @@ def finalize(self, guild, channel, user):
     return v, (user, _v)
 
 def startTimer(self, guild, channel, user):
-    self.cache[guild].voice[channel][user] = time.time()
-    _log.debug(f'Starting Timer for {user} in {channel}')
+    if self.cache[guild].is_tracking(types.Flags.Voice):
+        t = time.time()
+    else:
+        t = 0
+    self.cache[guild].voice[channel][user] = t
+    if t > 0:
+        _log.debug(f'Starting Timer for {user} in {channel}')
 
 def restartTimer(self, guild, channel, user, flag=0):
     c = self.cache[guild].voice[channel]
