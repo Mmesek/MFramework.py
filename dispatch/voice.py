@@ -117,11 +117,11 @@ async def voice_state_update(ctx: Bot, state: Voice_State):
             state.channel_id = 0
     if state.channel_id in ctx.cache[state.guild_id].dynamic_channels:
         state = await _handle_dynamic_channel(ctx, state)
-    if hasattr(ctx.cache[state.guild_id], 'voice_link'):
+    if ctx.cache[state.guild_id].voice_link:
         r = ctx.cache[state.guild_id].voice_link
-        if state.channel_id != 0 and r not in state.member.roles:
+        if state.channel_id and r not in state.member.roles:
             await ctx.add_guild_member_role(state.guild_id, state.user_id, r, "Voice Role")
-        elif state.channel_id == 0 and r in state.member.roles:
+        elif not state.channel_id and r in state.member.roles:
             await ctx.remove_guild_member_role(state.guild_id, state.user_id, r, "Voice Role")
     await _handle_voice_activity(ctx, state) #TODO
 
