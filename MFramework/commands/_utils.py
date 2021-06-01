@@ -153,7 +153,7 @@ def parse_arguments(_command: Command) -> list:
 
 def iterate_commands(registered: List[Application_Command]=[], guild_id: Snowflake = None):
     for command, cmd in commands.items():
-        if guild_id != cmd.guild or cmd.master_command:
+        if guild_id != cmd.guild or cmd.master_command or not cmd.interaction:
             continue
         _command = commands[command]
         options = parse_arguments(_command)
