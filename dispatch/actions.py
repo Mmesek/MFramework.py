@@ -77,7 +77,7 @@ async def dm_reply(ctx: Bot, msg: Message):
         return
     user = parseMention(msg.referenced_message.embeds[0].footer.text)
     dm = await ctx.create_dm(user)
-    await ctx.create_message(dm.id, msg.content, embed=msg.attachments_as_embed())
+    await ctx.create_message(dm.id, msg.content or None, embed=msg.attachments_as_embed())
     await msg.react(ctx.emoji['success']) # _Client is apparently not set
 
 async def deduplicate_messages(self: Bot, data: Message) -> bool:
@@ -101,7 +101,7 @@ async def deduplicate_messages(self: Bot, data: Message) -> bool:
 import re
 URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
 async def remove_links(self: Bot, data: Message) -> bool:
-    if len(data.member.roles) > 0:
+    if len(data.member.roles) > 0 or all(not self.cache[data.guild_id].roles.get(i, Role()).color for i in data.member.roles):
         return False
     if URL_PATTERN.match(data.content):
         await data.delete()
@@ -143,3 +143,17 @@ async def handle_level(self: Bot, data: Message):
     if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
         from MFramework.utils import levels
         await levels.exp(self, data)
+
+
+TIME_PATTERN = re.compile(r"(?P<Hour>\d\d?) ?(:|\.)? ?(?P<Minute>\d\d?)? ?(?P<Daytime>AM|PM)? ?(?P<LateMinute>\d\d?)? ?(?P<Timezone>\w+)")
+async def check_timezone(self: Bot, data: Message):
+    match = TIME_PATTERN.match(data.content)
+    if not match:
+        return
+    timezone = match.group("Timezone")
+    import pytz
+    if timezone.lower() not in pytz.all_timezones_set:
+        timezone = 'utc' # TODO: Get from DB from User setting OR Server's default
+    hour = match.group("Hour")
+    minute = match.group("Minute") or match.group("LateMinute")
+    daytime = match.group("Daytime")
