@@ -6,15 +6,14 @@ async def roll(ctx: Context, interaction: Interaction, *args, language, **kwargs
     pass
 
 @register(group=Groups.GLOBAL, main=roll)
-async def chance(ctx: Context, interaction: Interaction, argument: str, *args, language, **kwargs):
+async def chance(ctx: Context, interaction: Interaction, statement: str, *args, language, **kwargs):
     '''Rolls a percentage chance
     Params
     ------
-    argument:
+    statement:
         String to roll
     '''
     from random import seed, randint
-    statement = argument
     seed(statement)
     await interaction.send(f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}")
 
