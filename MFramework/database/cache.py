@@ -17,17 +17,17 @@ class GuildCache:
     
     guild: Guild
 
-    messages: Messages[Snowflake, Message]
-    channels: Channels[Snowflake, Channel]
-    roles: Roles[Snowflake, Role]
-    emojis: Cache[Snowflake, Emoji]
-    members: Members[Snowflake, Guild_Member]
+    messages: Dict[Snowflake, Message]
+    channels: Dict[Snowflake, Channel]
+    roles: Dict[Snowflake, Role]
+    emojis: Dict[Snowflake, Emoji]
+    members: Dict[Snowflake, Guild_Member]
     voice: Dict[Snowflake, Dict[Snowflake, float]]
     #voice_states: Dict[Snowflake, Voice_State] = {} #
     #voice_states: Cache[Snowflake, Voice_State] = {} #TODO
     #voice_channels: Dict[Snowflake, Dict[Snowflake, int]] = {}
-    webhooks: Cache[str, Tuple[Snowflake, str]]
-    presence: Presences[Snowflake, Tuple[str, int, Snowflake]]
+    webhooks: Dict[str, Tuple[Snowflake, str]]
+    presence: Dict[Snowflake, Tuple[str, int, Snowflake]]
     groups: Dict[Groups, Set[Snowflake]]
 
     disabled_channels: List[Snowflake]
@@ -56,8 +56,8 @@ class GuildCache:
     giveaway_messages: List[Snowflake]
     last_messages: Dict[Snowflake, Message]
 
-    voice_link: Snowflake
-    tracking: int = 0
+    voice_link: Snowflake = None
+    flags: int = 0
     permissions: int = 0
     language: str = 'en'
     allowed_duplicated_messages: int = 1
@@ -351,6 +351,6 @@ class GuildCache:
     
     def is_tracking(self, flag):
         from mlib.utils import bitflag
-        return bitflag(self.tracking, flag)
+        return bitflag(self.flags, flag)
 
 
