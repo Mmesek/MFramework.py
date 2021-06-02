@@ -21,9 +21,9 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
     if description != '':
         description = f"\n{description}\n"
     embed = Embed(
-        description=f"New Docket Code: {docket.upper()}\n{description}\n[Redeem Here](https://dockets.dyinglightgame.com/?code={docket.replace(' ','')})",
+        description=f"New Docket Code: {docket.upper()}\n{description}\n[Redeem Here](https://techland.gg/redeem?code={docket.replace(' ','')})",
         color=13602095,
-        timestamp=datetime.now(),
+        timestamp=datetime.utcnow(),
         footer=Embed_Footer(
             text=interaction.member.nick or interaction.member.user.username,
             icon_url=interaction.member.user.get_avatar()
@@ -32,10 +32,10 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
             url="https://cdn.discordapp.com/emojis/545912886074015745.png",
         ),
         author=Embed_Author(
-            name=docket.upper(), url=f"https://dockets.dyinglightgame.com/?code={docket.replace(' ','')}",
+            name=docket.upper(), url=f"https://techland.gg/redeem?code={docket.replace(' ','')}",
             icon_url="https://cdn.discordapp.com/emojis/545912886074015745.png"
         ),
     )
-    msg = await interaction.send("<@&545856777623961611>", embeds=[embed], allowed_mentions=None)
+    msg = await ctx.send("<@&545856777623961611>", embeds=[embed], allowed_mentions=None)
     if publish:
         await msg.publish()
