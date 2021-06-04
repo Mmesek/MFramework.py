@@ -8,7 +8,7 @@ async def bot(ctx: Context, interaction: Interaction, *args, language, **kwargs)
     '''
     pass
 
-@register(group=Groups.GLOBAL, guild=463433273620824104, main=bot)
+@register(group=Groups.GLOBAL, main=bot)
 async def ping(ctx: Context, interaction: Interaction, detailed: bool=False, *args, language, **kwargs):
     '''
     Shows ping
@@ -18,7 +18,7 @@ async def ping(ctx: Context, interaction: Interaction, detailed: bool=False, *ar
         Whether it should show extended ping information
     '''
     s = time.time()
-    await interaction.deferred_message()
+    await interaction.deferred_message(False)
     end = time.time()
     e = None
     if detailed:
@@ -51,7 +51,7 @@ def ping(host='discord.com'):
         ping+='ms'
     return ping.lstrip().strip('\n')
 
-@register(group=Groups.GLOBAL, guild=463433273620824104, main=bot)
+@register(group=Groups.GLOBAL, main=bot)
 async def status(ctx: Context, interaction: Interaction, show_ping: bool=False, *args, language="en", **kwargs):
     '''
     Shows statistics related to bot and system
@@ -60,7 +60,7 @@ async def status(ctx: Context, interaction: Interaction, show_ping: bool=False, 
     show_ping:
         whether it should show ping or not
     '''
-    await interaction.deferred_message()
+    await interaction.deferred_message(False)
     from mlib.sizes import getsize, bytes2human, convert_bytes, file_size
     from mlib.localization import secondsToText
     import psutil, asyncio
@@ -144,12 +144,12 @@ async def status(ctx: Context, interaction: Interaction, show_ping: bool=False, 
     embed.setColor(ctx.cache.color)
     await interaction.edit_response(embeds=[embed])
 
-@register(group=Groups.GLOBAL, guild=463433273620824104, main=bot)
+@register(group=Groups.GLOBAL, main=bot)
 async def version(ctx: Context, interaction: Interaction, *args, language, **kwargs):
     '''
     Shows bot's version
     '''
-    await interaction.deferred_message()
+    await interaction.deferred_message(False)
     import platform
     system = platform.system()
     release = platform.release()
@@ -194,7 +194,7 @@ async def version(ctx: Context, interaction: Interaction, *args, language, **kwa
     embed.setColor(ctx.cache.color).setDescription(desc)
     await interaction.edit_response(embeds=[embed])
 
-@register(group=Groups.GLOBAL, guild=463433273620824104, main=bot)
+@register(group=Groups.GLOBAL, main=bot)
 async def stats(ctx: Context, interaction: Interaction, *args, language, **kwargs):
     '''
     Shows received events & registered commands
@@ -214,4 +214,4 @@ async def stats(ctx: Context, interaction: Interaction, *args, language, **kwarg
 
     e.addField("Events Received", msg, True)
     e.addField("Registered Commands", cmds, True)
-    await interaction.respond_private(embeds=[e])
+    await interaction.send(embeds=[e])
