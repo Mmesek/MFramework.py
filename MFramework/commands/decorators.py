@@ -9,7 +9,10 @@ def Event(*, month=None, day=None, hour=None, minute=None, year=None):
         def wrapped(*args, **kwargs):
             from datetime import datetime
             t = datetime.today()
-            d = datetime(year or t.year, month or t.month, day or t.day, hour if hour is not None else t.hour, minute if minute is not None else t.minute)
+            try:
+                d = datetime(year or t.year, month or t.month, day or t.day, hour if hour is not None else t.hour, minute if minute is not None else t.minute)
+            except ValueError:
+                return aInvalid()
             t = t.replace(second=0, microsecond=0)
             if t == d:
                 return f(*args, **kwargs)
@@ -80,8 +83,9 @@ def regex(expression: str):
         return wrapped
     return inner
 
-from ._utils import Groups, commands, Command
-def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False, guild: Snowflake = None, choice: bool=None, **kwargs):
+from ._utils import Groups, commands, Command, aliasList
+from typing import List
+def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False, guild: Snowflake = None, choice: bool=None, aliases: List[str] = [], **kwargs):
     '''Decorator for creating commands.
     
     Params
@@ -95,11 +99,15 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
     guild: 
         is used when command is exclusive to a specific guild
     choice:
-        whether this should be triggered depending on choice on main function'''
+        whether this should be triggered depending on choice on main function
+    aliases:
+        List of possible aliases'''
     def inner(f):
         _name = f.__name__.lower()
         _main  = main.__name__.lower() if main else None
         cmd = Command(f, interaction, main, group, guild)
+        for alias in aliases:
+            aliasList[alias] = _name
         if main: #TODO: It doesn't support nesting!
             if not choice:
                 commands[_main].add_subcommand(cmd)

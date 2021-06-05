@@ -57,6 +57,7 @@ class Command:
         self.choices[name] = func
 
 commands: Dict[str, Command] = {}
+aliasList: Dict[str, str] = {}
 
 def detect_group(Client, user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
     if user_id != 273499695186444289:
