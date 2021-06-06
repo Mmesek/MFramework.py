@@ -21,9 +21,12 @@ class Snippet(Enum):
     Reaction = 4
     Canned_Response = 5
     Meme = 6
-    Blacklisted_Word = 7
-    Whitelisted = 8
-    Response_Reaction = 9
+    Quote = 7
+    Question = 8
+    Answer = 9
+    Blacklisted_Word = 17
+    Whitelisted = 18
+    Response_Reaction = 19
 
 class Statistic(Enum):
     Chat = 0
@@ -50,32 +53,39 @@ class Setting(Enum):
     Voice_Exp = int, 4
     Gender = bool, 5
 
-    Timezone = str, 6
-    Birthday = date, 7
-    Locale = str, 8
-    Region = str, 9
-    Currency = float, 10
-    Alias = str, 11
+    Timezone = str, 10
+    Birthday = date, 11
+    Locale = str, 12
+    Region = str, 13
+    Currency = float, 14
+    Alias = str, 15
+    #Channels
+    Dynamic = bool, 21
+    Buffer = bool, 22
+    RPG = bool, 23
+    DM_Inbox = bool, 24
+    Questions = bool, 25
+    #Roles
+    Level = int, 31
+    Reaction = str, 32
+    Presence = str, 33
+    Custom = Snowflake, 34
+    Activity = int, 35
+    Voice_Link = Snowflake, 36
+    Special = str, 37
+    Group = str, 38
+    Nitro = Snowflake, 39
 
-    Dynamic = bool, 12
-    Buffer = bool, 13
-    RPG = bool, 14
-
-    Level = int, 15
-    Reaction = str, 16
-    Presence = str, 17
-    Custom = Snowflake, 18
-    Activity = int, 19
-    Voice_Link = Snowflake, 20
-    Special = str, 21
-    Group = str, 22
-
-    ServerID = Snowflake, 23
-    ChannelID = Snowflake, 24
-    MessageID = Snowflake, 25
-    RoleID = Snowflake, 26
-    UserID = Snowflake, 27
-    Allowed_Duplicated_Messages = int, 28
+    ServerID = Snowflake, 40
+    ChannelID = Snowflake, 41
+    MessageID = Snowflake, 42
+    RoleID = Snowflake, 43
+    UserID = Snowflake, 44
+    #Server
+    Allowed_Duplicated_Messages = int, 50
+    Should_Remove_Links = bool, 51
+    Auto_Mute_Infractions = int, 52
+    Auto_Ban_Infractions = int, 53
 
 class Item(Enum):
     SYSTEM = 0 # Metadata Items

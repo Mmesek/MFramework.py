@@ -121,7 +121,7 @@ class Webhook(ChannelID, ServerID, Snowflake, Base):
     subscriptions = relationship("Subscription", back_populates="webhook")
 
 from MFramework.commands._utils import Groups
-class Snippet(File, RoleID, UserID, ServerID, Base):
+class Snippet(Timestamp, File, RoleID, UserID, ServerID, Base):
     role_id = Column(ForeignKey("Role.id", ondelete='SET NULL', onupdate='Cascade'))
     group = Column(Enum(Groups))
     type = Column(Enum(types.Snippet))
@@ -129,6 +129,7 @@ class Snippet(File, RoleID, UserID, ServerID, Base):
     trigger = Column(String)
     content = Column(UnicodeText)
     cooldown = Column(Interval)
+    locale = Column(String)
 
 class Task(Timestamp, ServerID, ChannelID, UserID, Base):
     user_id = Column(ForeignKey("User.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True, nullable=False)
@@ -166,8 +167,8 @@ class Spotify(Base):
 #class RoleSetting(ChannelID, RoleID, UserID, ServerID, Base):
 #    server_id = Column(BigInteger, ForeignKey("Server.id", ondelete='Cascade', onupdate='Cascade'))
 #    role_id = Column(BigInteger)#, ForeignKey("Role.id", ondelete='Cascade', onupdate='Cascade'))
-#    type = Column(Enum(types.Setting))
+#    type = Column(Enum(types.Setting)) # Reaction, level, presence, custom or special
 #    message_id = Column(BigInteger)
-#    name = Column(String)
-#    group = Column(String)
-#    required = Column(Integer)
+#    name = Column(String) # Reaction or name
+#    group = Column(String) # For reactions or levels
+#    required = Column(Integer) # EXP
