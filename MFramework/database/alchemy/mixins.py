@@ -1,66 +1,10 @@
-from sqlalchemy import Column, TIMESTAMP, Integer, String, BigInteger, ForeignKey, func
-from sqlalchemy.orm import declared_attr, Query, relationship
+from sqlalchemy import Column, BigInteger, ForeignKey
+from sqlalchemy.orm import declared_attr, relationship
 from sqlalchemy.sql.sqltypes import Interval
-from typing import List
-class Base:
-    @declared_attr
-    def __tablename__(cls):
-        return cls.__name__  #.lower()
-    @classmethod
-    def filter(cls, session, **kwargs) -> Query:
-        ''':param kwargs: Column = Value''' 
-        return session.query(cls).filter_by(**kwargs)
-    @classmethod
-    def fetch_or_add(cls, s, **kwargs) -> object:
-        m = cls.filter(s, **kwargs).first()
-        if not m:
-            m = cls(**kwargs)
-            s.add(m)
-        return m
-    @classmethod
-    def fetch_or_add_multiple(cls, s, *ids: int) -> List[object]:
-        objects = []
-        for id in ids:
-            objects.append(cls.fetch_or_add(s, id=id))
-        return objects
-    @classmethod
-    def by_id(cls, s, id: int) -> object:
-        return cls.filter(s, id = id).first()
-    @classmethod
-    def by_name(cls, s, name: str) -> object:
-        return cls.filter(s, name = name).first()
-#    def __repr__(self) -> str:
-#        return "{}({})".format(
-#            self.__class__.__name__,
-#            ", ".join(["{}={!r}".format(attr, getattr(self, attr)) for attr in vars(self) if not attr.startswith('_')])
-#        )
-    def __init__(self, **kwargs) -> None:
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-
-from sqlalchemy.orm import declarative_base
-Base = declarative_base(cls=Base)
-
-class ID:
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-
-class Default(ID):
-    name = Column(String, unique=True, nullable=False)
-    def __init__(self, name) -> None:
-        self.name = name
-
-class File(ID):
-    filename = Column(String)
+from mlib.database import Base, ID, Default, File, Timestamp, TimestampUpdate # noqa: F401
 
 class Snowflake:
     id = Column(BigInteger, primary_key=True, autoincrement=False, nullable=False)
-
-class Timestamp:
-    timestamp = Column(TIMESTAMP(timezone=True), server_default=func.now())
-
-class TimestampUpdate:
-    timestamp = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
 
 class Cooldown:
     cooldown = Column(Interval)

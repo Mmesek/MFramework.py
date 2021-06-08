@@ -73,48 +73,10 @@ class Influx:
     async def influxPing(self):
         return self.influx.health()
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from .alchemy import Base
-
-class SQL:
-    __slots__ = ('engine', 'Session')
-    def __init__(self, db, user, password, location, port, name, echo=False):
-        try:
-            self.engine = create_engine(f'{db}://{user}:{password}@{location}:{port}/{name}', echo=echo, pool_size=10, max_overflow=20)
-        except Exception as ex:
-            print("Connecting to Database failed!", ex)
-            self.engine = create_engine("sqlite:///mbot.db", echo=echo)
-        self.Session = sessionmaker(bind=self.engine)
-    def create_tables(self):
-        Base.metadata.create_all(self.engine)
-    def session(self):
-        session = self.Session()
-        return session
-    def add(self, mapping):
-        s = self.session()
-        s.add(mapping)
-        return s.commit()
-    def delete(self, mapping):
-        s = self.session()
-        s.delete(mapping)
-        return s.commit()
-
+from mlib.database import SQL
 
 class Database:
     def __init__(self, config):
         sql = config['Database']
         self.sql = SQL(sql['db'], sql['user'], sql['password'], sql['location'], sql['port'], sql['name'], sql['echo'])
         self.influx = Influx()
-
-
-'''
-Author | Title | Year | Lyrics | Notes
-Author | Title | Year | Type   | Read Date | Notes
-Title | Year | Watched | Notes
-Title | Years | Seasons | Last Episode | Watched Date | Next Episode | Notes
-Developer | Title | Year | Achievements | Played Date | Notes
-Author | Quote | Notes
-
-Author | Title | Year | Type | Notes | Data | Date
-'''
