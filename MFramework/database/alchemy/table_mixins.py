@@ -2,7 +2,7 @@ from sqlalchemy.sql.sqltypes import Boolean
 from .mixins import *
 from . import types
 
-from sqlalchemy import Column, Integer, Enum, Date
+from sqlalchemy import Column, Integer, Enum, Date, String
 
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.associationproxy import association_proxy

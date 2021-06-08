@@ -1,4 +1,4 @@
-from sqlalchemy import Enum, Boolean, UnicodeText
+from sqlalchemy import Enum, Boolean, UnicodeText, Integer, String
 from sqlalchemy.orm import relationship
 
 from .mixins import *

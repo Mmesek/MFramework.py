@@ -114,7 +114,7 @@ class Channel(HasDictSettingsRelated, ServerID, Snowflake, Base):
 '''
 
 from . import types
-from sqlalchemy import Column, Integer, Enum, Boolean, UnicodeText
+from sqlalchemy import Column, Integer, Enum, Boolean, UnicodeText, TIMESTAMP
 
 class Webhook(ChannelID, ServerID, Snowflake, Base):
     token = Column(String)
