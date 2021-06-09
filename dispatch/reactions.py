@@ -20,13 +20,13 @@ async def message_reaction_add(self: Bot, data: Message_Reaction_Add):
         for msg in roles[group]:
             if data.message_id == msg:
                 r = roles[group][data.message_id][f"{data.emoji.name}:{data.emoji.id or 0}"]
-                if group == "None":
+                if group is None:
                     continue
                 elif all(i in data.member.roles for i in r):
                     return
                 elif any(i in data.member.roles for i in [j for e in roles[group][data.message_id].values() for j in e]):
                     return await self.delete_user_reaction(
-                        data.channel_id, data.message_id, f"{data.emoji.name}:{data.emoji.id}", data.user_id,
+                        data.channel_id, data.message_id, f"{data.emoji.name}:{data.emoji.id}" if data.emoji.id else data.emoji.name, data.user_id,
                     )
     if r == None:
         return
