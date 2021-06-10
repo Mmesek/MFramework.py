@@ -15,9 +15,8 @@ from MFramework import Presence_Update, Activity_Types
 async def presence_update(self: Bot, data: Presence_Update):
     if data.guild_id == 0 or data.user.bot or (data.client_status.web != ''):
         return
-    from MFramework.database.alchemy.types import Tracking #FIXME
-    from mlib.utils import bitflag
-    if bitflag(self.cache[data.guild_id].tracking, Tracking.Presence):
+    from MFramework.database.alchemy.types import Flags
+    if self.cache[data.guild_id].is_tracking(Flags.Presence):
         if (
             data.user.id in self.cache[data.guild_id].presence 
             and (data.activities is [] 
@@ -38,8 +37,7 @@ async def presence_update(self: Bot, data: Presence_Update):
         if stream.name in self.cache[data.guild_id].tracked_streams:
             await self.cache[data.guild_id].logging["stream"](data, stream)
     
-    for roles in self.cache[data.guild_id].presence_roles.values():
-        for a in filter(lambda x: x.type == Activity_Types.GAME and x.name in roles.keys(), data.activities):
-            for i in roles[a.name]:
-                await self.add_guild_member_role(data.guild_id, data.user.id, i, "Presence Role")
+    for presence_name, role in self.cache[data.guild_id].presence_roles.items():
+        if any(i.type == Activity_Types.GAME and i.name == presence_name for i in data.activities):
+            await self.add_guild_member_role(data.guild_id, data.user.id, role, "Presence Role")
             break
