@@ -27,7 +27,7 @@ class GuildCache:
     #voice_states: Cache[Snowflake, Voice_State] = {} #TODO
     #voice_channels: Dict[Snowflake, Dict[Snowflake, int]] = {}
     webhooks: Dict[str, Tuple[Snowflake, str]]
-    presence: Dict[Snowflake, Tuple[str, int, Snowflake]]
+    presence: Dict[Snowflake, Tuple[str, int, Snowflake]] = {}
     groups: Dict[Groups, Set[Snowflake]]
 
     disabled_channels: List[Snowflake]
@@ -298,6 +298,14 @@ class GuildCache:
         self.get_role_groups(roles)
         self.get_level_roles(roles)
         breakpoint
+    
+    def get_rpg_channels(self, channels):
+        rpg_channels = channels.filter(db.Channel.settings.any(name=types.Setting.RPG)).all()
+        self.rpg_channels = [channel.id for channel in rpg_channels]
+
+    def get_Channels(self, session):
+        channels = session.query(db.Channel).filter(db.Channel.server_id == self.guild_id)
+        self.get_rpg_channels(channels)
 
     def set_loggers(self, ctx):
         from mlib.types import aInvalid
@@ -319,6 +327,7 @@ class GuildCache:
             self.get_Custom_Emojis(s)
             self.get_Roles(s)
             self.get_Blacklisted_Words(s)
+            self.get_Channels(s)
 
     def load_settings(self, guild):
         for setting, value in guild.settings.items():
@@ -343,7 +352,7 @@ class GuildCache:
                 _role = db.Role.fetch_or_add(s, server_id=self.guild_id, id=role)
                 _role.add_setting(types.Setting.Permissions, group.value)
                 s.add(_role)
-        if hasattr(self, 'voice_link'):
+        if self.voice_link:
             guild.add_setting(types.Setting.Voice_Link, self.voice_link)
         #s.add(guild) ?
         #s.commit()
