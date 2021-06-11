@@ -104,3 +104,29 @@ async def ball(ctx: Context, interaction: Interaction, question: str = None, *ar
     else:
         answer = random().choice(answers)
     await interaction.edit_response(answer)
+
+from enum import Enum
+class Moves(Enum):
+    ROCK = 'Rock'
+    PAPER = 'Paper'
+    SCISSORS = 'Scissors'
+
+@register(group=Groups.GLOBAL, main=roll)
+async def rps(ctx: Context, interaction: Interaction, move: Moves, *args, language, **kwargs):
+    '''
+    Plays Rock Paper Scissors!
+    Params
+    ------
+    move:
+        move you want to make
+    '''
+    from random import SystemRandom as random
+    bot_move = random().choice(list(Moves))
+    moves = list(Moves)
+    if moves.index(move) % 3 < moves.index(bot_move) % 3:
+        result = 'You **lost**'
+    elif moves.index(move) % 3 > moves.index(bot_move) % 3:
+        result = 'You **won**'
+    else:
+        result = "It's a **draw**"
+    await interaction.send(content=f"{ctx.bot.username} plays **{bot_move.name.title()}** against {ctx.user.username}'s **{move.name.title()}**. {result}!")
