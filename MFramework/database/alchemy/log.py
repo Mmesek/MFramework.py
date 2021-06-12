@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from .mixins import *
 from . import types
 
-class TransactionInventory(ItemID, UserID, Base):
+class Transaction_Inventory(ItemID, UserID, Base):
     user_id = Column(ForeignKey("User.id", ondelete='SET NULL', onupdate='Cascade'), nullable=True)
     id = Column(ForeignKey("Transaction.id", ondelete="Cascade", onupdate='Cascade'), primary_key=True)
     quantity = Column(Integer, default=0)
@@ -12,11 +12,11 @@ class TransactionInventory(ItemID, UserID, Base):
 
 class Transaction(Timestamp, ServerID, ID, Base):
     server_id = Column(ForeignKey("Server.id", ondelete='SET NULL', onupdate='Cascade'), nullable=True)
-    items = relationship(TransactionInventory)
+    items = relationship(Transaction_Inventory)
     def add(self, to_user_id, item):
-        self.items.append(TransactionInventory(user_id=to_user_id, item_id=item.item_id, quantity=item.quantity, incoming=True))
+        self.items.append(Transaction_Inventory(user_id=to_user_id, item_id=item.item_id, quantity=item.quantity, incoming=True))
     def remove(self, from_user_id, item):
-        self.items.append(TransactionInventory(user_id=from_user_id, item_id=item.item_id, quantity=item.quantity, incoming=False))
+        self.items.append(Transaction_Inventory(user_id=from_user_id, item_id=item.item_id, quantity=item.quantity, incoming=False))
 
 class Activity(Timestamp, UserID, ServerID, Base):
     '''Append-only table'''

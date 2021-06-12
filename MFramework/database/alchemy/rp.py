@@ -7,11 +7,11 @@ from .mixins import *
 class Skill(Default, Base):
     pass
 
-class CharacterSkills(SkillID, CharacterID, Base):
+class Character_Skills(SkillID, CharacterID, Base):
     skill_id = Column(ForeignKey("Skill.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
     exp = Column(Integer, default=0)
 
-class CharacterItems(ItemID, CharacterID, Base):
+class Character_Items(ItemID, CharacterID, Base):
     quantity = Column(Integer, default=0)
 
 class Character(UserID, ID, Base):
@@ -30,5 +30,5 @@ class Character(UserID, ID, Base):
     fear = Column(String)
     weakness = Column(String)
     strength = Column(String)
-    skills = relationship("CharacterSkills")
-    items = relationship("CharacterItems")
+    skills = relationship("Character_Skills")
+    items = relationship("Character_Items")

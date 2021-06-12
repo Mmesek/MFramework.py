@@ -10,7 +10,7 @@ from .log import Infraction, Transaction
 class User(HasDictSettingsRelated, Snowflake, Base):
     infractions = relationship("Infraction", back_populates="user", foreign_keys="Infraction.user_id", order_by="desc(Infraction.timestamp)")
     mod_actions = relationship("Infraction", back_populates="moderator", foreign_keys="Infraction.moderator_id", order_by="desc(Infraction.timestamp)")
-    transactions = relationship("TransactionInventory", order_by="desc(Transaction.timestamp)")
+    transactions = relationship("Transaction_Inventory", order_by="desc(Transaction.timestamp)")
     activities = relationship("Activity", order_by="desc(Activity.timestamp)")
     statistics = relationship("Statistic")
 
