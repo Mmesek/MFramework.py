@@ -101,9 +101,9 @@ async def deduplicate_messages(self: Bot, data: Message) -> bool:
 import re
 URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
 async def remove_links(self: Bot, data: Message) -> bool:
-    if len(data.member.roles) > 0 or all(not self.cache[data.guild_id].roles.get(i, Role()).color for i in data.member.roles):
+    if len(data.member.roles) > 0 and any(self.cache[data.guild_id].roles.get(i, Role()).color for i in data.member.roles):
         return False
-    if URL_PATTERN.match(data.content):
+    if URL_PATTERN.search(data.content):
         await data.delete()
         return True
 
@@ -111,7 +111,7 @@ REPLACE_NOT_APLABETIC = re.compile(r'[^a-zA-Z ]')
 async def blocked_words(self: Bot, data: Message) -> bool:
     BLACKLISTED_WORDS = self.cache[data.guild_id].blacklisted_words #re.compile(r"") #TODO: Source cached from Database!
     if BLACKLISTED_WORDS:
-        if BLACKLISTED_WORDS.match(REPLACE_NOT_APLABETIC.sub('', data.content)):
+        if BLACKLISTED_WORDS.search(REPLACE_NOT_APLABETIC.sub('', data.content)):
             await data.delete()
             return True
 
@@ -147,7 +147,7 @@ async def handle_level(self: Bot, data: Message):
 
 TIME_PATTERN = re.compile(r"(?P<Hour>\d\d?) ?(:|\.)? ?(?P<Minute>\d\d?)? ?(?P<Daytime>AM|PM)? ?(?P<LateMinute>\d\d?)? ?(?P<Timezone>\w+)")
 async def check_timezone(self: Bot, data: Message):
-    match = TIME_PATTERN.match(data.content)
+    match = TIME_PATTERN.search(data.content)
     if not match:
         return
     timezone = match.group("Timezone")
