@@ -117,3 +117,27 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
             commands[_name] = cmd
         return f
     return inner
+
+from typing import Union
+from functools import wraps
+
+def has_roles(*required: Union[Snowflake, str]):
+    '''Checks if user has any provided role.
+
+    Params
+    ------
+    required:
+        Checks if provided role IDs or role names are present on calling user
+    '''
+    def inner(f):
+        @wraps(f)
+        def wrapped(ctx, *args, **kwargs):
+            if ctx.member:
+                nonlocal required
+                if not all(issubclass(type(i), int) for i in required):
+                    required = [i.id for i in ctx.cache.roles.values() if i.name in required or i.id in required]
+                if len(set(required) & set(ctx.member.roles)):
+                    return f(ctx, *args, **kwargs)
+            return aInvalid()
+        return wrapped
+    return inner
