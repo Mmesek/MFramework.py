@@ -36,16 +36,19 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     s.commit()
 
 from MFramework.commands.decorators import Event, Chance
+@onDispatch(event="message_create")
 @Event(month=4)
 @Chance(2.5)
 async def egg_hunt(ctx: Bot, data: Message):
     await _handle_reaction(ctx, data, "🥚", "Easter Egg", types.Item.EasterEgg, logger="egg_hunt", statistic=types.Statistic.Spawned_Eggs)
 
+@onDispatch(event="message_create")
 @Event(month=12)
 @Chance(3)
 async def present_hunt(ctx: Bot, data: Message):
     await _handle_reaction(ctx, data, "🎁", "Present", wait=False, delete_own=False, store_in_cache=True, first_only=True, all_reactions=False, logger="present_hunt", statistic=types.Statistic.Spawned_Presents)
 
+@onDispatch(event="message_create")
 @Event(month=10)
 @Chance(1)
 async def halloween_hunt(ctx: Bot, data: Message):
@@ -58,6 +61,7 @@ async def responder(ctx: Bot, msg: Message, emoji: str):
     elif type(emoji) is tuple:
         await msg.reply(file=emoji[1], filename=emoji[0])
 
+@onDispatch(event="message_create")
 async def parse_reply(self: Bot, data: Message):
     from MFramework.commands._utils import detect_group, Groups
     _g = detect_group(self, data.author.id, data.guild_id, data.member.roles)
@@ -80,6 +84,7 @@ async def dm_reply(ctx: Bot, msg: Message):
     await ctx.create_message(dm.id, msg.content or None, embed=msg.attachments_as_embed())
     await msg.react(ctx.emoji['success']) # _Client is apparently not set
 
+@onDispatch(event="message_create", priority=5)
 async def deduplicate_messages(self: Bot, data: Message) -> bool:
     c = self.cache[data.guild_id].last_messages
     _last_message = c.get(data.channel_id, None)
@@ -100,6 +105,7 @@ async def deduplicate_messages(self: Bot, data: Message) -> bool:
 
 import re
 URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
+@onDispatch(event="message_create", priority=10)
 async def remove_links(self: Bot, data: Message) -> bool:
     if len(data.member.roles) > 0 and any(self.cache[data.guild_id].roles.get(i, Role()).color for i in data.member.roles):
         return False
@@ -108,6 +114,7 @@ async def remove_links(self: Bot, data: Message) -> bool:
         return True
 
 REPLACE_NOT_APLABETIC = re.compile(r'[^a-zA-Z ]')
+@onDispatch(event="message_create", priority=10)
 async def blocked_words(self: Bot, data: Message) -> bool:
     BLACKLISTED_WORDS = self.cache[data.guild_id].blacklisted_words #re.compile(r"") #TODO: Source cached from Database!
     if BLACKLISTED_WORDS:
@@ -117,6 +124,7 @@ async def blocked_words(self: Bot, data: Message) -> bool:
 
 ACTION = re.compile(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))")
 ILLEGAL_ACTIONS = re.compile(r"(?i)zabij|wyryw|mord")
+@onDispatch(event="message_create")
 async def roll_dice(self: Bot, data: Message, updated: bool = False):
     if data.channel_id not in self.cache[data.guild_id].rpg_channels:
         return
@@ -139,6 +147,7 @@ async def roll_dice(self: Bot, data: Message, updated: bool = False):
         v = random().randint(1, 6) if not ILLEGAL_ACTIONS.findall(reg[0]) else 0
         await self.create_reaction(data.channel_id, data.id, dices[v])
 
+@onDispatch(event="message_create")
 async def handle_level(self: Bot, data: Message):
     if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
         from MFramework.utils import levels
@@ -146,6 +155,7 @@ async def handle_level(self: Bot, data: Message):
 
 
 TIME_PATTERN = re.compile(r"(?P<Hour>\d\d?) ?(:|\.)? ?(?P<Minute>\d\d?)? ?(?P<Daytime>AM|PM)? ?(?P<LateMinute>\d\d?)? ?(?P<Timezone>\w+)")
+@onDispatch(event="message_create")
 async def check_timezone(self: Bot, data: Message):
     match = TIME_PATTERN.search(data.content)
     if not match:
