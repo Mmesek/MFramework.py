@@ -1,4 +1,4 @@
-from MFramework import Bot, Message
+from MFramework import Bot, Message, onDispatch
 from typing import List
 from random import SystemRandom as random
 
@@ -43,6 +43,7 @@ async def chance(ctx: Bot, data: Message, r: List[str], x: int) -> int:
         return 0
     return 1
 
+@onDispatch(event="message_create", priority=3)
 async def parse(ctx: Bot, data: Message):
     matched = []
     cache = ctx.cache[data.guild_id]

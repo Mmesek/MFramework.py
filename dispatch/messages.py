@@ -2,22 +2,14 @@ from MFramework import onDispatch, Bot, Message, Message_Delete
 
 import re
 EMOJI = re.compile(r":\w+:")
-@onDispatch(priority=1)
+@onDispatch(priority=4)
 async def message_create(self: Bot, data: Message):
     if not data.is_empty:
-        from MFramework.commands.context import check_context
-        from MFramework.commands.commands import check_command
         if any(i.id == self.user_id for i in data.mentions):
             await self.trigger_typing_indicator(data.channel_id)
-        if await check_context(self, data):
-            return True
-        elif await check_command(self, data):
-            return True
         from .actions import responder
         for emoji in EMOJI.findall(data.content):
             await responder(self, data, emoji)
-        import MFramework.commands.parser as parser
-        await parser.parse(self, data)
 
 @onDispatch
 async def direct_message_create(self: Bot, data: Message):
