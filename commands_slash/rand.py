@@ -1,4 +1,6 @@
 from MFramework import register, Groups, Context, Interaction
+from random import SystemRandom
+random = SystemRandom()
 
 @register()
 async def roll(ctx: Context, interaction: Interaction, *args, language, **kwargs):
@@ -27,8 +29,7 @@ async def dice(ctx: Context, interaction: Interaction, number: int=20, times: in
     times:
         How many dices should be rolled
     '''
-    import random
-    await interaction.send(', '.join([str(number) + ": " + str(random.SystemRandom().randrange(int(number)) + 1) for i in range(times)]))
+    await interaction.send(', '.join([str(number) + ": " + str(random.randrange(int(number)) + 1) for i in range(times)]))
 
 @register(group=Groups.GLOBAL, main=roll)
 async def ball(ctx: Context, interaction: Interaction, question: str = None, *args, language, **kwargs):
@@ -40,7 +41,6 @@ async def ball(ctx: Context, interaction: Interaction, question: str = None, *ar
         Question you seek answer to
     '''
     await interaction.deferred_message(False)
-    from random import SystemRandom as random
     conclusive = {
         "positive": ["Yes", "Yep", "Yup", "Yeah", "Sure", "Of course", "Indeed", "'course", "Excellent", "Possible", "Likely", "Ok", "I think so"],
         "negative": ["No", "Nope", "Unlikely", "No idea", "I don't think so"],
@@ -79,30 +79,30 @@ async def ball(ctx: Context, interaction: Interaction, question: str = None, *ar
         "Hello, who are you?", "Ask Owner", "Ask Creator", "Ask doctor", "Ask boss",
         "Hey! Check out this awesome cat out!", "Have you seen a doctor?", "Try again.", "Do not cheat", "Try again, but this time do not cheat!",
     ]
-    if random().random() < 0.5:
-        answer = random().choice(base)
-        answer = random().choice(answer).strip()
+    if random.random() < 0.5:
+        answer = random.choice(base)
+        answer = random.choice(answer).strip()
         answer = answer.format(
-            negation = random().choice(negation).strip(),
-            interpunction = random().choice(interpuntions).strip(),
-            conclusive = random().choice(random().choice([i for i in conclusive.values()])).strip().format(
-                interpunction = random().choice(interpuntions).strip(),
-                negation = random().choice(negation).strip(),
+            negation = random.choice(negation).strip(),
+            interpunction = random.choice(interpuntions).strip(),
+            conclusive = random.choice(random.choice([i for i in conclusive.values()])).strip().format(
+                interpunction = random.choice(interpuntions).strip(),
+                negation = random.choice(negation).strip(),
                 conclusive = "",
-                person  = random().choice(person).strip().capitalize()
+                person  = random.choice(person).strip().capitalize()
             ).strip(),
-            _self = random().choice(self).strip(),
-            self_is = random().choice(self_is).strip(),
-            person = random().choice(person).strip(),
-            forward = random().choice(conclusive["forward"] + [""]).strip().format(
-                person  = random().choice(person).strip()
+            _self = random.choice(self).strip(),
+            self_is = random.choice(self_is).strip(),
+            person = random.choice(person).strip(),
+            forward = random.choice(conclusive["forward"] + [""]).strip().format(
+                person  = random.choice(person).strip()
             ).strip(),
         )
         answer = answer.strip()
         if len(answer) > 1 and answer[-1] not in {'!', '?', '.'} or len(answer) <= 1:
-            answer += random().choice(interpuntions).strip(',')
+            answer += random.choice(interpuntions).strip(',')
     else:
-        answer = random().choice(answers)
+        answer = random.choice(answers)
     await interaction.edit_response(answer)
 
 from enum import Enum
@@ -118,10 +118,9 @@ async def rps(ctx: Context, interaction: Interaction, move: Moves, *args, langua
     Params
     ------
     move:
-        move you want to make
+        Move you want to make
     '''
-    from random import SystemRandom as random
-    bot_move = random().choice(list(Moves))
+    bot_move = random.choice(list(Moves))
     moves = list(Moves)
     if moves.index(move) % 3 < moves.index(bot_move) % 3:
         result = 'You **lost**'
@@ -130,3 +129,8 @@ async def rps(ctx: Context, interaction: Interaction, move: Moves, *args, langua
     else:
         result = "It's a **draw**"
     await interaction.send(content=f"{ctx.bot.username} plays **{bot_move.name.title()}** against {ctx.user.username}'s **{move.name.title()}**. {result}!")
+
+@register(group=Groups.GLOBAL, main=roll)
+async def coin(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+    '''Flips coin'''
+    await interaction.send(content=f"{'Heads' if random.randint(0, 1) else 'Tails'}")
