@@ -238,8 +238,9 @@ class Member_Update(Log):
 class Nitro_Change(Member_Update):
     username = "Nitro Log"
     async def log(self, data) -> MFramework.Message:
-        if data.user.id in self.cache[data.guild_id].members:
-            c = self.cache[data.guild_id].members[data.user.id]
+        ctx = self.bot
+        if data.user.id in ctx.cache[data.guild_id].members:
+            c = ctx.cache[data.guild_id].members[data.user.id]
             diff = set(c.roles) ^ set(data.roles)
             if len(diff) == 0:
                 return
@@ -251,19 +252,20 @@ class Nitro_Change(Member_Update):
                 case = 'stopped boosting'
             booster = False
             for i in diff:
-                if i in self.cache[data.guild_id].groups['Nitro']:
+                if i in ctx.cache[data.guild_id].groups[MFramework.Groups.NITRO]:
                     booster = True
                     break
             if booster:
                 await self._log(f"<@{data.user.id}> {case}")
-                self.cache[data.guild_id].members[data.user.id] = data
+                ctx.cache[data.guild_id].members[data.user.id] = data
                 return s
 
 class Muted_Change(Member_Update):
     username = "Muted Log"
     async def log(self, data) -> MFramework.Message:
-        if data.user.id in self.cache[data.guild_id].members:
-            c = self.cache[data.guild_id].members[data.user.id]
+        ctx = self.bot
+        if data.user.id in ctx.cache[data.guild_id].members:
+            c = ctx.cache[data.guild_id].members[data.user.id]
             diff = set(c.roles) ^ set(data.roles)
             if len(diff) == 0:
                 return
@@ -273,12 +275,12 @@ class Muted_Change(Member_Update):
                 case = 'has been unmuted'
             muted = False
             for i in diff:
-                if i in self.cache[data.guild_id].groups['Muted']:
+                if i in ctx.cache[data.guild_id].groups[MFramework.Groups.MUTED]:
                     muted = True
                     break
             if muted:
                 await self._log(f"<@{data.user.id}> {case}")
-                self.cache[data.guild_id].members[data.user.id] = data
+                ctx.cache[data.guild_id].members[data.user.id] = data
 
 class Direct_Message(Message):
     def __init__(self, bot, guild_id: MFramework.Snowflake, type: str, id: MFramework.Snowflake, token: str) -> None:
@@ -299,8 +301,8 @@ class Direct_Message(Message):
             return await msg.reply(tr("commands.dm.singleWordError", self.bot.cache[self.guild_id].language, emoji_success=self.bot.emoji['success']))
 
         if msg.channel_id in self.bot.cache[0]:
-            s = list(self.bot.cache[0][msg.channel_id].messages.keys())
-            if self.bot.cache[0][msg.channel_id].messages[s[-1]].content == msg.content:
+            s = list(self.bot.cache[0][msg.channel_id].keys())
+            if self.bot.cache[0][msg.channel_id][s[-1]].content == msg.content:
                 return await msg.reply(tr("commands.dm.sameMessageError", self.bot.cache[self.guild_id].language))
                 #"Please do not send same message multiple times in a row, thanks."
 
@@ -309,8 +311,8 @@ class Direct_Message(Message):
         content = ''
         if reg and reg.lastgroup is not None:
             await msg.reply(canned['responses'][reg.lastgroup])
-            content = tr("commands.dm.cannedResponseError", self.bot.cache[self.guild_id].language, canned_response=reg.lastgroup)
-            #f"Canned response `{reg.lastgroup}` has been sent in return."
+            #content = tr("commands.dm.cannedResponseError", self.bot.cache[self.guild_id].language, canned_response=reg.lastgroup)
+            content = f"Canned response `{reg.lastgroup}` has been sent in return."
         await self._log(content+f' <@!{msg.author.id}>', [embed], f"{msg.author.username}#{msg.author.discriminator}", avatar)
         await msg.react(self.bot.emoji['success'])
 
