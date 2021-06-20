@@ -3,17 +3,19 @@ from typing import List
 from random import SystemRandom as random
 
 COMMANDS = {}
-def command():
+def command(cls=None):
     def inner(f):
         COMMANDS[f.__name__] = f
         return f
+    if cls:
+        return inner(cls)
     return inner
 
-@command()
+@command
 async def react(ctx: Bot, data: Message, r: List[str], x: int):
     await data.react(r[x+1])
 
-@command()
+@command
 async def message(ctx: Bot, data: Message, r: List[str], x: int):
     if '{OR}' in r[x+1]:
         options = r[x+1].split('{OR}')
@@ -23,7 +25,7 @@ async def message(ctx: Bot, data: Message, r: List[str], x: int):
     await data.send(content.format(user_id=data.author.id, 
         username=data.author.username, nick=data.member.nick))
 
-@command()
+@command
 async def reply(ctx: Bot, data: Message, r: List[str], x: int):
     if '{OR}' in r[x+1]:
         options = r[x+1].split('{OR}')
@@ -33,11 +35,11 @@ async def reply(ctx: Bot, data: Message, r: List[str], x: int):
     await data.reply(content.format(user_id=data.author.id, 
         username=data.author.username, nick=data.member.nick))
 
-@command()
+@command
 async def delete(ctx: Bot, data: Message, r: List[str], x: int):
     await data.delete()
 
-@command()
+@command
 async def chance(ctx: Bot, data: Message, r: List[str], x: int) -> int:
     if random().random() < (r[x+1]/100):
         return 0
