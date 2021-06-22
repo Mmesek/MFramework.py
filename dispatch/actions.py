@@ -91,7 +91,8 @@ async def deduplicate_messages(self: Bot, data: Message) -> bool:
     if (_last_message and 
         _last_message[0].content == data.content and 
         _last_message[0].author.id == data.author.id and
-        _last_message[0].attachments == data.attachments
+        _last_message[0].attachments == data.attachments and
+        _last_message[0].referenced_message == data.referenced_message
         ):
         if len(_last_message) >= self.cache[data.guild_id].allowed_duplicated_messages:
             await self.delete_message(data.channel_id, data.id)

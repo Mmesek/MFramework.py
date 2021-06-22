@@ -3,6 +3,15 @@ import MFramework
 from typing import List
 
 class Log:
+    '''Base Log class. Subclass it and overwrite `.log()` and optionally `.log_dm()` to create new log. 
+    If it's about one of Discord Dispatch events, the name should match (For example: `Message_Delete` for logging deleted messages)
+
+    Atributtes
+    ----------
+    username:
+        Name webhook when using this logger
+    avatar:
+        URL to avatar to use when using this logger'''
     bot: object#MFramework.Bot
     guild_id: MFramework.Snowflake
     webhook_id: MFramework.Snowflake
@@ -302,17 +311,17 @@ class Direct_Message(Message):
 
         if msg.channel_id in self.bot.cache[0]:
             s = list(self.bot.cache[0][msg.channel_id].keys())
-            if self.bot.cache[0][msg.channel_id][s[-1]].content == msg.content:
+            if (self.bot.cache[0][msg.channel_id][s[-1]].content == msg.content and
+                self.bot.cache[0][msg.channel_id][s[-1]].attachments == msg.attachments
+                ):
                 return await msg.reply(tr("commands.dm.sameMessageError", self.bot.cache[self.guild_id].language))
-                #"Please do not send same message multiple times in a row, thanks."
 
         import re
         reg = re.search(canned['patterns'], msg.content)
         content = ''
         if reg and reg.lastgroup is not None:
             await msg.reply(canned['responses'][reg.lastgroup])
-            #content = tr("commands.dm.cannedResponseError", self.bot.cache[self.guild_id].language, canned_response=reg.lastgroup)
-            content = f"Canned response `{reg.lastgroup}` has been sent in return."
+            content = tr("commands.dm.cannedResponseSent", self.bot.cache[self.guild_id].language, name=reg.lastgroup)
         await self._log(content+f' <@!{msg.author.id}>', [embed], f"{msg.author.username}#{msg.author.discriminator}", avatar)
         await msg.react(self.bot.emoji['success'])
 
