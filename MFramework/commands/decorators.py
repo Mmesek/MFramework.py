@@ -1,7 +1,7 @@
 from mlib.types import aInvalid
 from MFramework import Interaction, Message, Snowflake
 
-__all__ = ["Event", "EventBetween", "Cooldown", "Chance", "regex", "register"]
+__all__ = ["Event", "EventBetween", "Cooldown", "Chance", "req_regex", "regex", "register", "shortcut", "any_role"]
 
 def Event(*, month=None, day=None, hour=None, minute=None, year=None):
     '''Executes command only if it's during provided timeframe'''
@@ -70,8 +70,9 @@ def Chance(chance: float=0):
         return wrapped
     return inner
 
-COMPILED_REGEX = {}
-def regex(expression: str):
+from ._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts
+from typing import List
+def req_regex(expression: str):
     '''Checks for Regular Expression in Message's content'''
     def inner(f):
         import re
@@ -83,8 +84,23 @@ def regex(expression: str):
         return wrapped
     return inner
 
-from ._utils import Groups, commands, Command, aliasList
-from typing import List
+def regex(expression: str, group: Groups = Groups.GLOBAL):
+    '''Checks for Regular Expression in Message's content'''
+    def inner(f):
+        import re
+        cmd = Command(f, False, None, group, None)
+        commands_regex[re.compile(expression)] = cmd
+        return f
+    return inner
+
+def shortcut(name:str, group: Groups = Groups.GLOBAL, **kwargs):
+    '''Creates shortcut that prefils specified keywords with provided values'''
+    def inner(f):
+        cmd = Command(f, False, None, group, None)
+        command_shortcuts[name] = (cmd, kwargs)
+        return f
+    return inner
+
 def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False, guild: Snowflake = None, choice: bool=None, aliases: List[str] = [], **kwargs):
     '''Decorator for creating commands.
     
@@ -121,7 +137,7 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
 from typing import Union
 from functools import wraps
 
-def has_roles(*required: Union[Snowflake, str]):
+def any_role(*required: Union[Snowflake, str]):
     '''Checks if user has any provided role.
 
     Params
