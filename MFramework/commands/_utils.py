@@ -7,26 +7,32 @@ from MFramework import Snowflake, ChannelID, UserID, RoleID, Application_Command
 
 class Groups(Enum):
     SYSTEM = 0
-    ADMIN = 1
-    MODERATOR = 2
-    NITRO = 3
-    VIP = 4
-    GLOBAL = 5
-    DM = 6
-    MUTED = 7
-    LIMBO = 8
+    ADMIN = 10
+    MODERATOR = 20
+    HELPER = 30
+    SUPPORT = 40
+    PARTNER = 50
+    NITRO = 60
+    SUPPORTER = 70
+    VIP = 80
+    GLOBAL = 100
+    DM = 200
+    MUTED = 210
+    LIMBO = 220
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 class Argument:
     default: str
     type: type
     help: str
     choices: Dict[str, Any]
-    def __init__(self, default, type, help, choices) -> None:
+    kind: str
+    def __init__(self, default, type, help, choices, kind) -> None:
         self.default = default
         self.type = type
         self.help = help
         self.choices =choices
+        self.kind = kind
 
 class Command:
     name: str
@@ -45,6 +51,8 @@ class Command:
         _docs = parse_docstring(f)
         self.help = _docs['_doc']
         self.arguments = parse_signature(f, _docs)
+        self._only_interaction = self.arguments.get("Interaction", False) and not self.arguments.get("Message", False)
+        self._only_message = self.arguments.get("Message", False) and not self.arguments.get("Interaction", False)
         self.interaction = interaction
         self.master_command = main
         self.group = group
@@ -58,6 +66,9 @@ class Command:
 
 commands: Dict[str, Command] = {}
 aliasList: Dict[str, str] = {}
+COMPILED_REGEX: Dict[str, str] = {}
+commands_regex: Dict[str, Command] = {}
+command_shortcuts: Dict[str, Tuple[Command, Dict[str, Any]]] = {}
 
 def detect_group(Client, user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
     if user_id != 273499695186444289:
@@ -76,13 +87,15 @@ def parse_signature(f, docstring):
     sig = signature(f).parameters
     parameters = {}
     for parameter in sig:
+        import enum
         arg = Argument(
             default = sig[parameter].default,
             type = sig[parameter].annotation,
             help = docstring.get(sig[parameter].name, 'MISSING DOCSTRING'),
             choices = docstring.get('choices').get(sig[parameter].name, []
-                if not issubclass(sig[parameter].annotation, Enum) 
-                else {k.name: k.value for k in sig[parameter]})
+                if not issubclass(sig[parameter].annotation, enum.Enum) 
+                else {k.name: k.value for k in sig[parameter].annotation}),
+            kind = sig[parameter].kind.name
             )
         parameters[sig[parameter].name] = arg
     return parameters
@@ -142,7 +155,9 @@ def parse_arguments(_command: Command) -> list:
             choices.append(Application_Command_Option_Choice(name=choice, value=_i.choices[choice]))
 
         options.append(Application_Command_Option(
-            type=_types.get(_i.type, Application_Command_Option_Type.STRING).value,
+            type=_types.get(_i.type,
+                Application_Command_Option_Type.INTEGER if issubclass(_i.type, int) else 
+                Application_Command_Option_Type.STRING).value,
             name=i, description=_i.help[:100], required=True if _i.default is Signature.empty else False, choices=choices, options=[]
         ))
     for i in _command.sub_commands:
@@ -214,3 +229,47 @@ async def set_permissions(client, guild_id: Snowflake, _commands):
     if permissions != []:
         log.info("Editing permissions on server %s for #%s commands", guild_id, len(permissions))
         await client.batch_edit_application_command_permissions(client.application.id, guild_id, permissions)
+
+def get_trigger(client, message: Message) -> str:
+    alias = client.cache[message.guild_id].alias
+    if alias not in message.content[0] and client.username.lower() not in message.content.lower() and str(client.user_id) not in message.content:
+        return False
+    return alias
+
+def get_arguments(client, message: Message) -> List[str]:
+    args = message.content
+    if client.username.lower() in message.content.lower():
+        args = message.content.split(client.username, 1)[-1]
+    elif str(client.user_id) in message.content:
+        args = message.content.split(f'{client.user_id}>', 1)[-1]
+    args = args.strip().split(' ')
+    return args
+
+def get_original_cmd(_name) -> str:
+    return aliasList.get(_name, _name)
+
+def set_ctx(client, message: Message, f):
+    from MFramework import Context
+    ctx = Context(client.cache, client, message)
+    if not f or f.group < ctx.permission_group:
+        return False
+    return ctx
+
+def set_kwargs(ctx, f, args) -> Dict[str, Any]:
+    # NOTE: Argument doesn't support any form of List. Neither it supports -flags or specifying keyword arguments at all  
+    kwargs = {}
+    for x, option in enumerate(f.arguments.values(), 1):
+        if x == len(args):
+            break
+        t = option.type
+        if option.kind == "VAR_POSITIONAL":
+            if t is str:
+                kwargs[option] = ' '.join(args[x:])
+            else:
+                kwargs[option] = args[x:]
+        elif t in {str, int, bool}:
+        #if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID]:
+            kwargs[option] = option.type(args[x])
+    kwargs = set_default_arguments(ctx, f, kwargs)
+    
+    return kwargs
