@@ -107,9 +107,9 @@ async def ball(ctx: Context, interaction: Interaction, question: str = None, *ar
 
 from enum import Enum
 class Moves(Enum):
-    ROCK = 'Rock'
-    PAPER = 'Paper'
-    SCISSORS = 'Scissors'
+    PAPER = 'Rock'
+    SCISSORS = 'Paper'
+    ROCK = 'Scissors'
 
 @register(group=Groups.GLOBAL, main=roll)
 async def rps(ctx: Context, interaction: Interaction, move: Moves, *args, language, **kwargs):
@@ -121,13 +121,12 @@ async def rps(ctx: Context, interaction: Interaction, move: Moves, *args, langua
         Move you want to make
     '''
     bot_move = random.choice(list(Moves))
-    moves = list(Moves)
-    if moves.index(move) % 3 < moves.index(bot_move) % 3:
-        result = 'You **lost**'
-    elif moves.index(move) % 3 > moves.index(bot_move) % 3:
-        result = 'You **won**'
-    else:
+    if move == bot_move:
         result = "It's a **draw**"
+    elif move.name.title() == bot_move.value:
+        result = 'You **lost**'
+    else:
+        result = 'You **won**'
     await interaction.send(content=f"{ctx.bot.username} plays **{bot_move.name.title()}** against {ctx.user.username}'s **{move.name.title()}**. {result}!")
 
 @register(group=Groups.GLOBAL, main=roll)
