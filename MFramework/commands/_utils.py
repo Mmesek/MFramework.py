@@ -27,12 +27,14 @@ class Argument:
     help: str
     choices: Dict[str, Any]
     kind: str
-    def __init__(self, default, type, help, choices, kind) -> None:
+    name: str
+    def __init__(self, default, type, help, choices, kind, name) -> None:
         self.default = default
         self.type = type
         self.help = help
         self.choices =choices
         self.kind = kind
+        self.name = name
 
 class Command:
     name: str
@@ -69,6 +71,7 @@ aliasList: Dict[str, str] = {}
 COMPILED_REGEX: Dict[str, str] = {}
 commands_regex: Dict[str, Command] = {}
 command_shortcuts: Dict[str, Tuple[Command, Dict[str, Any]]] = {}
+reactions: Dict[str, Command] = {}
 
 def detect_group(Client, user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
     if user_id != 273499695186444289:
@@ -95,7 +98,8 @@ def parse_signature(f, docstring):
             choices = docstring.get('choices').get(sig[parameter].name, []
                 if not issubclass(sig[parameter].annotation, enum.Enum) 
                 else {k.name: k.value for k in sig[parameter].annotation}),
-            kind = sig[parameter].kind.name
+            kind = sig[parameter].kind.name,
+            name = sig[parameter].name
             )
         parameters[sig[parameter].name] = arg
     return parameters
@@ -258,18 +262,18 @@ def set_ctx(client, message: Message, f):
 def set_kwargs(ctx, f, args) -> Dict[str, Any]:
     # NOTE: Argument doesn't support any form of List. Neither it supports -flags or specifying keyword arguments at all  
     kwargs = {}
-    for x, option in enumerate(f.arguments.values(), 1):
-        if x == len(args):
+    for x, option in enumerate(f.arguments.values()):
+        if x > len(args):
             break
         t = option.type
         if option.kind == "VAR_POSITIONAL":
             if t is str:
-                kwargs[option] = ' '.join(args[x:])
+                kwargs['args'] = (' '.join(args[x:]),)
             else:
-                kwargs[option] = args[x:]
+                kwargs['args'] = (args[x:],)
         elif t in {str, int, bool}:
         #if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID]:
-            kwargs[option] = option.type(args[x])
+            kwargs[option.name] = option.type(args[x])
     kwargs = set_default_arguments(ctx, f, kwargs)
     
     return kwargs
