@@ -1,5 +1,7 @@
 from datetime import datetime
-from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author
+
+from mdiscord.types import Discord_Paths
+from MFramework import register, Groups, Context, Interaction, Message, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
 async def docket(ctx: Context, interaction: Interaction, docket: str, description: str='', publish: bool=False, *args, language, **kwargs):
@@ -39,3 +41,16 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
     msg = await ctx.send("<@&545856777623961611>", embeds=[embed], allowed_mentions=None)
     if publish:
         await msg.publish()
+
+@register(group=Groups.MODERATOR, interaction=False)
+async def bookmark(ctx: Context, *title: str, message: Message, language, **kwargs):
+    '''
+    Bookmark a moment in chat to save in your DMs for easy navigation
+    Params
+    ------
+    title:
+        title of the bookmark
+    '''
+    dm = await ctx.bot.create_dm(ctx.user_id)
+    title = title[0] or "Your bookmark"
+    await ctx.bot.create_message(dm.id, title+': \n'+Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.message_id))
