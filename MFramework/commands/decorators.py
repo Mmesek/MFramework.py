@@ -1,7 +1,7 @@
 from mlib.types import aInvalid
 from MFramework import Interaction, Message, Snowflake
 
-__all__ = ["Event", "EventBetween", "Cooldown", "Chance", "req_regex", "regex", "register", "shortcut", "any_role"]
+__all__ = ["Event", "EventBetween", "Cooldown", "Chance", "req_regex", "regex", "register", "shortcut", "any_role", "reaction"]
 
 def Event(*, month=None, day=None, hour=None, minute=None, year=None):
     '''Executes command only if it's during provided timeframe'''
@@ -70,7 +70,7 @@ def Chance(chance: float=0):
         return wrapped
     return inner
 
-from ._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts
+from ._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts, reactions
 from typing import List
 def req_regex(expression: str):
     '''Checks for Regular Expression in Message's content'''
@@ -156,4 +156,22 @@ def any_role(*required: Union[Snowflake, str]):
                     return f(ctx, *args, **kwargs)
             return aInvalid()
         return wrapped
+    return inner
+
+def reaction(reaction: str, group: Groups = Groups.GLOBAL, guild: Snowflake = None):
+    '''Makes command respond to reaction as a trigger
+
+    Params
+    ------
+    reaction:
+        Reaction which should trigger this function
+    group:
+        is a lowest group that can access this command (Highest digit). DM and Muted are special groups
+    guild: 
+        is used when command is exclusive to a specific guild
+    '''
+    def inner(f):
+        cmd = Command(f, False, None, group, guild)
+        reactions[reaction] = cmd
+        return f
     return inner
