@@ -19,7 +19,7 @@ async def presence_update(self: Bot, data: Presence_Update):
     if self.cache[data.guild_id].is_tracking(Flags.Presence):
         if (
             data.user.id in self.cache[data.guild_id].presence 
-            and (data.activities is [] 
+            and (len(data.activities) == 0 
                 or data.activities[0].name != self.cache[data.guild_id].presence[data.user.id][0])
         ):
             s = self.cache[data.guild_id].presence.pop(data.user.id)

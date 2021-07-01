@@ -87,6 +87,7 @@ class GuildCache:
         self.afk_channel = guild.afk_channel_id
         self.messages = Messages(r)
         self.cooldowns = Cooldowns(r)
+        self.presence = Presences()
         self.cooldown_values = {}
         self.last_messages = {}
         self.voice = {}

@@ -1,5 +1,5 @@
 from mdiscord import *
-from .base import RedisCache
+from .base import RedisCache, Cache
 from datetime import timedelta
 
 class Messages(RedisCache):
@@ -40,12 +40,13 @@ class Members(RedisCache):
     def size(self, guild_id):
         return self._redis.keys(self._combine(guild_id, '*'))
 
-class Presences(RedisCache):
+class Presences(Cache):
     _cls = tuple
     def _create_id(self, obj: Presence_Update) -> str:
         return self._combine(obj.user.id)
     def store(self, data: Presence_Update):
-        self._redis.add(data.user.id, (data.activities[0].name, data.activities[0].created_at, data.activities[0].application_id), expire_time=self._expire)
+        self[data.user.id] = (data.activities[0].name, data.activities[0].created_at, data.activities[0].application_id)
+        #self._redis.add(data.user.id, (data.activities[0].name, data.activities[0].created_at, data.activities[0].application_id), expire_time=self._expire)
 
 class Guilds(RedisCache):
     _cls: Guild = Guild
