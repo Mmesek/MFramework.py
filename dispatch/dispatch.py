@@ -38,6 +38,6 @@ async def presence_update(self: Bot, data: Presence_Update):
             await self.cache[data.guild_id].logging["stream"](data, stream)
     
     for presence_name, role in self.cache[data.guild_id].presence_roles.items():
-        if any(i.type == Activity_Types.GAME and i.name == presence_name for i in data.activities):
+        if any(i.type == Activity_Types.GAME.value and i.name == presence_name for i in data.activities):
             await self.add_guild_member_role(data.guild_id, data.user.id, role, "Presence Role")
             break
