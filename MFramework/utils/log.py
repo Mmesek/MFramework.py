@@ -348,3 +348,13 @@ class Message_Replay_QnA(Message):
             answer.setImage(url=msg.attachments[0].url)
 
         await self._log(None, embeds=[question, answer])
+
+class Stream(Log):
+    username = "Stream Log"
+    async def log(self, data: MFramework.types.Presence_Update, stream: MFramework.types.Activity):
+        if not hasattr(self, 'logged_streams'):
+            self.logged_streams = {}
+        if self.logged_streams.get(data.user.id) == stream.created_at:
+            return
+        self.logged_streams[data.user.id] = stream.created_at
+        await self._log(f"<@{data.user.id}> właśnie transmituje {stream.state} na [{stream.name}]({stream.url})!")

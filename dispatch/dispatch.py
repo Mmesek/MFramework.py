@@ -34,7 +34,7 @@ async def presence_update(self: Bot, data: Presence_Update):
             self.cache[data.guild_id].presence.store(data)
 
     for stream in filter(lambda x: x.type == Activity_Types.STREAMING, data.activities):
-        if stream.name in self.cache[data.guild_id].tracked_streams:
+        if stream.state in self.cache[data.guild_id].tracked_streams:
             await self.cache[data.guild_id].logging["stream"](data, stream)
     
     for presence_name, role in self.cache[data.guild_id].presence_roles.items():

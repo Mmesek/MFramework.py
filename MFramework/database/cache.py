@@ -281,7 +281,10 @@ class GuildCache:
         activitites = roles.filter(db.Role.settings.any(name=types.Setting.Presence)).all()
         for presence in activitites:
             self.presence_roles[presence.settings[types.Setting.Presence].str] = presence.id
-        
+
+    def get_tracked_streams(self, session):
+        self.tracked_streams = [i.name for i in db.Snippet.filter(session, server_id = self.guild_id, type = types.Snippet.Stream).all()]
+
     def get_role_groups(self, roles):
         permissions = roles.filter(db.Role.settings.any(name=types.Setting.Permissions)).all()
         for permission in permissions:
@@ -329,6 +332,7 @@ class GuildCache:
             self.get_Roles(s)
             self.get_Blacklisted_Words(s)
             self.get_Channels(s)
+            self.get_tracked_streams(s)
 
     def load_settings(self, guild):
         for setting, value in guild.settings.items():

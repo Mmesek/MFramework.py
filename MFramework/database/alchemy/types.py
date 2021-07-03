@@ -27,6 +27,7 @@ class Snippet(Enum):
     Blacklisted_Word = 17
     Whitelisted = 18
     Response_Reaction = 19
+    Stream = 20
 
 class Statistic(Enum):
     Chat = 0
@@ -86,6 +87,7 @@ class Setting(Enum):
     Should_Remove_Links = bool, 51
     Auto_Mute_Infractions = int, 52
     Auto_Ban_Infractions = int, 53
+    Stream = str, 60
 
 class Item(Enum):
     SYSTEM = 0 # Metadata Items
