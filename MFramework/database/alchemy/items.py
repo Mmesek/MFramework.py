@@ -1,4 +1,3 @@
-from .modern_alchemy import Base
 from sqlalchemy import Column, Integer, ForeignKey, Enum, Float, UnicodeText, TIMESTAMP, String
 from sqlalchemy.orm import relationship
 from . import types

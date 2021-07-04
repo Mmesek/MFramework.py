@@ -1,5 +1,4 @@
 from sqlalchemy.orm import relationship
-from .modern_alchemy import Base
 from sqlalchemy import Column, String, Integer, Boolean, UnicodeText
 from .mixins import *
 
