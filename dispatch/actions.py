@@ -95,7 +95,8 @@ async def deduplicate_messages(self: Bot, data: Message) -> bool:
         _last_message[0].referenced_message == data.referenced_message
         ):
         if len(_last_message) >= self.cache[data.guild_id].allowed_duplicated_messages:
-            await self.delete_message(data.channel_id, data.id)
+            log.debug('Deleting Message "%s" because of being duplicate', data.content)
+            await data.delete(reason="Duplicate Message")
             return True
     else:
         self.cache[data.guild_id].last_messages[data.channel_id] = []
@@ -111,7 +112,8 @@ async def remove_links(self: Bot, data: Message) -> bool:
     if len(data.member.roles) > 0 and any(self.cache[data.guild_id].roles.get(i, Role()).color for i in data.member.roles):
         return False
     if URL_PATTERN.search(data.content):
-        await data.delete()
+        log.debug('Deleting Message "%s" because of matching URL filter', data.content)
+        await data.delete(reason="URL and user doesn't have colored Roles")
         return True
 
 REPLACE_NOT_APLABETIC = re.compile(r'[^a-zA-Z ]')
@@ -120,7 +122,8 @@ async def blocked_words(self: Bot, data: Message) -> bool:
     BLACKLISTED_WORDS = self.cache[data.guild_id].blacklisted_words #re.compile(r"") #TODO: Source cached from Database!
     if BLACKLISTED_WORDS:
         if BLACKLISTED_WORDS.search(REPLACE_NOT_APLABETIC.sub('', data.content)):
-            await data.delete()
+            log.debug('Deleting Message "%s" because of matching blocked words filter', data.content)
+            await data.delete(reason="Blocked Words")
             return True
 
 ACTION = re.compile(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))")
