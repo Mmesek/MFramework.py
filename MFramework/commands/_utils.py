@@ -94,19 +94,19 @@ def parse_signature(f, docstring):
         arg = Argument(
             default = sig[parameter].default,
             type = sig[parameter].annotation,
-            help = docstring.get(sig[parameter].name, 'MISSING DOCSTRING'),
+            help = docstring.get(sig[parameter].name, 'MISSING DOCSTRING').strip(),
             choices = docstring.get('choices').get(sig[parameter].name, []
                 if not issubclass(sig[parameter].annotation, enum.Enum) 
                 else {k.name: k.value for k in sig[parameter].annotation}),
             kind = sig[parameter].kind.name,
-            name = sig[parameter].name
+            name = sig[parameter].name.strip()
             )
         parameters[sig[parameter].name] = arg
     return parameters
 
 def parse_docstring(f):
     docstring = {
-        '_doc':f.__doc__.strip().split('Params',1)[0] if f.__doc__ else 'MISSING DOCSTRING',
+        '_doc':f.__doc__.strip().split('Params',1)[0].strip() if f.__doc__ else 'MISSING DOCSTRING',
         'choices':{}
     }
     doc = f.__doc__.split('Params',1) if f.__doc__ else ['']
@@ -126,7 +126,7 @@ def parse_docstring(f):
             elif param[-1] == ':':
                 _params.append((param.strip(':'),params[x+1]))
     for param in _params:
-        docstring[param[0]] = param[1]
+        docstring[param[0]] = param[1].strip()
     return docstring
 
 _types = {
@@ -156,18 +156,18 @@ def parse_arguments(_command: Command) -> list:
         _i = _command.arguments[i]
         choices = []
         for choice in _i.choices:
-            choices.append(Application_Command_Option_Choice(name=choice, value=_i.choices[choice]))
+            choices.append(Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice]))
 
         options.append(Application_Command_Option(
             type=_types.get(_i.type,
                 Application_Command_Option_Type.INTEGER if issubclass(_i.type, int) else 
                 Application_Command_Option_Type.STRING).value,
-            name=i, description=_i.help[:100], required=True if _i.default is Signature.empty else False, choices=choices, options=[]
+            name=i.strip(), description=_i.help[:100].strip(), required=True if _i.default is Signature.empty else False, choices=choices, options=[]
         ))
     for i in _command.sub_commands:
         options.append(Application_Command_Option(
             type= Application_Command_Option_Type.SUB_COMMAND if i.sub_commands == [] else Application_Command_Option_Type.SUB_COMMAND_GROUP,
-            name=i.name, description=i.help[:100], options=parse_arguments(i), choices=[]
+            name=i.name.strip(), description=i.help[:100].strip(), options=parse_arguments(i), choices=[]
         ))
     return options
 
@@ -263,7 +263,7 @@ def set_kwargs(ctx, f, args) -> Dict[str, Any]:
     # NOTE: Argument doesn't support any form of List. Neither it supports -flags or specifying keyword arguments at all  
     kwargs = {}
     for x, option in enumerate(f.arguments.values()):
-        if x > len(args):
+        if x >= len(args):
             break
         t = option.type
         if option.kind == "VAR_POSITIONAL":
