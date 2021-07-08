@@ -2,14 +2,14 @@ from MFramework import register, Groups, Context, Interaction, Embed
 import time
 
 @register(group=Groups.GLOBAL, guild=463433273620824104)
-async def bot(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+async def bot(ctx: Context, *args, language, **kwargs):
     '''
     Shows Information about bot
     '''
     pass
 
 @register(group=Groups.GLOBAL, main=bot)
-async def ping(ctx: Context, interaction: Interaction, detailed: bool=False, *args, language, **kwargs):
+async def ping(ctx: Context, detailed: bool=False, *args, language, **kwargs):
     '''
     Shows ping
     Params
@@ -18,7 +18,7 @@ async def ping(ctx: Context, interaction: Interaction, detailed: bool=False, *ar
         Whether it should show extended ping information
     '''
     s = time.time()
-    await interaction.deferred_message(False)
+    await ctx.deferred(False)
     end = time.time()
     e = None
     if detailed:
@@ -30,7 +30,7 @@ async def ping(ctx: Context, interaction: Interaction, detailed: bool=False, *ar
         if ctx.bot.latency != None:
             e.addField("Heartbeat", "{0:.2f}ms".format(ctx.bot.latency), True)
         e = [e]
-    await interaction.edit_response(f"Pong! `{int((end-s)*1000)}ms`", e)
+    await ctx.reply(f"Pong! `{int((end-s)*1000)}ms`", e)
 
 def ping(host='discord.com'):
     import platform, os
@@ -52,7 +52,7 @@ def ping(host='discord.com'):
     return ping.lstrip().strip('\n')
 
 @register(group=Groups.GLOBAL, main=bot)
-async def status(ctx: Context, interaction: Interaction, show_ping: bool=False, *args, language="en", **kwargs):
+async def status(ctx: Context, show_ping: bool=False, *args, language="en", **kwargs):
     '''
     Shows statistics related to bot and system
     Params
@@ -60,7 +60,7 @@ async def status(ctx: Context, interaction: Interaction, show_ping: bool=False, 
     show_ping:
         whether it should show ping or not
     '''
-    await interaction.deferred_message(False)
+    await ctx.deferred(False)
     from mlib.sizes import getsize, bytes2human, convert_bytes, file_size
     from mlib.localization import secondsToText
     import psutil, asyncio
@@ -142,14 +142,14 @@ async def status(ctx: Context, interaction: Interaction, show_ping: bool=False, 
     r = await ctx.bot.get_gateway_bot()
     embed.addField("Remaining sessions", r.get('session_start_limit', {}).get('remaining', -1))
     embed.setColor(ctx.cache.color)
-    await interaction.edit_response(embeds=[embed])
+    await ctx.reply(embeds=[embed])
 
 @register(group=Groups.GLOBAL, main=bot)
-async def version(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+async def version(ctx: Context, *args, language, **kwargs):
     '''
     Shows bot's version
     '''
-    await interaction.deferred_message(False)
+    await ctx.deferred(False)
     import platform
     system = platform.system()
     release = platform.release()
@@ -192,10 +192,10 @@ async def version(ctx: Context, interaction: Interaction, *args, language, **kwa
     )
     embed.setTimestamp(ver_date).setFooter("Last Commit")
     embed.setColor(ctx.cache.color).setDescription(desc)
-    await interaction.edit_response(embeds=[embed])
+    await ctx.reply(embeds=[embed])
 
 @register(group=Groups.GLOBAL, main=bot)
-async def stats(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+async def stats(ctx: Context, *args, language, **kwargs):
     '''
     Shows received events & registered commands
     '''
@@ -214,4 +214,25 @@ async def stats(ctx: Context, interaction: Interaction, *args, language, **kwarg
 
     e.addField("Events Received", msg, True)
     e.addField("Registered Commands", cmds, True)
-    await interaction.send(embeds=[e])
+    await ctx.send(embeds=[e])
+
+@register(group=Groups.GLOBAL, main=bot)
+async def support(ctx: Context, *args, language, **kwargs):
+    '''
+    Shows information about bot's support
+    '''
+    pass
+
+@register(group=Groups.GLOBAL, main=bot)
+async def donate(ctx: Context, *args, language, **kwargs):
+    '''
+    Shows information about donating to bot Development
+    '''
+    pass
+
+@register(group=Groups.GLOBAL, main=bot)
+async def credits(ctx: Context, *args, language, **kwargs):
+    '''
+    Shows credits and what was used to make bot
+    '''
+    pass

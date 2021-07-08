@@ -3,12 +3,12 @@ from random import SystemRandom
 random = SystemRandom()
 
 @register()
-async def roll(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+async def roll(ctx: Context, *args, language, **kwargs):
     '''Random Numbers'''
     pass
 
 @register(group=Groups.GLOBAL, main=roll)
-async def chance(ctx: Context, interaction: Interaction, statement: str, *args, language, **kwargs):
+async def chance(ctx: Context, statement: str, *args, language, **kwargs):
     '''Rolls a percentage chance
     Params
     ------
@@ -17,10 +17,10 @@ async def chance(ctx: Context, interaction: Interaction, statement: str, *args, 
     '''
     from random import seed, randint
     seed(statement)
-    await interaction.send(f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}")
+    await ctx.reply(f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}")
 
 @register(group=Groups.GLOBAL, main=roll)
-async def dice(ctx: Context, interaction: Interaction, number: int=20, times: int=1, *args, language, **kwargs):
+async def dice(ctx: Context, number: int=20, times: int=1, *args, language, **kwargs):
     '''Rolls a die
     Params
     ------
@@ -29,10 +29,10 @@ async def dice(ctx: Context, interaction: Interaction, number: int=20, times: in
     times:
         How many dices should be rolled
     '''
-    await interaction.send(', '.join([str(number) + ": " + str(random.randrange(int(number)) + 1) for i in range(times)]))
+    await ctx.reply(', '.join([str(number) + ": " + str(random.randrange(int(number)) + 1) for i in range(times)]))
 
 @register(group=Groups.GLOBAL, main=roll)
-async def ball(ctx: Context, interaction: Interaction, question: str = None, *args, language, **kwargs):
+async def ball(ctx: Context, question: str = None, *args, language, **kwargs):
     '''
     Asks 8 ball a question
     Params
@@ -40,7 +40,7 @@ async def ball(ctx: Context, interaction: Interaction, question: str = None, *ar
     question:
         Question you seek answer to
     '''
-    await interaction.deferred_message(False)
+    await ctx.deferred(False)
     conclusive = {
         "positive": ["Yes", "Yep", "Yup", "Yeah", "Sure", "Of course", "Indeed", "'course", "Excellent", "Possible", "Likely", "Ok", "I think so"],
         "negative": ["No", "Nope", "Unlikely", "No idea", "I don't think so"],
@@ -103,7 +103,7 @@ async def ball(ctx: Context, interaction: Interaction, question: str = None, *ar
             answer += random.choice(interpuntions).strip(',')
     else:
         answer = random.choice(answers)
-    await interaction.edit_response(answer)
+    await ctx.reply(answer)
 
 from enum import Enum
 class Moves(Enum):
@@ -112,7 +112,7 @@ class Moves(Enum):
     ROCK = 'Scissors'
 
 @register(group=Groups.GLOBAL, main=roll)
-async def rps(ctx: Context, interaction: Interaction, move: Moves, *args, language, **kwargs):
+async def rps(ctx: Context, move: Moves, *args, language, **kwargs):
     '''
     Plays Rock Paper Scissors!
     Params
@@ -127,9 +127,9 @@ async def rps(ctx: Context, interaction: Interaction, move: Moves, *args, langua
         result = 'You **lost**'
     else:
         result = 'You **won**'
-    await interaction.send(content=f"{ctx.bot.username} plays **{bot_move.name.title()}** against {ctx.user.username}'s **{move.name.title()}**. {result}!")
+    await ctx.reply(content=f"{ctx.bot.username} plays **{bot_move.name.title()}** against {ctx.user.username}'s **{move.name.title()}**. {result}!")
 
 @register(group=Groups.GLOBAL, main=roll)
-async def coin(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+async def coin(ctx: Context, *args, language, **kwargs):
     '''Flips coin'''
-    await interaction.send(content=f"{'Heads' if random.randint(0, 1) else 'Tails'}")
+    await ctx.reply(content=f"{'Heads' if random.randint(0, 1) else 'Tails'}")

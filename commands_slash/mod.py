@@ -2,7 +2,7 @@ from MFramework import register, Groups, Context, Interaction, ChannelID, Snowfl
 
 
 @register(group=Groups.MODERATOR)
-async def dm(ctx: Context, interaction: Interaction, user: UserID, message: str, *args, language, **kwargs):
+async def dm(ctx: Context, user: UserID, message: str, *args, language, **kwargs):
     '''
     DMs user with specified message
     Params
@@ -15,12 +15,12 @@ async def dm(ctx: Context, interaction: Interaction, user: UserID, message: str,
     try:
         dm = await ctx.bot.create_dm(user)
         msg = await ctx.bot.create_message(dm.id, message)
-        await interaction.respond_private(f"Message sent.\nChannelID: {dm.id}\nMessageID: {msg.id}")
+        await ctx.reply(f"Message sent.\nChannelID: {dm.id}\nMessageID: {msg.id}", private=True)
     except:
-        await interaction.respond_private("Couldn't Deliver message to specified user.")
+        await ctx.reply("Couldn't Deliver message to specified user.", private=True)
 
 @register(group=Groups.MODERATOR)
-async def say(ctx: Context, interaction: Interaction, message: str, channel: ChannelID=None, *args, language, **kwargs):
+async def say(ctx: Context, message: str, channel: ChannelID=None, *args, language, **kwargs):
     '''
     Sends message as a bot
     Params
@@ -31,10 +31,10 @@ async def say(ctx: Context, interaction: Interaction, message: str, channel: Cha
         Channel to which message should be send
     '''
     msg = await ctx.bot.create_message(channel, message)
-    await interaction.respond_private(f"Message sent.\nChannelID: {msg.channel_id}\nMessageID: {msg.id}")
+    await ctx.reply(f"Message sent.\nChannelID: {msg.channel_id}\nMessageID: {msg.id}", private=True)
 
 @register(group=Groups.MODERATOR)
-async def react(ctx: Context, interaction: Interaction, reaction: str, message_id: Snowflake, channel: ChannelID=None, *args, language, **kwargs):
+async def react(ctx: Context, reaction: str, message_id: Snowflake, channel: ChannelID=None, *args, language, **kwargs):
     '''
     Reacts to a message as a bot
     Params
@@ -48,10 +48,10 @@ async def react(ctx: Context, interaction: Interaction, reaction: str, message_i
     '''
     for each in reaction.split(','):
         await ctx.bot.create_reaction(channel, message_id, each.replace("<:", "").replace(">", "").strip())
-    await interaction.respond_private("Reacted")
+    await ctx.reply("Reacted", private=True)
 
 @register(group=Groups.ADMIN)
-async def slowmode(ctx: Context, interaction: Interaction, limit:int=0, duration: int=0, channel: ChannelID=None, all: bool=False, *args, language, **kwargs):
+async def slowmode(ctx: Context, limit:int=0, duration: int=0, channel: ChannelID=None, all: bool=False, *args, language, **kwargs):
     '''
     Sets a slowmode on a channel
     Params
@@ -67,7 +67,7 @@ async def slowmode(ctx: Context, interaction: Interaction, limit:int=0, duration
     '''
     channels = {}
     d = int(duration)
-    await interaction.respond_private(f"Applying Slowmode in progress...")
+    m = await ctx.reply(f"Applying Slowmode in progress...")
     if all:
         for channel in ctx.cache.channels.values():
             if channel.type == 0:
@@ -79,20 +79,19 @@ async def slowmode(ctx: Context, interaction: Interaction, limit:int=0, duration
     else:
         channels[channel] = ctx.cache.channels.get(channel, Channel).rate_limit_per_user
         await ctx.bot.modify_channel(channel, rate_limit_per_user=limit, reason="Slow mode command")
-    await interaction.edit_response(f"{'Server wide ' if all else ''}Slow mode activiated")
+    await m.edit(f"{'Server wide ' if all else ''}Slow mode activiated")
     if d > 0:
         import asyncio
         await asyncio.sleep(d)
-        for channel in channels.values():
+        for channel, previous_limit in channels.items():
             try:
-                previous_limit = channels[channel]
                 await ctx.bot.modify_channel(channel, rate_limit_per_user=previous_limit, reason="Slow mode expired")
-            except:
+            except Exception as ex:
                 pass
-        await interaction.edit_response(f"{'Server wide ' if all else ''}Slow mode finished")
+        await ctx.reply(f"{'Server wide ' if all else ''}Slow mode finished")
 
 @register(group=Groups.ADMIN)
-async def lockdown(ctx: Context, interaction: Interaction, duration: int=0, channel: ChannelID=None, all: bool=False, *args, language, **kwargs):
+async def lockdown(ctx: Context, duration: int=0, channel: ChannelID=None, all: bool=False, *args, language, **kwargs):
     '''
     Sets a lockdown on a channel
     Params
@@ -107,7 +106,7 @@ async def lockdown(ctx: Context, interaction: Interaction, duration: int=0, chan
     channels = {}
     d = int(duration)
     lockdown = Bitwise_Permission_Flags.SEND_MESSAGES.value | Bitwise_Permission_Flags.ADD_REACTIONS.value
-    await interaction.respond_private(f"Applying Lockdown in progress...")
+    m = await ctx.reply(f"Applying Lockdown in progress...")
     if all:
         for channel in ctx.cache.channels.values():
             channels[channel.id] = channel.permission_overwrites
@@ -116,20 +115,20 @@ async def lockdown(ctx: Context, interaction: Interaction, duration: int=0, chan
                 channel_overwrites.append(Overwrite(id=overwrite.id, type=overwrite.type, allow=overwrite.allow, deny=overwrite.deny | lockdown))
             await ctx.bot.modify_channel(channel.id, permission_overwrites=channel_overwrites, reason="Global Lockdown command")
     else:
-        channel = ctx.bot.cache[interaction.guild_id].channels.get(channel, Channel).permission_overwrites
+        channel = ctx.bot.cache[ctx.guild_id].channels.get(channel, Channel).permission_overwrites
         channels[channel] = channel
         channel_overwrites = []
         for overwrite in channel:
             channel_overwrites.append(Overwrite(id=overwrite.id, type=overwrite.type, allow=overwrite.allow, deny=int(overwrite.deny) | lockdown))
         await ctx.bot.modify_channel(channel, permission_overwrites=channel_overwrites, reason="Lockdown command")
-    await interaction.edit_response(f"{'Server wide ' if all else ''}Lockdown activiated")
+    await m.edit(f"{'Server wide ' if all else ''}Lockdown activiated")
     if d > 0:
         import asyncio
         await asyncio.sleep(d)
         for channel in channels:
             previous_overwrites = channels[channel]
             await ctx.bot.modify_channel(channel, permission_overwrites=previous_overwrites, reason="Lockdown expired")
-        await interaction.edit_response(f"{'Server wide ' if all else ''}Lockdown finished")
+        await ctx.reply(f"{'Server wide ' if all else ''}Lockdown finished")
 
 @register(group=Groups.ADMIN)
 async def listmembers(ctx: Context, interaction: Interaction, role: Role, force_update: bool=False, *args, language, **kwargs):
@@ -142,7 +141,7 @@ async def listmembers(ctx: Context, interaction: Interaction, role: Role, force_
     force_update:
         Whether new users should be pulled before counting (Delays response by around 30 seconds)
     '''
-    await interaction.deferred_message(private=False)
+    await ctx.deferred(private=False)
     if force_update:
         await ctx.bot.request_guild_members(interaction.guild_id)
         import asyncio
@@ -155,4 +154,4 @@ async def listmembers(ctx: Context, interaction: Interaction, role: Role, force_
     embed = Embed().setDescription(''.join([f'<@{i}>' for i in total])).setFooter(f'Total users/members: {len(total)}/{len(ctx.cache.members)}')
     embed.setColor(role.color).setTitle(f'List of members with role {role.name}')
     #await interaction.edit_response(embeds=[embed])
-    await interaction.reply(embeds=[embed])
+    await ctx.reply(embeds=[embed])

@@ -43,7 +43,7 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
         await msg.publish()
 
 @register(group=Groups.MODERATOR, interaction=False)
-async def bookmark(ctx: Context, *title: str, message: Message, language, **kwargs):
+async def bookmark(ctx: Context, *title: str, language, **kwargs):
     '''
     Bookmark a moment in chat to save in your DMs for easy navigation
     Params
@@ -51,12 +51,11 @@ async def bookmark(ctx: Context, *title: str, message: Message, language, **kwar
     title:
         title of the bookmark
     '''
-    dm = await ctx.bot.create_dm(ctx.user_id)
-    title = title[0] or "Your bookmark"
-    await ctx.bot.create_message(dm.id, title+': \n'+Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.message_id))
+    title = title[0] if len(title) else "Your bookmark"
+    await ctx.send_dm(content=title+': \n'+Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.message_id))
 
 @register(group=Groups.GLOBAL, guild=340185368655560704)
-async def loadout(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+async def loadout(ctx: Context, *args, language, **kwargs):
     '''
     Losuje ekwipunek
     '''
@@ -156,4 +155,4 @@ async def loadout(ctx: Context, interaction: Interaction, *args, language, **kwa
     for k, v in r.items():
         embed.addField(tr("commands.loadout."+k, language='pl'), v, True)
 
-    await interaction.send(None, [embed])
+    await ctx.reply(None, [embed])
