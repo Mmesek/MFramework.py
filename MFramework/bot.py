@@ -34,12 +34,12 @@ class Bot(Client):
 
 from typing import Union
 from MFramework.database.cache import GuildCache
-class Context:
+class Context(Sendable):
     '''This is meant as an unified context object used for universal 
     commands that can be issued as both a message or an interaction'''
     cache: GuildCache = GuildCache
     db: Database
-    bot: Bot = Bot
+    bot: Bot
     data: Union[Message, Interaction]
     
     guild_id: Snowflake
@@ -50,7 +50,12 @@ class Context:
     user_id: Snowflake
     user: User
     member: Guild_Member
+
+    direct_message: Snowflake
     language: str
+
+    is_message: bool
+    is_interaction: bool
 
     def __init__(self, cache: Cache, bot: Bot, data: Union[Message, Interaction]):
         self.cache = cache[data.guild_id]
@@ -82,6 +87,9 @@ class Context:
         self.language = self.cache.language
         self.direct_message = cache[0].get(self.user_id, None)
         self.webhook = None
+        self._deferred = False
+        self._replied = False
+        self._followup_id = None
 
     @property
     def permission_group(self):
@@ -95,23 +103,36 @@ class Context:
     @property
     def is_dm(self):
         return not self.guild_id
-    async def send(self, content: str=None, embeds: List[Embed]=None, *, file: bytes = None, filename: str="file.txt", allowed_mentions: Allowed_Mentions = Allowed_Mentions(parse=[]), reply=True, private=False, webhook=False, username=None, avatar_url=None) -> Union[Message, None]:
-        if not private and webhook:
-            return await self.bot.execute_webhook(self.webhook_id, self.webhook_token, content=content, embeds=embeds, username=username, avatar_url=avatar_url, allowed_mentions=allowed_mentions)
-        if self.is_interaction:
-            if not private:
-                return await self.data.send(content, embeds, allowed_mentions=allowed_mentions)
-            return await self.data.respond_private(content, embeds)
-        if not private:
-            if reply:
-                return await self.data.reply(content, embeds[0], file, filename, allowed_mentions=allowed_mentions)
-            return await self.data.send(content, embeds[0], file, filename, allowed_mentions)
-        if not self.direct_message:
-            dm = await self.bot.create_dm(self.user_id)
-            self.direct_message = dm.id
-        return await self.bot.create_message(channel_id=self.direct_message, content=content, embed=embeds[0], file=file, filename=filename, allowed_mentions=allowed_mentions)
-    async def edit(self, content: str=None, embeds: List[Embed]=None, message_id=None, channel_id=None, allowed_mentions: Allowed_Mentions = Allowed_Mentions(parse=[])):
-        if self.is_interaction:
-            return await self.data.edit_response(content, embeds, allowed_mentions)
-        return await self.bot.edit_message(channel_id or self.channel_id, message_id, content, embeds[0], allowed_mentions=allowed_mentions)
     
+    async def get_dm(self, user_id: Snowflake = None):
+        if not user_id or user_id == self.user_id:
+            if not self.direct_message:
+                dm = await self.bot.create_dm(self.user_id)
+                self.direct_message = dm.id
+            return self.direct_message
+        dm = await self.bot.create_dm(user_id)
+        return dm.id
+    
+    async def send_dm(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, message_reference: Message_Reference=None, reply: bool=None) -> Message:
+        if self.is_message:
+            return await self.send(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, reply=reply, channel_id=await self.get_dm())
+
+    async def reply(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, message_reference: Message_Reference=None, private: bool=None) -> Message:
+        return await self.data.reply(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, private=private)
+
+    async def send(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, message_reference: Message_Reference=None, reply: bool=None, private: bool=None, channel_id: Snowflake =None) -> Message:
+        if private and self.is_message:
+            channel_id = await self.get_dm()
+        return await self.data.send(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, reply=reply, private=private, channel_id=channel_id)
+
+    async def edit(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, attachments: List[Attachment]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, flags: Message_Flags=None) -> Message:
+        return await self.data.edit(content=content, embeds=embeds, components=components, attachments=attachments, file=file, filename=filename, allowed_mentions=allowed_mentions, flags=flags)
+
+    async def delete(self, message_id: Snowflake=None, reason: str = None) -> None:
+        return await self.data.delete(message_id=message_id, reason=reason)
+
+    async def deferred(self, private: bool=False):
+        '''Shows loading state when executed on Interaction or typing when executed on Message'''
+        if self.is_message:
+            return await self.data.typing(await self.get_dm() if private else None, private)
+        return await self.data.deferred(private)
