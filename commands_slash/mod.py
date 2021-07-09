@@ -155,3 +155,32 @@ async def listmembers(ctx: Context, interaction: Interaction, role: Role, force_
     embed.setColor(role.color).setTitle(f'List of members with role {role.name}')
     #await interaction.edit_response(embeds=[embed])
     await ctx.reply(embeds=[embed])
+
+@register(group=Groups.MODERATOR, interaction=False)
+async def creationdate(ctx: Context, *snowflake: Snowflake, **kwargs):
+    '''
+    Shows creation date based on provided snowflakes
+    Params
+    ------
+    snowflake:
+        List of Snowflakes to show creation date for
+    '''
+    from MFramework import Embed
+    import time
+    embed = Embed()
+    for flake in snowflake[0]:
+        if not flake.isdigit():
+            await ctx.reply(f"Snowflake {flake} has to be digits")
+            continue
+        r = [f"<@{flake}>", "On Discord since: {}".format(Snowflake(flake).styled_date())]
+        try:
+            member = await ctx.bot.get_guild_member(ctx.guild_id, flake)
+            r.append("Joined Server at: <t:{}>".format(int(time.mktime(member.joined_at.timetuple()))))
+            try:
+                r.append("Booster since: <t:{}>".format(int(time.mktime(member.premium_since.timetuple()))))
+            except:
+                pass
+        except:
+            pass
+        embed.addField(f"{flake}",'\n'.join(r))
+    await ctx.reply(embeds=[embed])
