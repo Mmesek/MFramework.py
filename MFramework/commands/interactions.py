@@ -1,4 +1,4 @@
-from MFramework import (onDispatch, Ready,
+from MFramework import (onDispatch, Ready, Interaction_Type,
     RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake,
     Interaction, Guild, Application_Command,
     Context, Bot, Groups, log)
@@ -8,6 +8,8 @@ from ._utils import is_nested, iterate_commands, set_default_arguments, commands
 @onDispatch
 async def interaction_create(client: Bot, interaction: Interaction):
     '''Called after receiving event INTERACTION_CREATE from Discord'''
+    if interaction.type != Interaction_Type.APPLICATION_COMMAND:
+        return
     ctx = Context(client.cache, client, interaction)
     name = interaction.data.name
     f = commands.get(name, None)
@@ -38,7 +40,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
     await f.func(ctx=ctx, client=client, interaction=interaction, language='en', group=g, **kwargs)
 
 from mlib import arguments
-CLEAR_INTERACTIONS = arguments.parse().clear_interactions
+CLEAR_INTERACTIONS = getattr(arguments.parse(), 'clear_interactions', False)
 
 
 @onDispatch
