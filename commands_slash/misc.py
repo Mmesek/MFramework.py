@@ -2,23 +2,22 @@ import datetime
 import json
 import random
 import re
-from os import path
-
 import requests
+from os import path
 from bs4 import BeautifulSoup
 
-import MFramework.utils.sun as sun
-from MFramework.commands import register
-from MFramework.utils.utils import Embed
+from MFramework import register, Context, Groups, Embed
 
-from MFramework.utils.utils import tr
-@register(help="Rolls Random Number")
-async def rd(self, number=20, *args, data, **kwargs):
-    await self.message(data.channel_id, str(number) + ": " + str(random.SystemRandom().randrange(int(number)) + 1))
+from mlib.localization import tr
 
+@register(interaction=False)
+async def rd(ctx: Context, number=20, *args, **kwargs):
+    '''Rolls Random Number'''
+    await ctx.reply(str(number) + ": " + str(random.SystemRandom().randrange(int(number)) + 1))
 
-@register(group="Global", help="Sends random quote", alias="", category="")
-async def randomquote(self, *args, data, **kwargs):
+@register(group=Groups.GLOBAL, interaction=False)
+async def randomquote(ctx: Context, *args, **kwargs):
+    '''Sends random quote'''
     if not path.isfile("data/quotes.json"):
         raw = requests.get("https://raw.githubusercontent.com/dwyl/quotes/master/quotes.json")
         with open("data/quotes.json", "wb") as file:
@@ -26,7 +25,7 @@ async def randomquote(self, *args, data, **kwargs):
     with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
         q = json.load(file)
     r = random.SystemRandom().randrange(len(q))
-    await self.message(data.channel_id, '_'+q[r]["text"] + "_\n    ~" + q[r]["author"])
+    await ctx.reply('_'+q[r]["text"] + "_\n    ~" + q[r]["author"])
 
 
 def load_words():
@@ -35,15 +34,17 @@ def load_words():
     return valid_words
 
 
-@register(group="Global", help="Assembles english words from provided letters/solves anagrams", alias="", category="", notImpl=True)
-async def anagram(self, *args, data, **kwargs):
+@register(group=Groups.GLOBAL, interaction=False, notImpl=True)
+async def anagram(ctx: Context, *args, **kwargs):
+    '''Assembles english words from provided letters/solves anagrams'''
     words = load_words()
 
-    await self.message(data.channel_id, words[0])
+    await ctx.reply(words[0])
 
 
-@register(group="Global", help="Checks if provided word exists. Use * as wildcard character", alias="", category="")
-async def word(self, word, letter_count, *args, data, **kwargs):
+@register(group=Groups.GLOBAL, interaction=False)
+async def word(ctx: Context, word, letter_count, *args, **kwargs):
+    '''Checks if provided word exists. Use * as wildcard character'''
     dig = int(letter_count)
     m = word.replace("*", "(.+?)")
     reg = re.compile(r"(?i)" + m)
@@ -64,11 +65,11 @@ async def word(self, word, letter_count, *args, data, **kwargs):
             field = word
     if field != '':
         embed.addField('\u200b', field)
-    await self.embed(data.channel_id, '', embed.embed)
+    await ctx.reply(embeds=[embed])
 
 
-@register(group="System", notImpl=True)
-async def how(self, *query, data, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False)
+async def how(ctx: Context, *query, **kwargs):
     query = "".join(query).replace(" ", "+")
     language = "en"
     limit = 4
@@ -80,7 +81,7 @@ async def how(self, *query, data, **kwargs):
     if resp.status_code == 200:
         soup = BeautifulSoup(resp.content, "html.parser")
     else:
-        return await self.message(data.channel_id, "Error")
+        return await ctx.reply("Error")
     for x, g in enumerate(soup.find_all("div", class_="r")):
         anchors = g.find_all("a")
         if anchors:
@@ -97,12 +98,13 @@ async def how(self, *query, data, **kwargs):
         embed.addField(result["title"], f"[Link]({result['link']})\n{result['description'][:900]}")
         if x == limit:
             break
-    await self.embed(data.channel_id, "", embed.embed)
+    await ctx.reply([embed])
 
 
-@register(group="System", help="Summary of what is today")
-async def today(self, *difference, data, language, **kwargs):
-    s = sun.sun(lat=51.15, long=22.34)
+@register(group=Groups.SYSTEM, interaction=False)
+async def today(ctx: Context, *difference,language, **kwargs):
+    '''Summary of what is today'''
+    #s = sun.sun(lat=51.15, long=22.34)
     today = datetime.datetime.now()
     d = ""
     if difference != ():
@@ -124,7 +126,7 @@ async def today(self, *difference, data, language, **kwargs):
     if r.status_code == 200:
         soup = BeautifulSoup(r.content, "html.parser")
     else:
-        return await self.message(data.channel_id, "Error")
+        return await ctx.reply(ctx.channel_id, "Error")
     f = ""
     for p in soup.find_all("h3", class_="card__title heading"):
         if "Week" in p.text or "Month" in p.text:
@@ -138,7 +140,7 @@ async def today(self, *difference, data, language, **kwargs):
     with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
         q = json.load(file)
     quote = random.choice(q)
-    embed.addField(tr("commands.today.sun", language), tr("commands.today.sunStates", language, rise=s.sunrise(t), noon=s.solarnoon(t), set=s.sunset(t)), True)
+    #embed.addField(tr("commands.today.sun", language), tr("commands.today.sunStates", language, rise=s.sunrise(t), noon=s.solarnoon(t), set=s.sunset(t)), True)
     # embed.addField('Moon', f"Rise:\nIllumination:\nSet:", True)
     # embed.addField("Lunar Phase", f"", True)
     color = random.randint(0, 16777215)
@@ -154,7 +156,7 @@ async def today(self, *difference, data, language, **kwargs):
     if r.status_code == 200:
         soup = BeautifulSoup(r.content, "html.parser").find('div',class_='daty-premier-2017')
     else:
-        return await self.message(data.channel_id, "Error")
+        return await ctx.reply("Error")
     games = ''
     for release in soup.find_all('a', class_='box'):
         lines = release.find_all('div')
@@ -178,7 +180,7 @@ async def today(self, *difference, data, language, **kwargs):
     if r.status_code == 200:
         soup = BeautifulSoup(r.content, "html.parser").find('div',class_='jsx-3629687597 four-grid')
     else:
-        return await self.message(data.channel_id, "Error")
+        return await ctx.reply("Error")
     movies = ''
     if soup is not None:
         for movie in soup.find_all('a', class_='card-link'):
@@ -195,7 +197,7 @@ async def today(self, *difference, data, language, **kwargs):
     # embed.addField("New on Spotify", f"", True)
     # embed.addField("Song for today", f"", True)
     embed.addField(tr("commands.today.quote", language), quote["text"] + "\n- " + quote["author"])
-    await self.embed(data.channel_id, "", embed.embed)
+    await ctx.reply(embeds=[embed])
 
 async def getLink(url):
     r = requests.get(
@@ -215,19 +217,20 @@ async def getChords(self):
         for img in i.find_all('img'):
             self.chords[img['alt']] = 'https:' + img['src']
 
-@register(group='Global', help='Sends Diagram of provided Chord for instrument', notImpl=True)
-async def chord(self, instrument='guitar', *chord, data, **kwargs):
-    if not hasattr(self, 'chords'):
-        await getChords(self)
+@register(group=Groups.GLOBAL, interaction=False)
+async def chord(ctx: Context, instrument='guitar', *chord, **kwargs):
+    '''Sends Diagram of provided Chord for instrument'''
+    if not hasattr(ctx.bot, 'chords'):
+        await getChords(ctx.bot)
     t = ':('
     l = ''
     chord = ' '.join(chord)
-    for chord_ in self.chords.keys():
+    for chord_ in ctx.bot.chords.keys():
         if chord in chord_:
             t = chord_
-            l = self.chords[chord_]
+            l = ctx.bot.chords[chord_]
     embed = Embed().setTitle(t).setImage(l)
-    await self.embed(data.channel_id, "", embed.embed)
+    await ctx.reply(embeds=[embed])
 
 async def azlyrics(artist, song):
     #song1 = song.split(' - ',1)
@@ -322,37 +325,39 @@ async def glyrics(artist, song):
         return '404'
     return embed
 
-@register(group='Global', help='Sends Lyrics for provided song')
-async def lyrics(self, artist, song, *args, data, **kwargs):
+@register(group=Groups.GLOBAL, interaction=False)
+async def lyrics(ctx: Context, artist, song, *args, **kwargs):
+    '''Sends Lyrics for provided song'''
     embe = await glyrics(artist, song)
     if embe == '404':
         print('falling to azlyrics')
         embe = await azlyrics(artist, song)
     if embe != '404':
-        await self.embed(data.channel_id, '', embe)
+        await ctx.reply(embeds=[embe])
     else:
-        await self.message(data.channel_id, '404')
+        await ctx.reply('404')
 
 
-@register(group='Global', help='Generates random xkcd 936 styled password')
-async def xkcdpassword(self, *args, data, language, **kwargs):
+@register(group=Groups.GLOBAL, interaction=False)
+async def xkcdpassword(ctx: Context, *args, language, **kwargs):
+    '''Generates random xkcd 936 styled password'''
     import secrets
     # On standard Linux systems, use a convenient dictionary file.
     # Other platforms may need to provide their own word-list.
     with open('/usr/share/dict/words') as f:
         words = [word.strip() for word in f]
         password = ' '.join(secrets.choice(words) for i in range(4))
-    await self.message(data.channel_id, password)
+    await ctx.reply(password)
 
-@register(group='Global', help='Shows file extension details', alias='', category='')
-async def fileext(self, ext, *args, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.GLOBAL, interaction=False)
+async def fileext(ctx: Context, ext, *args, language, **kwargs):
+    '''Shows file extension details'''
     url = f"https://fileinfo.com/extension/{ext}"
     r = requests.get(url)
     if r.status_code == 200:
         soup = BeautifulSoup(r.content, "html.parser")
     else:
-        return await self.message(data.channel_id, "Error")
+        return await ctx.reply("Error")
     article = soup.find('article')
     header = article.find('h1').text
     ftype = article.find('h2').text.replace('File Type','')
@@ -366,11 +371,11 @@ async def fileext(self, ext, *args, data, language, **kwargs):
             e.addField('Category', i.text[8:], True)
         elif 'format' in i.text.lower():
             e.addField('Format', i.text[6:], True)
-    await self.embed(data.channel_id, "", e.embed)
+    await ctx.reply(embeds=[e])
 
-@register(group='Global', help='Shows guitar chord(s) diagram(s)', alias='', category='')
-async def chord(self, *chords, data, language, all=False, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.GLOBAL, interaction=False)
+async def chord(ctx: Context, *chords, language, all=False, **kwargs):
+    '''Shows guitar chord(s) diagram(s)'''
     import json
     with open('data/chords.json','r',newline='',encoding='utf-8') as file:
         _chords = json.load(file)
@@ -398,7 +403,7 @@ async def chord(self, *chords, data, language, all=False, **kwargs):
         try:
             _c = _chords[_chord]
         except:
-            return await self.message(data.channel_id, f"Chord {_chord} not found")
+            return await ctx.reply(f"Chord {_chord} not found")
         if len(_c) > 6:
             c = _c[-6:]
         for x, string in enumerate(c):
@@ -416,20 +421,20 @@ async def chord(self, *chords, data, language, all=False, **kwargs):
             #text += "\nStarting fret: " + _c[0:-6]
             _chord += f' (Fret: {_c[0:-6]})'
         e.addField(_chord, text, True)
-    await self.embed(data.channel_id, "", e.embed)
+    await ctx.reply(embeds=[e])
 
-@register(group='System', help='Adds new chord', alias='', category='')
-async def add_chord(self, chord, *frets, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.SYSTEM, interaction=False)
+async def add_chord(ctx: Context, chord, *frets, language, **kwargs):
+    '''Adds new chord'''
     with open('data/chords.json','r',newline='',encoding='utf-8') as file:
         _chords = json.load(file)
     _chords[chord] = ''.join(frets)
     with open('data/chords.json','w',newline='',encoding='utf-8') as file:
         json.dump(_chords, file)
 
-@register(group='Global', help='Shows chords on frets for specified tuning', alias='', category='')
-async def tuning(self, *tuning, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.GLOBAL, interaction=False)
+async def tuning(ctx: Context, *tuning, language, **kwargs):
+    '''Shows chords on frets for specified tuning'''
     base = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
     if tuning == ():
         tuning = ["E", "B", "G", "D", "A", "E"]
@@ -442,9 +447,7 @@ async def tuning(self, *tuning, data, language, **kwargs):
     fret_numbers = ""
     fret_numbers += ' | '.join([str(i)+' ' if len(str(i)) == 1 else str(i) for i in range(len(base)+1)])
     separator = '-' * len(fret_numbers)
-    await self.message(data.channel_id, f"```md\n{fret_numbers}\n{separator}{final}```")
-
-
+    await ctx.reply(f"```md\n{fret_numbers}\n{separator}{final}```")
 
 '''
 |_E_|_A_|_C_|_G_|_B_|_E_|
@@ -453,30 +456,3 @@ async def tuning(self, *tuning, data, language, **kwargs):
 | _ | _ | _ | _ | _ | _ |
 | _ | _ | _ | _ | _ | _ |
 '''
-
-@register(group='Global', help='Shows How Long to Beat', alias='', category='')
-async def hltb(self, *game, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
-    game = ' '.join(game)
-    e = Embed().setTitle(game)
-    from howlongtobeatpy import HowLongToBeat
-    results = await HowLongToBeat().async_search(game)
-    if results is not None and len(results) > 0:
-        g = max(results, key=lambda element: element.similarity)
-        e.setTitle(g.game_name).setUrl(g.game_web_link).setThumbnail(g.game_image_url)
-        e.addField(g.gameplay_main_label, f"{g.gameplay_main} {g.gameplay_main_unit}", True)
-        e.addField(g.gameplay_main_extra_label, f"{g.gameplay_main_extra} {g.gameplay_main_extra_unit}", True)
-        e.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
-        from MFramework.utils.utils import get_main_color
-        e.setFooter("", f"Title Similiarity: {g.similarity}").setColor(get_main_color(g.game_image_url))
-    await self.embed(data.channel_id, "", e.embed)
-
-
-@register(group='Global', help='Rolls a percentage chance', alias='', category='')
-async def roll(self, *argument, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
-    from random import seed, randint
-    statement = ' '.join(argument)
-    seed(statement)
-    await self.message(data.channel_id, f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}", allowed_mentions={"parse":[]})
-    
