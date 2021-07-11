@@ -1,39 +1,43 @@
-import json
+from MFramework import register, Groups, Context, Interaction, Embed
+from MFramework.api.steam import Steam as steam
 
+from mlib.localization import tr
 
-from MFramework.commands import register
-from MFramework.utils.api import Steam as steam
-from MFramework.utils.utils import Embed, tr
-
-
-@register(group="System", help="Updates Index of Steam Games")
-async def refreshAppIndex(self, *args, data, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False)
+async def refreshAppIndex(ctx: Context, *args, data, **kwargs):
+    """Updates Index of Steam Games"""
     steamapi = steam()
     apps = await steamapi.AppList()
     index = {}
     for each in apps["applist"]["apps"]:
         index[each["name"]] = each["appid"]
+    import json
     with open("data/steamstoreindex.json", "w", newline="", encoding="utf-8") as file:
         json.dump(index, file)
 
-
-async def loadSteamIndex(self):
+async def loadSteamIndex(ctx):
     with open("data/steamstoreindex.json") as fjson:
-        self.index = json.load(fjson)
+        import json
+        ctx.bot.index = json.load(fjson)
 
 
-async def steamParse(self, request, language, *game):
+@register(group=Groups.GLOBAL)
+async def steam(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+    '''Description to use with help command'''
+    pass
+
+async def steamParse(ctx: Context, request, language, *game):
     from difflib import get_close_matches
     game = " ".join(game)
     games = game.split(",")
-    if not hasattr(self, "index"):
-        await loadSteamIndex(self)
+    if not hasattr(ctx.bot, "index"):
+        await loadSteamIndex(ctx)
     for game in games:
         try:
-            game = get_close_matches(game, self.index.keys(), 1)[0]
+            game = get_close_matches(game, ctx.bot.index.keys(), 1)[0]
         except IndexError:
             yield {}, game
-        appid = self.index[game]
+        appid = ctx.index[game]
         if request == "playercount":
             playercount = await steam.CurrentPlayers(appid)
             yield playercount, game
@@ -41,23 +45,21 @@ async def steamParse(self, request, language, *game):
             page = await steam.appDetails(appid, language)
             yield page[str(appid)].get("data",{"short_description": "There was an error searching for data, perhaps Steam page doesn't exist anymore?", "name":game}), appid
 
-def isEmpty(tuple):
-    if len(tuple) == 0:
-        return True
-    return False
-
-@register(help="Fetches playercount for specified game(s). Separate with `,`", alias="", category="")
-async def playercount(self, *game, data, language, **kwargs):
-    if isEmpty(game):
-        return await self.message(data.channel_id, 'Game was not provided. Example usage: `playercount game title`')
+@register(group=Groups.GLOBAL, main=steam)
+async def playercount(ctx: Context, game: str, *args, language, **kwargs):
+    '''Fetches playercount for specified game
+    Params
+    ------
+    game:
+        Steam game's title(s). Separate using comma `,`'''
     result = tr("commands.playercount.for", language)
-    async for playercount, game in steamParse(self, "playercount", language, *game):
+    async for playercount, game in steamParse(ctx, "playercount", language, *game):
         try:
-            playercount = playercount["response"]["player_count"]
+            playercount = playercount.get("response",{}).get("player_count","Error")
             result += f"{game}: {playercount}\n"
         except KeyError:
             result += f"{game}: "+tr("commands.playercount.error", language)
-    await self.message(data.channel_id, result[:2000])
+    await ctx.reply(result[:2000])
 
 
 def getBazarPrice(game):
@@ -108,12 +110,16 @@ def getGGDealsLowPrice(game, language):
         p2 = 0
     return (p1, p2)
 
-@register(help="Shows game details", alias="", category="")
-async def game(self, *game, data, language, **kwargs):
-    if isEmpty(game):
-        return await self.message(data.channel_id, 'Game was not provided. Example usage: `game game title`')
+
+@register(group=Groups.GLOBAL, main=steam)
+async def game(ctx: Context, interaction: Interaction, game: str, *args, language, **kwargs):
+    '''Shows Steam's game data
+    Params
+    ------
+    game:
+        Steam game title(s). Separate using comma `,`'''
     _game = game
-    async for game, appid in steamParse(self, "details", language, *game):
+    async for game, appid in steamParse(ctx, "details", language, *game):
         embed = Embed()
         embed.setDescription(game.get("short_description")).setTitle(game.get("name"))
         embed.setUrl(f"https://store.steampowered.com/app/{appid}/").setFooter(
@@ -176,47 +182,51 @@ async def game(self, *game, data, language, **kwargs):
             if g.gameplay_completionist != -1:
                 embed.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
         embed.addField(tr("commands.game.open", language), f"steam://store/{appid}/")
-        await self.embed(data.channel_id, "", embed.embed)
+        await ctx.reply(embeds=[embed])
 
 
-@register(group='Global', help='Lists closest matches in Steam Index', alias='', category='')
-async def steamlist(self, *game, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.GLOBAL, interaction=False)
+async def steamsearch(ctx: Context, game: str, *args, language, **kwargs):
+    '''Search Steam Index'''
     from difflib import get_close_matches
     game = " ".join(game)
-    if not hasattr(self, "index"):
-        await loadSteamIndex(self)
-    game = get_close_matches(game, self.index.keys(), 10)
+    if not hasattr(ctx.bot, "index"):
+        await loadSteamIndex(ctx.bot)
+    game = get_close_matches(game, ctx.bot.index.keys(), 10)
     t= ''
     for g in game:
         t += '\n- ' + g
     embed = Embed().setDescription(t[:2024])
-    await self.embed(data.channel_id, '', embed.embed)
+    await ctx.reply(embeds=[embed])
 
 
-@register(group='Global', help='Steam Calculator. Similiar to Steamdb one (With few differences). Provide Country Code for currency', alias='', category='')
-async def steamcalc(self, *user, data, currency='us', language, **kwargs):
-    '''Extended description to use with detailed help command'''
-    await self.trigger_typing_indicator(data.channel_id)
-    if user == ():
-        user = data.author.username
-    else:
-        user = ' '.join(user)
+@register(group=Groups.GLOBAL, main=steam)
+async def steamcalc(ctx: Context, interaction: Interaction, steam_id: str=None, country: str = "us", *args, language, **kwargs):
+    '''Steam Calculator. Similiar to Steamdb one (With few differences). 
+    Params
+    ------
+    steam_id:
+        Your Steam ID or Vanity URL
+    country:
+        Provide Country Code for currency. For example GB for Pounds'''
+    await ctx.deferred()
+    if not steam_id:
+        steam_id = ctx.user.username
     s = steam()
-    uid = await s.resolveVanityUrl(user)
+    uid = await s.resolveVanityUrl(steam_id)
     if uid != tr('commands.steamcalc.notFound', language):
         uid = uid['response']
     else:
-        return await self.message(data.channel_id, tr('commands.steamcalc.vanityURL', language))
+        return await ctx.reply(tr('commands.steamcalc.vanityURL', language))
     if uid['success'] == 1:
         user = uid['steamid']
     games = await s.OwnedGames(user)
     try:
         games = games.get('response', {'games': {}})
     except:
-        return await self.message(data.channel_id, tr('commands.steamcalc.vanityURL', language))
+        return await ctx.reply(tr('commands.steamcalc.vanityURL', language))
     if games.get('games',{}) == {}:
-        return await self.message(data.channel_id, tr('commands.steamcalc.privateProfile', language))
+        return await ctx.reply(tr('commands.steamcalc.privateProfile', language))
     total_playtime = 0
     total_played = 0
     game_ids = []
@@ -247,14 +257,14 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
                 unavailable += 1
         return total_price, ending, has_price
     try:
-        from MFramework.utils.utils import grouper
+        from mlib.utils import grouper
         for chunk in grouper(game_ids, 100):
-            prices = await s.getPrices(chunk, currency)
+            prices = await s.getPrices(chunk, country)
             total_price, ending, has_price = calcPrice(prices, total_price, has_price)
     except Exception as ex:
         ending = ''
         print(ex)
-    from MFramework.utils.utils import truncate
+    from mlib.utils import truncate
     total = tr('commands.steamcalc.playtime', language, hours=truncate(total_playtime/60, 2))
     if total_price != 0:
         total += tr('commands.steamcalc.prices', language, prices=f"{total_price/100} {ending}")
@@ -279,9 +289,30 @@ async def steamcalc(self, *user, data, currency='us', language, **kwargs):
         avg += tr('commands.steamcalc.pricePerGame', language, price="{:.3}".format(truncate((total_price / 100) / len(has_price)), 2) + f"{ending}")
         if pt != 0:
             avg += tr('commands.steamcalc.pricePerHour', language, price="{:.3}".format(truncate((total_price / 100) / (pt / 60), 2)) + f"{ending}")
-    e.setFooter("", f"SteamID: {user}").addField(tr('commands.steamcalc.avg', language), avg, True)
-    from MFramework.utils.utils import get_main_color
+    e.setFooter(f"SteamID: {user}").addField(tr('commands.steamcalc.avg', language), avg, True)
+    from mlib.colors import get_main_color
     profile = await s.PlayerSummaries(user)
     profile = profile['response']['players'][0]
     e.setThumbnail(profile['avatarfull']).setAuthor(profile["personaname"],profile["profileurl"],"").setColor(get_main_color(profile['avatar']))
-    await self.embed(data.channel_id, '', e.embed)
+    await ctx.reply(embeds=[e])
+
+
+@register(group=Groups.GLOBAL, main=steam)
+async def hltb(ctx: Context, game: str, *args, language, **kwargs):
+    '''Shows How Long To Beat statistics for provided game
+    Params
+    ------
+    game:
+        Game Name'''
+    e = Embed().setTitle(game)
+    from howlongtobeatpy import HowLongToBeat
+    results = await HowLongToBeat().async_search(game)
+    if results is not None and len(results) > 0:
+        g = max(results, key=lambda element: element.similarity)
+        e.setTitle(g.game_name).setUrl(g.game_web_link).setThumbnail(g.game_image_url)
+        e.addField(g.gameplay_main_label, f"{g.gameplay_main} {g.gameplay_main_unit}", True)
+        e.addField(g.gameplay_main_extra_label, f"{g.gameplay_main_extra} {g.gameplay_main_extra_unit}", True)
+        e.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
+        from mlib.colors import get_main_color
+        e.setFooter("", f"Title Similiarity: {g.similarity}").setColor(get_main_color(g.game_image_url))
+    await ctx.reply(embeds=[e])
