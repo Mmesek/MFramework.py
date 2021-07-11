@@ -1,10 +1,20 @@
-from MFramework.commands import register
+from MFramework import register, Groups, Interaction, Embed, Context
 
-import requests, datetime
-from MFramework.utils.utils import Embed, tr
+@register()
+async def convert(ctx: Context, interaction: Interaction, *args, language, **kwargs):
+    '''Description to use with help command'''
+    pass
 
-@register(help='Decodes or Encodes message in Morse')
-async def morse(self, *message, data, decode=False, **kwargs):
+@register(group=Groups.GLOBAL, main=convert)
+async def morse(ctx: Context, message: str, decode: bool=False, *args, language, **kwargs):
+    '''Decodes or Encodes message in Morse
+    
+    Params
+    ------
+    message:
+        Message to encode or decode
+    decode:
+        Whether to decode from or encode to Morse'''
     morse_dict = {
         'A':'.-', 'B':'-...', 'C':'-.-.', 'D':'-..', 'E':'.', 
         'F':'..-.', 'G':'--.', 'H':'....', 'I':'..', 'J':'.---', 
@@ -37,7 +47,7 @@ async def morse(self, *message, data, decode=False, **kwargs):
             elif letter not in morse_dict:
                 cipher+=letter+' '
             else:
-                cipher+=morse_dict[letter]+' '#morse_dict.get(letter,'') + ' '
+                cipher+=morse_dict.get(letter,'') + ' '
         for sequence in morse_sequences:
             if sequence in cipher:
                 cipher = cipher.replace(sequence, morse_sequences[sequence])
@@ -54,29 +64,29 @@ async def morse(self, *message, data, decode=False, **kwargs):
             elif letter != ' ':
                 morse += letter
             elif letter == ' ' and morse != '':
-                try:
-                    decipher += inverted[morse]#inverted.get(morse,'')
-                except:
-                    decipher += '\nNo match for: "'+morse+'"\n'
+                decipher += inverted.get(morse,'\nNo match for: "'+morse+'"\n')
                 morse = ''
         return decipher
-    org = data.content
+    org = message
     if decode:
-        reward = decrypt(data.content)
+        reward = decrypt(message)
         t = "Morse -> Normal"
     else:
-        reward = encrypt(data.content)
+        reward = encrypt(message)
         t = "Normal -> Morse"
     if len(org) > 2000:
         org = org[:100] + f"\n(+{len(org)-100} more characters)\nCharacter limit exceeded."
     if len(reward) > 2048:
         t=t+f" | Not sent {len(reward)-2048} characters due to limit of 2048"
         reward = reward[:2048]
-    await self.embed(data.channel_id, 'Orginal: '+org, {"title":t,"description":reward})
+    await ctx.reply('Orginal: '+org, [Embed(title=t, description=reward)])
 
-@register(group='Global', help='Converts Roman to Int, or vice versa', alias='', category='')
-async def roman(self, *value, data, language, **kwargs):
-    '''Very simple and does not really work (Well, it works but if you mess up digit it does not really check that)'''
+@register(group=Groups.GLOBAL, main=convert, interaction=False)
+async def roman(ctx: Context, value: str, *args, language, **kwargs):
+    '''Converts Roman to digits, or vice versa
+    value:
+        Value to convert'''
+    #Very simple and does not really work (Well, it works but if you mess up digit it does not really check that)
     #Sources:
     # https://www.w3resource.com/python-exercises/class-exercises/python-class-exercise-1.php 
     # https://www.w3resource.com/python-exercises/class-exercises/python-class-exercise-2.php
@@ -122,34 +132,33 @@ async def roman(self, *value, data, language, **kwargs):
             s = f'Roman: {value} -> Int: {r}'
         except KeyError:
             s = f'An error occured, perhas non roman numeral was provided? Only `I`, `V`, `X`, `L`, `C`, `D` and `M` are allowed'
-    await self.message(data.channel_id, f'{s}')
+    await ctx.reply(f'{s}')
 
-@register(group='Global', help='Converts for example 3600s into 1h. Works with `s`, `m`, `h`, `d` and `w`', alias='', category='')
-async def timeunits(self, *duration, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
-    from MFramework.utils.utils import secondsToText
-    seconds = 0
-    if duration == ():
-        return await self.message(data.channel_id, "Provide value you want to convert for example `3540s 1m` as an argument")
-    for d in duration:
-        if 's' in d:
-            seconds += int(d.split('s')[0])
-        elif 'm' in d:
-            seconds += int(d.split('m')[0])*60
-        elif 'h' in d:
-            seconds += (int(d.split('h')[0])*60)*60
-        elif 'd' in d:
-            seconds += ((int(d.split('d')[0])*24)*60)*60
-        elif 'w' in d:
-            seconds += (((int(d.split('w')[0]) * 7) * 24) * 60) * 60
-        else:
-            return await self.message(data.channel_id, "Pass `s` for second, `m` for minute, `h` for hour, `d` for day or `w` for week after right after digit as an argument, for example `60s 59m 23h`")
-    await self.message(data.channel_id, secondsToText(seconds, language))
+@register(group=Groups.GLOBAL, main=convert)
+async def timeunits(ctx: Context, duration: int, from_unit: str='s', to: str='w', *args, language, **kwargs):
+    '''Converts for example 3600s into 1h. Works with s, m, h, d and w
+    duration:
+        Value to calculate
+    from_unit:
+        Base unit from which to convert. S for second, M for Minute, H for Hour, D for Day and W for Week
+    to:
+        Opposite to from_unit. Accepts same values'''
+    from mlib.converters import total_seconds
+    from mlib.localization import secondsToText
+    await ctx.reply(secondsToText(total_seconds(f"{duration}{from_unit}").total_seconds(), language))
 
-@register(group='Global', help='Shows current time in specified timezone(s)', alias='', category='')
-async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.GLOBAL, main=convert)
+async def timezone(ctx: Context, yymmdd: str='YYYY-MM-DD', hhmm:str='HH:MM', timezones: str=[], *args, language, **kwargs):
+    '''Shows current time in specified timezone(s)
+    yymmdd:
+        Base Date
+    hhmm:
+        Base Hour
+    timezones:
+        Targeted timezones'''
     import pytz
+    import datetime
+    from mlib.localization import tr
     _timezones = []
     now = datetime.datetime.now()
     if ':' in yymmdd or (yymmdd.isdigit() and not hhmm.isdigit()):
@@ -202,7 +211,7 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
             hhmm = 'HH:MM'
         hour = now.hour
         minute = now.minute
-    timezones = (*_timezones, *timezones)
+    timezones = [timezones]#(*_timezones, *timezones)
     _timezones = []
     if 'in' in timezones or 'to' in timezones:
         if any(i == timezones[0] for i in ['in', 'to']):
@@ -221,16 +230,16 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
         try:
             _dt = pytz.timezone(from_timezone).localize(datetime.datetime(year, month, day, hour, minute, 0))
         except:
-            return await self.message(data.channel_id, tr('commands.timezone.timezoneNotFound', language, from_timezone=from_timezone))#f"Couldn't find timezone {from_timezone}")
+            return await ctx.reply(tr('commands.timezone.timezoneNotFound', language, from_timezone=from_timezone))#f"Couldn't find timezone {from_timezone}")
         #_dt = tz#datetime.datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=0, microsecond=0, tzinfo=tz)
         utc_dt = _dt.astimezone(pytz.timezone('UTC'))
         base = _dt.isoformat()
     else:
-        base = data.timestamp
+        base = ctx.data.timestamp
         utc_dt = datetime.datetime.fromisoformat(base)
         #tz = pytz.timezone('UTC').localize(datetime.datetime(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour, utc_dt.minute, utc_dt.second))
         _dt = utc_dt
-    e = Embed().setFooter("", f"UTC {utc_dt.strftime('%Y-%m-%d %H:%M:%S')}").setTimestamp(base)
+    e = Embed().setFooter(f"UTC {utc_dt.strftime('%Y-%m-%d %H:%M:%S')}").setTimestamp(base)
     if from_timezone != 'UTC':
         e.setDescription(f"{from_timezone}: {_dt.strftime('%Y-%m-%d %H:%M:%S %Z%z')}")
     for timezone in timezones:
@@ -247,17 +256,25 @@ async def timezone(self, yymmdd='YYYY-MM-DD', hhmm='HH:MM', *timezones, data, la
             dt = ex
         if len(e.fields) <= 25:
             e.addField(timezone, dt)
-    await self.embed(data.channel_id, "", e.embed)
+    await ctx.reply(embeds=[e])
 
-@register(group='Global', help='Makes text uʍop ǝpᴉsdn!', alias='', category='')
-async def upsidedown(self, *text, data, language, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.GLOBAL, main=convert)
+async def upside(ctx: Context, text: str, *args, language, **kwargs):
+    '''Makes text uʍop ǝpᴉsdn!
+    text:
+        Text to invert'''
     import upsidedown
-    await self.message(data.channel_id, upsidedown.transform(' '.join(text)))
+    await ctx.reply(upsidedown.transform(text))
 
-@register(group='Global', help='Short description to use with help command', alias='', category='')
-async def rot(self, *key, data, language, shift=13, alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ', **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.GLOBAL, main=convert)
+async def rot(ctx: Context, message: str, shift: int=13, alphabet: str='ABCDEFGHIJKLMNOPQRSTUVWXYZ', *args, language, **kwargs):
+    '''Caesar Cipher
+    message:
+        Message to rotate
+    shift:
+        Value to rotate by
+    alphabet:
+        Alphabet to use'''
     dict_alphabet = {}
     msg = '`'
     for x, letter in enumerate(alphabet):
@@ -275,7 +292,7 @@ async def rot(self, *key, data, language, shift=13, alphabet='ABCDEFGHIJKLMNOPQR
     msg += '`'
     from_key = ''
     new_key = []
-    try_key = list(' '.join(key))
+    try_key = message
     for k in try_key:
         if not k.isdigit() and k.upper() in alphabet:
             new_key.append(dict_alphabet[k.upper()])
@@ -292,63 +309,86 @@ async def rot(self, *key, data, language, shift=13, alphabet='ABCDEFGHIJKLMNOPQR
         except:
             from_key += k
     e = Embed().addField("Alphabet", f"`{alphabet}`\n"+msg).setDescription(from_key)
-    await self.embed(data.channel_id, "", e.embed)
+    await ctx.reply(embeds=[e])
 
-@register(group='Global', help='Converts Ascii to Numbers', notImpl=True)
-async def asciitohex(self, *ascii_, data, **kwargs):
-    ascii_ = ' '.join(ascii_)
+@register(group=Groups.GLOBAL, main=convert, interaction=False)
+async def asciitohex(ctx: Context, ascii_:str, *args, **kwargs):
+    '''Converts Ascii to Numbers
+    ascii_:
+        Value to Convert'''
     f = Embed().setTitle('Ascii to Hex').setDescription(ascii_)
     f.addField('Dec',str(int.from_bytes(bytearray(ascii_, 'ascii'),'big'))[2:1023])
     f.addField('Bin',str(bin(int.from_bytes(bytearray(ascii_, encoding='ascii'), 'big')))[2:1023])
     f.addField('Hex',str(hex(int.from_bytes(bytearray(ascii_, encoding='ascii'), 'big')))[2:1023])
     f.addField('Oct',str(oct(int.from_bytes(bytearray(ascii_, encoding='ascii'), 'big')))[2:1023])
-    await self.embed(data.channel_id, '', f.embed)
+    await ctx.reply(embeds=[f])
 
-@register(group='Global', help='Converts currency', alias='cc, currency')
-async def currency_exchange(self, amount='1', currency='EUR', to_currency='USD', *args, data, language, fresh=False, **kwargs):
+@register(group=Groups.GLOBAL, main=convert)
+async def currency(ctx: Context, amount: float=1, from_currency: str="EUR", to_currency: str="USD", *args, language, **kwargs):
+    '''Converts currency
+    amount:
+        Amount to convert
+    from_currency:
+        Base Currency
+    to_currency:
+        Target Currency'''
     def check(c):
-        from MFramework.utils.utils import currencies
+        currencies = {'€': 'EUR', '$': 'USD', '£': 'GBP'}
         return currencies.get(c, c).upper()
-    if amount.isdigit() or '.' in amount or ',' in amount:
-        amount = float(amount.replace(',', '.').replace(' ', ''))
-    else:
-        to_currency = currency
-        currency = amount
-        amount = 1
-    currency, to_currency = check(currency), check(to_currency)
-    if not fresh:
-        r = requests.get(f"https://api.cryptonator.com/api/ticker/{currency}-{to_currency}", headers={"user-agent": "Mozilla"})
-        result = r.json()
+    #if amount.isdigit() or '.' in amount or ',' in amount:
+    #    amount = float(amount.replace(',', '.').replace(' ', ''))
+    from_currency, to_currency = check(from_currency), check(to_currency)
+    import requests
+    r = requests.get(f'https://api.exchangeratesapi.io/latest?base={from_currency}&symbols={to_currency}')
+    src = ''
+    try:
+        result = r.json()['rates'][to_currency]
+        result = "%3.2f" % (amount * float(result))
+        src = "exchangeratesapi.io"
+    except KeyError:
+        r = requests.get(f"https://api.cryptonator.com/api/ticker/{from_currency}-{to_currency}", headers={"user-agent": "Mozilla"})
+        result = r.json()#.get('error','Error')
         try:
             result = result.get('ticker', {}).get('price', 0)
             result = "%3.2f" % (amount * float(result))
+            src = "cryptonator.com"
         except KeyError:
-            result = result.get('error', 'Error')
-    else:
-        if currency.lower() in ['btc', 'ltc', 'eth']:
-            #"https://api.crypto.com/v1/ticker/price" this might be useful for various other crypto -> usd or crypto -> crypto
-            r = requests.get(f'https://api.crypto.com/v1/ticker?symbol={currency.lower()}usdt')
-            try:
-                result = r.json()['data']['last']
-                result = "%3.2f" % (amount * float(result))
-            except KeyError:
-                result = r.json().get('msg', 'Error')
-            to_currency = 'USD'
-        else:
-            r = requests.get(f'https://api.exchangeratesapi.io/latest?base={currency}&symbols={to_currency}')
-            try:
-                result = r.json()['rates'][to_currency]
-                result = "%3.2f" % (amount * float(result))
-            except KeyError:
-                result = r.json().get('error','Error')
-    r = tr('commands.currency_exchange.result', language, result=result, to_currency=to_currency, amount=amount, currency=currency)
-    await self.message(data.channel_id, r)
+            if from_currency.lower() in ['btc', 'ltc', 'eth']:
+                #"https://api.crypto.com/v1/ticker/price" this might be useful for various other crypto -> usd or crypto -> crypto
+                r = requests.get(f'https://api.crypto.com/v1/ticker?symbol={from_currency.lower()}usdt')
+                try:
+                    result = r.json()['data']['last']
+                    result = "%3.2f" % (amount * float(result))
+                except KeyError:
+                    result = r.json().get('msg', 'Error')
+                to_currency = 'USD'
+                src = "crypto.com"
+            else:
+                result = "Error"
+    from mlib.localization import tr
+    r = tr('commands.currency_exchange.result', language, result=result, to_currency=to_currency, amount=amount, currency=from_currency)
+    await ctx.reply(r+'\n'+src)
 
-@register(group='Global', help='Reverses letters', alias='', category='')
-async def reverse(self, *message, data, language, inplace=False, **kwargs):
-    '''Extended description to use with detailed help command'''
-    if inplace:
-        r = ' '.join([i[::-1] for i in message])
+@register(group=Groups.GLOBAL, main=convert)
+async def reverse(ctx: Context, message: str, in_place: bool=False, *args, language, **kwargs):
+    '''Reverses letters
+    message:
+        Message to reverse
+    in_place:
+        Whether words should stay in place, for example -> False: elpamxe rof | True: rof elpamxe'''
+    if in_place:
+        r = ' '.join([i[::-1] for i in message.split(' ')])
     else:
-        r = ' '.join(message)[::-1]
-    await self.message(data.channel_id, r)
+        r = message[::-1]
+    await ctx.reply(r)
+
+@register(group=Groups.GLOBAL, main=convert, interaction=False)
+async def electricity(ctx: Context, interaction: Interaction, price: float=0.64, watts: float=1, active_hours: float=24, active_days: int=30, *args, language, **kwargs):
+    '''
+    Calculate averange cost of upkeeping provided amount of watts 24/7
+    Params
+    ------
+    price:
+        description
+    '''
+    pass
