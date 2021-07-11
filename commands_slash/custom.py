@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from mdiscord.types import Discord_Paths
-from MFramework import register, Groups, Context, Interaction, Message, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author
+from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
 async def docket(ctx: Context, interaction: Interaction, docket: str, description: str='', publish: bool=False, *args, language, **kwargs):

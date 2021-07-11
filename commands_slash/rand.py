@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context, Interaction
+from MFramework import register, Groups, Context
 from random import SystemRandom
 random = SystemRandom()
 

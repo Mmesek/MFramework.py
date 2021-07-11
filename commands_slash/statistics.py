@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context, Interaction, Embed
+from MFramework import register, Groups, Context, Embed
 import time
 
 @register(group=Groups.GLOBAL, guild=463433273620824104)

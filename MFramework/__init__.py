@@ -34,5 +34,4 @@ log.setLevel(logger.log_level)
 from mdiscord import * # noqa: F401
 
 from .bot import * # noqa: F401
-from .commands.decorators import * # noqa: F401
-from .commands._utils import Groups # noqa: F401
+from .commands import * # noqa: F401
