@@ -12,6 +12,7 @@ class Infraction(Enum):
     Limbo = 8
     DM_Mute = 9
     DM_Unmute = 10
+    Report = 11
 
 class Snippet(Enum):
     Snippet = 0
