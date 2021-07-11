@@ -1,5 +1,5 @@
 import asyncio
-from ..database import alchemy as db
+from ..database.alchemy import models as db
 
 tasks = {}
 
@@ -9,7 +9,7 @@ def scheduledTask(func):
 
 def add_guild_tasks(self, guild_id):
     session = self.db.sql.session()
-    _tasks = session.query(db.Tasks).filter(db.Tasks.GuildID == guild_id).filter(db.Tasks.Finished == False).all()
+    _tasks = session.query(db.Task).filter(db.Task.server_id == guild_id).filter(db.Task.finished == False).all()
     for task in _tasks:
         _appendTasksToCache(self, task)
 

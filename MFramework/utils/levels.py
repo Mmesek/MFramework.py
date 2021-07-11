@@ -9,24 +9,28 @@ async def handle_roles(self, data, l, levelRole, x, user_id):
 
 async def handle_exp(self, data, e=None):
     if e is None:
-        user_id = data.user_id
-        from ..database import alchemy as db
+        #user_id = data.user_id
+        user_id = getattr(data, "user_id", None) or getattr(data, "author").id
         session = self.db.sql.session()
-        e = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).filter(db.UserLevels.UserID == user_id).first()
+        from MFramework.database.alchemy import log, types
+        EXP = log.Statistic.get(session, data.guild_id, user_id, types.Statistic.Chat)
+        vEXP = log.Statistic.get(session, data.guild_id, user_id, types.Statistic.Voice)
+
     else:
-        user_id = data.author.id
-    l = self.cache[data.guild_id].levels
+        user_id = getattr(data, "user_id", None) or getattr(data, "author").id
+        #user_id = data.author.id
+    l = self.cache[data.guild_id].level_roles
     if l == []:
         return
     for x, levelRole in enumerate(l):
         if levelRole.Role not in data.member.roles:
             if levelRole.ReqRoles is not None and not all(i in data.member.roles for i in levelRole.ReqRoles):
                 continue
-            if levelRole.Type == 'AND' and (e.EXP >= levelRole.ReqEXP and e.vEXP >= levelRole.ReqVEXP):
+            if levelRole.Type == 'AND' and (EXP >= levelRole.ReqEXP and vEXP >= levelRole.ReqVEXP):
                 await handle_roles(self, data, l, levelRole, x, user_id)
-            elif levelRole.Type == 'OR' and (e.EXP >= levelRole.ReqEXP or e.vEXP >= levelRole.ReqVEXP):
+            elif levelRole.Type == 'OR' and (EXP >= levelRole.ReqEXP or vEXP >= levelRole.ReqVEXP):
                 await handle_roles(self, data, l, levelRole, x, user_id)
-            elif levelRole.Type == 'COMBINED' and ((e.EXP + e.vEXP) >= (levelRole.ReqEXP + levelRole.ReqVEXP)):
+            elif levelRole.Type == 'COMBINED' and ((EXP + vEXP) >= (levelRole.ReqEXP + levelRole.ReqVEXP)):
                 await handle_roles(self, data, l, levelRole, x, user_id)
             else:
                 continue
@@ -91,20 +95,15 @@ def task_check_activity():
     s.commit()
 
 async def exp(self, data):
-    from ..database import alchemy as db
-    session = self.db.sql.session()
-    last = self.cache[data.guild_id].exp.get(data.author.id, 0)
-    timestamp = data.timestamp#datetime.datetime.fromisoformat(data.timestamp)
-    if last == 0:
-        e = db.UserLevels(data.guild_id, data.author.id, 1, 0, timestamp)
-        self.cache[data.guild_id].exp[data.author.id] = timestamp
-        self.db.sql.add(e)
-    elif (last == None or (timestamp - last).total_seconds() > 60) and (len(set(data.content.split(' '))) >= 2):
-        e = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).filter(db.UserLevels.UserID == data.author.id).first()
-        e.EXP += 1
-        e.LastMessage = timestamp
-        self.cache[data.guild_id].exp[data.author.id] = timestamp
-        session.commit()
-        await handle_exp(self, data, e)
-        if self.cache[data.guild_id].trackActivity:
+    last = self.cache[data.guild_id].cooldowns.has(data.guild_id, data.author.id, "ChatExp")
+    if not last and (len(set(data.content.split(' '))) >= 2):
+        from MFramework.database.alchemy import models, log, types
+        session = self.db.sql.session()
+        user = models.User.fetch_or_add(session, id=data.author.id)
+        #server = models.Server.fetch_or_add(session, id=data.guild_id)
+        log.Statistic.increment(session, data.guild_id, data.author.id, types.Statistic.Chat)
+        self.cache[data.guild_id].cooldowns.store(data.guild_id, data.author.id, "ChatExp")
+        #await handle_exp(self, data, e)
+        from MFramework.database.alchemy.types import Flags
+        if self.cache[data.guild_id].is_tracking(Flags.Activity):
             self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(' '))))
