@@ -23,7 +23,7 @@ async def loadSteamIndex(ctx):
 
 @register(group=Groups.GLOBAL)
 async def steam(ctx: Context, interaction: Interaction, *args, language, **kwargs):
-    '''Description to use with help command'''
+    '''Fetches data on games'''
     pass
 
 async def steamParse(ctx: Context, request, language, *game):

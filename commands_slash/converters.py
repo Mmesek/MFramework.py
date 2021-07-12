@@ -2,7 +2,7 @@ from MFramework import register, Groups, Interaction, Embed, Context
 
 @register()
 async def convert(ctx: Context, interaction: Interaction, *args, language, **kwargs):
-    '''Description to use with help command'''
+    '''Converts things'''
     pass
 
 @register(group=Groups.GLOBAL, main=convert)
