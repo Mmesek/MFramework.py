@@ -7,6 +7,7 @@ from MFramework import Snowflake, ChannelID, UserID, RoleID, Application_Command
 
 class Groups(Enum):
     SYSTEM = 0
+    OWNER = 5
     ADMIN = 10
     MODERATOR = 20
     HELPER = 30
@@ -75,7 +76,9 @@ reactions: Dict[str, Command] = {}
 
 def detect_group(Client, user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
     if user_id != 273499695186444289:
-        return Client.cache[guild_id].cachedRoles(roles)
+        if user_id != Client.cache[guild_id].guild.owner_id:
+            return Client.cache[guild_id].cachedRoles(roles)
+        return Groups.OWNER
     return Groups.SYSTEM
 
 def is_nested(group: Groups, command: Command, name: str) -> Command:
