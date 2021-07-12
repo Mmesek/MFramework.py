@@ -1,8 +1,7 @@
-from MFramework.commands import register
-from MFramework.utils.utils import tr
-import MFramework.database.alchemy as db
-@register(group='Admin')
-async def graph(self, graph='all', resample='Y', locator='Month', interval=4, *args, data, growth=False, language, **kwargs):
+from MFramework import register, Groups, Context
+from mlib.localization import tr
+@register(group=Groups.ADMIN, interaction=False)
+async def graph(ctx: Context, graph='all', resample='Y', locator='Month', interval=4, *args, growth=False, language, **kwargs):
     '''Possible arguments: graph=all/joined/created/boosters\nresample=W-MON/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth'''
     import time, asyncio
     b = time.time()
@@ -11,15 +10,15 @@ async def graph(self, graph='all', resample='Y', locator='Month', interval=4, *a
     from MFramework.utils.utils import created, truncate
     from datetime import date
     f = time.time()
-    await self.trigger_typing_indicator(data.channel_id)
+    await ctx.deferred()
 
     #Gather data here
-    server = self.cache[data.guild_id]
+    server = ctx.cache
     m_retries = 0
     if len(server.joined) != server.member_count:
         if len(server.joined) >= server.member_count:
             server.joined = []
-        await self.request_guild_members(data.guild_id)
+        await ctx.bot.request_guild_members(ctx.guild_id)
     while len(server.joined) != server.member_count and len(server.joined) < server.member_count:
         await asyncio.sleep(0.1)
         m_retries+=1
@@ -28,7 +27,7 @@ async def graph(self, graph='all', resample='Y', locator='Month', interval=4, *a
     s = time.time()
 
     #Create figure and plot data here
-    s_member = self.cache[data.guild_id].joined
+    s_member = ctx.cache.joined
     total = {'joined':[], 'created':[], 'premium':[]}
     for each in s_member:
         t = pd.to_datetime(each[1]).tz_convert(None) #Joined
@@ -87,11 +86,11 @@ async def graph(self, graph='all', resample='Y', locator='Month', interval=4, *a
     fig.tight_layout()
     img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
-    await self.withFile(data.channel_id, img_str, f"growth-{date.today()}.png", stats)#f"Took ~{truncate(time.time()-d,2)}s\n{truncate(s-f,2)}s to gather\n{truncate(d-sd,2)}s to sort\n{truncate(sd-s,2)}s to convert\n{truncate(f-b,2)}s to import stuff")
+    await ctx.reply(content=stats, file=img_str, filename=f"growth-{date.today()}.png")#f"Took ~{truncate(time.time()-d,2)}s\n{truncate(s-f,2)}s to gather\n{truncate(d-sd,2)}s to sort\n{truncate(sd-s,2)}s to convert\n{truncate(f-b,2)}s to import stuff")
 
-@register(group='Admin', help='Plot infractions over days', alias='', category='')
-async def graph_infractions(self, infraction_type='all', resample='D', locator='Week', interval=1, *args, data, moderator=None, user=None, growth=False, language, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.ADMIN, interaction=False)
+async def graph_infractions(ctx: Context, infraction_type='all', resample='D', locator='Week', interval=1, *args, moderator=None, user=None, growth=False, language, **kwargs):
+    '''Plot infractions over days'''
     import time
     b = time.time()
     from MFramework.utils import graphing
@@ -99,15 +98,16 @@ async def graph_infractions(self, infraction_type='all', resample='D', locator='
     from MFramework.utils.utils import truncate
     from datetime import date
     f = time.time()
-    await self.trigger_typing_indicator(data.channel_id)
-    _s = self.db.sql.session()
-    infractions = _s.query(db.Infractions).filter(db.Infractions.GuildID == data.guild_id)
+    await ctx.deferred()
+    _s = ctx.db.sql.session()
+    import MFramework.database.alchemy.log as db
+    infractions = _s.query(db.Infractions).filter(db.Infraction.server_id == ctx.guild_id)
     if infraction_type != 'all':
-        infractions = infractions.filter(db.Infractions.InfractionType == infraction_type)
+        infractions = infractions.filter(db.Infraction.type == infraction_type)
     if moderator != None:
-        infractions = infractions.filter(db.Infractions.ModeratorID == moderator)
+        infractions = infractions.filter(db.Infraction.moderator_id == moderator)
     if user != None:
-        infractions = infractions.filter(db.Infractions.UserID == user)
+        infractions = infractions.filter(db.Infraction.user_id == user)
     infractions = infractions.all()
     s = time.time()
     total = {'Total Infractions': []}
@@ -159,11 +159,11 @@ async def graph_infractions(self, infraction_type='all', resample='D', locator='
     
     img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
-    await self.withFile(data.channel_id, img_str, f"growth-{date.today()}.png", stats)
+    await ctx.reply(stats, file=img_str, filename=f"growth-{date.today()}.png")
 
-@register(group='Admin', help='Plots word usage over days', alias='', category='')
-async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10000, resample='W-MON', locator='Week', interval=1, growth=False, language, **kwargs):
-    '''Extended description to use with detailed help command'''
+@register(group=Groups.ADMIN, interaction=False)
+async def graph_words(ctx: Context, channel_id, *word_or_phrase, limit_messages=10000, resample='W-MON', locator='Week', interval=1, growth=False, language, **kwargs):
+    '''Plots word usage over days'''
     import time
     b = time.time()
     from MFramework.utils import graphing
@@ -171,7 +171,8 @@ async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10
     from MFramework.utils.utils import truncate
     from datetime import date
     f = time.time()
-    await self.trigger_typing_indicator(data.channel_id)
+    await ctx.deferred()
+
 
     word_or_phrase = ''.join(word_or_phrase)
     limit_messages = int(limit_messages)
@@ -179,10 +180,10 @@ async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10
         limit = limit_messages
     else:
         limit = 100
-    total_messages = await self.get_messages(channel_id, limit=limit)
+    total_messages = await ctx.bot.get_channel_messages(channel_id, limit=limit)
     previous_id = 0
     previous_first_id = 0
-    cache = self.cache[data.guild_id].messages
+    cache = ctx.cache.messages
     channel_id = int(channel_id)
     if channel_id in cache:
         cached_messages = list(i[1] for i in sorted(cache[channel_id].items()))
@@ -203,7 +204,7 @@ async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10
             first_id = total_messages[0].id
             print(previous_id, last_id, previous_id > last_id, len(total_messages))
             if previous_id > last_id or previous_id == 0: #and previous_first_id < first_id:
-                new_messages = await self.get_messages(channel_id, snowflake=last_id)
+                new_messages = await ctx.bot.get_channel_messages(channel_id, after=last_id)
                 #if new_messages[0] != total_messages[0] and new_messages[-1] != total_messages[-1]:
                 total_messages += new_messages
                 previous_id = last_id
@@ -211,9 +212,9 @@ async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10
             else:
                 break
     for msg in reversed(total_messages):
-        if msg.id not in self.cache[data.guild_id].messages[channel_id]:
-            self.cache[data.guild_id].message(msg.id, msg)
-    total_messages = list(i[1] for i in sorted(self.cache[data.guild_id].messages[channel_id].items()))
+        if msg.id not in ctx.cache.messages[channel_id]:
+            ctx.cache.message(msg.id, msg)
+    total_messages = list(i[1] for i in sorted(ctx.cache.messages[channel_id].items()))
 
     s = time.time()
 
@@ -226,7 +227,7 @@ async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10
     sd = time.time()
 
     if total[word_or_phrase] == []:
-        return await self.message(data.channel_id, f"Couldn't find specified word or phrase ({word_or_phrase}) within last fetchable {len(total_messages)} in <#{channel_id}>")
+        return await ctx.reply(f"Couldn't find specified word or phrase ({word_or_phrase}) within last fetchable {len(total_messages)} in <#{channel_id}>")
     #for i in total:
     #    sorted_total[i] = sorted(total[i])
 
@@ -255,5 +256,5 @@ async def graph_words(self, channel_id, *word_or_phrase, data, limit_messages=10
 
     img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
-    await self.withFile(data.channel_id, img_str, f"growth-{date.today()}.png", f"Found {len(total[word_or_phrase])} messages containing `{word_or_phrase}` within {len(total_messages)} of total fetched messages. (Took {truncate(s-f,2)}s to fetch them)")
+    await ctx.reply(f"Found {len(total[word_or_phrase])} messages containing `{word_or_phrase}` within {len(total_messages)} of total fetched messages. (Took {truncate(s-f,2)}s to fetch them)", file=img_str, filename=f"growth-{date.today()}.png")
 

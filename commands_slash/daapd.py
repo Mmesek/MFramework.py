@@ -1,5 +1,5 @@
-from MFramework.commands import register
-from MFramework.utils.utils import secondsToText, Embed
+from MFramework.commands import register, Groups, Embed, Context
+from mlib.localization import secondsToText
 import requests
 rpc = "http://192.168.1.2:3689"
 
@@ -39,32 +39,32 @@ class Queue(BaseApi):
     def queue():
         return Queue.api(method="GET")
 
-@register(group='System', category='Daapd')
-async def dplay(self, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dplay(ctx: Context, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.play()
 
-@register(group='System', category='Daapd')
-async def dpause(self, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dpause(ctx: Context, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.pause()
-@register(group='System', category='Daapd')
-async def dnext(self, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dnext(ctx: Context, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.next()
 
-@register(group='System', category='Daapd')
-async def dprevious(self, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dprevious(ctx: Context, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.previous
 
-@register(group='System', category='Daapd')
-async def dvolume(self, new_volume, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dvolume(ctx: Context, new_volume, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     Player.set_volume(new_volume)
 
-@register(group='System', category='Daapd')
-async def dplaying(self, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dplaying(ctx: Context, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     current = Player.get_status().json()
     q = Queue.queue().json()
@@ -85,10 +85,10 @@ async def dplaying(self, *args, data, language, **kwargs):
             if i == 10:
                 break
     embed = Embed().setTitle("Currently Playing").setDescription(string).addField("Next",string2[:1024]).setFooter("",f"Queue at: {x}/{len(q['items'])}").setThumbnail(rpc+'/artwork/nowplaying')
-    await self.embed(data.channel_id, "", embed.embed)
+    await ctx.reply(embeds=[embed])
 
-@register(group='System', category='Daapd')
-async def dhistory(self, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dhistory(ctx: Context, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     current = Player.get_status().json()
     q = Queue.queue().json()
@@ -110,7 +110,7 @@ async def dhistory(self, *args, data, language, **kwargs):
         if i == 10:
             break
     embed = Embed().setTitle("Currently Playing").setDescription(string).addField("Previous",string2[:1024]).setFooter("",f"Queue at: {current_at}/{len(q['items'])}")
-    await self.embed(data.channel_id, "", embed.embed)
+    await ctx.reply(embeds=[embed])
 
 async def getLyrics(artist, song):
     from bs4 import BeautifulSoup
@@ -160,8 +160,8 @@ async def getLyrics(artist, song):
                 i=i+1
     return (lyrics, src)
 
-@register(group='System', category='Daapd')
-async def dlyrics(self, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dlyrics(ctx: Context, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     current = Player.get_status().json()
     q = Queue.queue().json()
@@ -173,11 +173,11 @@ async def dlyrics(self, *args, data, language, **kwargs):
     embed = Embed().setTitle(f"{item['artist']} - {item['title']}").setFooter('',f"Source: {l[1]}")
     for verse in l[0]:
         embed.addField("\u200b", verse)
-    await self.embed(data.channel_id, "", embed.embed)
+    await ctx.reply(embeds=[embed])
 
 
-@register(group='System', category='Daapd')
-async def dstart(self, *args, data, language, **kwargs):
+@register(group=Groups.SYSTEM, interaction=False, category='Daapd')
+async def dstart(ctx: Context, *args,  language, **kwargs):
     '''Extended description to use with detailed help command'''
     d = Daapd()
     await d.connect()
