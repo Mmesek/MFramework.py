@@ -101,3 +101,16 @@ async def stack_search(ctx: Context, search: str, *args, language, **kwargs):
             e.setDescription(desc)
     await ctx.reply(embeds=[e])
 
+@register(group=Groups.GLOBAL, interaction=False)
+async def spotify_search(ctx: Context, *query, language, **kwargs):
+    '''Search Spotify'''
+    from MFramework.api.spotify import Spotify
+    s = Spotify()
+    await s.connect()
+    res = await s.search('+'.join(query), 'artist', '&limit=10')
+    l = ''
+    for i in res['artists']['items']:
+        l += f"\n- [{i['name']}](https://open.spotify.com/artist/{i['id']})"
+    embed = Embed().setDescription(l).setColor(1947988).setAuthor(' '.join(query),res['artists']['href'].replace('api','open').replace('/v1/','/').replace('?query=','/').split('&')[0],'https://images-eu.ssl-images-amazon.com/images/I/51rttY7a%2B9L.png').setThumbnail(res['artists']['items'][0]['images'][0]['url'])
+    await ctx.reply(embeds=[embed])
+    await s.disconnect()
