@@ -11,7 +11,7 @@ class Steam:
     async def api_call(self=None, path="", querry="", method="GET", api=URL.STEAM, **kwargs):
         import aiohttp
         async with aiohttp.ClientSession() as session:
-            request = await session.request(method, api + path + querry, **kwargs)
+            request = await session.request(method, api.value + path + querry, **kwargs)
             try:
                 return await request.json()
             except:

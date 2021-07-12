@@ -1,12 +1,12 @@
 from MFramework import register, Groups, Context, Interaction, Embed
-from MFramework.api.steam import Steam as steam
+from MFramework.api.steam import Steam
 
 from mlib.localization import tr
 
 @register(group=Groups.SYSTEM, interaction=False)
 async def refreshAppIndex(ctx: Context, *args, data, **kwargs):
     """Updates Index of Steam Games"""
-    steamapi = steam()
+    steamapi = Steam(None)
     apps = await steamapi.AppList()
     index = {}
     for each in apps["applist"]["apps"]:
@@ -37,12 +37,12 @@ async def steamParse(ctx: Context, request, language, *game):
             game = get_close_matches(game, ctx.bot.index.keys(), 1)[0]
         except IndexError:
             yield {}, game
-        appid = ctx.index[game]
+        appid = ctx.bot.index[game]
         if request == "playercount":
-            playercount = await steam.CurrentPlayers(appid)
+            playercount = await Steam.CurrentPlayers(appid)
             yield playercount, game
         elif request == "details":
-            page = await steam.appDetails(appid, language)
+            page = await Steam.appDetails(appid, language)
             yield page[str(appid)].get("data",{"short_description": "There was an error searching for data, perhaps Steam page doesn't exist anymore?", "name":game}), appid
 
 @register(group=Groups.GLOBAL, main=steam)
@@ -118,12 +118,13 @@ async def game(ctx: Context, interaction: Interaction, game: str, *args, languag
     ------
     game:
         Steam game title(s). Separate using comma `,`'''
+    await ctx.deferred()
     _game = game
     async for game, appid in steamParse(ctx, "details", language, *game):
         embed = Embed()
         embed.setDescription(game.get("short_description")).setTitle(game.get("name"))
         embed.setUrl(f"https://store.steampowered.com/app/{appid}/").setFooter(
-            "", text=tr("commands.game.release", language) + game.get("release_date",{}).get("date","")
+            text=tr("commands.game.release", language) + game.get("release_date",{}).get("date","")
         )
         embed.setImage(game.get("header_image",""))
         prc = game.get("price_overview", {}).get("final_formatted")
@@ -144,7 +145,7 @@ async def game(ctx: Context, interaction: Interaction, game: str, *args, languag
         r = game.get("recommendations", {}).get("total")
         if r is not None:
             embed.addField(tr("commands.game.recommendations", language), r, True)
-        cp = await steam.CurrentPlayers(appid)
+        cp = await Steam.CurrentPlayers(appid)
         cp = cp.get("response", {}).get("player_count")
         if cp is not None:
             embed.addField(tr("commands.game.players", language), cp, True)
@@ -157,7 +158,7 @@ async def game(ctx: Context, interaction: Interaction, game: str, *args, languag
         dlc = len(game.get("dlc", []))
         if dlc != 0:
             embed.addField(tr("commands.game.dlc", language), dlc, True)
-        f = len(embed.embed["fields"])
+        f = len(embed.fields)
         if f != 0 and f % 3 != 0:
             embed.addField("\u200b", "\u200b", True)
         devs = game.get("developers")
@@ -201,7 +202,7 @@ async def steamsearch(ctx: Context, game: str, *args, language, **kwargs):
 
 
 @register(group=Groups.GLOBAL, main=steam)
-async def steamcalc(ctx: Context, interaction: Interaction, steam_id: str=None, country: str = "us", *args, language, **kwargs):
+async def steamcalc(ctx: Context, steam_id: str=None, country: str = "us", *args, language, **kwargs):
     '''Steam Calculator. Similiar to Steamdb one (With few differences). 
     Params
     ------
@@ -212,7 +213,7 @@ async def steamcalc(ctx: Context, interaction: Interaction, steam_id: str=None, 
     await ctx.deferred()
     if not steam_id:
         steam_id = ctx.user.username
-    s = steam()
+    s = Steam(ctx.bot.cfg.get('Tokens', {}).get('steam', None))
     uid = await s.resolveVanityUrl(steam_id)
     if uid != tr('commands.steamcalc.notFound', language):
         uid = uid['response']
