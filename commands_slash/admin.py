@@ -1,4 +1,4 @@
-from MFramework import register, Context, Groups
+from MFramework import register, Context, Groups, Embed
 
 @register(group=Groups.ADMIN, interaction=False)
 async def edit_message(ctx: Context, messageID, *newMessage,  channel, **kwargs):
@@ -58,7 +58,6 @@ async def delete(ctx: Context, channel, *message,  **kwargs):
     '''Delete's message'''
     await ctx.bot.delete_message(channel, *message)
 
-from MFramework.utils.utils import Embed
 @register(group=Groups.ADMIN, interaction=False)
 async def getmessages(ctx: Context, user, *args,  **kwargs):
     '''Retrives messages from DM'''

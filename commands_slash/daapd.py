@@ -1,4 +1,4 @@
-from MFramework.commands import register, Groups, Embed, Context
+from MFramework import register, Groups, Embed, Context
 from mlib.localization import secondsToText
 import requests
 rpc = "http://192.168.1.2:3689"

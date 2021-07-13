@@ -2,7 +2,8 @@ from MFramework import register, Groups, ChannelID, Snowflake, Embed
 
 from datetime import datetime, timezone
 from MFramework.bot import Context
-from MFramework.utils.utils import replaceMultiple, total_seconds
+from mlib.utils import replaceMultiple
+from mlib.converters import total_seconds
 from mlib.localization import tr
 from mlib.random import chance, pick
 from MFramework.utils.scheduler import scheduledTask, add_task, wait_for_scheduled_task
