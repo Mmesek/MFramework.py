@@ -1,6 +1,6 @@
 from MFramework import (onDispatch, Ready, Interaction_Type,
     RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake,
-    Interaction, Guild, Application_Command,
+    Interaction, Guild, Application_Command, Application_Command_Option_Type,
     Context, Bot, Groups, log)
 
 from ._utils import is_nested, iterate_commands, set_default_arguments, commands
@@ -22,6 +22,10 @@ async def interaction_create(client: Bot, interaction: Interaction):
     if sub != name:
         f = is_nested(g, f, sub)
         interaction.data.options = interaction.data.options[0].options
+        nested = interaction.data.options[0].name if interaction.data.options[0].type == Application_Command_Option_Type.SUB_COMMAND else None
+        if nested:
+            f = is_nested(g, f, nested)
+            interaction.data.options = interaction.data.options[0].options
     kwargs = {}
     for option in interaction.data.options:
         t = f.arguments[option.name].type

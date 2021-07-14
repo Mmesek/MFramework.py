@@ -120,15 +120,15 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
         List of possible aliases'''
     def inner(f):
         _name = f.__name__.lower()
-        _main  = main.__name__.lower() if main else None
         cmd = Command(f, interaction, main, group, guild)
+        f._cmd = cmd
         for alias in aliases:
             aliasList[alias] = _name
-        if main: #TODO: It doesn't support nesting!
+        if main:
             if not choice:
-                commands[_main].add_subcommand(cmd)
+                main._cmd.add_subcommand(cmd)
             else:
-                commands[_main].add_choice(_name, cmd)
+                main._cmd.add_choice(_name, cmd)
         else:
             commands[_name] = cmd
         return f
