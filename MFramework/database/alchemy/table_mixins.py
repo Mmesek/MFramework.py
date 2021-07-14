@@ -54,7 +54,7 @@ class HasDictSettingsRelated:#(ProxiedDictMixin):
                 #parent=relationship(cls)
             )
         )
-        return relationship(cls.Setting, collection_class=attribute_mapped_collection("name"))
+        return relationship(cls.Setting, collection_class=attribute_mapped_collection("name"), cascade='all, delete-orphan')
     @declared_attr
     def _settings(cls): #_proxied
         return association_proxy(
@@ -80,5 +80,7 @@ class HasDictSettingsRelated:#(ProxiedDictMixin):
     def modify_setting(self, setting, value):
         setattr(self.settings[setting], setting.value.__name__, value)
     def remove_setting(self, setting):
-        self.settings[setting] = None
+        return getattr(self.settings.pop(setting, None), setting.value[0].__name__.lower(), None)
+    def get_setting(self, setting):
+        return getattr(self.settings.get(setting, None), setting.value[0].__name__.lower(), None)
 
