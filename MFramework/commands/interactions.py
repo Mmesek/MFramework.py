@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+'''
+Interactions
+------------
+
+Interaction commands registery & execution framework
+
+:copyright: (c) 2021 Mmesek
+'''
 from MFramework import (onDispatch, Ready, Interaction_Type,
     RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake,
     Interaction, Guild, Application_Command, Application_Command_Option_Type,
@@ -18,13 +27,11 @@ async def interaction_create(client: Bot, interaction: Interaction):
         if not f:
             log.debug("Command %s not found", name)
         return
-    sub = interaction.data.options[0].name if len(interaction.data.options) > 0 and f.sub_commands != [] else name
-    if sub != name:
-        f = is_nested(g, f, sub)
+    if len(interaction.data.options) and interaction.data.options[0].type in {Application_Command_Option_Type.SUB_COMMAND_GROUP, Application_Command_Option_Type.SUB_COMMAND}:
+        f = is_nested(g, f, interaction.data.options[0].name)
         interaction.data.options = interaction.data.options[0].options
-        nested = interaction.data.options[0].name if interaction.data.options[0].type == Application_Command_Option_Type.SUB_COMMAND else None
-        if nested:
-            f = is_nested(g, f, nested)
+        if len(interaction.data.options) and interaction.data.options[0].type in {Application_Command_Option_Type.SUB_COMMAND}:
+            f = is_nested(g, f, interaction.data.options[0].name)
             interaction.data.options = interaction.data.options[0].options
     kwargs = {}
     for option in interaction.data.options:
@@ -45,7 +52,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
 
 from mlib import arguments
 CLEAR_INTERACTIONS = getattr(arguments.parse(), 'clear_interactions', False)
-
+UPDATE_PERMISSIONS = getattr(arguments.parse(), 'update_permissions', False)
 
 @onDispatch
 async def ready(client: Bot, ready: Ready):
@@ -65,8 +72,9 @@ async def guild_create(client: Bot, guild: Guild):
     
     _commands = await register_commands(client, guild)
     
-    #from ._utils import set_permissions
-    #await set_permissions(client, guild.id, client.registered_commands + _commands)
+    if UPDATE_PERMISSIONS:
+        from ._utils import set_permissions
+        await set_permissions(client, guild.id, client.registered_commands + _commands)
 
 async def register_commands(client: Bot, guild: Guild = None):
     registered = await get_commands(client, guild)
