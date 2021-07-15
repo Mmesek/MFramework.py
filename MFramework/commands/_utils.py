@@ -132,6 +132,10 @@ def parse_docstring(f):
         docstring[param[0]] = param[1].strip()
     return docstring
 
+class Mentionable(Snowflake):
+    '''Snowflake representing any (User, Role or Channel) mentionable object'''
+    pass
+
 _types = {
     str: Application_Command_Option_Type.STRING,
     int: Application_Command_Option_Type.INTEGER,
@@ -144,7 +148,8 @@ _types = {
     Channel: Application_Command_Option_Type.CHANNEL,
     User: Application_Command_Option_Type.USER,
     Guild_Member: Application_Command_Option_Type.USER,
-    GuildID: Application_Command_Option_Type.STRING
+    GuildID: Application_Command_Option_Type.STRING,
+    Mentionable: Application_Command_Option_Type.MENTIONABLE
 }
 
 def parse_arguments(_command: Command) -> list:
