@@ -697,5 +697,26 @@
     },
     "join": {
         "cmd_trigger": "join"
+    },
+    "loadout":{
+        "primary_weapon": "Broń Główna",
+        "weapon_mods": "Modyfikacje Broni",
+        "secondary_weapon": "Broń Boczna",
+        "anti_titan_weapon": "Broń Przeciw Tytanom",
+        "ordnance": "Broń Ciężka",
+        "booster": "Wzmocnienie",
+        "faction": "Frakcja",
+        "pilot_tactical": "Zdolność Taktyczna",
+        "pilot_kit": "Zestaw Pilota",
+        "pilot_kit_2": "Zestaw Pilota 2",
+        "titan": "Tytan",
+        "titan_kit": "Zestaw Tytana",
+        "titanfall_kit": "Zestaw Zrzutu",
+        "class_kit": "Zestaw Klasy",
+        "mode": "Tryb",
+        "map": "Mapa",
+        "core_1": "Rdzeń 1",
+        "core_2": "Rdzeń 2",
+        "core_3": "Rdzeń 3"
     }
 }
