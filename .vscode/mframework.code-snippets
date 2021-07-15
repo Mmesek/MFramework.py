@@ -31,7 +31,7 @@
 		"prefix":"@register",
 		"body":[
 			"@register(group=${1:Groups.GLOBAL})",
-			"async def ${2:commandTrigger}(ctx: Bot, interaction: Interaction, ${3:parameter}: ${4:type}, *args, language, **kwargs):",
+			"async def ${2:commandTrigger}(ctx: Context, ${3:parameter}: ${4:type}, *args, language, **kwargs):",
 			"    '''",
 			"    ${5:Description to use with help command}",
 			"    Params",
