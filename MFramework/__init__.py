@@ -35,3 +35,4 @@ from mdiscord import * # noqa: F401
 
 from .bot import * # noqa: F401
 from .commands import * # noqa: F401
+from .commands import commands, interactions # noqa: F401
