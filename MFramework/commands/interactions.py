@@ -37,6 +37,8 @@ async def interaction_create(client: Bot, interaction: Interaction):
     for option in interaction.data.options:
         t = f.arguments[option.name].type
         if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID]:
+            if type(option.value) is str and option.value.isdigit():
+                option.value = int(option.value)
             kwargs[option.name] = f.arguments[option.name].type(option.value)
         elif issubclass(t, Snowflake):
             # We are casting it to Snowflake due to some recursion error. 
@@ -54,7 +56,7 @@ from mlib import arguments
 CLEAR_INTERACTIONS = getattr(arguments.parse(), 'clear_interactions', False)
 UPDATE_PERMISSIONS = getattr(arguments.parse(), 'update_permissions', False)
 
-@onDispatch
+@onDispatch(priority=101)
 async def ready(client: Bot, ready: Ready):
     '''Called after connecting with Discord. Preferably after receiving READY event'''
     if getattr(client, 'registered', False):
@@ -62,7 +64,7 @@ async def ready(client: Bot, ready: Ready):
     client.application = await client.get_current_bot_application_information()
     await register_commands(client)
 
-@onDispatch
+@onDispatch(priority=101)
 async def guild_create(client: Bot, guild: Guild):
     '''Called after GUILD_CREATE'''
     if not client.application:
