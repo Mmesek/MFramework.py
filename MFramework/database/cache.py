@@ -61,6 +61,7 @@ class GuildCache:
     permissions: int = 0
     language: str = 'en'
     allowed_duplicated_messages: int = 1
+    settings: dict
 
     name: str
     color: int
@@ -335,6 +336,7 @@ class GuildCache:
             self.get_tracked_streams(s)
 
     def load_settings(self, guild):
+        self.settings = guild.settings
         for setting, value in guild.settings.items():
             setattr(self, setting.name.lower(), getattr(value, setting.value[0].__name__.lower(), None))
 
