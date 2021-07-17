@@ -1,8 +1,9 @@
-from sqlalchemy.sql.sqltypes import Boolean
+from typing import Any
+
 from .mixins import *
 from . import types
 
-from sqlalchemy import Column, Integer, Enum, Date, String
+from sqlalchemy import Column, Integer, Enum, Date, String, Boolean
 
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -36,6 +37,13 @@ class ProxiedDictMixin(object):
 
 
 class Setting:
+    '''Polymorphic Setting mixin
+    
+    Columns
+    -------
+    name:
+        `Setting` type of this setting
+    '''
     name = Column(Enum(types.Setting), primary_key=True)
     int = Column(Integer, nullable=True)#default=0)
     str = Column(String, nullable=True)
@@ -65,7 +73,7 @@ class HasDictSettingsRelated:#(ProxiedDictMixin):
     @classmethod
     def with_setting(self, name, value):
         return self.settings.any(name=name, value=value)
-    def add_setting(self, setting, value):
+    def add_setting(self, setting: types.Setting, value: Any) -> None:
         setting_type = setting.value[0].__name__
         import enum
         if type(value) in {int, str, bool} and type(value).__name__ != setting_type:
@@ -77,10 +85,10 @@ class HasDictSettingsRelated:#(ProxiedDictMixin):
         else:
             print("[VALUE - SETTING_TYPE MISMATCH]", value, setting)
         self.settings[setting] = self.Setting(**{"name": setting, column.lower():value})
-    def modify_setting(self, setting, value):
+    def modify_setting(self, setting: types.Setting, value: Any) -> None:
         setattr(self.settings[setting], setting.value.__name__, value)
-    def remove_setting(self, setting):
+    def remove_setting(self, setting: types.Setting) -> Any:
         return getattr(self.settings.pop(setting, None), setting.value[0].__name__.lower(), None)
-    def get_setting(self, setting):
+    def get_setting(self, setting: types.Setting) -> Any:
         return getattr(self.settings.get(setting, None), setting.value[0].__name__.lower(), None)
 
