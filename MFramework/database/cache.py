@@ -73,7 +73,7 @@ class GuildCache:
         self.guild_id = guild.id
         self.guild = guild
         self.groups = {i:set() for i in Groups}
-        r = RDS()
+        r = rds or RDS(bot.cfg.get("redis", {}).get("host", None))
         self.members = (#
         {i.user.id:i for i in guild.members} #TODO
         #Members(r).from_list(guild.members)

@@ -4,8 +4,8 @@ import redis
 
 class RDS:
     r: redis.Redis
-    def __init__(self) -> None:
-        self.r = redis.Redis('192.168.1.5')
+    def __init__(self, address: str) -> None:
+        self.r = redis.Redis(address)
     def _to_dict(self, value):
         if type(value) is bytes:
             import ujson
