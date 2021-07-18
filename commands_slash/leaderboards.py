@@ -88,7 +88,7 @@ async def top(ctx: Context, limit: int=10, type: TopLeaderboards=None, count: bo
         from MFramework.utils.utils import get_usernames
         for result in r[:limit]:
             names[result] = await get_usernames(ctx.bot, ctx.guild_id, result)
-        t = format_leaderboard(r[:limit], user_id, get_name=lambda x: f'`{names.get(x, "Error")}`', get_value=get_value, get_id=lambda x: x.user_id)
+        t = format_leaderboard(r[:limit], user_id, get_name=lambda x: f'`{names.get(x, "Error")}`', get_value=get_value, get_id=lambda x: x)
         embed.setDescription('\n'.join(t))
         return await ctx.reply(embeds=[embed])
     session = ctx.db.sql.session()
