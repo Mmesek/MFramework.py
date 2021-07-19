@@ -12,7 +12,7 @@ from MFramework import (onDispatch, Ready, Interaction_Type,
     Interaction, Guild, Application_Command, Application_Command_Option_Type,
     Context, Bot, Groups, log)
 
-from ._utils import is_nested, iterate_commands, set_default_arguments, commands
+from ._utils import is_nested, iterate_commands, set_default_arguments, commands, add_extra_arguments
 
 @onDispatch
 async def interaction_create(client: Bot, interaction: Interaction):
@@ -34,6 +34,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
             f = is_nested(g, f, interaction.data.options[0].name)
             interaction.data.options = interaction.data.options[0].options
     kwargs = {}
+    kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client= client, interaction=interaction, language='en', group=g)
     for option in interaction.data.options:
         t = f.arguments[option.name].type
         if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID]:
@@ -50,7 +51,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
                 o.user = interaction.data.resolved.users.get(str(option.value), User())
             kwargs[option.name] = o
     kwargs = set_default_arguments(ctx, f, kwargs)
-    await f.func(ctx=ctx, client=client, interaction=interaction, language='en', group=g, **kwargs)
+    await f.func(**kwargs)
 
 from mlib import arguments
 CLEAR_INTERACTIONS = getattr(arguments.parse(), 'clear_interactions', False)
