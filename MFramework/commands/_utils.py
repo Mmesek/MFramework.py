@@ -1,9 +1,11 @@
+from typing import List, Dict, Any, Tuple, Type, Generator, Optional
 from inspect import signature, Signature
-from mdiscord.models import Application_Command
 
-from mdiscord.types import GuildID
-
-from MFramework import Snowflake, ChannelID, UserID, RoleID, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type, Channel, User, Role, Guild_Member, Message, Enum
+from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
+    Channel, User, Role, Guild_Member, Message, Enum,
+    Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
+    Application_Command_Permissions, Application_Command_Permission_Type, Guild_Application_Command_Permissions, log
+    )
 
 class Groups(Enum):
     SYSTEM = 0
@@ -21,7 +23,6 @@ class Groups(Enum):
     MUTED = 210
     LIMBO = 220
 
-from typing import List, Dict, Any, Tuple
 class Argument:
     default: str
     type: type
@@ -29,7 +30,7 @@ class Argument:
     choices: Dict[str, Any]
     kind: str
     name: str
-    def __init__(self, default, type, help, choices, kind, name) -> None:
+    def __init__(self, default: str, type: Type, help: str, choices: Dict[str, Any], kind: str, name: str) -> None:
         self.default = default
         self.type = type
         self.help = help
@@ -89,7 +90,7 @@ def is_nested(group: Groups, command: Command, name: str) -> Command:
             return is_nested(group, sub_command, name)
     return command
 
-def parse_signature(f, docstring):
+def parse_signature(f, docstring: Dict[str, Any]) -> Dict[str, Argument]:
     sig = signature(f).parameters
     parameters = {}
     for parameter in sig:
@@ -107,7 +108,7 @@ def parse_signature(f, docstring):
         parameters[sig[parameter].name] = arg
     return parameters
 
-def parse_docstring(f):
+def parse_docstring(f) -> Dict[str, Any[str, Dict[str, str]]]:
     docstring = {
         '_doc':f.__doc__.strip().split('Params',1)[0].strip() if f.__doc__ else 'MISSING DOCSTRING',
         'choices':{}
@@ -152,12 +153,12 @@ _types = {
     Mentionable: Application_Command_Option_Type.MENTIONABLE
 }
 
-def parse_arguments(_command: Command) -> list:
+def parse_arguments(_command: Command) -> List[str]:
     options = []
-    for i in _command.arguments:
+    for i, v in _command.arguments.items():
         if i.lower() in ['self', 'ctx', 'client', 'interaction']:
             continue
-        elif i.lower() in ['data', 'args']:
+        elif v.kind in {'VAR_POSITIONAL', 'KEYWORD_ONLY'}:
             break
         elif i.lower() == 'message' and _command.arguments[i].type is Message:
             break
@@ -179,7 +180,7 @@ def parse_arguments(_command: Command) -> list:
         ))
     return options
 
-def iterate_commands(registered: List[Application_Command]=[], guild_id: Snowflake = None):
+def iterate_commands(registered: List[Application_Command]=[], guild_id: Optional[Snowflake] = None) -> Generator[Tuple[str, Command, List[str]]]:
     for command, cmd in commands.items():
         if guild_id != cmd.guild or cmd.master_command or not cmd.interaction:
             continue
@@ -195,7 +196,7 @@ def iterate_commands(registered: List[Application_Command]=[], guild_id: Snowfla
         yield command, _command, options
 
 
-def set_default_arguments(ctx, f, kwargs):
+def set_default_arguments(ctx, f: Command, kwargs: Dict[str, Any]) -> Dict[str, Any]:
     for arg in f.arguments:
         if arg not in kwargs:
             _type = f.arguments[arg].type
@@ -217,8 +218,19 @@ def set_default_arguments(ctx, f, kwargs):
             kwargs[arg] = i
     return kwargs
 
-from MFramework import Application_Command_Permissions, Application_Command_Permission_Type, log, Guild_Application_Command_Permissions
-async def set_permissions(client, guild_id: Snowflake, _commands):
+def add_extra_arguments(f: Command, _kwargs: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+    for arg, value in kwargs.items():
+        if arg in f.arguments and value.kind not in {'KEYWORLD_ONLY'}:
+            _kwargs[arg] = value
+    return _kwargs
+
+def strip_extra_arguments(f: Command, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    for arg in kwargs:
+        if arg not in f.arguments:
+            kwargs.pop(arg)
+    return kwargs
+
+async def set_permissions(client, guild_id: Snowflake, _commands: List[Command]) -> None:
     groups = client.cache[guild_id].groups
     permissions = []
     for cmd in _commands:
@@ -257,17 +269,17 @@ def get_arguments(client, message: Message) -> List[str]:
     args = args.strip().split(' ')
     return args
 
-def get_original_cmd(_name) -> str:
+def get_original_cmd(_name: str) -> str:
     return aliasList.get(_name, _name)
 
-def set_ctx(client, message: Message, f):
+def set_ctx(client, message: Message, f: Command):
     from MFramework import Context
     ctx = Context(client.cache, client, message)
     if not f or f.group < ctx.permission_group:
         return False
     return ctx
 
-def set_kwargs(ctx, f, args) -> Dict[str, Any]:
+def set_kwargs(ctx, f: Command, args: List[str]) -> Dict[str, Any]:
     # NOTE: Argument doesn't support any form of List. Neither it supports -flags or specifying keyword arguments at all  
     kwargs = {}
     for x, option in enumerate(f.arguments.values()):
