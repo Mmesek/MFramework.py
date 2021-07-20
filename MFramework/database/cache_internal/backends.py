@@ -31,10 +31,12 @@ class Dictionary(Dict):
         return name in self
     def count(self, name) -> int:
         return len(self.keys(name))
-    def keys(self, pattern) -> List[Any]:
-        import re
-        p = re.compile(pattern)
-        return list(filter(lambda x: p.search(x), self))
+    def keys(self, pattern=None) -> List[Any]:
+        if pattern:
+            import re
+            p = re.compile(pattern)
+            return list(filter(lambda x: p.search(x), self))
+        return super().keys()
 
 class Redis(redis.Redis):
     def _to_dict(self, value):
