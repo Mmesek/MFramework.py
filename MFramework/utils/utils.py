@@ -11,8 +11,8 @@ async def get_usernames(self, guild_id: int, user_id: int) -> str:
     except:
         try:
             u = await self.get_guild_member(guild_id, user_id)
-        except:
-            return None
+        except Exception as ex:
+            return user_id#None
         self.cache[guild_id].members[user_id] = u
         u = u.user.username
     return u
