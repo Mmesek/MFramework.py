@@ -72,7 +72,14 @@ class GuildCache:
         self.guild_id = guild.id
         self.guild = guild
         self.groups = {i:set() for i in Groups}
-        r = rds or Redis(bot.cfg.get("redis", {}).get("host", None))
+        if not rds:
+            host = bot.cfg.get("redis", {}).get("host", None)
+            if host:
+                r = Redis(host)
+            else:
+                r = Dictionary()
+        else:
+            r = rds
         self.members = Members().from_list(guild.members)
         self.roles = Roles().from_list(guild.roles)
         self.channels = Channels().from_list(guild.channels, guild_id = guild.id)
