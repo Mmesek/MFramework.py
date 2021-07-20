@@ -26,9 +26,9 @@ async def steam(ctx: Context, interaction: Interaction, *args, language, **kwarg
     '''Fetches data on games'''
     pass
 
-async def steamParse(ctx: Context, request, language, *game):
+async def steamParse(ctx: Context, request, language, game):
     from difflib import get_close_matches
-    game = " ".join(game)
+    #game = " ".join(game)
     games = game.split(",")
     if not hasattr(ctx.bot, "index"):
         await loadSteamIndex(ctx)
@@ -120,7 +120,7 @@ async def game(ctx: Context, interaction: Interaction, game: str, *args, languag
         Steam game title(s). Separate using comma `,`'''
     await ctx.deferred()
     _game = game
-    async for game, appid in steamParse(ctx, "details", language, *game):
+    async for game, appid in steamParse(ctx, "details", language, game):
         embed = Embed()
         embed.setDescription(game.get("short_description")).setTitle(game.get("name"))
         embed.setUrl(f"https://store.steampowered.com/app/{appid}/").setFooter(
@@ -134,10 +134,10 @@ async def game(ctx: Context, interaction: Interaction, game: str, *args, languag
                 prc = tr("commands.game.f2p", language)
             embed.addField(tr("commands.game.price", language), prc, True)
         if language == "pl":
-            bazar = getBazarPrice(game["name"])
+            bazar = getBazarPrice(game.get("name", "Error"))
             if bazar != 0:
                 embed.addField(tr("commands.game.BazarPrice", language), bazar, True)
-        ggdeals = getGGDealsLowPrice(game["name"], language)
+        ggdeals = getGGDealsLowPrice(game.get("name", "Error"), language)
         if ggdeals[0] != 0:
             embed.addField(tr("commands.game.CurrentLowPrice", language), ggdeals[0], True)
         if ggdeals[1] != 0:
