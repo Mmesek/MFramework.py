@@ -18,7 +18,7 @@ async def help(ctx: Context, *command, alias, group, language, **kwargs):
         _h = check_translation(f'commands.{cmd}.cmd_help', language, '')
         if _h != '':
             embed.addField(tr('commands.help.short_desc', language), _h)
-        return await ctx.reply(embed=embed)
+        return await ctx.reply(embeds=[embed])
     embed.setTitle(tr('commands.help.available_triggers', language))
     desc = tr('commands.help.available_triggers', language, botid=ctx.bot.user_id, botname=ctx.bot.username, alias=ctx.bot.alias) + "\n"
     if ctx.cache.alias != ctx.bot.alias:

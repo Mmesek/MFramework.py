@@ -35,7 +35,7 @@ async def create(ctx: Context, prize: str, duration: str = '1h', description: st
         Whether reactions should be removed
     '''
     finish = datetime.now() + total_seconds(duration)
-    msg = await ctx.bot.create_message(channel, embed=createGiveawayEmbed(language, finish, prize, winner_count, custom_description=description))
+    msg = await ctx.bot.create_message(channel, embeds=[createGiveawayEmbed(language, finish, prize, winner_count, custom_description=description)])
     for reaction in reactions.split(','):
         await msg.react(replaceMultiple(reaction.strip(), ['<:',':>', '>'],''))
     ctx.cache.giveaway_messages.append(msg.id)

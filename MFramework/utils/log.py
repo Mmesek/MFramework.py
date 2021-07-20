@@ -40,7 +40,7 @@ class Log:
         return await self.bot.execute_webhook(self.webhook_id, self.webhook_token, content=content, username=username or self.username, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), avatar_url=avatar or self.avatar, embeds=embeds)
     async def _log_dm(self, user_id: MFramework.Snowflake, content: str="", embed: MFramework.Embed=None) -> MFramework.Message:
         dm_id = await self.bot.create_dm(user_id)
-        return await self.bot.create_message(channel_id=dm_id, content=content, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), embed=embed)
+        return await self.bot.create_message(channel_id=dm_id, content=content, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), embeds=[embed])
 
 class Message(Log):
     username = "Message Log"
