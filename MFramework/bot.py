@@ -1,7 +1,7 @@
 from mdiscord import *
 
 from .database.database import Database
-from .database.cache import Cache
+from .database.cache import GuildCache
 from typing import Dict
 
 class Bot(Client):
@@ -16,8 +16,8 @@ class Bot(Client):
     primary_guild: Snowflake = 463433273620824104
 
     db: Database
-    cache: Dict[Snowflake, Cache]
-    def __init__(self, name: str, cfg: dict, db: Database=None, cache: Cache=None, shard: int=0, total_shards: int=1):
+    cache: Dict[Snowflake, GuildCache]
+    def __init__(self, name: str, cfg: dict, db: Database=None, cache: GuildCache=None, shard: int=0, total_shards: int=1):
         self.db = db
         self.cache = cache
         self.alias = cfg[name].get('alias', '?')
@@ -57,7 +57,7 @@ class Context(Sendable):
     is_message: bool
     is_interaction: bool
 
-    def __init__(self, cache: Cache, bot: Bot, data: Union[Message, Interaction]):
+    def __init__(self, cache: GuildCache, bot: Bot, data: Union[Message, Interaction]):
         self.cache = cache[data.guild_id]
         self.bot = bot
         self.db = bot.db

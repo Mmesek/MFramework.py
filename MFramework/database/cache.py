@@ -5,7 +5,6 @@ from ..utils.log import Log
 from typing import List, Dict, Set, Tuple, Union, DefaultDict
 
 from .cache_internal.models import *
-from .cache_internal.base import Cache, RDS
 import re
 from MFramework import log
 from .alchemy import models as db
@@ -17,17 +16,17 @@ class GuildCache:
     
     guild: Guild
 
-    messages: Dict[Snowflake, Message]
-    channels: Dict[Snowflake, Channel]
-    roles: Dict[Snowflake, Role]
+    messages: Messages
+    channels: Channels
+    roles: Roles
     emojis: Dict[Snowflake, Emoji]
-    members: Dict[Snowflake, Guild_Member]
+    members: Members
     voice: Dict[Snowflake, Dict[Snowflake, float]]
     #voice_states: Dict[Snowflake, Voice_State] = {} #
     #voice_states: Cache[Snowflake, Voice_State] = {} #TODO
     #voice_channels: Dict[Snowflake, Dict[Snowflake, int]] = {}
     webhooks: Dict[str, Tuple[Snowflake, str]]
-    presence: Dict[Snowflake, Tuple[str, int, Snowflake]] = {}
+    presence: Presences = {}#[Snowflake, Tuple[str, int, Snowflake]] = {}
     groups: Dict[Groups, Set[Snowflake]]
 
     disabled_channels: List[Snowflake]
@@ -69,17 +68,14 @@ class GuildCache:
 
     bot: Guild_Member
 
-    def __init__(self, bot, guild: Guild, rds: RDS = None):
+    def __init__(self, bot, guild: Guild, rds: Optional[Redis] = None):
         self.guild_id = guild.id
         self.guild = guild
         self.groups = {i:set() for i in Groups}
-        r = rds or RDS(bot.cfg.get("redis", {}).get("host", None))
-        self.members = (#
-        {i.user.id:i for i in guild.members} #TODO
-        #Members(r).from_list(guild.members)
-        )
-        self.roles = {i.id:i for i in guild.roles} #Roles(r).from_list(guild.roles)
-        self.channels = {i.id:i for i in guild.channels} #Channels(r).from_list(guild.channels, guild_id = guild.id)
+        r = rds or Redis(bot.cfg.get("redis", {}).get("host", None))
+        self.members = Members().from_list(guild.members)
+        self.roles = Roles().from_list(guild.roles)
+        self.channels = Channels().from_list(guild.channels, guild_id = guild.id)
         #for vs in guild.voice_states:
             #from MFramework.utils.timers2 import _startTimer
             #if not vs.self_mute and not vs.self_deaf:
