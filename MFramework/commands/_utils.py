@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Tuple, Type, Generator, Optional
+from typing import List, Dict, Any, Type, Generator, Optional, Union
 from inspect import signature, Signature
 
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
@@ -72,7 +72,7 @@ commands: Dict[str, Command] = {}
 aliasList: Dict[str, str] = {}
 COMPILED_REGEX: Dict[str, str] = {}
 commands_regex: Dict[str, Command] = {}
-command_shortcuts: Dict[str, Tuple[Command, Dict[str, Any]]] = {}
+command_shortcuts: Dict[str, tuple[Command, Dict[str, Any]]] = {}
 reactions: Dict[str, Command] = {}
 
 def detect_group(Client, user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
@@ -108,7 +108,7 @@ def parse_signature(f, docstring: Dict[str, Any]) -> Dict[str, Argument]:
         parameters[sig[parameter].name] = arg
     return parameters
 
-def parse_docstring(f) -> Dict[str, Any[str, Dict[str, str]]]:
+def parse_docstring(f) -> Dict[str, Union[str, Dict[str, str]]]:
     docstring = {
         '_doc':f.__doc__.strip().split('Params',1)[0].strip() if f.__doc__ else 'MISSING DOCSTRING',
         'choices':{}
@@ -180,7 +180,7 @@ def parse_arguments(_command: Command) -> List[str]:
         ))
     return options
 
-def iterate_commands(registered: List[Application_Command]=[], guild_id: Optional[Snowflake] = None) -> Generator[Tuple[str, Command, List[str]]]:
+def iterate_commands(registered: List[Application_Command]=[], guild_id: Optional[Snowflake] = None) -> Generator[tuple[str, Command, List[str]], None, None]:
     for command, cmd in commands.items():
         if guild_id != cmd.guild or cmd.master_command or not cmd.interaction:
             continue
@@ -220,7 +220,7 @@ def set_default_arguments(ctx, f: Command, kwargs: Dict[str, Any]) -> Dict[str, 
 
 def add_extra_arguments(f: Command, _kwargs: Dict[str, Any], **kwargs) -> Dict[str, Any]:
     for arg, value in kwargs.items():
-        if arg in f.arguments and value.kind not in {'KEYWORLD_ONLY'}:
+        if arg in f.arguments and f.arguments[arg].kind not in {'KEYWORLD_ONLY'}:
             _kwargs[arg] = value
     return _kwargs
 
