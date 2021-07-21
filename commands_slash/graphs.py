@@ -1,5 +1,7 @@
 from MFramework import register, Groups, Context
 from mlib.localization import tr
+import matplotlib.pyplot as plt
+
 @register(group=Groups.ADMIN, interaction=False)
 async def graph(ctx: Context, graph='all', resample='Y', locator='Month', interval=4, *args, growth=False, language, **kwargs):
     '''Possible arguments: graph=all/joined/created/boosters\nresample=W-MON/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth'''
