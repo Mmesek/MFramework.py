@@ -236,3 +236,18 @@ async def credits(ctx: Context, *args, language, **kwargs):
     Shows credits and what was used to make bot
     '''
     pass
+
+@register(group=Groups.MODERATOR, interaction=False)
+async def memberchange(ctx: Context, period: str = "7d", *args, language, **kwargs):
+    '''
+    Shows how many users joined and left server within last period
+    '''
+    await ctx.deferred()
+    try:
+        joined = ctx.db.influx.getMembersChange(ctx.guild_id, period)[0].records[0].values
+        left = ctx.db.influx.getMembersChange(ctx.guild_id, period, state="left")[0].records[0].values["_value"]
+        from mlib.utils import truncate
+        retention = truncate((1 - (left / joined["_value"])) * 100, 2)
+        await ctx.reply(f"Membercount change witin last {period}\n` Start:` `[{joined['_start']}]`\n`   End:` `[{joined['_stop']}]`\n`Joined:` `{joined['_value']}`\n`  Left:` `{left}`\n`User Retention`: `{retention}%`")
+    except:
+        await ctx.reply("Not enough to show data. (Possibly zero users joined)")

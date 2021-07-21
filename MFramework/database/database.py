@@ -24,6 +24,16 @@ class Influx:
         for user in users:
             await self.influxMember(serverID, user[0], True)
 
+    def getMembersChange(self, server_id, period: str, state: str = "joined"):
+        return self.get(f"""
+  |> range(start: -{period})
+  |> filter(fn: (r) => r["_measurement"] == "MemberChange")
+  |> filter(fn: (r) => r["server"] == "{server_id}")
+  |> filter(fn: (r) => r["_value"] == {"true" if state == "joined" else "false"})
+  |> aggregateWindow(every: {period}, fn: count)
+  |> last()
+  |> yield(name: "{state}")""")
+
     async def influxGetMember(self, server):
         return self.query_api.query_data_frame(f'from(bucket:"MemberChange") |> filter(server={server})')
 
