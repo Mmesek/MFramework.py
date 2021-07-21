@@ -72,7 +72,7 @@ async def loadout(ctx: Context, *args, language, **kwargs):
         "primary_mods": ["Szybkie Przeładowanie", "Szybki i Wściekły", "Rewolwerowiec", "Zmiana Broni", "Taktyczna Eliminacja", "Dodatkowa Amunicja"],
         "secondary_weapon": ["RE-45 Auto", "Hammond P2016", "Skrzydłowy B3"],
         "secondary_mods": ["Szybkie Przeładowanie", "Tłumik", "Szybki i Wściekły", "Rewolwerowiec", "Taktyczna Eliminacja", "Dodatkowa Amunicja"],
-        "anti_titan_weapon": [["Karabin Ładunkowy",{"Szybkie Przeładowanie": "Hakowanie Ładowania"}]],#, "Wyrzutnia Magnetyczna WGM", "LG-97 Grom", "Łucznik"],
+        "anti_titan_weapon": [["Karabin Ładunkowy",{"Szybkie Przeładowanie": "Hakowanie Ładowania"}], "Wyrzutnia Magnetyczna WGM", "LG-97 Grom", "Łucznik"],
         "anti_titan_mods": ["Szybkie Przeładowanie", "Rewolwerowiec", "Dobycie Broni", "Dodatkowa Amunicja"],
         "ordnance": ["Odłamkowy", "Łukowy", "Gwiazda Ognista", "Gwiazda Grawitacyjna", "Elektro-Dymny", "Ładunek Wybuchowy"],
         "booster": ["Wzmocniona Broń", "Kleszcze", "Wieżyczka Przeciw Pilotom", "Hakowanie Mapy", "Zapasowa Bateria", "Zakłócacz Radaru", "Wieżyczka Przeciw Tytanom", "Pistolet Cyfrowy", "Przewinięcie Fazowe", "Twarda Osłona", "Multi Holopilot", "Rzut Kostką"],
