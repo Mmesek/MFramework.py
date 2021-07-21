@@ -82,9 +82,9 @@ async def dm_reply(ctx: Bot, msg: Message):
     user = parseMention(msg.referenced_message.embeds[0].footer.text)
     dm = await ctx.create_dm(user)
     try:
-        await ctx.create_message(dm.id, msg.content or None, embeds=[msg.attachments_as_embed()])
+        await ctx.create_message(dm.id, msg.content or None, embeds=msg.attachments_as_embed())
     except Exception as ex:
-        await msg.react(ctx.emoji["failure"])
+        return await msg.react(ctx.emoji["failure"])
     await msg.react(ctx.emoji['success']) # _Client is apparently not set
 
 @onDispatch(event="message_create", priority=5)
