@@ -474,7 +474,7 @@ async def urban(ctx: Context, phrase: str, *args, language, **kwargs):
         .setTitle(r["word"])
         .setDescription(r["definition"])
         .setUrl(r["permalink"])
-        .addField("Examples", r.get("example", '...'))
+        .addField("Examples", r.get("example", None) or "...")
         .addField("👍", str(r.get("thumbs_up", 0)), inline=True)
         .addField("👎", str(r.get("thumbs_down", 0)), inline=True)
         .setFooter(f"by {r.get('author', 'Anonymous')}")
