@@ -2,24 +2,24 @@ from sqlalchemy import Column, BigInteger, ForeignKey
 from sqlalchemy.orm import declared_attr, relationship
 from sqlalchemy.sql.sqltypes import Interval
 from mlib.database import Base, ID, Default, File, Timestamp, TimestampUpdate # noqa: F401
-
+from datetime import timedelta
 class Snowflake:
-    id = Column(BigInteger, primary_key=True, autoincrement=False, nullable=False)
+    id: int = Column(BigInteger, primary_key=True, autoincrement=False, nullable=False)
 
 class Cooldown:
-    cooldown = Column(Interval)
+    cooldown: timedelta = Column(Interval)
 
 class ForeignMixin:
     _table: str = None
 
 class TypeID:
     @declared_attr
-    def type_id(cls):
+    def type_id(cls) -> int:
         return Column(ForeignKey("Type.id"), nullable=False)
 
 class ServerID:
     @declared_attr
-    def server_id(cls):
+    def server_id(cls) -> int:
         return Column(ForeignKey("Server.id", ondelete='Cascade', onupdate='Cascade'), primary_key=False, nullable=False)
     #@declared_attr
     #def server(cls):
@@ -27,7 +27,7 @@ class ServerID:
 
 class UserID:
     @declared_attr
-    def user_id(cls): 
+    def user_id(cls) -> int:
         return Column(ForeignKey("User.id", ondelete='Cascade', onupdate='Cascade'), primary_key=False, nullable=False)
     #@declared_attr
     #def user(cls):
@@ -35,7 +35,7 @@ class UserID:
 
 class RoleID:
     @declared_attr
-    def role_id(cls):
+    def role_id(cls) -> int:
         return Column(ForeignKey("Role.id", ondelete='Cascade', onupdate='Cascade'))
     @declared_attr
     def role(cls):
@@ -43,7 +43,7 @@ class RoleID:
 
 class ChannelID:
     @declared_attr
-    def channel_id(cls):
+    def channel_id(cls) -> int:
         return Column(ForeignKey("Channel.id", ondelete='Cascade', onupdate='Cascade'))
     @declared_attr
     def channel(cls):
@@ -51,7 +51,7 @@ class ChannelID:
 
 class ItemID:
     @declared_attr
-    def item_id(cls):
+    def item_id(cls) -> int:
         return Column(ForeignKey("Item.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
     @declared_attr
     def item(cls):
@@ -59,7 +59,7 @@ class ItemID:
 
 class SkillID:
     @declared_attr
-    def skill_id(cls):
+    def skill_id(cls) -> int:
         return Column(ForeignKey("Skill.id", ondelete='SET NULL', onupdate='Cascade'), primary_key=True)
     @declared_attr
     def skill(cls):
@@ -67,7 +67,7 @@ class SkillID:
 
 class LocationID:
     @declared_attr
-    def location_id(cls):
+    def location_id(cls) -> int:
         return Column(ForeignKey("Location.id", ondelete='Cascade', onupdate='Cascade'))
     @declared_attr
     def location(cls):
@@ -75,7 +75,7 @@ class LocationID:
 
 class EventID:
     @declared_attr
-    def event_id(cls):
+    def event_id(cls) -> int:
         return Column(ForeignKey("Event.id", ondelete='SET NULL', onupdate='Cascade'))
     @declared_attr
     def event(cls):
@@ -83,7 +83,7 @@ class EventID:
 
 class CharacterID:
     @declared_attr
-    def character_id(cls):
+    def character_id(cls) -> int:
         return Column(ForeignKey("Character.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
     #@declared_attr
     #def character(cls):

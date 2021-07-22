@@ -1,50 +1,51 @@
 from __future__ import annotations
-from datetime import timedelta
+from datetime import timedelta, datetime
 from sqlalchemy.orm import relationship
 from .mixins import *
 from .table_mixins import *
 from typing import List
 from .items import Inventory
 from .log import Infraction, Transaction
-
+from . import log
 class User(HasDictSettingsRelated, Snowflake, Base):
-    infractions = relationship("Infraction", back_populates="user", foreign_keys="Infraction.user_id", order_by="desc(Infraction.timestamp)")
-    mod_actions = relationship("Infraction", back_populates="moderator", foreign_keys="Infraction.moderator_id", order_by="desc(Infraction.timestamp)")
-    transactions = relationship("Transaction_Inventory", order_by="desc(Transaction.timestamp)")
-    activities = relationship("Activity", order_by="desc(Activity.timestamp)")
-    statistics = relationship("Statistic")
+    '''Users table represting user in Database
 
-    items = relationship('Inventory')
+    Columns
+    -------
+    id: `Snowflake`'''
+    infractions: List[log.Infraction] = relationship("Infraction", back_populates="user", foreign_keys="Infraction.user_id", order_by="desc(Infraction.timestamp)")
+    mod_actions: List[log.Infraction] = relationship("Infraction", back_populates="moderator", foreign_keys="Infraction.moderator_id", order_by="desc(Infraction.timestamp)")
+    transactions: List[log.Transaction] = relationship("Transaction_Inventory", order_by="desc(Transaction.timestamp)")
+    activities: List[log.Activity] = relationship("Activity", order_by="desc(Activity.timestamp)")
+    statistics: List[log.Statistic] = relationship("Statistic")
+
+    items: List[Inventory] = relationship('Inventory')
     def __init__(self, id) -> None:
         self.id = id
-    def add_item(self, Inventory: Inventory, transaction: Transaction = None):
-        if transaction:
-            transaction.add(self.id, Inventory)
-        for item in self.items:
-            if Inventory.item.name == item.item.name:
-                item.quantity += Inventory.quantity
-                return
-        self.items.append(Inventory)
-    
-    def add_items(self, *items: List[Inventory]):
-        for i in items:
-            self.add_item(i)
-    
-    def remove_item(self, Inventory: Inventory, transaction: Transaction = None):
-        if transaction:
-            transaction.remove(self.id, Inventory)
-        for item in self.items:
-            if Inventory.item.name == item.item.name:
-                item.quantity -= Inventory.quantity
-                if item.quantity == 0:
-                    self.items.remove(item) # No idea if it'll work
-                    #pass # TODO: Remove from mapping/association or something
-                return
-    
-    def remove_items(self, *Items: List[Inventory]):
-        for i in Items:
-            self.remove_item(i)
-    
+    def add_item(self, *items: Inventory, transaction: log.Transaction = None):
+        '''Add `Inventory.item` to this `User` and optionally to `Transaction`'''
+        for item in items:
+            if transaction:
+                transaction.add(self.id, item)
+            for owned_item in self.items:
+                if item.item.name == owned_item.item.name:
+                    owned_item.quantity += item.quantity
+                    continue
+            self.items.append(item)
+
+    def remove_item(self, *items: Inventory, transaction: log.Transaction = None):
+        '''Removes `Inventory.item` from this `User` and optionally adds it as outgoing to `Transaction`'''
+        for item in items:
+            if transaction:
+                transaction.remove(self.id, item)
+            for owned_item in self.items:
+                if item.item.name == owned_item.item.name:
+                    owned_item.quantity -= item.quantity
+                    if owned_item.quantity == 0:
+                        self.items.remove(item) # No idea if it'll work
+                        #pass # TODO: Remove from mapping/association or something
+                    continue
+
     def add_infraction(self, server_id: int, moderator_id: int, type: types.Infraction, reason: str=None, duration: timedelta=None, channel_id: int=None, message_id: int=None) -> List[Infraction]:
         '''
         Add infraction to current user. Returns total user infractions on server
@@ -94,19 +95,22 @@ class User(HasDictSettingsRelated, Snowflake, Base):
         return self.transfer(server_id, recipent, [from_race], [into_race], False, True) # That is definitly not what was planned #FIXME
 
 class Server(HasDictSettingsRelated, Snowflake, Base):
-    channels = relationship("Channel", back_populates="server")
-    roles = relationship("Role", back_populates="server")
-    snippets = relationship("Snippet")
-    statistics = relationship("Statistic", lazy="dynamic") #this returns a query or something like that
-    tasks = relationship("Task")
-    webhooks = relationship("Webhook")
+    '''Servers table represting server in Database'''
+    channels: List[Channel] = relationship("Channel", back_populates="server")
+    roles: List[Role] = relationship("Role", back_populates="server")
+    snippets: List[Snippet] = relationship("Snippet")
+    statistics: List[log.Statistic] = relationship("Statistic", lazy="dynamic") #this returns a query or something like that
+    tasks: List[Task] = relationship("Task")
+    webhooks: List[Webhook] = relationship("Webhook")
 
 class Role(HasDictSettingsRelated, ServerID, Snowflake, Base):
-    server = relationship("Server", back_populates="roles")
+    '''Roles table represting role in Database'''
+    server: Server = relationship("Server", back_populates="roles")
 
 class Channel(HasDictSettingsRelated, ServerID, Snowflake, Base):
-    server = relationship("Server", back_populates="channels")
-    webhooks = relationship("Webhook", back_populates="channel")
+    '''Channels table represting channel in Database'''
+    server: Server = relationship("Server", back_populates="channels")
+    webhooks: List[Webhook] = relationship("Webhook", back_populates="channel")
 
 
 '''
@@ -117,52 +121,58 @@ from . import types
 from sqlalchemy import Column, Integer, Enum, Boolean, UnicodeText, TIMESTAMP
 
 class Webhook(ChannelID, ServerID, Snowflake, Base):
-    token = Column(String)
-    subscriptions = relationship("Subscription", back_populates="webhook")
+    '''Webhooks related to Channel'''
+    token: str = Column(String)
+    subscriptions: List[Subscription] = relationship("Subscription", back_populates="webhook")
 
 from MFramework.commands._utils import Groups
 class Snippet(Timestamp, File, RoleID, UserID, ServerID, Base):
-    role_id = Column(ForeignKey("Role.id", ondelete='SET NULL', onupdate='Cascade'))
-    group = Column(Enum(Groups))
-    type = Column(Enum(types.Snippet))
-    name = Column(String)
-    trigger = Column(String)
-    content = Column(UnicodeText)
-    cooldown = Column(Interval)
-    locale = Column(String)
+    '''Snippets related to Server'''
+    role_id: Snowflake = Column(ForeignKey("Role.id", ondelete='SET NULL', onupdate='Cascade'))
+    group: Groups = Column(Enum(Groups))
+    type: types.Snippet = Column(Enum(types.Snippet))
+    name: str = Column(String)
+    trigger: str = Column(String)
+    content: str = Column(UnicodeText)
+    cooldown: timedelta = Column(Interval)
+    locale: str = Column(String)
 
 class Task(Timestamp, ServerID, ChannelID, UserID, Base):
-    user_id = Column(ForeignKey("User.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True, nullable=False)
-    message_id = Column(BigInteger, primary_key=True, autoincrement=False)
+    '''Tasks that were scheduled for a bot'''
+    user_id: Snowflake = Column(ForeignKey("User.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True, nullable=False)
+    message_id: Snowflake = Column(BigInteger, primary_key=True, autoincrement=False)
 
-    finished = Column(Boolean, default=False)
-    type = Column(Enum(types.Task))
-    end = Column(TIMESTAMP(True))
+    finished: bool = Column(Boolean, default=False)
+    type: types.Task = Column(Enum(types.Task))
+    end: datetime = Column(TIMESTAMP(True))
 
-    title = Column(String)
-    description = Column(UnicodeText)
-    count = Column(Integer)
+    title: str = Column(String)
+    description: str = Column(UnicodeText)
+    count: str = Column(Integer)
 
 class Subscription(Base):
-    webhook_id = Column(BigInteger, ForeignKey("Webhook.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
-    webhook = relationship("Webhook")
-    source = Column(String, primary_key=True)
-    content = Column(String)
-    regex = Column(String, primary_key=True)
+    '''Subscriptions related to Webhooks'''
+    webhook_id: Snowflake = Column(BigInteger, ForeignKey("Webhook.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
+    webhook: List[Webhook] = relationship("Webhook")
+    source: str = Column(String, primary_key=True)
+    content: str = Column(String)
+    regex: str = Column(String, primary_key=True)
 
 class RSS(Base):
-    source = Column(String, primary_key=True)
-    last = Column(Integer)
-    url = Column(String)
-    color = Column(Integer)
-    language = Column(String)
-    avatar_url = Column(String)
-    refresh_rate = Column(Interval)
+    '''Table represting RSS sources alongside their metadata'''
+    source: str = Column(String, primary_key=True)
+    last: int = Column(Integer)
+    url: str = Column(String)
+    color: int = Column(Integer)
+    language: str = Column(String)
+    avatar_url: str = Column(String)
+    refresh_rate: timedelta = Column(Interval)
 
 class Spotify(Base):
-    id = Column(String, primary_key=True)
-    artist = Column(String)
-    added_by = Column(ForeignKey("User.id", ondelete='SET NULL', onupdate='Cascade'))
+    '''Table represnting tracked Spotify artists'''
+    id: str = Column(String, primary_key=True)
+    artist: str = Column(String)
+    added_by: Snowflake = Column(ForeignKey("User.id", ondelete='SET NULL', onupdate='Cascade'))
 
 #class RoleSetting(ChannelID, RoleID, UserID, ServerID, Base):
 #    server_id = Column(BigInteger, ForeignKey("Server.id", ondelete='Cascade', onupdate='Cascade'))

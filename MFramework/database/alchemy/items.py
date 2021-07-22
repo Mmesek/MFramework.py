@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import Column, Integer, ForeignKey, Enum, Float, UnicodeText, TIMESTAMP, String
 from sqlalchemy.orm import relationship
 from . import types
@@ -8,52 +10,52 @@ class Location(Default, Cooldown, Base):
     pass
 
 class Event(Default, Base):
-    start = Column(TIMESTAMP(True))
-    end = Column(TIMESTAMP(True))
+    start: datetime.datetime = Column(TIMESTAMP(True))
+    end: datetime.datetime = Column(TIMESTAMP(True))
     def __init__(self, name, start, end):
         self.name = name
         self.start = start
         self.end = end
 
 class Item(Default, Cooldown, Base):
-    type = Column(Enum(types.Item), nullable=False)
-    descriptin = Column(UnicodeText)
-    global_limit = Column(Integer)
-    rarity = Column(Enum(types.Rarity))
-    worth = Column(Integer, default=0)
-    durability = Column(Integer)
-    repairs = Column(Integer)
-    damage = Column(Integer)
-    flags = Column(Integer, default=0)
-    req_skill = Column(ForeignKey('Skill.id', ondelete='SET NULL', onupdate='Cascade'))
+    type: types.Item = Column(Enum(types.Item), nullable=False)
+    description: str = Column(UnicodeText)
+    global_limit: int = Column(Integer)
+    rarity: types.Rarity = Column(Enum(types.Rarity))
+    worth: int = Column(Integer, default=0)
+    durability: int = Column(Integer)
+    repairs: int = Column(Integer)
+    damage: int = Column(Integer)
+    flags: int = Column(Integer, default=0)
+    req_skill: int = Column(ForeignKey('Skill.id', ondelete='SET NULL', onupdate='Cascade'))
     
-    icon = Column(String, nullable=True)
-    emoji = Column(String, nullable=True)
-    def __init__(self, name, _type) -> None:
+    icon: str = Column(String, nullable=True)
+    emoji: str = Column(String, nullable=True)
+    def __init__(self, name: str, _type: types.Item) -> None:
         super().__init__(name)
         self.type = _type if type(_type) is not str else types.Item.get(_type)
 
 class Inventory(ItemID, UserID, Base):
-    user_id = Column(ForeignKey("User.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True, nullable=False)
-    quantity = Column(Integer, default=0)
-    item = relationship("Item")
-    def __init__(self, Item=None, quantity=1):
+    user_id: Snowflake = Column(ForeignKey("User.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True, nullable=False)
+    quantity: int = Column(Integer, default=0)
+    item: Item = relationship("Item")
+    def __init__(self, Item: Item=None, quantity: int=1):
         self.item = Item
         self.quantity = quantity
 
 class Drop(ItemID, LocationID, EventID, Base):
-    location_id = Column(ForeignKey("Location.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
-    weight = Column(Float)
-    chance = Column(Float)
-    region_limit = Column(Integer)
-    quantity_min = Column(Integer, default=0)
-    quantity_max = Column(Integer, default=1)
+    location_id: int = Column(ForeignKey("Location.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
+    weight: float = Column(Float)
+    chance: float = Column(Float)
+    region_limit: int = Column(Integer)
+    quantity_min: int = Column(Integer, default=0)
+    quantity_max: int = Column(Integer, default=1)
     
-    item = relationship("Item", uselist=False)
-    location = relationship("Location", uselist=False)
-    event = relationship("Event", uselist=False)
+    item: Item = relationship("Item", uselist=False)
+    location: Location = relationship("Location", uselist=False)
+    event: Event = relationship("Event", uselist=False)
 
-from . import types# as types
+from . import types
 class Items:
     Coin = types.Item.Currency
     Crypto = types.Item.Currency

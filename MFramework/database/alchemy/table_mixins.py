@@ -1,5 +1,5 @@
 from typing import Any
-
+import datetime
 from .mixins import *
 from . import types
 
@@ -44,12 +44,12 @@ class Setting:
     name:
         `Setting` type of this setting
     '''
-    name = Column(Enum(types.Setting), primary_key=True)
-    int = Column(Integer, nullable=True)#default=0)
-    str = Column(String, nullable=True)
-    bool = Column(Boolean, nullable=True)
-    snowflake = Column(BigInteger, nullable=True)
-    date = Column(Date, nullable=True)
+    name: types.Setting = Column(Enum(types.Setting), primary_key=True)
+    int: int = Column(Integer, nullable=True)#default=0)
+    str: str = Column(String, nullable=True)
+    bool: bool = Column(Boolean, nullable=True)
+    snowflake: Snowflake = Column(BigInteger, nullable=True)
+    date: datetime.date = Column(Date, nullable=True)
 
 class HasDictSettingsRelated:#(ProxiedDictMixin):
     @declared_attr

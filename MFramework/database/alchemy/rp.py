@@ -1,5 +1,8 @@
+from typing import List
+
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, String, Integer, Boolean, UnicodeText
+
 from .mixins import *
 
 
@@ -7,27 +10,27 @@ class Skill(Default, Base):
     pass
 
 class Character_Skills(SkillID, CharacterID, Base):
-    skill_id = Column(ForeignKey("Skill.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
-    exp = Column(Integer, default=0)
+    skill_id: int = Column(ForeignKey("Skill.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
+    exp: int = Column(Integer, default=0)
 
 class Character_Items(ItemID, CharacterID, Base):
-    quantity = Column(Integer, default=0)
+    quantity: int = Column(Integer, default=0)
 
 class Character(UserID, ID, Base):
-    name = Column(String)
-    race = Column(String)
-    gender = Column(Boolean)
-    age = Column(Integer)
-    color = Column(Integer)
+    name: str = Column(String)
+    race: str = Column(String)
+    gender: bool = Column(Boolean)
+    age: int = Column(Integer)
+    color: int = Column(Integer)
 
-    profession = Column(String)
-    place_of_origin = Column(UnicodeText)
-    story = Column(UnicodeText)
+    profession: str = Column(String)
+    place_of_origin: str = Column(UnicodeText)
+    story: str = Column(UnicodeText)
 
-    drink = Column(String)
-    hate = Column(String)
-    fear = Column(String)
-    weakness = Column(String)
-    strength = Column(String)
-    skills = relationship("Character_Skills")
-    items = relationship("Character_Items")
+    drink: str = Column(String)
+    hate: str = Column(String)
+    fear: str = Column(String)
+    weakness: str = Column(String)
+    strength: str = Column(String)
+    skills: List[Character_Skills] = relationship("Character_Skills")
+    items: List[Character_Items] = relationship("Character_Items")
