@@ -180,7 +180,21 @@
         "cmd_trigger": "infractions",
         "users": "users",
         "cmd_help": "Shows user Infractions",
-        "cmd_signature": "[user] (-show\\_all)"
+        "cmd_signature": "[user] (-show\\_all)",
+        "types":{
+            "Warn":"Warn",
+            "Mute":"Mute",
+            "Ban":"Ban"
+        },
+        "for_duration": "for %{duration}",
+        "active": "🟢",
+        "inactive": "🔴",
+        "row": "[<t:%{timestamp}:d>] `[{type:%{width}}]` \"%{reason}\" by <@%{moderator_id}> %{duration}",
+        "title": "%{username}'s infractions",
+        "total": "Total infractions",
+        "total_description": "%{active}/%{total}",
+        "counter": "[%{currently_active}] | Active: %{active} | Total: %{total}",
+        "no_infractions": "No Infractions"
     },
     "userInfo": {
         "cmd_trigger": "userInfo",

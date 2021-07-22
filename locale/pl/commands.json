@@ -182,7 +182,21 @@
         "cmd_trigger": "wykroczenia",
         "users": "users",
         "cmd_help": "Shows Infractions of user.",
-        "cmd_signature": "[user] (-show\\_all)"
+        "cmd_signature": "[user] (-show\\_all)",
+        "types":{
+            "Warn":"Ostrzeżenie",
+            "Mute":"Wyciszenie",
+            "Ban":"Ban"
+        },
+        "for_duration": "na %{duration}",
+        "active": "🟢",
+        "inactive": "🔴",
+        "row": "[<t:%{timestamp}:d>] `[{type:%{width}}]` \"%{reason}\" od <@%{moderator_id}> %{duration}",
+        "title": "Wykroczenia %{username}",
+        "total": "Wszystkie Wykroczenia",
+        "total_description": "%{active}/%{total}",
+        "counter": "[%{currently_active}] | Aktywne: %{active} | Łącznie: %{total}",
+        "no_infractions": "Brak wykroczeń"
     },
     "userInfo": {
         "cmd_trigger": "userInfo",
