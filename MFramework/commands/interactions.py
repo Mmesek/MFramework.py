@@ -77,7 +77,7 @@ async def guild_create(client: Bot, guild: Guild):
     
     if UPDATE_PERMISSIONS:
         from ._utils import set_permissions
-        await set_permissions(client, guild.id, client.registered_commands + _commands)
+        await set_permissions(client, guild.id, client.registered_commands or [] + _commands)
 
 async def register_commands(client: Bot, guild: Guild = None):
     registered = await get_commands(client, guild)
@@ -113,7 +113,7 @@ async def register_commands(client: Bot, guild: Guild = None):
         #return _cmds
         if len(new_commands) > 0:
             from ._utils import set_permissions
-            await set_permissions(client, guild.id, client.registered_commands+_cmds)
+            await set_permissions(client, guild.id, client.registered_commands or []+_cmds)
     else:
         client.registered_commands = registered
 
