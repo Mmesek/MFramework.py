@@ -30,7 +30,7 @@ class Influx:
   |> filter(fn: (r) => r["_measurement"] == "MemberChange")
   |> filter(fn: (r) => r["server"] == "{server_id}")
   |> filter(fn: (r) => r["_value"] == {"true" if state == "joined" else "false"})
-  |> aggregateWindow(every: {period}, fn: count)
+  |> aggregateWindow(every: 90d, fn: count)
   |> last()
   |> yield(name: "{state}")""")
 
