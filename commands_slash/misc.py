@@ -456,3 +456,29 @@ async def tuning(ctx: Context, *tuning, language, **kwargs):
 | _ | _ | _ | _ | _ | _ |
 | _ | _ | _ | _ | _ | _ |
 '''
+
+@register(group=Groups.GLOBAL)
+async def urban(ctx: Context, phrase: str, *args, language, **kwargs):
+    '''
+    Searches Urban Dictionary for provided phrase
+    Params
+    ------
+    phrase:
+        Phrase to search definition of
+    '''
+    await ctx.deferred()
+    url = "http://api.urbandictionary.com/v0/define?term="+phrase
+    r = requests.get(url)
+    r = r.json()['list'][0]
+    e = (Embed()
+        .setTitle(r["word"])
+        .setDescription(r["definition"])
+        .setUrl(r["permalink"])
+        .addField("Examples", r.get("examples", '...'))
+        .addField("👍", str(r.get("thumbs_up", 0)), inline=True)
+        .addField("👎", str(r.get("thumbs_down", 0)), inline=True)
+        .setFooter(f"by {r.get('author', 'Anonymous')}")
+        .setTimestamp(r["written_on"])
+        .setColor(1975351)
+    )
+    await ctx.reply(embeds=e)
