@@ -1,4 +1,3 @@
-#from MFramework import Bot, Embed, Snowflake, Allowed_Mentions, Message
 import MFramework
 from typing import List
 
@@ -36,11 +35,11 @@ class Log:
     async def log_dm(self, event, user_id: MFramework.Snowflake) -> MFramework.Message:
         raise NotImplementedError
 
-    async def _log(self, content: str="", embeds: List[MFramework.Embed]=None, username=None, avatar=None) -> MFramework.Message:
-        return await self.bot.execute_webhook(self.webhook_id, self.webhook_token, content=content, username=username or self.username, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), avatar_url=avatar or self.avatar, embeds=embeds)
-    async def _log_dm(self, user_id: MFramework.Snowflake, content: str="", embed: MFramework.Embed=None) -> MFramework.Message:
+    async def _log(self, content: str="", embeds: List[MFramework.Embed]=None, components: List[MFramework.Component]=None, *, username=None, avatar=None) -> MFramework.Message:
+        return await self.bot.execute_webhook(self.webhook_id, self.webhook_token, content=content, username=username or self.username, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), avatar_url=avatar or self.avatar, embeds=embeds, components=components)
+    async def _log_dm(self, user_id: MFramework.Snowflake, content: str="", embeds: List[MFramework.Embed]=None, components: List[MFramework.Component]=None) -> MFramework.Message:
         dm_id = await self.bot.create_dm(user_id)
-        return await self.bot.create_message(channel_id=dm_id, content=content, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), embeds=[embed])
+        return await self.bot.create_message(channel_id=dm_id, content=content, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), embeds=embeds, components=components)
 
 class Message(Log):
     username = "Message Log"
