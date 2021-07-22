@@ -469,7 +469,10 @@ async def urban(ctx: Context, phrase: str, *args, language, **kwargs):
     await ctx.deferred()
     url = "http://api.urbandictionary.com/v0/define?term="+phrase
     r = requests.get(url)
-    r = r.json()['list'][0]
+    try:
+        r = r.json()['list'][0]
+    except IndexError:
+        return await ctx.reply("Error occured. No results found.")
     e = (Embed()
         .setTitle(r["word"])
         .setDescription(r["definition"])
