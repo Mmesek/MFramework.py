@@ -112,3 +112,25 @@ async def remove(ctx: Context, emoji: str = None, role: RoleID = None, group: st
             ctx.cache.reaction_roles.pop(group)
     await ctx.bot.delete_own_reaction(channel, message_id, emoji)
     await ctx.reply(f"Successfully deleted <@&{role}> from being a {emoji if ':0' in emoji else '<:'+emoji+'>'} reaction role", private=True)
+
+class RoleTypes:
+    AND = "AND"
+    OR = "OR"
+    COMBINED = "COMBINED"
+
+#@register(group=Groups.ADMIN, main=role)
+async def level(ctx: Context, role: RoleID, req_exp: int= 0, req_voice: int= 0, type: RoleTypes = RoleTypes.AND, stacked: bool=False, *, language):
+    '''Management of level roles
+
+    Params
+    ------
+    role:
+        Role which should be awarded for reaching these values
+    req_exp:
+        Chat exp required to gain this role
+    req_voice:
+        Voice exp required to gain this role
+    type:
+        Whether both, either or in total exp should award this role
+    '''
+    pass
