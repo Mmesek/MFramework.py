@@ -1,18 +1,32 @@
 import enum
+from datetime import date
+
 from mlib.types import Enum
+from mdiscord import Snowflake
+
+from MFramework.commands import Groups
+
 class Infraction(Enum):
-    Warn = 0
-    Mute = 1
-    Kick = 2
-    Ban = 3
-    Temp_Mute = 4
-    Temp_Ban = 5
-    Unban = 6
-    Unmute = 7
-    Limbo = 8
-    DM_Mute = 9
-    DM_Unmute = 10
-    Report = 11
+    '''Infractions'''
+    Warn: Groups.HELPER = 0, "Warns user"
+    Mute: Groups.MODERATOR = 1, "Mutes user"
+    Kick: Groups.MODERATOR = 2, "Kicks user"
+    Ban: Groups.MODERATOR = 3, "Bans user"
+    Temp_Mute: Groups.HELPER = 4, "Temporarly mutes user"
+    Temp_Ban: Groups.HELPER = 5, "Temporarly bans user"
+    Unban: Groups.ADMIN = 6, "Unbans user"
+    Unmute: Groups.MODERATOR = 7, "Unmutes user"
+    Limbo: Groups.ADMIN = 8, "Throws user to Limbo"
+    DM_Mute: Groups.MODERATOR = 9, "Mutes DMs from user in Modmail"
+    DM_Unmute: Groups.MODERATOR = 10, "Unmutes DMs from user in Modmail"
+    Report: Groups.GLOBAL = 11, "Reports user"
+
+    @property
+    def permission(cls) -> Groups:
+        return cls.__annotations__.get(cls.name, Groups.SYSTEM)
+    def __init__(self, value="Missing value", doc="Missing docstring") -> None:
+        self._value_ = value
+        self.doc = doc
 
 class Snippet(Enum):
     Snippet = 0
@@ -29,6 +43,7 @@ class Snippet(Enum):
     Whitelisted = 18
     Response_Reaction = 19
     Stream = 20
+    Definition = 21
 
 class Statistic(Enum):
     Chat = 0
@@ -45,50 +60,48 @@ class Statistic(Enum):
 
     Halloween_Turn_Count = 20
 
-from datetime import date
-from mdiscord import Snowflake
 class Setting(Enum):
-    Flags = int, 0#, enum.IntFlag # Tracking
-    Permissions = int, 1#, enum.IntFlag
-    Color = int, 2
-    Exp = int, 3
-    Voice_Exp = int, 4
-    Gender = bool, 5
+    Flags: int = 0# = enum.IntFlag # Tracking
+    Permissions: int = 1# = enum.IntFlag
+    Color: int = 2
+    Exp: int = 3
+    Voice_Exp: int = 4
+    Gender: bool = 5
 
-    Timezone = str, 10
-    Birthday = date, 11
-    Locale = str, 12
-    Region = str, 13
-    Currency = float, 14
-    Alias = str, 15
+    Timezone: str = 10
+    Birthday: date = 11
+    Locale: str = 12
+    Region: str = 13
+    Currency: float = 14
+    Alias: str = 15
     #Channels
-    Dynamic = bool, 21
-    Buffer = bool, 22
-    RPG = bool, 23
-    DM_Inbox = bool, 24
-    Questions = bool, 25
+    Dynamic: bool = 21
+    Buffer: bool = 22
+    RPG: bool = 23
+    DM_Inbox: bool = 24
+    Questions: bool = 25
     #Roles
-    Level = int, 31
-    Reaction = str, 32
-    Presence = str, 33
-    Custom = Snowflake, 34
-    Activity = int, 35
-    Voice_Link = Snowflake, 36
-    Special = str, 37
-    Group = str, 38
-    Nitro = Snowflake, 39
+    Level: int = 31
+    Reaction: str = 32
+    Presence: str = 33
+    Custom: Snowflake = 34
+    Activity: int = 35
+    Voice_Link: Snowflake = 36
+    Special: str = 37
+    Group: str = 38
+    Nitro: Snowflake = 39
 
-    ServerID = Snowflake, 40
-    ChannelID = Snowflake, 41
-    MessageID = Snowflake, 42
-    RoleID = Snowflake, 43
-    UserID = Snowflake, 44
+    ServerID: Snowflake = 40
+    ChannelID: Snowflake = 41
+    MessageID: Snowflake = 42
+    RoleID: Snowflake = 43
+    UserID: Snowflake = 44
     #Server
-    Allowed_Duplicated_Messages = int, 50
-    Should_Remove_Links = bool, 51
-    Auto_Mute_Infractions = int, 52
-    Auto_Ban_Infractions = int, 53
-    Stream = str, 60
+    Allowed_Duplicated_Messages: int = 50
+    Should_Remove_Links: bool = 51
+    Auto_Mute_Infractions: int = 52
+    Auto_Ban_Infractions: int = 53
+    Stream: str = 60
 
 class Item(Enum):
     SYSTEM = 0 # Metadata Items
@@ -198,7 +211,7 @@ class ItemFlags(enum.IntFlag):
 
 class HalloweenRaces(Enum):
     Human = 0, Item.Race
-    Vampyre = 1, Item.Race
+    Vampire = 1, Item.Race
     Werewolf = 2, Item.Race
     Zombie = 3, Item.Race
     Hunter = 4, Item.Race

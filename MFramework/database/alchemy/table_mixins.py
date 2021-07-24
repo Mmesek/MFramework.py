@@ -1,5 +1,6 @@
 from typing import Any
 import datetime
+
 from .mixins import *
 from . import types
 
@@ -74,7 +75,7 @@ class HasDictSettingsRelated:#(ProxiedDictMixin):
     def with_setting(self, name, value):
         return self.settings.any(name=name, value=value)
     def add_setting(self, setting: types.Setting, value: Any) -> None:
-        setting_type = setting.value[0].__name__
+        setting_type = setting.annotation.__name__
         import enum
         if type(value) in {int, str, bool} and type(value).__name__ != setting_type:
             column = type(value).__name__
@@ -88,7 +89,7 @@ class HasDictSettingsRelated:#(ProxiedDictMixin):
     def modify_setting(self, setting: types.Setting, value: Any) -> None:
         setattr(self.settings[setting], setting.value.__name__, value)
     def remove_setting(self, setting: types.Setting) -> Any:
-        return getattr(self.settings.pop(setting, None), setting.value[0].__name__.lower(), None)
+        return getattr(self.settings.pop(setting, None), setting.annotation.__name__.lower(), None)
     def get_setting(self, setting: types.Setting) -> Any:
-        return getattr(self.settings.get(setting, None), setting.value[0].__name__.lower(), None)
+        return getattr(self.settings.get(setting, None), setting.annotation.__name__.lower(), None)
 
