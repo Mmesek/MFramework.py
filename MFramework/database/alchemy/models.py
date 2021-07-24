@@ -48,11 +48,11 @@ class User(HasDictSettingsRelated, Snowflake, Base):
                         #pass # TODO: Remove from mapping/association or something
                     continue
 
-    def add_infraction(self, server_id: int, moderator_id: int, type: types.Infraction, reason: str=None, duration: timedelta=None, channel_id: int=None, message_id: int=None) -> List[log.Infraction]:
+    def add_infraction(self, server_id: int, moderator_id: int, type: types.Infraction, reason: str=None, duration: timedelta=None, channel_id: int=None, message_id: int=None, active: bool=True) -> List[log.Infraction]:
         '''
         Add infraction to current user. Returns total user infractions on server
         '''
-        self.infractions.append(log.Infraction(server_id = server_id, moderator_id = moderator_id, type=type, reason=reason, duration=duration, channel_id=channel_id, message_id=message_id))
+        self.infractions.append(log.Infraction(server_id = server_id, moderator_id = moderator_id, type=type, reason=reason, duration=duration, channel_id=channel_id, message_id=message_id, active=active))
         return [i for i in self.infractions if i.server_id == server_id]
     
     def transfer(self, server_id: int, recipent: User, sent: List[Inventory] = None, recv: List[Inventory] = None, remove_item:bool=True, turn_item:bool=False) -> log.Transaction:
