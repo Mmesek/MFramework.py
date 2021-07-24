@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from sqlalchemy import Column, BigInteger, ForeignKey
 from sqlalchemy.orm import declared_attr, relationship
 from sqlalchemy.sql.sqltypes import Interval
+
 from mlib.database import Base, ID, Default, File, Timestamp, TimestampUpdate # noqa: F401
-from datetime import timedelta
+
 class Snowflake:
     id: int = Column(BigInteger, primary_key=True, autoincrement=False, nullable=False)
 

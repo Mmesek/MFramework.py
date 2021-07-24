@@ -2,8 +2,8 @@ import datetime
 
 from sqlalchemy import Column, Integer, ForeignKey, Enum, Float, UnicodeText, TIMESTAMP, String
 from sqlalchemy.orm import relationship
-from . import types
 
+from . import types
 from .mixins import *
 
 class Location(Default, Cooldown, Base):

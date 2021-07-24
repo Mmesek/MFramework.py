@@ -1,12 +1,14 @@
 from __future__ import annotations
+from typing import List
 from datetime import timedelta, datetime
+
 from sqlalchemy.orm import relationship
+
 from .mixins import *
 from .table_mixins import *
-from typing import List
 from .items import Inventory
-from .log import Infraction, Transaction
 from . import log
+
 class User(HasDictSettingsRelated, Snowflake, Base):
     '''Users table represting user in Database
 
@@ -46,14 +48,14 @@ class User(HasDictSettingsRelated, Snowflake, Base):
                         #pass # TODO: Remove from mapping/association or something
                     continue
 
-    def add_infraction(self, server_id: int, moderator_id: int, type: types.Infraction, reason: str=None, duration: timedelta=None, channel_id: int=None, message_id: int=None) -> List[Infraction]:
+    def add_infraction(self, server_id: int, moderator_id: int, type: types.Infraction, reason: str=None, duration: timedelta=None, channel_id: int=None, message_id: int=None) -> List[log.Infraction]:
         '''
         Add infraction to current user. Returns total user infractions on server
         '''
-        self.infractions.append(Infraction(server_id = server_id, moderator_id = moderator_id, type=type, reason=reason, duration=duration, channel_id=channel_id, message_id=message_id))
+        self.infractions.append(log.Infraction(server_id = server_id, moderator_id = moderator_id, type=type, reason=reason, duration=duration, channel_id=channel_id, message_id=message_id))
         return [i for i in self.infractions if i.server_id == server_id]
     
-    def transfer(self, server_id: int, recipent: User, sent: List[Inventory] = None, recv: List[Inventory] = None, remove_item:bool=True, turn_item:bool=False) -> Transaction:
+    def transfer(self, server_id: int, recipent: User, sent: List[Inventory] = None, recv: List[Inventory] = None, remove_item:bool=True, turn_item:bool=False) -> log.Transaction:
         '''
         Transfers item from current user to another user & returns transaction log (Which needs to be added to session manually[!])
 
@@ -74,7 +76,7 @@ class User(HasDictSettingsRelated, Snowflake, Base):
             Whether it should remove received item from current user 
             (Useful when turning item from one to another on same user)
         '''
-        transaction = Transaction(server_id = server_id)
+        transaction = log.Transaction(server_id = server_id)
         if sent: #TODO: Multiple different items/inventories for sent/recv 
             recipent.add_items(sent, transaction)
             if remove_item and not turn_item:
@@ -87,11 +89,11 @@ class User(HasDictSettingsRelated, Snowflake, Base):
             if remove_item and not turn_item:
                 recipent.remove_items(recv, transaction)
         return transaction
-    def claim_items(self, server_id: int, items: List[Inventory]) -> Transaction:
+    def claim_items(self, server_id: int, items: List[Inventory]) -> log.Transaction:
         return self.transfer(server_id, None, recv=items, remove_item=False)
-    def gift_items(self, server_id: int, recipent: User, items: List[Inventory]) -> Transaction:
+    def gift_items(self, server_id: int, recipent: User, items: List[Inventory]) -> log.Transaction:
         return self.transfer(server_id, recipent, items)
-    def turn_race(self, server_id: int, recipent: User, from_race: types.HalloweenRaces, into_race: types.HalloweenRaces) -> Transaction:
+    def turn_race(self, server_id: int, recipent: User, from_race: types.HalloweenRaces, into_race: types.HalloweenRaces) -> log.Transaction:
         return self.transfer(server_id, recipent, [from_race], [into_race], False, True) # That is definitly not what was planned #FIXME
 
 class Server(HasDictSettingsRelated, Snowflake, Base):
