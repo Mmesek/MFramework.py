@@ -7,9 +7,15 @@
 		"scope":"python",
 		"prefix":"@register",
 		"body":[
-			"@register(group='$1', help='${2:Short description to use with help command}', alias='$3', category='$4')",
-			"async def ${5:commandTrigger}(self, *args, data, language, **kwargs):",
-			"    '''${6:Extended description to use with detailed help command}'''",
+			"@register(group=${1:Groups.GLOBAL}, interaction=False)",
+			"async def ${2:commandTrigger}(ctx: Context, ${3:parameter}: ${4:type}, *, language):",
+			"    '''",
+			"    ${5:Description to use with help command}",
+			"    Params",
+			"    ------",
+			"    ${3:parameter}:",
+			"        ${6:description}",
+			"    '''",
 			"    ${7:pass}"
 		],
 		"description": "Snippet for creating and registering new command in MFramework"
@@ -31,7 +37,7 @@
 		"prefix":"@register",
 		"body":[
 			"@register(group=${1:Groups.GLOBAL})",
-			"async def ${2:commandTrigger}(ctx: Context, ${3:parameter}: ${4:type}, *args, language, **kwargs):",
+			"async def ${2:commandTrigger}(ctx: Context, ${3:parameter}: ${4:type}, *, language):",
 			"    '''",
 			"    ${5:Description to use with help command}",
 			"    Params",
