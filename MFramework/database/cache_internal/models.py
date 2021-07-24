@@ -13,7 +13,7 @@ class Cache:
         self._cache = cache or Dictionary()
     #Dictionary-like usage
     def __setitem__(self, key, value):
-        self._cache.add(self._create_id(key), value, self._expire)
+        self._cache.add(self._combine(key), value, self._expire)
     def __len__(self) -> int:
         return self._cache.db_size()
     def __delitem__(self, key):
