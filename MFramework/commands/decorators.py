@@ -125,6 +125,8 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
         for alias in aliases:
             aliasList[alias] = _name
         if main:
+            if not hasattr(main, '_cmd'):
+                return
             if not choice:
                 main._cmd.add_subcommand(cmd)
             else:
