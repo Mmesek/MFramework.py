@@ -1,4 +1,5 @@
-from MFramework import register, Groups, Context, UserID, User, Embed
+from datetime import datetime, timedelta, timezone
+from MFramework import register, Groups, Context, UserID, User, Embed, shortcut, Message
 #/infraction 
 #  | | |---- InfractionType
 #  | |           |--------- [User] [reason] [duration]
@@ -6,7 +7,7 @@ from MFramework import register, Groups, Context, UserID, User, Embed
 #  |-------- counter
 #                |--------- [User] increase [reason]
 #                |--------- [User] decrease [reason]
-from MFramework.database.alchemy import types
+from MFramework.database.alchemy import types, models
 #TODO:
 # Each infraction as separate command instead of choice type?
 # Action on infraction like ban or kick
@@ -14,8 +15,16 @@ from MFramework.database.alchemy import types
 # or make infraction list an info subcommand or some other?
 # Perhaps alias interaction?
 # List recently joined users and provide filter/sorter
-@register(group=Groups.MODERATOR)
-async def infraction(ctx: Context, type: types.Infraction, user: User=None, reason:str="", duration:str=None, increase_counter: bool=True, *, language):
+@register(group=Groups.HELPER, main_only=True)
+@shortcut(name="warn", group=Groups.HELPER, type=types.Infraction.Warn, help="Warns user")
+@shortcut(name="mute", group=Groups.MODERATOR, type=types.Infraction.Mute, help="Mutes user")
+@shortcut(name="kick", group=Groups.MODERATOR, type=types.Infraction.Kick, help="Kicks user")
+@shortcut(name="ban", group=Groups.MODERATOR, type=types.Infraction.Ban, help="Bans user")
+@shortcut(name="tempmute", group=Groups.HELPER, type=types.Infraction.Temp_Mute, help="Temporarly mutes user")
+@shortcut(name="tempban", group=Groups.HELPER, type=types.Infraction.Temp_Ban, help="Temporarly bans user")
+@shortcut(name="unmute", group=Groups.MODERATOR, type=types.Infraction.Unban, help="Unmutes user")
+@shortcut(name="unban", group=Groups.ADMIN, type=types.Infraction.Unmute, help="Unbans user")
+async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, reason:str="", duration:timedelta=None, increase_counter: bool=True, language):
     '''Base command for infractions
     Params
     ------
@@ -36,9 +45,11 @@ async def infraction(ctx: Context, type: types.Infraction, user: User=None, reas
         duration = total_seconds(duration)
 
     session = ctx.db.sql.session()
-    from MFramework.database.alchemy import models
     u = models.User.fetch_or_add(session, id=user.id)
-    u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration)
+    active = False
+    if (ctx.bot.emoji.get('fake_infraction', '😜') not in reason or type not in {types.Infraction.Unban, types.Infraction.Unmute, types.Infraction.DM_Unmute, types.Infraction.Report}) and increase_counter:
+        active = True
+    u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active)
 
     await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+('ed' if not type.name.endswith('e') else 'd')} for {reason}")
 
@@ -84,29 +95,31 @@ async def auto_moderation(ctx: Context, session, user: User, type: types.Infract
         await infraction(ctx, types.Infraction.Ban, user, reason=f"{active.value} active infractions", increase_counter=False)
 
 
-@register(group=Groups.GLOBAL)
-async def infractions(ctx: Context, user: User=None, *, language):
+@register(group=Groups.GLOBAL, main=infraction, aliases=["infractions"])
+async def list_(ctx: Context, user: User=None, *, language):
     '''Lists user's infractions'''
     await ctx.deferred()
     session = ctx.db.sql.session()
-    from MFramework.database.alchemy.models import Infraction
-    _infractions = session.query(Infraction)
+    u = models.User.fetch_or_add(session, id = user.id)
+    _infractions = u.infractions
     if not False:#show_all:
-        _infractions = _infractions.filter(Infraction.server_id == ctx.guild_id)
-    _infractions = _infractions.filter(Infraction.user_id == user.id).all()
-    _infractions.reverse()
-    width = 0
-    active = 0
-    from mlib.localization import tr, secondsToText
+        _infractions = list(filter(lambda x: x.server_id == ctx.guild_id, u.infractions))
+    width, id_width, active = 0, 0, 0
     user_infractions = []
     from collections import namedtuple
-    Row = namedtuple("Row", ['timestamp', 'type', 'reason', 'moderator_id', 'duration', 'active'])
+    Row = namedtuple("Row", ['id', 'timestamp', 'type', 'reason', 'moderator_id', 'duration', 'active'])
+    from mlib.localization import tr, secondsToText
     for infraction in _infractions:
         translated = tr(f"commands.infractions.types.{infraction.type.name}", language)
         if len(translated) > width:
             width = len(translated)
+        if len(str(infraction.id)) > id_width:
+            id_width = len(str(infraction.id))
+        if infraction.active and infraction.duration and infraction.timestamp + infraction.duration < datetime.now(tz=timezone.utc):
+            infraction.active = False
         user_infractions.append(
             Row(
+                id=infraction.id,
                 timestamp=int(infraction.timestamp.timestamp()),
                 type=translated,
                 reason=infraction.reason,
@@ -114,35 +127,33 @@ async def infractions(ctx: Context, user: User=None, *, language):
                 duration=tr("commands.infractions.for_duration", language, 
                         duration=secondsToText(int(infraction.duration.total_seconds()), language)) 
                         if infraction.duration else "",
-                active=tr("commands.infractions.active", language) 
-                        if infraction.active else tr("commands.infractions.inactive", language)
+                active="~~" if not infraction.active else ""
             )
         )
         if infraction.active:
             active+=1
-    str_infractions = '\n'.join(tr("commands.infractions.row", language, width=width, **i._asdict()).format(type=i.type).strip() for i in user_infractions[:10])
+    session.commit()
+    str_infractions = '\n'.join(tr("commands.infractions.row", language, width=width, id_width=id_width, **i._asdict()).format(type=i.type, id=i.id).strip() for i in user_infractions[:10])
     if str_infractions != "":
         from mlib.colors import get_main_color
         e = Embed()
         e.setDescription(str_infractions).setAuthor(tr("commands.infractions.title", language, username=user.username), icon_url=user.get_avatar()).setColor(get_main_color(user.get_avatar()))
-        a = active#log.Statistic.get(session, ctx.guild_id, user.id, types.Statistic.Infractions_Active)
-        t = len(user_infractions)#log.Statistic.get(session, ctx.guild_id, user.id, types.Statistic.Infractions_Total)
         total = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, 5)
         danger = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, 3)
-        currently_active = ["🔴"] * a#.value
-        remaining_to_auto_mute = (danger-a)#.value)
+        currently_active = ["🔴"] * active
+        remaining_to_auto_mute = (danger-active)
         if remaining_to_auto_mute > 0:
             currently_active += ["🟢"] * remaining_to_auto_mute
-        remaining_to_auto_ban = (total-a)#.value)
+        remaining_to_auto_ban = (total-active)
         if remaining_to_auto_mute > 0:
             remaining_to_auto_ban -= remaining_to_auto_mute
         if remaining_to_auto_ban > 0:
             currently_active += ["🟡"] * remaining_to_auto_ban
-        e.setFooter(tr("commands.infractions.counter", language, currently_active="-".join(currently_active), active=a, total=t))
+        e.setFooter(tr("commands.infractions.counter", language, currently_active="-".join(currently_active), active=active, total=len(user_infractions)))
         return await ctx.reply(embeds=[e])
     return await ctx.reply(tr("commands.infractions.no_infractions", language))
 
-@register(group=Groups.MODERATOR)
+@register(group=Groups.MODERATOR, main=infraction)
 async def counter(ctx: Context, type: str, user: User, number: int=1, reason: str=None, affect_total: bool=False):
     '''
     Manages infraction counter
@@ -184,42 +195,42 @@ async def counter(ctx: Context, type: str, user: User, number: int=1, reason: st
     await ctx.reply(f"Successfully changed. New count is {active_infractions.value}/{total_infractions.value}")
 
 
-#@register(group=Groups.HELPER, main=infraction)
+@register(group=Groups.HELPER, main=infraction, aliases=["warn"])
 async def warn(ctx: Context, user: UserID, reason: str = "", *, language):
     '''Warns user'''
     return await infraction(ctx, types.Infraction.Warn, user, reason)
 
-#@register(group=Groups.MODERATOR, main=infraction)
+@register(group=Groups.MODERATOR, main=infraction, aliases=["mute"])
 async def mute(ctx: Context, user: UserID, reason: str = "", *, language):
     '''Mutes user'''
     return await infraction(ctx, types.Infraction.Mute, user, reason)
 
-#@register(group=Groups.MODERATOR, main=infraction)
+@register(group=Groups.MODERATOR, main=infraction, aliases=["kick"])
 async def kick(ctx: Context, user: UserID, reason: str = "", *, language):
     '''Kicks user'''
     return await infraction(ctx, types.Infraction.Kick, user, reason)
 
-#@register(group=Groups.MODERATOR, main=infraction)
+@register(group=Groups.MODERATOR, main=infraction, aliases=["ban"])
 async def ban(ctx: Context, user: UserID, reason: str = "", *, language):
     '''Bans user'''
     return await infraction(ctx, types.Infraction.Ban, user, reason)
 
-#@register(group=Groups.HELPER, main=infraction)
+@register(group=Groups.HELPER, main=infraction, aliases=["tempmute"])
 async def tempmute(ctx: Context, user: UserID, reason: str = "", duration: int=0, *, language):
     '''Temporarly mutes user'''
     return await infraction(ctx, types.Infraction.Temp_Mute, user, reason, duration)
 
-#@register(group=Groups.HELPER, main=infraction)
+@register(group=Groups.HELPER, main=infraction, aliases=["tempban"])
 async def tempban(ctx: Context, user: UserID, reason: str = "", duration: int=0, *, language):
     '''Temporarly bans user'''
     return await infraction(ctx, types.Infraction.Temp_Ban, user, reason, duration)
 
-#@register(group=Groups.MODERATOR, main=infraction)
+@register(group=Groups.MODERATOR, main=infraction, aliases=["unmute"])
 async def unmute(ctx: Context, user: UserID, reason: str = "", *, language):
     '''Unmutes user'''
     return await infraction(ctx, types.Infraction.Unmute, user, reason)
 
-#@register(group=Groups.ADMIN, main=infraction)
+@register(group=Groups.ADMIN, main=infraction, aliases=["unban"])
 async def unban(ctx: Context, user: UserID, reason: str = "", *, language):
     '''Unbans user'''
     return await infraction(ctx, types.Infraction.Unban, user, reason)
