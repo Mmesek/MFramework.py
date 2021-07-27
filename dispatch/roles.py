@@ -1,12 +1,16 @@
-from MFramework import onDispatch, Bot, Guild_Member_Update
-async def new_booster(ctx, user_id, guild_id):
-    greeting, color, fine_print, if_interest, ending, note = [], [], [], [], [], []
+from MFramework import onDispatch, Bot, Guild_Member_Update, Snowflake
+async def new_booster(ctx: Bot, user_id: Snowflake, guild_id: Snowflake):
+    import json
+    language = ctx.cache[guild_id].language
+    with open(f'../data/nitro_welcome_{language}.json','r',newline='',encoding='utf-8') as file:
+        f = json.load(file)
+    greeting, color, fine_print, if_interest, ending, note = f["greeting"], f["color"], f["fine_print"], f["if_interest"], f["ending"], f["note"]
     from random import choice
     cmd_line = "`/role` `color: #HexadecimalColor` `name: Name of your role`"
-    message = ' '.join([choice(greeting).format(user=user_id), choice(color), choice(fine_print), choice(if_interest).format(cmd_line), choice(ending), choice(note)])
+    message = ' '.join([choice(greeting).format(user=user_id), choice(color), choice(fine_print), choice(if_interest).format(bot=ctx.username, cmd=cmd_line), choice(ending), choice(note)])
     await ctx.create_message(ctx.cache[guild_id].nitro_channel, message)
 
-async def end_booster(ctx, user_id):
+async def end_booster(ctx: Bot, user_id: Snowflake, guild_id: Snowflake):
     #TODO
     pass
 
