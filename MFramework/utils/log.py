@@ -357,3 +357,10 @@ class Stream(Log):
             return
         self.logged_streams[data.user.id] = stream.created_at
         await self._log(f"<@{data.user.id}> właśnie transmituje {stream.state} na [{stream.name}]({stream.url})!")
+
+class Report(Log):
+    username = "User Report Log"
+    async def log(self, data: MFramework.types.Message) -> MFramework.Message:
+        await self._log()
+    async def log_dm(self, data: MFramework.types.Message, user_id: MFramework.Snowflake) -> MFramework.Message:
+        await self._log_dm()

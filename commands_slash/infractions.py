@@ -234,3 +234,17 @@ async def unmute(ctx: Context, user: UserID, reason: str = "", *, language):
 async def unban(ctx: Context, user: UserID, reason: str = "", *, language):
     '''Unbans user'''
     return await infraction(ctx, types.Infraction.Unban, user, reason)
+
+@register(group=Groups.GLOBAL, interaction=False)
+async def report(ctx: Context, message: Message, *msg: str, language, **kwargs):
+    '''
+    Report situation on server to Moderators
+    Params
+    ------
+    msg:
+        optional message about what's happening
+    '''
+    await ctx.cache.logging["report"](message)
+    for moderator in filter(lambda x: message.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
+        await ctx.cache.logging["report"].log_dm(message)
+    await message.react(ctx.bot.emoji.get("success"))
