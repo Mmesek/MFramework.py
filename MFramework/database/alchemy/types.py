@@ -6,7 +6,15 @@ from mdiscord import Snowflake
 
 from MFramework.commands import Groups
 
-class Infraction(Enum):
+class Permissions(Enum):
+    @property
+    def permission(cls) -> Groups:
+        return cls.__annotations__.get(cls.name, Groups.SYSTEM)
+    def __init__(self, value="Missing value", doc="Missing docstring") -> None:
+        self._value_ = value
+        self.doc = doc
+
+class Infraction(Permissions):
     '''Infractions'''
     Warn: Groups.HELPER = 0, "Warns user"
     Mute: Groups.MODERATOR = 1, "Mutes user"
@@ -21,29 +29,24 @@ class Infraction(Enum):
     DM_Unmute: Groups.MODERATOR = 10, "Unmutes DMs from user in Modmail"
     Report: Groups.GLOBAL = 11, "Reports user"
 
-    @property
-    def permission(cls) -> Groups:
-        return cls.__annotations__.get(cls.name, Groups.SYSTEM)
-    def __init__(self, value="Missing value", doc="Missing docstring") -> None:
-        self._value_ = value
-        self.doc = doc
 
-class Snippet(Enum):
-    Snippet = 0
-    Regex = 1
-    Rule = 2
-    Emoji = 3
-    Reaction = 4
-    Canned_Response = 5
-    Meme = 6
-    Quote = 7
-    Question = 8
-    Answer = 9
-    Blacklisted_Word = 17
-    Whitelisted = 18
-    Response_Reaction = 19
-    Stream = 20
-    Definition = 21
+class Snippet(Permissions):
+    '''Snippets'''
+    Snippet: Groups.MODERATOR = 0, "Snippet text"
+    Regex: Groups.MODERATOR = 1, "Regular Expression"
+    Rule: Groups.MODERATOR = 2, "!r"
+    Emoji: Groups.HELPER = 3, ":emoji:"
+    Reaction: Groups.MODERATOR = 4, "Reaction to a message"
+    Canned_Response: Groups.MODERATOR = 5, "DM: Hi. - Hello"
+    Meme: Groups.NITRO = 6, "That's funny"
+    Quote: Groups.NITRO = 7, "Someone said..."
+    Question: Groups.MODERATOR = 8, "What would you say?"
+    Answer: Groups.MODERATOR = 9, "Cool story bro"
+    Blacklisted_Word: Groups.MODERATOR = 17, "f$@#!"
+    Whitelisted: Groups.MODERATOR = 18, "https://google.com/"
+    Response_Reaction: Groups.MODERATOR = 19, "Works: ✔"
+    Stream: Groups.MODERATOR = 20, "Someone is Streaming... HEY CHECK THEM OUT!"
+    Definition: Groups.NITRO = 21, "Admin - Person you don't want to mess with"
 
 class Statistic(Enum):
     Chat = 0
