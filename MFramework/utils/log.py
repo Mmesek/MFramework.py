@@ -1,5 +1,7 @@
 import MFramework
-from typing import List
+from typing import List, TYPE_CHECKING
+if TYPE_CHECKING:
+    from MFramework import Bot
 
 class Log:
     '''Base Log class. Subclass it and overwrite `.log()` and optionally `.log_dm()` to create new log. 
@@ -11,7 +13,7 @@ class Log:
         Name webhook when using this logger
     avatar:
         URL to avatar to use when using this logger'''
-    bot: object#MFramework.Bot
+    bot: 'Bot'
     guild_id: MFramework.Snowflake
     webhook_id: MFramework.Snowflake
     webhook_token: str
@@ -35,8 +37,8 @@ class Log:
     async def log_dm(self, event, user_id: MFramework.Snowflake) -> MFramework.Message:
         raise NotImplementedError
 
-    async def _log(self, content: str="", embeds: List[MFramework.Embed]=None, components: List[MFramework.Component]=None, *, username=None, avatar=None) -> MFramework.Message:
-        return await self.bot.execute_webhook(self.webhook_id, self.webhook_token, content=content, username=username or self.username, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), avatar_url=avatar or self.avatar, embeds=embeds, components=components)
+    async def _log(self, content: str="", embeds: List[MFramework.Embed]=None, components: List[MFramework.Component]=None, *, username: str=None, avatar: str=None, thread_id: MFramework.Snowflake=None, wait:bool=None) -> MFramework.Message:
+        return await self.bot.execute_webhook(self.webhook_id, self.webhook_token, content=content, username=username or self.username, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), avatar_url=avatar or self.avatar, embeds=embeds, components=components, thread_id=thread_id, wait=wait)
     async def _log_dm(self, user_id: MFramework.Snowflake, content: str="", embeds: List[MFramework.Embed]=None, components: List[MFramework.Component]=None) -> MFramework.Message:
         dm_id = await self.bot.create_dm(user_id)
         return await self.bot.create_message(channel_id=dm_id, content=content, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), embeds=embeds, components=components)
@@ -292,7 +294,12 @@ class Muted_Change(Member_Update):
 
 class Direct_Message(Message):
     def __init__(self, bot, guild_id: MFramework.Snowflake, type: str, id: MFramework.Snowflake, token: str) -> None:
+        self.threads = {}
+        self.channel_id = None
         super().__init__(bot, guild_id, type, id, token)
+    async def get_wh_channel(self):
+        webhook = await self.bot.get_webhook(self.webhook_id)
+        self.channel_id = webhook.channel_id
     async def log(self, msg) -> MFramework.Message:
         embed = self.set_metadata(msg)
         avatar = msg.author.get_avatar()
@@ -321,7 +328,14 @@ class Direct_Message(Message):
         if reg and reg.lastgroup is not None:
             await msg.reply(canned['responses'][reg.lastgroup])
             content = tr("commands.dm.cannedResponseSent", self.bot.cache[self.guild_id].language, name=reg.lastgroup)
-        await self._log(content+f' <@!{msg.author.id}>', [embed], f"{msg.author.username}#{msg.author.discriminator}", avatar)
+        thread_id = self.threads.get(msg.author.id, None)
+        if thread_id is None:
+            if not self.channel_id:
+                await self.get_wh_channel()
+            thread = await self.bot.start_thread_without_message(channel_id=self.channel_id, name=msg.author.username, type= MFramework.Channel_Types.GUILD_PUBLIC_THREAD, reason="Received DM from new user")
+            self.threads[msg.author.id] = thread.id
+            thread_id = thread.id
+        await self._log(content=content+f' <@!{msg.author.id}>', embeds=[embed], username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id)
         await msg.react(self.bot.emoji['success'])
 
 class Message_Replay_QnA(Message):
