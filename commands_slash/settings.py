@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context, ChannelID, Snowflake
+from MFramework import register, Groups, Context, ChannelID, Snowflake, Bitwise_Permission_Flags, Channel, Overwrite
 
 @register(group=Groups.ADMIN)
 async def settings():
@@ -84,7 +84,7 @@ async def subscribe(ctx: Context, source: str, channel: ChannelID = None, webhoo
 
 
 @register(group=Groups.ADMIN, main=webhooks)
-async def ubsubscribe(ctx: Context, source: str, webhook: str=None, *, language):
+async def unsubscribe(ctx: Context, source: str, webhook: str=None, *, language):
     '''Unsubscribe this channel from provided source
     
     Params
@@ -121,3 +121,83 @@ async def type(ctx: Context, type: ChannelTypes, channel: ChannelID=None, name: 
         type of channel
     '''
     pass
+
+@register(group=Groups.ADMIN, main=settings)
+async def slowmode(ctx: Context, limit:int=0, duration: int=0, channel: ChannelID=None, all: bool=False, *, language):
+    '''
+    Sets a slowmode on a channel
+    Params
+    ------
+    limit:
+        Slowmode duration
+    duration:
+        How long slowmode should last
+    channel:
+        Channel to slowmode
+    all:
+        Whether slowmode should be server-wide or not
+    '''
+    channels = {}
+    d = int(duration)
+    m = await ctx.reply(f"Applying Slowmode in progress...")
+    if all:
+        for channel in ctx.cache.channels.values():
+            if channel.type == 0:
+                try:
+                    channels[channel.id] = channel.rate_limit_per_user
+                    await ctx.bot.modify_channel(channel.id, rate_limit_per_user=limit, reason="Global Slow mode command")
+                except:
+                    pass
+    else:
+        channels[channel] = ctx.cache.channels.get(channel, Channel).rate_limit_per_user
+        await ctx.bot.modify_channel(channel, rate_limit_per_user=limit, reason="Slow mode command")
+    await m.edit(f"{'Server wide ' if all else ''}Slow mode activiated")
+    if d > 0:
+        import asyncio
+        await asyncio.sleep(d)
+        for channel, previous_limit in channels.items():
+            try:
+                await ctx.bot.modify_channel(channel, rate_limit_per_user=previous_limit, reason="Slow mode expired")
+            except Exception as ex:
+                pass
+        await ctx.reply(f"{'Server wide ' if all else ''}Slow mode finished")
+
+@register(group=Groups.ADMIN, main=settings)
+async def lockdown(ctx: Context, duration: int=0, channel: ChannelID=None, all: bool=False, *, language):
+    '''
+    Sets a lockdown on a channel
+    Params
+    ------
+    duration:
+        How long lockdown should last
+    channel:
+        Channel to lockdown
+    all:
+        Whether lockdown should be server-wide or not
+    '''
+    channels = {}
+    d = int(duration)
+    lockdown = Bitwise_Permission_Flags.SEND_MESSAGES.value | Bitwise_Permission_Flags.ADD_REACTIONS.value
+    m = await ctx.reply(f"Applying Lockdown in progress...")
+    if all:
+        for channel in ctx.cache.channels.values():
+            channels[channel.id] = channel.permission_overwrites
+            channel_overwrites = []
+            for overwrite in channel.permission_overwrites:
+                channel_overwrites.append(Overwrite(id=overwrite.id, type=overwrite.type, allow=overwrite.allow, deny=overwrite.deny | lockdown))
+            await ctx.bot.modify_channel(channel.id, permission_overwrites=channel_overwrites, reason="Global Lockdown command")
+    else:
+        channel = ctx.bot.cache[ctx.guild_id].channels.get(channel, Channel).permission_overwrites
+        channels[channel] = channel
+        channel_overwrites = []
+        for overwrite in channel:
+            channel_overwrites.append(Overwrite(id=overwrite.id, type=overwrite.type, allow=overwrite.allow, deny=int(overwrite.deny) | lockdown))
+        await ctx.bot.modify_channel(channel, permission_overwrites=channel_overwrites, reason="Lockdown command")
+    await m.edit(f"{'Server wide ' if all else ''}Lockdown activiated")
+    if d > 0:
+        import asyncio
+        await asyncio.sleep(d)
+        for channel in channels:
+            previous_overwrites = channels[channel]
+            await ctx.bot.modify_channel(channel, permission_overwrites=previous_overwrites, reason="Lockdown expired")
+        await ctx.reply(f"{'Server wide ' if all else ''}Lockdown finished")
