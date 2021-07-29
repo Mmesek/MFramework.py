@@ -9,13 +9,13 @@ from mlib.random import chance, pick
 from MFramework.utils.scheduler import scheduledTask, add_task, wait_for_scheduled_task
 import MFramework.database.alchemy.models as db
 
-@register()
-async def giveaway(ctx: Context, *args, language, **kwargs):
+@register(group=Groups.MODERATOR)
+async def giveaway(ctx: Context, *, language):
     '''Giveaways'''
     pass
 
 @register(group=Groups.MODERATOR, main=giveaway)
-async def create(ctx: Context, prize: str, duration: str = '1h', description: str=None, winner_count: int=1, reactions: str = '🎉', channel: ChannelID=None, hidden:bool=False, *args, language, **kwargs):
+async def create(ctx: Context, prize: str, duration: str = '1h', description: str=None, winner_count: int=1, reactions: str = '🎉', channel: ChannelID=None, hidden:bool=False, *, language):
     '''Create new giveaway
     Params
     ------
@@ -39,7 +39,7 @@ async def create(ctx: Context, prize: str, duration: str = '1h', description: st
     for reaction in reactions.split(','):
         await msg.react(replaceMultiple(reaction.strip(), ['<:',':>', '>'],''))
     ctx.cache.giveaway_messages.append(msg.id)
-    add_task(ctx, ctx.guild_id, 'giveaway' if not hidden else 'hidden_giveaway', channel, msg.id, ctx.member.user.id, datetime.now(), finish, prize, winner_count)
+    add_task(ctx, ctx.guild_id, db.types.Task.Giveaway if not hidden else db.types.Task.Hidden_Giveaway, channel, msg.id, ctx.member.user.id, datetime.now(tz=timezone.utc), finish, prize, winner_count)
     await ctx.reply("Created", private=True)
 
 @register(group=Groups.MODERATOR, main=giveaway)
@@ -55,13 +55,13 @@ async def delete(ctx: Context, message_id: Snowflake, *args, language, **kwargs)
     if task is not None:
         task.cancel()
     s = ctx.db.sql.session()
-    r = s.query(db.Tasks).filter(db.Tasks.server_id == ctx.guild_id).filter(db.Tasks.type == 'giveaway').filter(db.Tasks.message_id == int(message_id)).first()
+    r = s.query(db.Task).filter(db.Task.server_id == ctx.guild_id).filter(db.Task.type == db.types.Task.Giveaway).filter(db.Task.message_id == int(message_id)).first()
     s.delete(r)
     s.commit()
     await ctx.reply("Giveaway deleted Successfully", private=True)
 
 @register(group=Groups.MODERATOR, main=giveaway)
-async def end(ctx: Context, message_id: Snowflake, *args, language, **kwargs):
+async def end(ctx: Context, message_id: Snowflake, *, language):
     '''
     Ends Giveaway
     Params
@@ -72,13 +72,13 @@ async def end(ctx: Context, message_id: Snowflake, *args, language, **kwargs):
     task = ctx.cache.tasks.get('giveaway', {}).get(int(message_id), None)
     task.cancel()
     s = ctx.db.sql.session()
-    task = s.query(db.Tasks).filter(db.Tasks.server_id == ctx.guild_id).filter(db.Tasks.finished == False).filter(db.Tasks.message_id == int(message_id)).first()
+    task = s.query(db.Task).filter(db.Task.server_id == ctx.guild_id).filter(db.Task.finished == False).filter(db.Task.message_id == int(message_id)).first()
     task.TimestampEnd = datetime.now(tz=timezone.utc)
     await giveaway(ctx, task)
     await ctx.reply("Giveaway ended Successfully")
 
 @register(group=Groups.MODERATOR, main=giveaway)
-async def reroll(ctx: Context, message_id: Snowflake, amount: int=0, *args, language, **kwargs):
+async def reroll(ctx: Context, message_id: Snowflake, amount: int=0, *, language):
     '''
     Rerolls giveaway
     Params
@@ -89,7 +89,7 @@ async def reroll(ctx: Context, message_id: Snowflake, amount: int=0, *args, lang
         Amount of rewards to reroll, defaults to all
     '''
     s = ctx.db.sql.session()
-    task = s.query(db.Tasks).filter(db.Tasks.server_id == ctx.guild_id).filter(db.Tasks.type == 'giveaway').filter(db.Tasks.message_id == message_id).first()
+    task = s.query(db.Task).filter(db.Task.server_id == ctx.guild_id).filter(db.Task.type == db.types.Task.Giveaway).filter(db.Task.message_id == message_id).first()
     from MFramework.utils.utils import get_all_reactions
     users = await get_all_reactions(ctx, task.channel_id, task.message_id, '🎉')
     winners = [f'<@{i}>' for i in pick([i.id for i in users], amount)]
@@ -108,7 +108,7 @@ async def reroll(ctx: Context, message_id: Snowflake, amount: int=0, *args, lang
     )
     await ctx.reply("Giveaway rerolled Successfully")
 
-def createGiveawayEmbed(l, finish, prize, winner_count, finished=False, winners='', chance='', custom_description=None):
+def createGiveawayEmbed(l: str, finish, prize: str, winner_count: int, finished: bool=False, winners: str='', chance: str='', custom_description: str=None) -> Embed:
     translationStrings = ['title', 'description', 'endTime']
     t = {}
     for i in translationStrings:
@@ -122,12 +122,12 @@ def createGiveawayEmbed(l, finish, prize, winner_count, finished=False, winners=
     return Embed().setFooter(text=t['endTime']).setTimestamp(finish.isoformat()).setTitle(t['title']).setDescription(t['description'])
 
 @scheduledTask
-async def giveaway(ctx: Context, t):
-    await wait_for_scheduled_task(ctx, t.end)
+async def giveaway(ctx: Context, t: db.Task):
+    await wait_for_scheduled_task(t.end)
     s = ctx.db.sql.session()
-    task = s.query(db.Tasks).filter(db.Tasks.server_id == t.server_id).filter(db.Tasks.type == t.type).filter(db.Tasks.timestamp == t.timestamp).filter(db.Tasks.finished == False).first()
-    language = ctx.cache[t.GuildID].language
-    if 'hidden' not in task.Type:
+    task = s.query(db.Task).filter(db.Task.server_id == t.server_id).filter(db.Task.type == t.type).filter(db.Task.timestamp == t.timestamp).filter(db.Task.finished == False).first()
+    language = ctx.cache.language
+    if t.type is db.types.Task.Hidden_Giveaway:
         from MFramework.utils.utils import get_all_reactions
         users = await get_all_reactions(ctx, task.channel_id, task.message_id, '🎉')
     else:
@@ -142,9 +142,9 @@ async def giveaway(ctx: Context, t):
     await ctx.bot.create_message(task.channel_id, 
         tr("commands.giveaway.endMessage", language, count=winnerCount, winners=winners, prize=task.Prize, participants=len(users), server=task.GuildID, channel=task.ChannelID, message=task.MessageID)
     )
-    task.Finished = True
+    task.finished = True
     s.commit()
 
 @scheduledTask
-async def hidden_giveaway(ctx: Context, t):
+async def hidden_giveaway(ctx: Context, t: db.Task):
     await giveaway(ctx, t)

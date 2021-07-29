@@ -1,12 +1,14 @@
-from mdiscord import *
-from ..commands._utils import Groups
-from .. import *
-from ..utils.log import Log
+import re, asyncio
 from typing import List, Dict, Set, Tuple, Union, DefaultDict
 
-from .cache_internal.models import *
-import re
+from mdiscord import *
 from MFramework import log
+
+from MFramework.commands._utils import Groups
+from MFramework.utils.log import Log
+
+from .. import *
+from .cache_internal.models import *
 from .alchemy import models as db
 from .alchemy import types
 
@@ -62,6 +64,7 @@ class GuildCache:
     language: str = 'en'
     allowed_duplicated_messages: int = 1
     settings: dict
+    tasks: Dict[db.types.Task, Dict[Snowflake, asyncio.Task]]
 
     name: str
     color: int
@@ -108,6 +111,7 @@ class GuildCache:
         self.rpg_channels = []
         self.disabled_channels = []
         self.disabled_roles = []
+        self.tasks = {}
         self.dynamic_channels = {"channels":{}}
         self.responses = {}
         self.canned = {}
