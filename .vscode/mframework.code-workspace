@@ -1,23 +1,29 @@
 {
     "folders": [{
         "path": "..",
-        "name": "MFramework"
+        "name": "Root"
     },{
-	    "path": "../commands/",
-		"name": "Commands"
-	},{
+        "path": "../locale/",
+        "name": "Localization"
+    },{
+        "path": "../.vscode/",
+        "name": "Settings"
+    },{
 	    "path": "../data/",
 		"name": "Data"
 	},{
 	    "path": "../tools/",
 		"name": "Tools"
 	},{
-		"path": "../../ClientServer", 
-		"name":"Listener"
-	},{
 		"path": "../../RSSReader",
 		"name": "RSS"
-	}
+	},{
+        "path": "D:/Mmesek/tm/E/Workstation/Code/mlib/python/mlib",
+        "name": "mLib"
+    },{
+        "path": "D:/Mmesek/tm/E/Workstation/Code/mlib/python/mdiscord",
+        "name": "Discord"
+    }
 ],
     "extensions": {
         "recommendations": [
@@ -32,16 +38,17 @@
                 "request": "launch",
                 "program": "${workspaceFolder:MFramework}/__main__.py",
                 "console": "integratedTerminal",
-                "cwd": "${workspaceFolder:MFramework}"
+                "cwd": "${workspaceFolder:MFramework}",
+                "env": {"PYTHONPATH": "${workspaceFolder:MFramework}"}
             },{
                 "name": "Python: Current File (Integrated Terminal)",
                 "type": "python",
                 "request": "launch",
                 "program": "${file}",
-                "console": "integratedTerminal"
+                "console": "integratedTerminal",
+                "args": ["--log=DEBUG"]
             }
-        ],
-        "compounds": []
+        ]    
     },
     "tasks": {
         "version": "2.0.0",
@@ -155,118 +162,22 @@
         ]
     },
     "settings": {
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": false,
-        "python.linting.pylintArgs": [
-            "--disable=all", 
-            "--enable=F,E,unreachable,duplicate-key,unnecessary-semicolon,global-variable-not-assigned,unused-variable,binary-op-exception,bad-format-string,anomalous-backslash-in-string,bad-open-mode"
-            ],
-        "python.linting.flake8Enabled": true,
-        "python.linting.flake8Args": [
-            "--select=E9,F63,F7,F82,F401",
-            "--max-complexity=10",
-            "--max-line-length=127"
-            ],
-        "python.formatting.provider": "black",
-        "python.formatting.blackArgs": [
-            "-l 120"
-        ],
-        "editor.renderWhitespace": "selection",
-        "telemetry.enableTelemetry": false,
-        "telemetry.enableCrashReporter": false,
-        "git.autofetchPeriod": 900,
         "git.autofetch": true,
         "git.autoStash": true,
-        "git.alwaysShowStagedChangesResourceGroup": true,
-        "python.languageServer": "Jedi",
+		"python.analysis.extraPaths": ["./", "${workspaceFolder:MFramework}", "../", "../MFramework"],
         "python.analysis.cacheFolderPath": "${workspaceFolder:MFramework}/.cache/",
-        //"python.languageServer": "Microsoft",
-        "editor.fontFamily": "'Cascadia Code PL', Consolas, 'Courier New', monospace",
-        "editor.fontLigatures": true,
-        "editor.formatOnType": true,
-        "python.analysis.memory.keepLibraryAst": true,
         "files.exclude": {
-            "**/.git": true,
-            "**/.svn": true,
-            "**/.hg": true,
-            "**/CVS": true,
-            "**/.DS_Store": true,
-            "**/__pycache__": true,
-            "Dockerfile": true,
-            "docker-compose.yml": true,
             ".gitignore": true,
-            ".dockerignore": true,
-            "docker-compose.debug.yml": true,
-            ".github":true,
-            "mbot.sh": true,
-            "requirements.txt": true,
-            "**/README.md": true,
-            ".vscode": true,
 			"tools/": true,
-			"old/": true,
 			"data/": true,
-            "commands/": true,
-            "MFrameworkRework/": true,
-            "__main__-Rework.py":true,
-            "emojidump":true,
-            "unused":true
         },
-        "files.watcherExclude": {
-            "**/.git/objects/**": true,
-            "**/.git/subtree-cache/**": true,
-            "**/node_modules/*/**": true,
-            "**/__pycache__": true
-        },
-        "sqltools.connections": [
-            {
-                "askForPassword": false,
-                "database": "mframework",
-                "driver": "PostgreSQL",
-                "name": "Mbot PSQL",
-                "port": 5432,
-                "server": "r4",
-                "username": "postgres"
-            }
-        ],
         "editor.tokenColorCustomizations": {
             "comments": "#696969",
             "numbers": "#7BBB77",
-            //"functions": "#0099DD",
             "functions": "#11BCEE",
             "keywords": "#EFAF5F",
-            //"keywords": "#CC8844",
             "strings": "#DC5577",
-            //"strings": "#DB5F67",
             "types": "#00AAAA",
-            "textMateRules": [
-                {
-                    "scope": "constant",
-                    "settings": {
-                        //"foreground": "#138813",
-                        "foreground": "#528b52",
-                    }
-                },
-                {
-                    "scope": "meta.return-type",
-                    "settings": {
-                        "foreground": "#FF00ff",
-                        "fontStyle": "underline"
-                    }
-                },
-                {
-                    "scope": "variable.parameter",
-                    "settings": {
-                        "foreground": "#aaacff",
-                    }
-                },
-                {
-                    "scope": "keyword",
-                    "settings": {
-                        "foreground": "#aaaa00"
-                    }
-                }
-            ],
-            //"variables": "#BBCC33"
         }
     }
 }
