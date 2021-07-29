@@ -51,7 +51,14 @@ async def interaction_create(client: Bot, interaction: Interaction):
                 o.user = interaction.data.resolved.users.get(str(option.value), User())
             kwargs[option.name] = o
     kwargs = set_default_arguments(ctx, f, kwargs)
-    await f.func(**kwargs)
+    try:
+        await f.func(**kwargs)
+    except Exception as ex:
+        try:
+            await interaction.reply(f"An exeception occured trying to execute this command: {ex}")
+        except:
+            await client.create_message(interaction.channel_id, f"An exeception occured trying to execute this command: {ex}")
+
 
 from mlib import arguments
 CLEAR_INTERACTIONS = getattr(arguments.parse(), 'clear_interactions', False)
@@ -77,7 +84,7 @@ async def guild_create(client: Bot, guild: Guild):
     
     if UPDATE_PERMISSIONS:
         from ._utils import set_permissions
-        await set_permissions(client, guild.id, client.registered_commands or [] + _commands)
+        await set_permissions(client, guild.id, (client.registered_commands or []) + (_commands or []))
 
 async def register_commands(client: Bot, guild: Guild = None):
     registered = await get_commands(client, guild)
