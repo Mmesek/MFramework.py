@@ -298,7 +298,7 @@ class Direct_Message(Message):
         self.channel_id = None
         super().__init__(bot, guild_id, type, id, token)
     async def get_wh_channel(self):
-        webhook = await self.bot.get_webhook(self.webhook_id)
+        webhook = await self.bot.get_webhook_with_token(self.webhook_id, self.webhook_token)
         self.channel_id = webhook.channel_id
     async def log(self, msg) -> MFramework.Message:
         embed = self.set_metadata(msg)
@@ -335,8 +335,11 @@ class Direct_Message(Message):
             thread = await self.bot.start_thread_without_message(channel_id=self.channel_id, name=msg.author.username, type= MFramework.Channel_Types.GUILD_PUBLIC_THREAD, reason="Received DM from new user")
             self.threads[msg.author.id] = thread.id
             thread_id = thread.id
-        await self._log(content=content+f' <@!{msg.author.id}>', embeds=[embed], username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id)
-        await msg.react(self.bot.emoji['success'])
+        try:
+            await self._log(content=content+f' <@!{msg.author.id}>', embeds=[embed], username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id)
+            await msg.react(self.bot.emoji['success'])
+        except:
+            await msg.react(self.bot.emoji["failure"])
 
 class Message_Replay_QnA(Message):
     username = None
