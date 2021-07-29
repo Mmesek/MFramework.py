@@ -67,11 +67,12 @@ async def parse_reply(self: Bot, data: Message):
     _g = detect_group(self, data.author.id, data.guild_id, data.member.roles)
     if data.referenced_message == None or data.referenced_message.id == 0:
         return
-    if _g not in [Groups.SYSTEM, Groups.ADMIN, Groups.MODERATOR]:
+    if _g <= Groups.MODERATOR:
         return
-    if data.channel_id == 686371597895991327:
+    channel = self.cache[data.guild_id].threads.get(data.channel_id, data.channel_id)
+    if channel == 686371597895991327:
         return await dm_reply(self, data)
-    if data.channel_id != 802092364008783893:
+    if channel != 802092364008783893:
         return
     await self.cache[data.guild_id].logging["message_replay_qna"](data)
 
@@ -133,7 +134,8 @@ ACTION = re.compile(r"(?:(?=\*)(?<!\*).+?(?!\*\*)(?=\*))")
 ILLEGAL_ACTIONS = re.compile(r"(?i)zabij|wyryw|mord")
 @onDispatch(event="message_create")
 async def roll_dice(self: Bot, data: Message, updated: bool = False):
-    if data.channel_id not in self.cache[data.guild_id].rpg_channels:
+    channel = self.cache[data.guild_id].threads.get(data.channel_id, data.channel_id)
+    if channel not in self.cache[data.guild_id].rpg_channels:
         return
     if updated:
         m = await self.get_channel_message(data.channel_id, data.id)

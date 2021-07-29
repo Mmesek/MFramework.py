@@ -54,6 +54,7 @@ class GuildCache:
 
     giveaway_messages: List[Snowflake]
     last_messages: Dict[Snowflake, Message]
+    threads: Dict[Snowflake, Snowflake]
 
     voice_link: Snowflake = None
     flags: int = 0
@@ -92,6 +93,7 @@ class GuildCache:
         self.messages = Messages(r)
         self.cooldowns = Cooldowns(r)
         self.presence = Presences()
+        self.threads = {i.id: i.parent_id for i in guild.threads}
         self.cooldown_values = {}
         self.last_messages = {}
         self.voice = {}
