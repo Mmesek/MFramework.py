@@ -1,5 +1,5 @@
 import MFramework
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Any, Tuple
 if TYPE_CHECKING:
     from MFramework import Bot
 
@@ -21,7 +21,7 @@ class Log:
     avatar: str = None
     _type: str = "all"
 
-    def __init__(self, bot, guild_id: MFramework.Snowflake, type:str, id: MFramework.Snowflake, token: str) -> None:
+    def __init__(self, bot: 'Bot', guild_id: MFramework.Snowflake, type:str, id: MFramework.Snowflake, token: str) -> None:
         self.bot = bot
         self._type = self.__class__.__name__.lower()
         self.guild_id = guild_id
@@ -32,9 +32,9 @@ class Log:
 
     def localized(self) -> None:
         pass
-    async def log(self, event) -> MFramework.Message:
+    async def log(self, event: Any) -> MFramework.Message:
         raise NotImplementedError
-    async def log_dm(self, event, user_id: MFramework.Snowflake) -> MFramework.Message:
+    async def log_dm(self, event: Any, user_id: MFramework.Snowflake) -> MFramework.Message:
         raise NotImplementedError
 
     async def _log(self, content: str="", embeds: List[MFramework.Embed]=None, components: List[MFramework.Component]=None, *, username: str=None, avatar: str=None, thread_id: MFramework.Snowflake=None, wait:bool=None) -> MFramework.Message:
@@ -55,10 +55,10 @@ class Message(Log):
     def user_in_footer(self, embed: MFramework.Embed, msg: MFramework.Message) -> MFramework.Embed:
         return embed.setFooter(text=msg.author.username, icon_url=msg.author.get_avatar())
 
-    def get_cached_message(self, key) -> MFramework.Message:
+    def get_cached_message(self, key: MFramework.Snowflake) -> MFramework.Message:
         return self.bot.cache[self.guild_id].messages[key]
         #return self.bot.cache[self.guild_id].messages.get(key, None) #getMessage(message_id, channel_id)
-    def cached_message(self, msg) -> MFramework.Embed:
+    def cached_message(self, msg: MFramework.Message) -> MFramework.Embed:
         cached = self.get_cached_message(f"{msg.guild_id}.{msg.channel_id}.{msg.id}")
         if cached:
             embed = self.set_metadata(cached)
@@ -71,14 +71,14 @@ class Message(Log):
             return embed
 
 class Message_Update(Message):
-    async def log(self, msg) -> MFramework.Message:
+    async def log(self, msg: MFramework.Message) -> MFramework.Message:
         embed = self.cached_message(msg)
         embed.setTitle(f"Message edited in <#{msg.channel_id}>\nBefore:")
         embed.addFields("After:", msg.content)
         await self._log(embeds=embed)
 
 class Message_Delete(Message):
-    async def log(self, msg) -> MFramework.Message:
+    async def log(self, msg: MFramework.Message) -> MFramework.Message:
         embed = self.cached_message(msg)
         await self._log(
             content=f"Message deleted in <#{msg.channel_id}>", 
@@ -86,22 +86,22 @@ class Message_Delete(Message):
         )
 
 class User(Log):
-    async def log(self, event) -> MFramework.Message:
+    async def log(self, event: MFramework.Guild_Member) -> MFramework.Message:
         return super().log(event)
 
 class Join(User):
     username = 'Joined Log'
-    async def log(self, data) -> MFramework.Message:
+    async def log(self, data: MFramework.Guild_Member_Add) -> MFramework.Message:
         return await self._log(f"<@{data.user.id}> joined server. Account created at {data.user.id.as_date}")
 
 class Left(User):
     username = "Leave Log"
-    async def log(self, data) -> MFramework.Message:
+    async def log(self, data: MFramework.Guild_Member_Remove) -> MFramework.Message:
         return await self._log(f"<@{data.user.id}> left server")
 
 class Infraction(Log):
     username = "Infraction Log"
-    async def log(self, guild_id, channel_id, message_id, moderator, user_id, reason, type, duration=0, attachments=None) -> MFramework.Message:
+    async def log(self, guild_id: MFramework.Snowflake, channel_id: MFramework.Snowflake, message_id: MFramework.Snowflake, moderator: MFramework.User, user_id: MFramework.Snowflake, reason: str, type: str, duration: int=0, attachments: List[MFramework.Attachment]=None) -> MFramework.Message:
         from MFramework import Discord_Paths
         string = f'{moderator.author.username} [{type}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
         u = f'[<@{user_id}>'
@@ -124,7 +124,7 @@ class Infraction(Log):
                     break
                 embeds.append(MFramework.Embed().setImage(attachment.url).setTitle(attachment.filename).embed)
         await self._log(content=string, embeds=embeds)
-    async def log_dm(self, type, guild_id, user_id: MFramework.Snowflake, reason="", duration=None) -> MFramework.Message:
+    async def log_dm(self, type: str, guild_id: MFramework.Snowflake, user_id: MFramework.Snowflake, reason: str="", duration: int=None) -> MFramework.Message:
         types = {
             "warn": "warned",
             "tempmute":"temporarily muted",
@@ -146,7 +146,7 @@ class Infraction(Log):
 
 class Infraction_Event(Infraction):
     username = "Infraction Event Log"
-    async def log(self, data, type, reason="", by_user="") -> MFramework.Message:
+    async def log(self, data: MFramework.Message, type: str, reason: str="", by_user: str="") -> MFramework.Message:
         if by_user != '':
             try:
                 by_user = self.bot.cache[data.guild_id].members[int(by_user)].user.username
@@ -159,7 +159,7 @@ class Infraction_Event(Infraction):
             string += f' for "{reason}"'
         await self._log(string)
 
-    async def get_ban_data(self, data, type, audit_type):
+    async def get_ban_data(self, data: MFramework.Message, type: str, audit_type: str) -> Tuple[bool, bool]:
         import asyncio
         await asyncio.sleep(3)
         audit = await self.bot.get_guild_audit_log(data.guild_id, action_type=audit_type)
@@ -181,21 +181,21 @@ class Infraction_Event(Infraction):
         return False, False
 
 class Guild_Ban_Add(Infraction_Event):
-    async def log(self, data):
+    async def log(self, data: MFramework.Message):
         reason, moderator = await self.get_ban_data(self, data, "ban", 22) #TODO: Move it to log, actually turn it all into a logger instead of dispatch thing
         # TODO: Hey! Idea, maybe make decorator like @onDispatch, but like @log or something to make it a logger and register etc?
         if reason is not False:
             await super().log(data, type="banned", reason=reason, by_user=moderator)
 
 class Guild_Ban_Remove(Infraction_Event):
-    async def log(self, data):
+    async def log(self, data: MFramework.Message):
         reason, moderator = await self.get_ban_data(self, data, "unban", 23)
         if reason is not False:
             await super().log(data, type="unbanned", reason=reason, by_user=moderator)
 
 class Voice(Log):
     username = "Voice Log"
-    async def log(self, data, channel='', after=None) -> MFramework.Message:
+    async def log(self, data: MFramework.Voice_State, channel: MFramework.Snowflake='', after: int=None) -> MFramework.Message:
         string = f'<@{data.user_id}> '
         if channel != '' and data.channel_id != channel and data.channel_id != 0:
             string += f'moved from <#{channel}> to '
@@ -218,7 +218,7 @@ class Voice(Log):
 
 class Member_Update(Log):
     username = "Member Update Log"
-    async def log(self, data) -> MFramework.Message:
+    async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
         if data.user.id not in ctx.cache[data.guild_id].members:
             return
@@ -247,7 +247,7 @@ class Member_Update(Log):
 
 class Nitro_Change(Member_Update):
     username = "Nitro Log"
-    async def log(self, data) -> MFramework.Message:
+    async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
         if data.user.id in ctx.cache[data.guild_id].members:
             c = ctx.cache[data.guild_id].members[data.user.id]
@@ -272,7 +272,7 @@ class Nitro_Change(Member_Update):
 
 class Muted_Change(Member_Update):
     username = "Muted Log"
-    async def log(self, data) -> MFramework.Message:
+    async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
         if data.user.id in ctx.cache[data.guild_id].members:
             c = ctx.cache[data.guild_id].members[data.user.id]
@@ -293,14 +293,14 @@ class Muted_Change(Member_Update):
                 ctx.cache[data.guild_id].members[data.user.id] = data
 
 class Direct_Message(Message):
-    def __init__(self, bot, guild_id: MFramework.Snowflake, type: str, id: MFramework.Snowflake, token: str) -> None:
+    def __init__(self, bot: 'Bot', guild_id: MFramework.Snowflake, type: str, id: MFramework.Snowflake, token: str) -> None:
         self.threads = {}
         self.channel_id = None
         super().__init__(bot, guild_id, type, id, token)
     async def get_wh_channel(self):
         webhook = await self.bot.get_webhook_with_token(self.webhook_id, self.webhook_token)
         self.channel_id = webhook.channel_id
-    async def log(self, msg) -> MFramework.Message:
+    async def log(self, msg: MFramework.Message) -> MFramework.Message:
         embed = self.set_metadata(msg)
         avatar = msg.author.get_avatar()
         embed.author.icon_url = None
