@@ -12,7 +12,7 @@ class Dictionary(Dict):
         self[name] = value
     def get(self, name: str) -> str:
         '''Get item from a cache'''
-        return super().get(name)
+        return super().get(name, None)
     def update(self, name: str, new_value: str) -> str:
         '''Update current value in cache, return old value'''
         old_value = self.get(name)
@@ -20,7 +20,7 @@ class Dictionary(Dict):
         return old_value
     def delete(self, name: str) -> str:
         '''Delete item from cache'''
-        return self.pop(name)
+        return self.pop(name, None)
     def save(self) -> bool:
         return False
     def shutdown(self) -> None:
