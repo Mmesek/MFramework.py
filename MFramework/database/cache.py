@@ -72,6 +72,8 @@ class GuildCache:
 
     bot: Guild_Member
 
+    _permissions_set: bool = None
+
     def __init__(self, bot, guild: Guild, rds: Optional[Redis] = None):
         self.guild_id = guild.id
         self.guild = guild

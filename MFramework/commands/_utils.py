@@ -4,8 +4,7 @@ from inspect import signature, Signature
 
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
     Channel, User, Role, Guild_Member, Message, Enum,
-    Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
-    Application_Command_Permissions, Application_Command_Permission_Type, Guild_Application_Command_Permissions, log
+    Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type
     )
 
 if TYPE_CHECKING:
@@ -76,7 +75,7 @@ commands: Dict[str, Command] = {}
 aliasList: Dict[str, str] = {}
 COMPILED_REGEX: Dict[str, str] = {}
 commands_regex: Dict[str, Command] = {}
-command_shortcuts: Dict[str, tuple[Command, Dict[str, Any]]] = {}
+command_shortcuts: Dict[str, Tuple[Command, Dict[str, Any]]] = {}
 reactions: Dict[str, Command] = {}
 
 def detect_group(Client: 'Bot', user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
@@ -234,30 +233,6 @@ def strip_extra_arguments(f: Command, kwargs: Dict[str, Any]) -> Dict[str, Any]:
         if arg not in f.arguments:
             kwargs.pop(arg)
     return kwargs
-
-async def set_permissions(client: 'Bot', guild_id: Snowflake, _commands: List[Command]) -> None:
-    groups = client.cache[guild_id].groups
-    permissions = []
-    for cmd in _commands:
-        command_permissions = []
-        for group, roles in groups.items():
-            f = commands.get(cmd.name, None)
-            if f and f.group != Groups.GLOBAL and group.value <= f.group.value:
-                for role in roles:
-                    log.info("Adding permission for role %s [%s] for command %s", role, group.name, cmd.name)
-                    command_permissions.append(Application_Command_Permissions(
-                        id=role,
-                        type=Application_Command_Permission_Type.ROLE,
-                        permission=True
-                    ))
-        if command_permissions != []:
-            permissions.append(Guild_Application_Command_Permissions(
-                id = cmd.id,
-                permissions=command_permissions
-            ))
-    if permissions != []:
-        log.info("Editing permissions on server %s for #%s commands", guild_id, len(permissions))
-        await client.batch_edit_application_command_permissions(client.application.id, guild_id, permissions)
 
 def get_trigger(client: 'Bot', message: Message) -> str:
     alias = client.cache[message.guild_id].alias

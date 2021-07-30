@@ -10,9 +10,11 @@ Interaction commands registery & execution framework
 from MFramework import (onDispatch, Ready, Interaction_Type,
     RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake,
     Interaction, Guild, Application_Command, Application_Command_Option_Type,
-    Context, Bot, Groups, log)
+    Context, Bot, Groups, log,
+    Application_Command_Permissions, Application_Command_Permission_Type, Guild_Application_Command_Permissions
+    )
 
-from ._utils import is_nested, iterate_commands, set_default_arguments, commands, add_extra_arguments
+from ._utils import is_nested, iterate_commands, set_default_arguments, commands, add_extra_arguments, Command
 
 @onDispatch
 async def interaction_create(client: Bot, interaction: Interaction):
@@ -82,14 +84,14 @@ async def guild_create(client: Bot, guild: Guild):
     
     _commands = await register_commands(client, guild)
     
-    if UPDATE_PERMISSIONS:
-        from ._utils import set_permissions
-        await set_permissions(client, guild.id, (client.registered_commands or []) + (_commands or []))
+    if client.cache[guild.id]._permissions_set is False or UPDATE_PERMISSIONS:
+        await set_permissions(client, guild.id, _commands)
 
 async def register_commands(client: Bot, guild: Guild = None):
     registered = await get_commands(client, guild)
 
-    registered_commands = {i.name: i.id for i in registered}
+    registered_commands = {i.name: i.id for i in registered if i.name in commands}
+    unrecognized_commands = [i for i in registered if i.name not in commands]
 
     new_commands = []
     updated_commands = []
@@ -97,6 +99,10 @@ async def register_commands(client: Bot, guild: Guild = None):
 
     if CLEAR_INTERACTIONS:
         return await overwrite_commands(client, [], guild)
+    else:
+        for cmd in unrecognized_commands:
+            await delete_command(client, cmd, guild)
+
 
     for command, _command, options in iterate_commands(registered, guild.id if guild else None):
         cmd = Application_Command(name=command, description=_command.help[:100], options=options, default_permission=_command.group == Groups.GLOBAL)
@@ -117,14 +123,48 @@ async def register_commands(client: Bot, guild: Guild = None):
 
     if guild:
         _cmds = registered + _cmds
-        #return _cmds
+
         if len(new_commands) > 0:
-            from ._utils import set_permissions
-            await set_permissions(client, guild.id, client.registered_commands or []+_cmds)
+            client.cache[guild.id]._permissions_set = False
+        return _cmds
     else:
         client.registered_commands = registered
 
 from typing import List
+async def set_permissions(client: Bot, guild_id: Snowflake, _commands: List[Command]) -> None:
+    _commands = (_commands or []) + (client.registered_commands or [])
+    groups = client.cache[guild_id].groups
+    permissions = []
+    for cmd in _commands:
+        command_permissions = []
+        for group, roles in groups.items():
+            f = commands.get(cmd.name, None)
+            if f and f.group != Groups.GLOBAL and group.value <= f.group.value:
+                for role in roles:
+                    log.info("Adding permission for role %s [%s] for command %s", role, group.name, cmd.name)
+                    command_permissions.append(Application_Command_Permissions(
+                        id=role,
+                        type=Application_Command_Permission_Type.ROLE,
+                        permission=True
+                    ))
+        log.debug("Adding permission for owner %s [%s] for command %s", client.cache[guild_id].guild.owner_id, guild_id, cmd.name)
+        command_permissions.append(
+            Application_Command_Permissions(
+                id=client.cache[guild_id].guild.owner_id,
+                type=Application_Command_Permission_Type.USER,
+                permission=True
+            )
+        )
+        if command_permissions != []:
+            permissions.append(Guild_Application_Command_Permissions(
+                id = cmd.id,
+                permissions=command_permissions
+            ))
+    if permissions != []:
+        log.info("Editing permissions on server %s for #%s commands", guild_id, len(permissions))
+        await client.batch_edit_application_command_permissions(client.application.id, guild_id, permissions)
+        client.cache[guild_id]._permissions_set = True
+
 async def get_commands(client: Bot, guild: Guild = None) -> List[Application_Command]:
     if guild:
         return await client.get_guild_application_commands(client.application.id, guild.id)
