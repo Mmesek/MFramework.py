@@ -38,7 +38,7 @@ class Cache:
             for i in obj:
                 self.update(i)
             return
-        return self._cache.update(self._create_id(obj), as_dict(obj))
+        return self._cache.update(self._create_id(obj), obj)
     def pop(self, *args, default=None):
         return self._cache.delete(*args) or default
     def __contains__(self, o: object) -> bool:
