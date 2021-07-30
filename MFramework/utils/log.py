@@ -294,7 +294,6 @@ class Muted_Change(Member_Update):
 
 class Direct_Message(Message):
     def __init__(self, bot: 'Bot', guild_id: MFramework.Snowflake, type: str, id: MFramework.Snowflake, token: str) -> None:
-        self.threads = {}
         self.channel_id = None
         super().__init__(bot, guild_id, type, id, token)
     async def get_wh_channel(self):
@@ -328,13 +327,14 @@ class Direct_Message(Message):
         if reg and reg.lastgroup is not None:
             await msg.reply(canned['responses'][reg.lastgroup])
             content = tr("commands.dm.cannedResponseSent", self.bot.cache[self.guild_id].language, name=reg.lastgroup)
-        thread_id = self.threads.get(msg.author.id, None)
+        threads = {v: k for k, v in self.bot.cache[self.guild_id].dm_threads.items()}
+        thread_id = threads.get(msg.author.id, None)
         if thread_id is None:
             if not self.channel_id:
                 await self.get_wh_channel()
-            thread = await self.bot.start_thread_without_message(channel_id=self.channel_id, name=msg.author.username, type= MFramework.Channel_Types.GUILD_PUBLIC_THREAD, reason="Received DM from new user")
-            self.threads[msg.author.id] = thread.id
+            thread = await self.bot.start_thread_without_message(channel_id=self.channel_id, name=f"{msg.author.username} - {msg.author.id}", type= MFramework.Channel_Types.GUILD_PUBLIC_THREAD, reason="Received DM from new user")
             thread_id = thread.id
+            self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
         try:
             await self._log(content=content+f' <@!{msg.author.id}>', embeds=[embed], username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id)
             await msg.react(self.bot.emoji['success'])

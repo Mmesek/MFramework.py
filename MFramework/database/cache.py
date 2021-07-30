@@ -57,6 +57,7 @@ class GuildCache:
     giveaway_messages: List[Snowflake]
     last_messages: Dict[Snowflake, Message]
     threads: Dict[Snowflake, Snowflake]
+    dm_threads: Dict[Snowflake, Snowflake]
 
     voice_link: Snowflake = None
     flags: int = 0
@@ -99,6 +100,7 @@ class GuildCache:
         self.cooldowns = Cooldowns(r)
         self.presence = Presences()
         self.threads = {i.id: i.parent_id for i in guild.threads}
+        self.dm_threads = {i.id: int(i.name.split('-')[-1].strip()) for i in guild.threads if i.name.split('-')[-1].strip().isdigit()}
         self.cooldown_values = {}
         self.last_messages = {}
         self.voice = {}

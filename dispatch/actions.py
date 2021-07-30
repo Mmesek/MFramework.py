@@ -67,7 +67,7 @@ async def parse_reply(self: Bot, data: Message):
     _g = detect_group(self, data.author.id, data.guild_id, data.member.roles)
     if data.referenced_message == None or data.referenced_message.id == 0:
         return
-    if _g <= Groups.MODERATOR:
+    if _g >= Groups.MODERATOR:
         return
     channel = self.cache[data.guild_id].threads.get(data.channel_id, data.channel_id)
     if channel == 686371597895991327:
@@ -87,6 +87,24 @@ async def dm_reply(ctx: Bot, msg: Message):
     except Exception as ex:
         return await msg.react(ctx.emoji["failure"])
     await msg.react(ctx.emoji['success']) # _Client is apparently not set
+
+@onDispatch(event="message_create")
+async def dm_thread(ctx: Bot, msg: Message):
+    from MFramework.commands._utils import detect_group, Groups
+    channel = ctx.cache[msg.guild_id].threads.get(msg.channel_id, msg.channel_id)
+    if channel != 686371597895991327:
+        return
+    _g = detect_group(ctx, msg.author.id, msg.guild_id, msg.member.roles)
+    if _g >= Groups.MODERATOR:
+        return
+    user_id = ctx.cache[msg.guild_id].dm_threads.get(msg.channel_id, None)
+    if user_id:
+        dm = await ctx.create_dm(user_id)
+        try:
+            await ctx.create_message(dm.id, msg.content or None, embeds=msg.attachments_as_embed())
+            return await msg.react(ctx.emoji["success"])
+        except:
+            return await msg.react(ctx.emoji["failure"])
 
 @onDispatch(event="message_create", priority=5)
 async def deduplicate_messages(self: Bot, data: Message) -> bool:
