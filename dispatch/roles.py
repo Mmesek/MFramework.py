@@ -11,8 +11,15 @@ async def new_booster(ctx: Bot, user_id: Snowflake, guild_id: Snowflake):
     await ctx.create_message(ctx.cache[guild_id].nitro_channel, message)
 
 async def end_booster(ctx: Bot, user_id: Snowflake, guild_id: Snowflake):
-    #TODO
-    pass
+    from MFramework.database import alchemy as db
+    s = ctx.db.sql.session()
+    c = db.Role.filter(s, server_id=guild_id).filter(
+        db.Role.with_setting(db.types.Setting.Custom, user_id)
+    ).first()
+    if c:
+        await ctx.delete_guild_role(guild_id, c.id, "User is no longer Nitro Boosting server")
+        s.delete(c)
+        s.commit()
 
 @onDispatch
 async def guild_member_update(self: Bot, data: Guild_Member_Update):

@@ -73,7 +73,7 @@ class HasDictSettingsRelated:#(ProxiedDictMixin):
         )
     @classmethod
     def with_setting(self, name, value):
-        return self.settings.any(name=name, value=value)
+        return self.settings.any(name=name, **{type(value).__name__.lower():value})
     def add_setting(self, setting: types.Setting, value: Any) -> None:
         setting_type = setting.annotation.__name__
         import enum

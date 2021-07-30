@@ -1,5 +1,5 @@
 from datetime import timedelta
-from MFramework import register, Groups, Context, Role, User, Embed
+from MFramework import register, Groups, Context, Role, User, Embed, NotFound
 from MFramework.database import alchemy as db
 
 @register(group=Groups.NITRO)
@@ -157,7 +157,7 @@ async def nitro(ctx: Context, hex_color: str=None, name: str="Nitro Booster", *,
     nitro_position = 0
     
     groups = ctx.cache.groups
-    for _role in ctx.cache.roles:
+    for _role in ctx.cache.roles.values():
         if any(_role.id in groups[i] for i in {Groups.ADMIN, Groups.MODERATOR, Groups.HELPER, Groups.SUPPORT}):
             reserved_colors.add(_role.color)
             reserved_names.add(_role.name.lower())
@@ -169,7 +169,9 @@ async def nitro(ctx: Context, hex_color: str=None, name: str="Nitro Booster", *,
             color = int(hex_color.strip('#'), 16)
         except ValueError as ex:
             return await ctx.reply("Color has to be provided as a hexadecimal value (between 0 to F for example `#012DEF`) not `"+ str(ex).split(": '")[-1].replace("'","`"))
-    
+    else:
+        color=None
+
     if color in reserved_colors:
         return await ctx.reply("Color is too similiar to admin colors")
     if name.lower() in reserved_names:
@@ -179,16 +181,22 @@ async def nitro(ctx: Context, hex_color: str=None, name: str="Nitro Booster", *,
         name += ' (Nitro Booster)'
 
     s = ctx.db.sql.session()
-    c = db.Role.with_setting(db.types.Setting.Custom, ctx.user_id).filter(server_id=ctx.guild_id).first()
+    c = db.Role.filter(s, server_id=ctx.guild_id).filter(
+        db.Role.with_setting(db.types.Setting.Custom, ctx.user_id)
+    ).first()
     if c:
-        role = await ctx.bot.modify_guild_role(ctx.guild_id, c.id, name, 0, color=color, reason="Updated Role of Nitro user")
+        try:
+            role = await ctx.bot.modify_guild_role(ctx.guild_id, c.id, name, 0, color=color, reason="Updated Role of Nitro user")
+        except NotFound:
+            s.delete(c)
+            c = None
     if c and role and role.id != c.id or not c:
         role = await ctx.bot.create_guild_role(ctx.guild_id, name, 0, color, False, False, "Created Role for Nitro user "+ctx.member.user.username)
-        await ctx.bot.modify_guild_role_positions(ctx.guild_id, role.id, nitro_position)
+        await ctx.bot.modify_guild_role_positions(ctx.guild_id, role.id, nitro_position+1)
         await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.member.user.id, role.id, "Nitro role")
+        c = db.Role.fetch_or_add(s, server_id=ctx.guild_id, id=role.id)
 
-    r = db.Role.fetch_or_add(s, server_id=ctx.guild_id, id=role.id)
-    if not r.get_setting(db.types.Setting.Custom):
-        r.add_setting(db.types.Setting.Custom, ctx.user_id)
-        ctx.db.sql.merge_or_add(c, r)
+    if not c.get_setting(db.types.Setting.Custom):
+        c.add_setting(db.types.Setting.Custom, ctx.user_id)
+        s.commit()
     await ctx.reply("Role Created Successfully")
