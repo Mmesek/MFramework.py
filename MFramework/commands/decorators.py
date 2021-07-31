@@ -1,5 +1,13 @@
+from typing import TYPE_CHECKING, List, Union
+from functools import wraps
+
 from mlib.types import aInvalid
-from MFramework import Interaction, Message, Snowflake
+
+from MFramework.commands._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts, reactions
+from MFramework import Message, Snowflake
+
+if TYPE_CHECKING:
+    from MFramework.bot import Context
 
 __all__ = ["Event", "EventBetween", "Cooldown", "Chance", "req_regex", "regex", "register", "shortcut", "any_role", "reaction"]
 
@@ -47,13 +55,13 @@ def Cooldown(*, seconds=None, minutes=None, hours=None, days=None, weeks=None, l
     '''Applies a cooldown on command.
     Use it with callable function accepting interaction returning boolean for conditional execution and datetime object with last execution timestamp for cooldown calculation'''
     def inner(f):
-        def wrapped(interaction: Interaction= None, *args, **kwargs):
-            should_execute, last_execution = logic(interaction)
+        def wrapped(ctx: 'Context'= None, *args, **kwargs):
+            should_execute, last_execution = logic(ctx)
             if should_execute:
                 from datetime import datetime, timedelta
                 cooldown = timedelta(days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks)
                 if (datetime.now() - last_execution) > cooldown:
-                    return f(interaction=interaction, *args, **kwargs)
+                    return f(ctx=ctx, *args, **kwargs)
             return aInvalid()
         return wrapped
     return inner
@@ -70,8 +78,6 @@ def Chance(chance: float=0):
         return wrapped
     return inner
 
-from ._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts, reactions
-from typing import List
 def req_regex(expression: str):
     '''Checks for Regular Expression in Message's content'''
     def inner(f):
@@ -136,8 +142,6 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
         return f
     return inner
 
-from typing import Union
-from functools import wraps
 
 def any_role(*required: Union[Snowflake, str]):
     '''Checks if user has any provided role.
