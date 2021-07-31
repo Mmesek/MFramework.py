@@ -182,14 +182,14 @@ class Infraction_Event(Infraction):
 
 class Guild_Ban_Add(Infraction_Event):
     async def log(self, data: MFramework.Message):
-        reason, moderator = await self.get_ban_data(self, data, "ban", 22) #TODO: Move it to log, actually turn it all into a logger instead of dispatch thing
+        reason, moderator = await self.get_ban_data(data, "ban", 22) #TODO: Move it to log, actually turn it all into a logger instead of dispatch thing
         # TODO: Hey! Idea, maybe make decorator like @onDispatch, but like @log or something to make it a logger and register etc?
         if reason is not False:
             await super().log(data, type="banned", reason=reason, by_user=moderator)
 
 class Guild_Ban_Remove(Infraction_Event):
     async def log(self, data: MFramework.Message):
-        reason, moderator = await self.get_ban_data(self, data, "unban", 23)
+        reason, moderator = await self.get_ban_data(data, "unban", 23)
         if reason is not False:
             await super().log(data, type="unbanned", reason=reason, by_user=moderator)
 
