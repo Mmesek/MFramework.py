@@ -46,7 +46,7 @@ async def update(ctx: Context, *args, language, **kwargs):
     import git
     try:
         g = git.Repo().remotes.origin.pull()
-        if g[0].commit.authored_datetime == commits[-1].authored_datetime:
+        if g[0].commit.hexsha == commits[-1].newhexsha:
             return await ctx.reply("Not pulled any new commits. Not restarting.")
         await ctx.reply(f"Pulled `{g[0].commit.summary}`")
         import os, sys
