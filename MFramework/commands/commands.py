@@ -34,7 +34,7 @@ async def check_command(client: Bot, message: Message) -> bool:
         return False
     
     kwargs = set_kwargs(ctx, f, args)
-    kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client=client, message=message, cmd=_name, group=ctx.permission_group, alias=alias, language='en', **kwargs)
+    kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client=client, cmd=_name, alias=alias, language='en', **kwargs)
 
     try:
         await f.func(**kwargs)

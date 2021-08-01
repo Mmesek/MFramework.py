@@ -262,18 +262,23 @@ def set_ctx(client: 'Bot', message: Message, f: Command) -> 'Context':
 def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
     # NOTE: Argument doesn't support any form of List. Neither it supports -flags or specifying keyword arguments at all  
     kwargs = {}
+    
+    flags = {i[0]:i[1] for i in [j.strip('-').split('=',1) for j in filter(lambda x: x.startswith('-') and '=' in x, args)]}
+    args = list(filter(lambda x: not x.startswith('-'), args))
+    positional = list(filter(lambda x: x.kind == 'POSITIONAL_OR_KEYWORD', f.arguments.values()))
     for x, option in enumerate(f.arguments.values()):
         if x >= len(args):
             break
-        t = option.type
-        if option.kind == "VAR_POSITIONAL":
-            if t is str:
-                kwargs['args'] = (' '.join(args[x:]),)
-            else:
-                kwargs['args'] = (args[x:],)
-        elif t in {str, int, bool}:
-        #if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID]:
-            kwargs[option.name] = option.type(args[x])
-    kwargs = set_default_arguments(ctx, f, kwargs)
-    
-    return kwargs
+        if option.type in {str, int, bool, float} or issubclass(option.type, Snowflake):
+            if issubclass(option.type, Snowflake):
+                from MFramework.utils.utils import parseMention
+                args[x] = parseMention(args[x])
+            if option.kind == 'POSITIONAL_OR_KEYWORD':
+                kwargs[option.name] = option.type(args[x]) if option.name != positional[-1].name else " ".join(args[x:])
+            elif option.kind == 'KEYWORD_ONLY' and option.name in flags:
+                kwargs[option.name] = option.type(flags[option.name])
+            elif option.kind == 'VAR_POSITIONAL':
+                kwargs[option.name] = args[x:]
+        elif option.type in {User, Channel, Role, Guild_Member}:
+            pass
+    return set_default_arguments(ctx, f, kwargs)
