@@ -1,5 +1,5 @@
-from MFramework import register, Groups, Context
-from MFramework.utils.timers import *
+from MFramework import register, Groups, Context, log
+from MFramework.utils.timers import finalize
 from MFramework.database.alchemy.types import Flags
 
 @register(group=Groups.SYSTEM, interaction=False)
@@ -20,7 +20,6 @@ async def shutdown(ctx: Context, *args, **kwargs):
         if s!='':
             await ctx.reply("Ended contexts: "+s)
     await ctx.bot.close()
-    from MFramework import log
     log.info("Received shutdown command. Shutting down.")
 
 @register(group=Groups.SYSTEM, interaction=False)
@@ -46,7 +45,10 @@ async def update(ctx: Context, *args, language, **kwargs):
     '''Pulls new commits'''
     import git
     try:
-        git.Repo().remotes.origin.pull()
-        await ctx.bot.create_reaction(ctx.channel_id, ctx.message_id, ctx.bot.emoji['success'])
-    except:
-        await ctx.bot.create_reaction(ctx.channel_id, ctx.message_id, ctx.bot.emoji['failure'])
+        g = git.Repo().remotes.origin.pull()
+        await ctx.reply(f"Pulled `{g[0].commit.summary}`")
+        import os, sys
+        log.warning("Restarting bot")
+        os.execl(sys.executable, sys.executable, *sys.argv)
+    except Exception as ex:
+        await ctx.reply(f"{ex}")
