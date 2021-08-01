@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context, log
+from MFramework import register, Groups, Context, log, commits
 from MFramework.utils.timers import finalize
 from MFramework.database.alchemy.types import Flags
 
@@ -46,9 +46,12 @@ async def update(ctx: Context, *args, language, **kwargs):
     import git
     try:
         g = git.Repo().remotes.origin.pull()
+        if g[0].commit.gpgsig == commits[-1].gpgsig:
+            return await ctx.reply("Not pulled any new commits. Not restarting.")
         await ctx.reply(f"Pulled `{g[0].commit.summary}`")
         import os, sys
         log.warning("Restarting bot")
+        sys.stdout.flush()
         os.execl(sys.executable, sys.executable, *sys.argv)
     except Exception as ex:
         await ctx.reply(f"{ex}")
