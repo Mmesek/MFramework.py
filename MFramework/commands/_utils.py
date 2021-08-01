@@ -264,7 +264,7 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
     kwargs = {}
     
     flags = {i[0]:i[1] for i in [j.strip('-').split('=',1) for j in filter(lambda x: x.startswith('-') and '=' in x, args)]}
-    args = list(filter(lambda x: not x.startswith('-'), args))
+    args = list(filter(lambda x: not x.startswith('-') and x, args))
     positional = list(filter(lambda x: x.kind == 'POSITIONAL_OR_KEYWORD', f.arguments.values()))
     for x, option in enumerate(f.arguments.values()):
         if x >= len(args):
