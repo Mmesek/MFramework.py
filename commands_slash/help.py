@@ -2,13 +2,14 @@ from mlib.localization import check_translation, tr
 from MFramework import Context, Embed, register, Groups
 from MFramework.commands._utils import commands, command_shortcuts, commands_regex, COMPILED_REGEX, aliasList, reactions
 @register(group=Groups.GLOBAL, interaction=False)
-async def help(ctx: Context, *command, alias, group, language, **kwargs):
+async def help(ctx: Context, *command, alias, language, **kwargs):
     '''Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage.
     Params 
     ------
     command:
         Command to show detailed help info for - Example: command
     '''
+    group = ctx.permission_group
     embed = Embed()
     if command != ():
         cmd = ''.join(command)
