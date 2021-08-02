@@ -35,6 +35,8 @@ async def interaction_create(client: Bot, interaction: Interaction):
         if len(interaction.data.options) and interaction.data.options[0].type in {Application_Command_Option_Type.SUB_COMMAND}:
             f = is_nested(g, f, interaction.data.options[0].name)
             interaction.data.options = interaction.data.options[0].options
+    if f.group.value < g.value:
+        return
     kwargs = {}
     kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client= client, interaction=interaction, language='en', group=g)
     for option in interaction.data.options:
