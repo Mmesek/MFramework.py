@@ -69,39 +69,6 @@ async def word(ctx: Context, word, letter_count, *args, **kwargs):
 
 
 @register(group=Groups.SYSTEM, interaction=False)
-async def how(ctx: Context, *query, **kwargs):
-    query = "".join(query).replace(" ", "+")
-    language = "en"
-    limit = 4
-    resp = requests.get(
-        f"https://google.com/search?q=how+{query}&hl={language}&gl={language}",
-        headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"},
-    )
-    results = []
-    if resp.status_code == 200:
-        soup = BeautifulSoup(resp.content, "html.parser")
-    else:
-        return await ctx.reply("Error")
-    for x, g in enumerate(soup.find_all("div", class_="r")):
-        anchors = g.find_all("a")
-        if anchors:
-            link = anchors[0]["href"]
-            title = g.find("h3").text
-            item = {"title": title, "link": link}
-            results.append(item)
-    for x, s in enumerate(soup.find_all("div", class_="s")):
-        desc = s.find("span", class_="st").text
-        results[x]["description"] = desc
-
-    embed = Embed()
-    for x, result in enumerate(results):
-        embed.addField(result["title"], f"[Link]({result['link']})\n{result['description'][:900]}")
-        if x == limit:
-            break
-    await ctx.reply([embed])
-
-
-@register(group=Groups.SYSTEM, interaction=False)
 async def today(ctx: Context, *difference,language, **kwargs):
     '''Summary of what is today'''
     #s = sun.sun(lat=51.15, long=22.34)
@@ -232,111 +199,6 @@ async def chord(ctx: Context, instrument='guitar', *chord, **kwargs):
     embed = Embed().setTitle(t).setImage(l)
     await ctx.reply(embeds=[embed])
 
-async def azlyrics(artist, song):
-    #song1 = song.split(' - ',1)
-    #song2 = song1[0].replace('-','').replace(' ','').replace('the','').casefold()
-    #song3 = song1[1].replace('-','').replace(' ','').replace('the','').casefold()
-    song1 = (artist, song)
-    song2 = artist.replace('-','').replace(' ','').replace('the','').casefold()
-    song3 = song.replace('-','').replace(' ','').replace('the','').casefold()
-#    print(song1, song2, song3)
-    try:
-        url = f'https://www.azlyrics.com/lyrics/{song3}/{song2}.html'
-        song = f'{song1[1]} - {song1[0]}'
-        req = requests.get(url)
-        soup = BeautifulSoup(req.text,'html.parser')
-        lyric = soup.find('div',class_='container main-page').find('div',class_="col-xs-12 col-lg-8 text-center").find('div', class_=None).text
-    except:
-        try:
-            url = f'https://www.azlyrics.com/lyrics/{song2}/{song3}.html'
-            song = f'{song1[0]} - {song1[1]}'
-            req = requests.get(url)
-            soup = BeautifulSoup(req.text,'html.parser')
-            lyric = soup.find('div',class_='container main-page').find('div',class_="col-xs-12 col-lg-8 text-center").find('div', class_=None).text
-        except:
-            return '404' 
-    with open(f'lyrics/{song}.txt','w',newline='') as file:
-        file.write(lyric)
-    lyric = lyric.replace('\r',"")
-    lyric1 = lyric.split("\n\n")
-    fields = []
-    i = 0
-    if len(lyric1) < 25:
-        for verse in lyric1:
-            if len(verse) > 1024:
-                verse = verse[0:1023]
-            if verse == "":
-                pass
-            else:
-                fields.append({"name":"\u200b","value":verse})
-                i=i+1
-    try:
-        embed = {
-            "title": song,
-            #"description": '\u200b',#lyric1,
-            "fields": fields
-        }
-    except:
-        return '404'
-    return embed
-
-async def glyrics(artist, song):
-    song1 = (artist.lower(), song.lower())
-    #song1 = song.replace(' ','-').lower().split('---',1)
-    #print(song1)
-    try:
-        req = requests.get(f'https://genius.com/{song1[0]}-{song1[1]}-lyrics')
-        song1[1] = song1[1].replace('-',' ').capitalize()
-        song1[0] = song1[0].replace('-',' ').capitalize()
-        song = f'{song1[0]} - {song1[1]}'
-        soup = BeautifulSoup(req.text,'html.parser')
-        lyric = soup.find('div',class_='lyrics').text
-    except:
-        try:
-            req = requests.get(f'https://genius.com/{song1[1]}-{song1[0]}-lyrics')
-            song1[1] = song1[1].replace('-',' ').capitalize()
-            song1[0] = song1[0].replace('-',' ').capitalize()
-            song = f'{song1[1]} - {song1[0]}'
-            soup = BeautifulSoup(req.text,'html.parser')
-            lyric = soup.find('div',class_='lyrics').text
-        except:
-            return '404'
-    with open(f'lyrics/{song}.txt','w',newline='', encoding='utf8') as file:
-        file.write(lyric)
-    lyric = lyric.replace('\r',"").replace('"','')
-    lyric1 = lyric.split("\n\n")
-    fields = []
-    i = 0
-    if len(lyric1) < 25:
-        for verse in lyric1:
-            if len(verse) > 1024:
-                verse = verse[0:1023]
-            if verse == "":
-                continue
-            else:
-                fields.append({"name":"\u200b","value":verse})
-                i=i+1
-    try:
-        embed = {
-            "title": song,
-            "fields": fields
-        }
-    except:
-        return '404'
-    return embed
-
-@register(group=Groups.GLOBAL, interaction=False)
-async def lyrics(ctx: Context, artist, song, *args, **kwargs):
-    '''Sends Lyrics for provided song'''
-    embe = await glyrics(artist, song)
-    if embe == '404':
-        print('falling to azlyrics')
-        embe = await azlyrics(artist, song)
-    if embe != '404':
-        await ctx.reply(embeds=[embe])
-    else:
-        await ctx.reply('404')
-
 
 @register(group=Groups.GLOBAL, interaction=False)
 async def xkcdpassword(ctx: Context, *args, language, **kwargs):
@@ -349,29 +211,6 @@ async def xkcdpassword(ctx: Context, *args, language, **kwargs):
         password = ' '.join(secrets.choice(words) for i in range(4))
     await ctx.reply(password)
 
-@register(group=Groups.GLOBAL, interaction=False)
-async def fileext(ctx: Context, ext, *args, language, **kwargs):
-    '''Shows file extension details'''
-    url = f"https://fileinfo.com/extension/{ext}"
-    r = requests.get(url)
-    if r.status_code == 200:
-        soup = BeautifulSoup(r.content, "html.parser")
-    else:
-        return await ctx.reply("Error")
-    article = soup.find('article')
-    header = article.find('h1').text
-    ftype = article.find('h2').text.replace('File Type','')
-    misc = article.find('div', class_='fileHeader').find('table').find_all('tr')
-    info = article.find('div', class_='infoBox').text
-    e = Embed().setTitle(header).addField('File Type', ftype, True).setDescription(info).setUrl(url)
-    for i in misc:
-        if 'developer' in i.text.lower():
-            e.addField('Developer', i.text[9:], True)
-        elif 'category' in i.text.lower():
-            e.addField('Category', i.text[8:], True)
-        elif 'format' in i.text.lower():
-            e.addField('Format', i.text[6:], True)
-    await ctx.reply(embeds=[e])
 
 @register(group=Groups.GLOBAL, interaction=False)
 async def chord(ctx: Context, *chords, language, all=False, **kwargs):
@@ -456,32 +295,3 @@ async def tuning(ctx: Context, *tuning, language, **kwargs):
 | _ | _ | _ | _ | _ | _ |
 | _ | _ | _ | _ | _ | _ |
 '''
-
-@register(group=Groups.GLOBAL)
-async def urban(ctx: Context, phrase: str, *args, language, **kwargs):
-    '''
-    Searches Urban Dictionary for provided phrase
-    Params
-    ------
-    phrase:
-        Phrase to search definition of
-    '''
-    await ctx.deferred()
-    url = "http://api.urbandictionary.com/v0/define?term="+phrase
-    r = requests.get(url)
-    try:
-        r = r.json()['list'][0]
-    except IndexError:
-        return await ctx.reply("Error occured. No results found.")
-    e = (Embed()
-        .setTitle(r["word"])
-        .setDescription(r["definition"])
-        .setUrl(r["permalink"])
-        .addField("Examples", r.get("example", None) or "...")
-        .addField("👍", str(r.get("thumbs_up", 0)), inline=True)
-        .addField("👎", str(r.get("thumbs_down", 0)), inline=True)
-        .setFooter(f"by {r.get('author', 'Anonymous')}")
-        .setTimestamp(r["written_on"])
-        .setColor(1975351)
-    )
-    await ctx.reply(embeds=e)

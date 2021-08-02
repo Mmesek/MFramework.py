@@ -1,9 +1,16 @@
 from MFramework import register, Groups, Embed, Context
 import requests
 
-@register(group=Groups.GLOBAL, interaction=False)
+@register(group=Groups.GLOBAL)
+async def search(ctx: Context, *, language):
+    '''Searches things'''
+    pass
+
+@register(group=Groups.GLOBAL, main=search, interaction=False)
 async def api(ctx: Context, category: str, random: bool=False, desc: str='', title: str='', cors: str='', https: bool=True, auth: str='', *args, language='en', **kwargs):
     '''Search for API
+    Params
+    ------
     category:
         Category of an API
     random:
@@ -69,11 +76,11 @@ async def api(ctx: Context, category: str, random: bool=False, desc: str='', tit
         embed.setDescription(apis)
     await ctx.reply(embeds=[embed])
 
-@register(group=Groups.GLOBAL, interaction=False)
-async def stack_search(ctx: Context, search: str, *args, language, **kwargs):
+@register(group=Groups.GLOBAL, main=search, interaction=False)
+async def stack(ctx: Context, search: str, *, language):
     '''Search Stack Overflow
     search:
-        Query to search for'''
+        Query to search'''
     #Inspired by https://github.com/Vik0105/Devscord
     r = requests.get("https://api.stackexchange.com/2.2/search?order=desc&site=stackoverflow&intitle=" + search)
     r = r.json()
@@ -101,16 +108,178 @@ async def stack_search(ctx: Context, search: str, *args, language, **kwargs):
             e.setDescription(desc)
     await ctx.reply(embeds=[e])
 
-@register(group=Groups.GLOBAL, interaction=False)
-async def spotify_search(ctx: Context, *query, language, **kwargs):
-    '''Search Spotify'''
+@register(group=Groups.GLOBAL, main=search, interaction=False)
+async def spotify(ctx: Context, query: str, *, language):
+    '''Search Spotify
+    Params
+    ------
+    query:
+        Artist to search for'''
     from MFramework.api.spotify import Spotify
-    s = Spotify()
+    s = Spotify(ctx.bot.cfg)
     await s.connect()
-    res = await s.search('+'.join(query), 'artist', '&limit=10')
+    res = await s.search(query.replace('_','+'), 'artist', '&limit=10')
     l = ''
     for i in res['artists']['items']:
         l += f"\n- [{i['name']}](https://open.spotify.com/artist/{i['id']})"
-    embed = Embed().setDescription(l).setColor(1947988).setAuthor(' '.join(query),res['artists']['href'].replace('api','open').replace('/v1/','/').replace('?query=','/').split('&')[0],'https://images-eu.ssl-images-amazon.com/images/I/51rttY7a%2B9L.png').setThumbnail(res['artists']['items'][0]['images'][0]['url'])
+    embed = Embed().setDescription(l).setColor(1947988).setAuthor(query,res['artists']['href'].replace('api','open').replace('/v1/','/').replace('?query=','/').split('&')[0],'https://images-eu.ssl-images-amazon.com/images/I/51rttY7a%2B9L.png').setThumbnail(res['artists']['items'][0]['images'][0]['url'])
     await ctx.reply(embeds=[embed])
     await s.disconnect()
+
+@register(group=Groups.GLOBAL, main=search)
+async def urban(ctx: Context, phrase: str, *, language):
+    '''
+    Searches Urban Dictionary for provided phrase
+    Params
+    ------
+    phrase:
+        Phrase to search definition of
+    '''
+    await ctx.deferred()
+    url = "http://api.urbandictionary.com/v0/define?term="+phrase
+    r = requests.get(url)
+    try:
+        r = r.json()['list'][0]
+    except IndexError:
+        return await ctx.reply("Error occured. No results found.")
+    e = (Embed()
+        .setTitle(r["word"])
+        .setDescription(r["definition"])
+        .setUrl(r["permalink"])
+        .addField("Examples", r.get("example", None) or "...")
+        .addField("👍", str(r.get("thumbs_up", 0)), inline=True)
+        .addField("👎", str(r.get("thumbs_down", 0)), inline=True)
+        .setFooter(f"by {r.get('author', 'Anonymous')}")
+        .setTimestamp(r["written_on"])
+        .setColor(1975351)
+    )
+    await ctx.reply(embeds=e)
+
+@register(group=Groups.GLOBAL, main=search, interaction=False)
+async def fileext(ctx: Context, ext: str, *, language):
+    '''Shows file extension details
+    Params
+    ------
+    ext:
+        File Extension to search for'''
+    from bs4 import BeautifulSoup
+    url = f"https://fileinfo.com/extension/{ext}"
+    r = requests.get(url)
+    if r.status_code == 200:
+        soup = BeautifulSoup(r.content, "html.parser")
+    else:
+        return await ctx.reply("Error")
+    article = soup.find('article')
+    header = article.find('h1').text
+    ftype = article.find('h2').text.replace('File Type','')
+    misc = article.find('div', class_='fileHeader').find('table').find_all('tr')
+    info = article.find('div', class_='infoBox').text
+    e = Embed().setTitle(header).addField('File Type', ftype, True).setDescription(info).setUrl(url)
+    for i in misc:
+        if 'developer' in i.text.lower():
+            e.addField('Developer', i.text[9:], True)
+        elif 'category' in i.text.lower():
+            e.addField('Category', i.text[8:], True)
+        elif 'format' in i.text.lower():
+            e.addField('Format', i.text[6:], True)
+    await ctx.reply(embeds=[e])
+
+@register(group=Groups.SYSTEM, main=search, interaction=False)
+async def google(ctx: Context, query: str):
+    '''Searches google
+    Params
+    ------
+    query:
+        Query to search'''
+    query = "".join(query).replace(" ", "+")
+    language = "en"
+    limit = 4
+    resp = requests.get(
+        f"https://google.com/search?q=how+{query}&hl={language}&gl={language}",
+        headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"},
+    )
+    results = []
+    from bs4 import BeautifulSoup
+    if resp.status_code == 200:
+        soup = BeautifulSoup(resp.content, "html.parser")
+    else:
+        return await ctx.reply("Error")
+    for x, g in enumerate(soup.find_all("div", class_="r")):
+        anchors = g.find_all("a")
+        if anchors:
+            link = anchors[0]["href"]
+            title = g.find("h3").text
+            item = {"title": title, "link": link}
+            results.append(item)
+    for x, s in enumerate(soup.find_all("div", class_="s")):
+        desc = s.find("span", class_="st").text
+        results[x]["description"] = desc
+
+    embed = Embed()
+    for x, result in enumerate(results):
+        embed.addField(result["title"], f"[Link]({result['link']})\n{result['description'][:900]}")
+        if x == limit:
+            break
+    await ctx.reply(embeds=[embed])
+
+async def azlyrics(artist, song):
+    from bs4 import BeautifulSoup
+    song = song.replace('-','').replace(' ','').replace('the','').casefold()
+    artist = artist.replace('-','').replace(' ','').replace('the','').casefold()
+    url = f'https://www.azlyrics.com/lyrics/{song}/{artist}.html'
+    req = requests.get(url)
+    soup = BeautifulSoup(req.text,'html.parser')
+    lyric = soup.find('div',class_='container main-page').find('div',class_="col-xs-12 col-lg-8 text-center").find('div', class_=None).text
+    lyric = lyric.replace('\r',"")
+    lyric1 = lyric.split("\n\n")
+    try:
+        embed = Embed().addFields(f'{song} - {artist}', lyric)
+    except:
+        return '404'
+    return embed
+
+async def glyrics(artist, song):
+    song1 = (artist.lower(), song.lower())
+    from bs4 import BeautifulSoup
+    req = requests.get(f'https://genius.com/{song1[0]}-{song1[1]}-lyrics')
+    song1[1] = song1[1].replace('-',' ').capitalize()
+    song1[0] = song1[0].replace('-',' ').capitalize()
+    song = f'{song1[0]} - {song1[1]}'
+    soup = BeautifulSoup(req.text,'html.parser')
+    lyric = soup.find('div',class_='lyrics').text
+    lyric = lyric.replace('\r',"").replace('"','')
+    lyric1 = lyric.split("\n\n")
+    fields = []
+    i = 0
+    if len(lyric1) < 25:
+        for verse in lyric1:
+            if len(verse) > 1024:
+                verse = verse[0:1023]
+            if verse == "":
+                continue
+            else:
+                fields.append({"name":"\u200b","value":verse})
+                i=i+1
+    try:
+        embed = {
+            "title": song,
+            "fields": fields
+        }
+    except:
+        return '404'
+    return embed
+
+@register(group=Groups.GLOBAL, main=search, interaction=False)
+async def lyrics(ctx: Context, artist: str, song: str):
+    '''Sends Lyrics for provided song
+    Params
+    ------
+    artist:
+        Artist of the song
+    song:
+        Song to fetch lyrics of'''
+    embe = await azlyrics(artist, song)
+    if embe != '404':
+        await ctx.reply(embeds=[embe])
+    else:
+        await ctx.reply('404')
