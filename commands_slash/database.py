@@ -1,11 +1,11 @@
 from datetime import timedelta
-from MFramework import register, Groups, Context, Role, User, Embed, NotFound
+from MFramework import register, Groups, Context, RoleID, User, Embed, NotFound
 from MFramework.database import alchemy as db
 
 @register(group=Groups.NITRO)
 async def add(ctx: Context, 
     type: db.types.Snippet, name: str, content: str, trigger: str=None,
-    minimum_group: Groups= Groups.GLOBAL, required_role: Role = None, cooldown: timedelta=None, 
+    minimum_group: Groups= Groups.GLOBAL, required_role: RoleID = None, cooldown: timedelta=None, 
     locale: str = None, 
     *, language):
     '''Adds to or edits existing entry in database
@@ -27,10 +27,10 @@ async def add(ctx: Context,
         Whether this should be executed only once a while
     locale:
         Language of this entry'''
-    if type.permission > ctx.permission_group:
+    if type.permission < ctx.permission_group:
         return await ctx.reply(f"Sorry, this can be added only by people with `{type.permission.name}` or higher")
     
-    snippet = db.Snippet(server_id=ctx.guild_id, user_id=ctx.user_id, role_id=required_role.id, group=minimum_group, type=type, name=name, content=content, cooldown=cooldown, trigger=trigger, locale=locale)
+    snippet = db.Snippet(server_id=ctx.guild_id, user_id=ctx.user_id, role_id=required_role, group=minimum_group, type=type, name=name, content=content, cooldown=cooldown, trigger=trigger, locale=locale)
     s = ctx.db.sql.session()
     existing = db.Snippet.filter(s, server_id=ctx.guild_id, user_id=ctx.user_id, name=name, type=type).first()
     ctx.db.sql.merge_or_add(existing, snippet)
