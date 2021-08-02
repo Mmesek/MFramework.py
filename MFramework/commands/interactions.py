@@ -39,6 +39,9 @@ async def interaction_create(client: Bot, interaction: Interaction):
     kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client= client, interaction=interaction, language='en', group=g)
     for option in interaction.data.options:
         t = f.arguments[option.name].type
+        if issubclass(t, Snowflake) and not option.value.isdigit():
+            from MFramework.utils.utils import parseMention
+            option.value = parseMention(option.value)
         if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID]:
             if type(option.value) is str and option.value.isdigit():
                 option.value = int(option.value)
