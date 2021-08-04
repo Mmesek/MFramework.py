@@ -7,6 +7,7 @@ Interaction commands registery & execution framework
 
 :copyright: (c) 2021 Mmesek
 '''
+from datetime import timedelta
 from MFramework import (onDispatch, Ready, Interaction_Type,
     RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake,
     Interaction, Guild, Application_Command, Application_Command_Option_Type,
@@ -47,7 +48,12 @@ async def interaction_create(client: Bot, interaction: Interaction):
         if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID]:
             if type(option.value) is str and option.value.isdigit():
                 option.value = int(option.value)
-            kwargs[option.name] = f.arguments[option.name].type(option.value)
+            if type(t) is timedelta:
+                from mlib.converters import total_seconds
+                v = total_seconds(option.value)
+            else:
+                v = f.arguments[option.name].type(option.value)
+            kwargs[option.name] = v
         elif issubclass(t, Snowflake):
             # We are casting it to Snowflake due to some recursion error. 
             # Otherwise, the above should be sufficient
