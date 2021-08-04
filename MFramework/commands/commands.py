@@ -45,10 +45,7 @@ async def check_command(client: Bot, message: Message) -> bool:
     kwargs = set_kwargs(ctx, f, args)
     kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client=client, cmd=_name, alias=alias, language='en', **kwargs)
 
-    try:
-        await f.func(**kwargs)
-    except Exception as ex:
-        await client.create_message(message.channel_id, f"An exeception occured trying to execute this command: {ex}")
+    await f.execute(ctx, kwargs)
 
     return True
 

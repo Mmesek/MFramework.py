@@ -4,7 +4,8 @@ from inspect import signature, Signature
 
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
     Channel, User, Role, Guild_Member, Message, Enum,
-    Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type
+    Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
+    log, BadRequest
     )
 
 if TYPE_CHECKING:
@@ -70,6 +71,32 @@ class Command:
         self.sub_commands.append(cmd)
     def add_choice(self, name: str, func: 'Command'):
         self.choices[name] = func
+    async def execute(self, ctx: 'Context', kwargs: Dict[str, Any]):
+        try:
+            await self.func(**kwargs)
+        except TypeError as ex:
+            if 'missing' in str(ex):
+                ex = str(ex).split(' ', 1)[1].replace("'", '`').capitalize()
+            await self.maybe_reply(ctx, ex)
+        except Error as ex:
+            await self.maybe_reply(ctx, ex)
+        except BadRequest as ex:
+            log.error("%s. Payload\n%s", str(ex), ex.payload)
+        except Exception as ex:
+            log.exception("Exception occured during command execution", exc_info=ex)
+            await self.maybe_reply(ctx, str(ex))
+    async def maybe_reply(self, ctx: 'Context', msg: str):
+        try:
+            await ctx.reply(str(msg))
+        except Exception:
+            log.debug("Failed to reply to message. Falling back to default Message creation")
+            await ctx.bot.create_message(ctx.channel_id, str(msg))
+
+class Error(Exception):
+    pass
+
+class CooldownError(Error):
+    pass
 
 commands: Dict[str, Command] = {}
 aliasList: Dict[str, str] = {}

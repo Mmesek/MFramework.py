@@ -64,13 +64,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
                 o.user = interaction.data.resolved.users.get(str(option.value), User())
             kwargs[option.name] = o
     kwargs = set_default_arguments(ctx, f, kwargs)
-    try:
-        await f.func(**kwargs)
-    except Exception as ex:
-        try:
-            await interaction.reply(f"An exeception occured trying to execute this command: {ex}")
-        except:
-            await client.create_message(interaction.channel_id, f"An exeception occured trying to execute this command: {ex}")
+    await f.execute(ctx, kwargs)
 
 
 from mlib import arguments
