@@ -29,7 +29,8 @@ async def add(ctx: Context,
         Language of this entry'''
     if type.permission < ctx.permission_group:
         return await ctx.reply(f"Sorry, this can be added only by people with `{type.permission.name}` or higher")
-    
+    if required_role == ctx.guild_id:
+        required_role = None
     snippet = db.Snippet(server_id=ctx.guild_id, user_id=ctx.user_id, role_id=required_role, group=minimum_group, type=type, name=name, content=content, cooldown=cooldown, trigger=trigger, locale=locale)
     s = ctx.db.sql.session()
     existing = db.Snippet.filter(s, server_id=ctx.guild_id, user_id=ctx.user_id, name=name, type=type).first()
