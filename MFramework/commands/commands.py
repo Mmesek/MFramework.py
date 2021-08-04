@@ -10,7 +10,7 @@ Message command execution framework
 '''
 from MFramework import *
 from ._utils import commands, command_shortcuts, commands_regex
-from ._utils import get_trigger, get_arguments, get_original_cmd, set_ctx, set_kwargs, add_extra_arguments
+from ._utils import get_trigger, get_arguments, get_original_cmd, set_ctx, set_kwargs, add_extra_arguments, is_nested
 
 @onDispatch(event="message_create", priority=2)
 async def check_command(client: Bot, message: Message) -> bool:
@@ -27,6 +27,15 @@ async def check_command(client: Bot, message: Message) -> bool:
     name = get_original_cmd(_name)
 
     f = commands.get(name, None)
+    if len(args) > 1:
+        while True:
+            _f = f
+            i = 1
+            f = is_nested(None, f, args[i])
+            if f == _f:
+                args = args[i:]
+                break
+            i+=1
     if f and f._only_interaction:
         return
     ctx = set_ctx(client, message, f)
