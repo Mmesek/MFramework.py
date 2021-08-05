@@ -27,6 +27,9 @@ async def check_command(client: Bot, message: Message) -> bool:
     name = get_original_cmd(_name)
 
     f = commands.get(name, None)
+    if not f:
+        return
+    
     if len(args) > 1:
         while True:
             _f = f
@@ -36,7 +39,7 @@ async def check_command(client: Bot, message: Message) -> bool:
                 args = args[i:]
                 break
             i+=1
-    if f and f._only_interaction:
+    if f._only_interaction:
         return
     ctx = set_ctx(client, message, f)
     if not ctx:
