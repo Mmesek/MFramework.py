@@ -81,7 +81,7 @@ class Command:
         except Error as ex:
             await self.maybe_reply(ctx, ex)
         except BadRequest as ex:
-            log.error("%s. Payload\n%s", str(ex), ex.payload)
+            log.error(ex)
         except Exception as ex:
             log.exception("Exception occured during command execution", exc_info=ex)
             await self.maybe_reply(ctx, str(ex))
