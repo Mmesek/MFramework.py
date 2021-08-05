@@ -125,7 +125,7 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
     aliases:
         List of possible aliases'''
     def inner(f):
-        _name = f.__name__.lower()
+        _name = f.__name__.lower().strip('_')
         cmd = Command(f, interaction, main, group, guild)
         f._cmd = cmd
         for alias in aliases:

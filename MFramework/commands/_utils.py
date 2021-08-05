@@ -54,7 +54,7 @@ class Command:
     choices: Dict[str, 'Command']
     guild: Snowflake
     def __init__(self, f: FunctionType, interaction: bool = True, main: object = False, group: Groups = Groups.GLOBAL, guild: Snowflake = None, main_only: bool=False) -> None:
-        self.name = f.__name__
+        self.name = f.__name__.strip("_")
         self.func = f
         _docs = parse_docstring(f)
         self.help = _docs['_doc']
