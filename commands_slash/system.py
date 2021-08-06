@@ -44,14 +44,16 @@ async def reloadCommands(ctx: Context, *args, **kwargs):
 async def update(ctx: Context, *args, language, **kwargs):
     '''Pulls new commits'''
     import git
-    try:
-        g = git.Repo().remotes.origin.pull()
+    repos = ctx.bot.cfg.get('Repos', {})
+    should_reset = False
+    for repo in repos:
+        g = git.Repo(repos[repo]).remotes.origin.pull()
         if g[0].commit.hexsha == commits[-1].newhexsha:
-            return await ctx.reply("Not pulled any new commits. Not restarting.")
-        await ctx.reply(f"Pulled `{g[0].commit.summary}`")
+            await ctx.reply(f"[{repo}] No new commits.")
+        should_reset = True
+        await ctx.reply(f"[{repo}] Pulled `{g[0].commit.summary}`")
+    if should_reset:
         import os, sys
         log.warning("Restarting bot")
         sys.stdout.flush()
         os.execl(sys.executable, sys.executable, *sys.argv)
-    except Exception as ex:
-        await ctx.reply(f"{ex}")
