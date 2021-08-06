@@ -292,68 +292,6 @@ class Muted_Change(Member_Update):
                 await self._log(f"<@{data.user.id}> {case}")
                 ctx.cache[data.guild_id].members[data.user.id] = data
 
-class Direct_Message(Message):
-    def __init__(self, bot: 'Bot', guild_id: MFramework.Snowflake, type: str, id: MFramework.Snowflake, token: str) -> None:
-        self.channel_id = None
-        super().__init__(bot, guild_id, type, id, token)
-    async def get_wh_channel(self):
-        webhook = await self.bot.get_webhook_with_token(self.webhook_id, self.webhook_token)
-        self.channel_id = webhook.channel_id
-    def _create_embed(self, msg: MFramework.Message):
-        embed = self.set_metadata(msg)
-        avatar = msg.author.get_avatar()
-        embed.author.icon_url = None
-        embed.footer.icon_url = avatar
-        embed.footer.text = msg.author.id
-        embed = msg.attachments_as_embed(embed)
-        return embed
-    async def log(self, msg: MFramework.Message) -> MFramework.Message:
-        embed = self._create_embed(msg)
-        avatar = embed.footer.icon_url
-        embed.setColor(self.bot.cache[self.guild_id].color)
-        canned = self.bot.cache[self.guild_id].canned
-
-        from mlib.localization import tr
-        if (len(set(msg.content.lower().split(' '))) < 2) and len(msg.attachments) == 0:
-            return await msg.reply(tr("commands.dm.singleWordError", self.bot.cache[self.guild_id].language, emoji_success=self.bot.emoji['success']))
-
-        if msg.channel_id in self.bot.cache[0]:
-            s = list(self.bot.cache[0][msg.channel_id].keys())
-            if (self.bot.cache[0][msg.channel_id][s[-1]].content == msg.content and
-                self.bot.cache[0][msg.channel_id][s[-1]].attachments == msg.attachments
-                ):
-                return await msg.reply(tr("commands.dm.sameMessageError", self.bot.cache[self.guild_id].language))
-
-        import re
-        reg = re.search(canned['patterns'], msg.content)
-        content = ''
-        if reg and reg.lastgroup is not None:
-            await msg.reply(canned['responses'][reg.lastgroup])
-            content = tr("commands.dm.cannedResponseSent", self.bot.cache[self.guild_id].language, name=reg.lastgroup)
-        threads = {v: k for k, v in self.bot.cache[self.guild_id].dm_threads.items()}
-        thread_id = threads.get(msg.author.id, None)
-        if thread_id is None:
-            if not self.channel_id:
-                await self.get_wh_channel()
-            thread = await self.bot.start_thread_without_message(channel_id=self.channel_id, name=f"{msg.author.username} - {msg.author.id}", type= MFramework.Channel_Types.GUILD_PUBLIC_THREAD, reason="Received DM from new user")
-            thread_id = thread.id
-            self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
-        embeds = [embed]
-        msg_links = re.findall(rf"https:\/\/discord\.com\/channels\/{self.guild_id}\/(\d+)\/(\d+)", msg.content)
-        if msg_links:
-            for channel_id, message_id in msg_links[:5]:
-                linked_msg = await self.bot.get_channel_message(channel_id, message_id)
-                linked = self._create_embed(linked_msg)
-                linked.setColor("#068dd1")
-                linked.addField("Channel", f"<#{channel_id}>")
-                linked.setTitle("Referenced Message")
-                embeds.append(linked)
-        try:
-            await self._log(content=content+f' <@!{msg.author.id}>', embeds=embeds, username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id)
-            await msg.react(self.bot.emoji['success'])
-        except:
-            await msg.react(self.bot.emoji["failure"])
-
 class Message_Replay_QnA(Message):
     username = None
     async def log(self, msg: MFramework.types.Message) -> MFramework.Message:

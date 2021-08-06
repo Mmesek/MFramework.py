@@ -1,26 +1,8 @@
-from MFramework import register, Groups, Context, Interaction, ChannelID, Snowflake, UserID, Role
+from MFramework import register, Groups, Context, ChannelID, Snowflake
 
 
 @register(group=Groups.MODERATOR)
-async def dm(ctx: Context, user: UserID, message: str, *args, language, **kwargs):
-    '''
-    DMs user with specified message
-    Params
-    ------
-    user:
-        User to which Message should be send
-    message:
-        Message to send
-    '''
-    try:
-        dm = await ctx.bot.create_dm(user)
-        msg = await ctx.bot.create_message(dm.id, message)
-        await ctx.reply(f"Message sent.\nChannelID: {dm.id}\nMessageID: {msg.id}", private=True)
-    except:
-        await ctx.reply("Couldn't Deliver message to specified user.", private=True)
-
-@register(group=Groups.MODERATOR)
-async def say(ctx: Context, message: str, channel: ChannelID=None, *args, language, **kwargs):
+async def say(ctx: Context, message: str, channel: ChannelID=None, *, language):
     '''
     Sends message as a bot
     Params
@@ -34,7 +16,7 @@ async def say(ctx: Context, message: str, channel: ChannelID=None, *args, langua
     await ctx.reply(f"Message sent.\nChannelID: {msg.channel_id}\nMessageID: {msg.id}", private=True)
 
 @register(group=Groups.MODERATOR)
-async def react(ctx: Context, reaction: str, message_id: Snowflake, channel: ChannelID=None, *args, language, **kwargs):
+async def react(ctx: Context, reaction: str, message_id: Snowflake, channel: ChannelID=None, *, language):
     '''
     Reacts to a message as a bot
     Params
