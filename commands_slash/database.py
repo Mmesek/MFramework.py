@@ -27,7 +27,7 @@ async def add(ctx: Context,
         Whether this should be executed only once a while
     locale:
         Language of this entry'''
-    if type.permission < ctx.permission_group:
+    if not ctx.permission_group.can_use(type.permission):
         return await ctx.reply(f"Sorry, this can be added only by people with `{type.permission.name}` or higher")
     if required_role == ctx.guild_id:
         required_role = None
@@ -51,9 +51,9 @@ async def remove(ctx: Context, type: db.types.Snippet, name: str, *, user: User=
     user:
         Author that added this snippet. Only Moderators can remove someone elses entry
     '''
-    if user.id != ctx.user_id and ctx.permission_group < Groups.MODERATOR:
+    if user.id != ctx.user_id and ctx.permission_group.can_use(Groups.MODERATOR):
         return await ctx.reply("Only Moderators and above can remove someone elses entry")
-    if type.permission > ctx.permission_group:
+    if not ctx.permission_group.can_use(type.permission):
         return await ctx.reply(f"Sorry, this can be removed only by people with `{type.permission.name}` or higher")
     s = ctx.db.sql.session()
     snippet = db.Snippet.filter(s, server_id=ctx.guild_id, user_id=user.id, name=name, type=type).first()

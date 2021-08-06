@@ -26,6 +26,13 @@ class Groups(Enum):
     DM = 200
     MUTED = 210
     LIMBO = 220
+    def can_use(cls, value: 'Groups') -> bool:
+        '''Checks if Group is higher or equal than provided one
+        Params
+        ------
+        value:
+            Group to compare to. For example, Minimal group that can use'''
+        return cls.value <= value.value
 
 class Argument:
     default: str
