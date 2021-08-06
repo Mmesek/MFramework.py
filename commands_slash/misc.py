@@ -1,23 +1,15 @@
-import datetime
 import json
 import random
-import re
 import requests
-from os import path
-from bs4 import BeautifulSoup
-
-from MFramework import register, Context, Groups, Embed
 
 from mlib.localization import tr
 
-@register(interaction=False)
-async def rd(ctx: Context, number=20, *args, **kwargs):
-    '''Rolls Random Number'''
-    await ctx.reply(str(number) + ": " + str(random.SystemRandom().randrange(int(number)) + 1))
+from MFramework import register, Context, Groups, Embed
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def randomquote(ctx: Context, *args, **kwargs):
+async def randomquote(ctx: Context):
     '''Sends random quote'''
+    from os import path
     if not path.isfile("data/quotes.json"):
         raw = requests.get("https://raw.githubusercontent.com/dwyl/quotes/master/quotes.json")
         with open("data/quotes.json", "wb") as file:
@@ -43,10 +35,11 @@ async def anagram(ctx: Context, *args, **kwargs):
 
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def word(ctx: Context, word, letter_count, *args, **kwargs):
+async def word(ctx: Context, word, letter_count):
     '''Checks if provided word exists. Use * as wildcard character'''
     dig = int(letter_count)
     m = word.replace("*", "(.+?)")
+    import re
     reg = re.compile(r"(?i)" + m)
     res = []
     words = load_words()
@@ -69,8 +62,10 @@ async def word(ctx: Context, word, letter_count, *args, **kwargs):
 
 
 @register(group=Groups.SYSTEM, interaction=False)
-async def today(ctx: Context, *difference,language, **kwargs):
+async def today(ctx: Context, difference: str = None, *, language):
     '''Summary of what is today'''
+    import datetime
+    from bs4 import BeautifulSoup
     #s = sun.sun(lat=51.15, long=22.34)
     today = datetime.datetime.now()
     d = ""
@@ -172,6 +167,7 @@ async def getLink(url):
         headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"},
     )
     if r.status_code == 200:
+        from bs4 import BeautifulSoup
         return BeautifulSoup(r.content, "html.parser")
     print(r.reason)
 
@@ -185,7 +181,7 @@ async def getChords(self):
             self.chords[img['alt']] = 'https:' + img['src']
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def chord(ctx: Context, instrument='guitar', *chord, **kwargs):
+async def chord(ctx: Context, instrument='guitar', chord: str=None):
     '''Sends Diagram of provided Chord for instrument'''
     if not hasattr(ctx.bot, 'chords'):
         await getChords(ctx.bot)
@@ -201,7 +197,7 @@ async def chord(ctx: Context, instrument='guitar', *chord, **kwargs):
 
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def xkcdpassword(ctx: Context, *args, language, **kwargs):
+async def xkcdpassword(ctx: Context):
     '''Generates random xkcd 936 styled password'''
     import secrets
     # On standard Linux systems, use a convenient dictionary file.
@@ -213,7 +209,7 @@ async def xkcdpassword(ctx: Context, *args, language, **kwargs):
 
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def chord(ctx: Context, *chords, language, all=False, **kwargs):
+async def chord(ctx: Context, *chords, language, all=False):
     '''Shows guitar chord(s) diagram(s)'''
     import json
     with open('data/chords.json','r',newline='',encoding='utf-8') as file:
@@ -263,7 +259,7 @@ async def chord(ctx: Context, *chords, language, all=False, **kwargs):
     await ctx.reply(embeds=[e])
 
 @register(group=Groups.SYSTEM, interaction=False)
-async def add_chord(ctx: Context, chord, *frets, language, **kwargs):
+async def add_chord(ctx: Context, chord, *frets, language):
     '''Adds new chord'''
     with open('data/chords.json','r',newline='',encoding='utf-8') as file:
         _chords = json.load(file)
@@ -272,7 +268,7 @@ async def add_chord(ctx: Context, chord, *frets, language, **kwargs):
         json.dump(_chords, file)
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def tuning(ctx: Context, *tuning, language, **kwargs):
+async def tuning(ctx: Context, *tuning, language):
     '''Shows chords on frets for specified tuning'''
     base = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
     if tuning == ():

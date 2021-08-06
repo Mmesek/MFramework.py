@@ -1,16 +1,17 @@
 from MFramework import register, Groups, Context
 from mlib.localization import tr
-import matplotlib.pyplot as plt
 
 @register(group=Groups.ADMIN, interaction=False)
 async def graph(ctx: Context, graph='all', resample='Y', locator='Month', interval=4, *args, growth=False, language, **kwargs):
     '''Possible arguments: graph=all/joined/created/boosters\nresample=W-MON/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth'''
     import time, asyncio
     b = time.time()
-    from MFramework.utils import graphing
     import pandas as pd
+    import matplotlib.pyplot as plt
+    from mlib import graphing
     from MFramework.utils.utils import created, truncate
     from datetime import date
+
     f = time.time()
     await ctx.deferred()
 
@@ -95,8 +96,9 @@ async def graph_infractions(ctx: Context, infraction_type='all', resample='D', l
     '''Plot infractions over days'''
     import time
     b = time.time()
-    from MFramework.utils import graphing
+    from mlib import graphing
     import pandas as pd
+    import matplotlib.pyplot as plt
     from MFramework.utils.utils import truncate
     from datetime import date
     f = time.time()
@@ -168,7 +170,8 @@ async def graph_words(ctx: Context, channel_id, *word_or_phrase, limit_messages=
     '''Plots word usage over days'''
     import time
     b = time.time()
-    from MFramework.utils import graphing
+    from mlib import graphing
+    import matplotlib.pyplot as plt
     import pandas as pd
     from MFramework.utils.utils import truncate
     from datetime import date
