@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from MFramework import register, Groups, Context, UserID, User, Embed, shortcut, Message
+from MFramework import register, Groups, Context, User, Embed, shortcut, Message
 #/infraction 
 #  | | |---- InfractionType
 #  | |           |--------- [User] [reason] [duration]
@@ -56,7 +56,9 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
     _ = ctx.cache.logging.get("infraction", None)
     if _:
         await _(
-            guild_id=ctx.guild_id, 
+            guild_id=ctx.guild_id,
+            channel_id=ctx.channel_id,
+            message_id=ctx.message_id or 0,
             moderator=ctx.user,
             user_id=user,
             reason=reason,
