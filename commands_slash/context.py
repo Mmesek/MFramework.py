@@ -92,14 +92,13 @@ class Story(Base):
         }
         for constraint, value in input_constraints.items():
             c = constraints.get(constraint, False)
-            if type(c) is int:
-                if c < value:
-                    await answer.reply(self.errors.get(f"{constraint}_constraint", "Error"))
-                    return True
-            elif c:
+            if type(c) is int and c < value:
+                await answer.reply(self.errors.get(f"{constraint}_constraint", "Error"))
+                return True
+            elif type(value) is bool and value != c:
                 await answer.reply(self.errors.get(f"{constraint}_constraint", "Wrong answer"))
                 return True
-            elif answer.content in self.blacklisted_answers:
+            elif answer.content.lower() in self.blacklisted_answers:
                 await answer.reply(self.errors.get("blacklisted_answer_constraint", "Wrong answer"))
                 return True
         return False
@@ -183,7 +182,7 @@ class ContextStory:
         await types.get(self.story.type, aInvalid)(self.ctx, answers, self.translated)
 
 
-@register(group=Groups.GLOBAL)
+@register(group=Groups.DM)
 async def story(ctx: Context, name: str="createcharacter", *, language):
     '''Story Executor'''
     language='pl'
@@ -235,7 +234,7 @@ async def createcharacter(ctx: Context, answers: Dict[str, str], translated: Dic
                     color = 0
                 answers[answer] = color
             if answer not in {"name", "color", "story"}:
-                e.addField(translated.get(answer), f"||{answers[answer]}||")
+                e.addField(translated.get(answer), f"||{answers[answer]}||", inline=True)
             setattr(character, answer, answers[answer])
     if merge:
         s.merge(character)
