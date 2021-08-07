@@ -301,11 +301,11 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
     args = list(filter(lambda x: not x.startswith('-') and x, args))
     positional = list(filter(lambda x: x.kind == 'POSITIONAL_OR_KEYWORD', f.arguments.values()))
     for x, option in enumerate(f.arguments.values()):
+        from MFramework.utils.utils import parseMention
         if x >= len(args):
             break
         if option.type in {str, int, bool, float} or issubclass(option.type, Snowflake):
             if issubclass(option.type, Snowflake):
-                from MFramework.utils.utils import parseMention
                 args[x] = parseMention(args[x])
             if option.kind == 'POSITIONAL_OR_KEYWORD':
                 kwargs[option.name] = option.type(args[x]) if option.name != positional[-1].name else " ".join(args[x:])
@@ -314,5 +314,11 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
             elif option.kind == 'VAR_POSITIONAL':
                 kwargs[option.name] = args[x:]
         elif option.type in {User, Channel, Role, Guild_Member}:
-            pass
+            mentions = {
+                User: ctx.data.mentions,
+                Guild_Member: ctx.data.mentions,
+                Channel: ctx.data.mention_channels,
+                Role: ctx.data.mention_roles
+            }
+            kwargs[option.name] = list(filter(lambda i: i.id == Snowflake(parseMention(args[x])), mentions.get(option.type)))[0]
     return set_default_arguments(ctx, f, kwargs)
