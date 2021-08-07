@@ -50,8 +50,9 @@ async def update(ctx: Context, *args, language, **kwargs):
         g = git.Repo(repos[repo]).remotes.origin.pull()
         if g[0].commit.hexsha == commits[-1].newhexsha:
             await ctx.reply(f"[{repo}] No new commits.")
-        should_reset = True
-        await ctx.reply(f"[{repo}] Pulled `{g[0].commit.summary}`")
+        else:
+            should_reset = True
+            await ctx.reply(f"[{repo}] Pulled `{g[0].commit.summary}`")
     if should_reset:
         import os, sys
         log.warning("Restarting bot")
