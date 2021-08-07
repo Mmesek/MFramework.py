@@ -136,7 +136,7 @@ class Infraction(Log):
             "unban": "unbanned",
             "unmute": "unmuted"
         } #HACK
-        s = f"You've been {types[type.name.lower()]} in {self.bot.cache[guild_id].name} server"
+        s = f"You've been {types[type.name.lower()]} in {self.bot.cache[guild_id].guild.name} server"
         if reason != '':
             s+=f" for {reason}"
         if duration:
