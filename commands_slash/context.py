@@ -87,6 +87,7 @@ class Story(Base):
     async def check_constraints(self, input_constraints: Dict[str, Any], answer: Message) -> bool:
         constraints = {
             "only_digit": answer.content.isdigit(),
+            "max_number": answer.content.isdigit() and int(answer.content) < 99999999,
             "min_length": len(answer.content),
             "min_words": len(set(answer.content.split(' ')))
         }
