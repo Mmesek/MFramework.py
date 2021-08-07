@@ -41,8 +41,8 @@ class Log:
     async def _log(self, content: str="", embeds: List[MFramework.Embed]=None, components: List[MFramework.Component]=None, *, username: str=None, avatar: str=None, thread_id: MFramework.Snowflake=None, wait:bool=None) -> MFramework.Message:
         return await self.bot.execute_webhook(self.webhook_id, self.webhook_token, content=content, username=username or self.username, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), avatar_url=avatar or self.avatar, embeds=embeds, components=components, thread_id=thread_id, wait=wait)
     async def _log_dm(self, user_id: MFramework.Snowflake, content: str="", embeds: List[MFramework.Embed]=None, components: List[MFramework.Component]=None) -> MFramework.Message:
-        dm_id = await self.bot.create_dm(user_id)
-        return await self.bot.create_message(channel_id=dm_id, content=content, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), embeds=embeds, components=components)
+        _dm = await self.bot.create_dm(user_id)
+        return await self.bot.create_message(channel_id=_dm.id, content=content, allowed_mentions=MFramework.Allowed_Mentions(parse=[]), embeds=embeds, components=components)
 
 class Message(Log):
     username = "Message Log"
@@ -102,9 +102,19 @@ class Left(User):
 
 class Infraction(Log):
     username = "Infraction Log"
+    _types = {
+        "warn": "warned",
+        "tempmute":"temporarily muted",
+        "mute": "muted",
+        "kick": "kicked",
+        "tempban":"temporarily banned",
+        "ban": "banned",
+        "unban": "unbanned",
+        "unmute": "unmuted"
+    } #HACK
     async def log(self, guild_id: MFramework.Snowflake, channel_id: MFramework.Snowflake, message_id: MFramework.Snowflake, moderator: MFramework.User, user_id: MFramework.Snowflake, reason: str, type: types.Infraction, duration: int=0, attachments: List[MFramework.Attachment]=None) -> MFramework.Message:
         from MFramework import Discord_Paths
-        string = f'{moderator.username} [{type.name.lower()}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
+        string = f'{moderator.username} [{self._types.get(type.name.lower(), type.name)}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
         u = f'[<@{user_id}>'
         try:
             user = self.bot.cache[guild_id].members[user_id].user
@@ -126,17 +136,7 @@ class Infraction(Log):
                 embeds.append(MFramework.Embed().setImage(attachment.url).setTitle(attachment.filename).embed)
         await self._log(content=string, embeds=embeds)
     async def log_dm(self, type: types.Infraction, guild_id: MFramework.Snowflake, user_id: MFramework.Snowflake, reason: str="", duration: int=None) -> MFramework.Message:
-        types = {
-            "warn": "warned",
-            "tempmute":"temporarily muted",
-            "mute": "muted",
-            "kick": "kicked",
-            "tempban":"temporarily banned",
-            "ban": "banned",
-            "unban": "unbanned",
-            "unmute": "unmuted"
-        } #HACK
-        s = f"You've been {types[type.name.lower()]} in {self.bot.cache[guild_id].guild.name} server"
+        s = f"You've been {self._types[type.name.lower()]} in {self.bot.cache[guild_id].guild.name} server"
         if reason != '':
             s+=f" for {reason}"
         if duration:
