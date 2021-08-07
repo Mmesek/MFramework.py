@@ -13,12 +13,17 @@ from ._utils import commands, command_shortcuts, commands_regex
 from ._utils import get_trigger, get_arguments, get_original_cmd, set_ctx, set_kwargs, add_extra_arguments, is_nested
 
 @onDispatch(event="message_create", priority=2)
-async def check_command(client: Bot, message: Message) -> bool:
+async def check_command(client: Bot, message: Message, dm: bool=False) -> bool:
     if message.is_empty:
         return
-    alias = get_trigger(client, message)
-    if not alias:
-        return False
+    if not dm:
+        alias = get_trigger(client, message)
+        if not alias:
+            return False
+    else:
+        if str(client.user_id) not in message.content:
+            return False
+        alias = None
     
     args = get_arguments(client, message)
     # TODO: Allow some way of specifying keyword-only arguments like -flag=value from command arguments
@@ -51,6 +56,10 @@ async def check_command(client: Bot, message: Message) -> bool:
     await f.execute(ctx, kwargs)
 
     return True
+
+@onDispatch(event="direct_message_create", priority=2)
+async def check_direct_command(client: Bot, message: Message) -> bool:
+    await check_command(client, message, True)
 
 #@onDispatch(event="message_create", priority=2)
 async def check_regex(client: Bot, message: Message) -> bool:
