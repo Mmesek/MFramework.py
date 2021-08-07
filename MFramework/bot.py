@@ -63,9 +63,11 @@ class Context(Sendable):
         self.db = bot.db
         self.data = data
         self.guild_id = data.guild_id
-        self.guild = self.cache.guild
+        if data.guild_id:
+            self.guild = self.cache.guild
+            self.channel = self.cache.channels[data.channel_id]
+            self.language = self.cache.language
         self.channel_id = data.channel_id
-        self.channel = self.cache.channels[data.channel_id]
         self.message_id = data.id
         if type(data) is Interaction:
             if data.user:
@@ -84,7 +86,6 @@ class Context(Sendable):
             self.member = data.member
             self.is_interaction = False
             self.is_message = True
-        self.language = self.cache.language
         self.direct_message = cache[0].get(self.user_id, None)
         self.webhook = None
         self._deferred = False
