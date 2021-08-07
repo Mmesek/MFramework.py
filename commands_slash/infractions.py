@@ -51,7 +51,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
         active = True
     u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active)
 
-    await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+('ed' if not type.name.endswith('e') else 'd')} for {reason}")
+    await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+('ed' if not type.name.endswith('e') else 'd')}{' for ' if reason else ''}{reason}")
 
     _ = ctx.cache.logging.get("infraction", None)
     if _:
