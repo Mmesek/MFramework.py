@@ -26,7 +26,7 @@ except ImportError:
 class Base:
     name: str = "Error"
     description: Union[str, List[str]] = "Chapter not found"
-    input_constraints: Dict[str, Any]
+    input_constraints: Dict[str, Any] = {}
     type: str
     reward: Dict[str, int]
     def __init__(self, **kwargs) -> None:
@@ -43,9 +43,9 @@ class Base:
                 if t._name == 'Dict':
                     k, v  = t.__args__
                     if v not in {dict, list, str, int} and not hasattr(v, '_name') and type(arg) is dict and v is not type(arg):
-                        print(type(v), v)
-                        print(type(arg), arg)
-                        print(k)
+                        #print(type(v), v)
+                        #print(type(arg), arg)
+                        #print(k)
                         arg = {_k: v(**_a) for _k, _a in arg.items()}
             setattr(self, keyword, arg)
 
@@ -67,6 +67,7 @@ class Base:
     
 
 class Chapter(Base):
+    key: str
     choices: List[str]
     next: Dict[str, str]
 
@@ -107,7 +108,7 @@ class Story(Base):
         try:
             next = chapter.get_next(answer)
         except:
-            next = list(self.chapters.keys()).index(chapter.name)
+            next = list(self.chapters.keys())[list(self.chapters.keys()).index(chapter.key) + 1]
         return self.chapters.get(next, chapter)
 
 class ContextStory:
@@ -119,7 +120,12 @@ class ContextStory:
     def __init__(self, ctx: Context, story_name: str, language: str) -> None:
         self.ctx = ctx
         self.story = load_story(story_name, language)
-        self.current_chapter = self.story.chapters.get("start")
+        self.translated = {}
+        for key, value in self.story.chapters.items():
+            value.key = key
+            self.story.chapters[key] = value
+            self.translated[key] = value.name
+        self.current_chapter = self.story.chapters.get("start", self.story.chapters.get(self.story.start))
         self.messages = {}
         self.user_responses = {}
 
@@ -136,7 +142,7 @@ class ContextStory:
         import asyncio
         async def update(msg):
             r = await self.ctx.bot.wait_for(
-                "message_edit" if not self.ctx.is_dm else "direct_message_edit", 
+                "message_update" if not self.ctx.is_dm else "direct_message_update", 
                 check=lambda x:
                     x.id == msg.id and
                     x.channel_id == msg.channel_id
@@ -152,10 +158,13 @@ class ContextStory:
         m = await self.get(event)
 
         if await self.story.check_constraints(self.current_chapter.input_constraints, m):
-            return await self.chapter(skip_description=True, event="edit")
+            return await self.chapter(skip_description=True, event="update")
 
         self.save_response(m)
-        self.next(m)
+        try:
+            self.next(m)
+        except:
+            return
 
         return await self.chapter()
 
@@ -163,13 +172,15 @@ class ContextStory:
         self.current_chapter = self.story.next_chapter(self.current_chapter, msg.content)
     
     def save_response(self, message: Message) -> None:
-        self.user_responses[self.current_chapter.name] = message.id
+        self.user_responses[self.current_chapter.key] = message.id
         self.messages[message.id] = message
     async def start(self):
         await self.story.send(self.ctx, self.story.intro)
         await self.chapter()
-        await self.story.send(self.ctx, self.story.epilogue)
-        types.get(self.story.type)(self.user_responses)
+        #await self.story.send(self.ctx, self.story.epilogue)
+        from mlib.types import aInvalid
+        answers = {k: self.messages.get(v).content for k, v in self.user_responses.items()}
+        await types.get(self.story.type, aInvalid)(self.ctx, answers, self.translated)
 
 
 @register(group=Groups.GLOBAL)
@@ -179,12 +190,62 @@ async def story(ctx: Context, name: str="createcharacter", *, language):
     story = ContextStory(ctx, name, language)
     await story.start()
 
-def createcharacter(ctx: Context, answers: Dict[str, str]):
+async def createcharacter(ctx: Context, answers: Dict[str, str], translated: Dict[str, str]=None):
     from MFramework.database import alchemy as db
     s = ctx.db.sql.session()
-    character = db.Character(user_id=ctx.user_id)
+    character = db.Character.filter(s, user_id=ctx.user_id).first()
+    merge = False
+    if character:
+        merge = True
+        #return
+    else:
+        character = db.Character(user_id=ctx.user_id)
+    e = Embed()
     for answer in answers:
-        setattr(character, answer, answers[answer])
+        if answer == 'items':
+            items = answers[answer]
+            from mlib.utils import upperfirst
+            if ',' in items:
+                delimiter = ","
+            elif '\n- ' in items:
+                delimiter = "- "
+            else:
+                delimiter = "\n"
+            _items = [upperfirst(i.strip()) for i in items.split(delimiter) if i]
+            from collections import Counter
+            deduplicated_items = Counter(_items)
+            deduplicated_items_values = list(deduplicated_items.values())
+            deduplicated_items = list(deduplicated_items.keys())
+            _items = [f"- ||{i}||" + f' x {deduplicated_items_values[x]}' if deduplicated_items_values[x] > 1 else f"- ||{i}||" for x, i in enumerate(deduplicated_items[:3])]
+            items_ = '\n'.join(_items)
+            e.addField("Posiadane Przedmioty", items_)
+        else:
+            if answer == 'gender':
+                answers[answer] = True if 'Mężczyzna' else False
+            elif answer == 'color':
+                color = answers[answer]
+                try:
+                    if "#" in color:
+                        color = int(color.replace("#", ""), 16)
+                    else:
+                        rgb = [int(i) for i in color.replace(" ","").split(",")]
+                        from mlib.colors import getIfromRGB
+                        color = getIfromRGB(rgb)
+                except Exception as ex:
+                    color = 0
+                answers[answer] = color
+            if answer not in {"name", "color", "story"}:
+                e.addField(translated.get(answer), f"||{answers[answer]}||")
+            setattr(character, answer, answers[answer])
+    if merge:
+        s.merge(character)
+    else:
+        s.add(character)
+    s.commit()
+    e.setTitle(character.name).setColor(character.color).setDescription(character.story)
+    await ctx.reply(embeds=[e])
+    await ctx.bot.execute_webhook(webhook_id=721248452679434251, webhook_token="QEmhIELl-7VsyBbro2jP0U6GbbHAOay_xe1aqMa1Mhw1vcKaXAH4k6CYH16g1lyOzQhw", username=ctx.user.username, embeds=[e])
+    
 
 types = {
     "createcharacter":createcharacter
