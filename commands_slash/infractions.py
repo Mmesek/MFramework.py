@@ -60,7 +60,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
             channel_id=ctx.channel_id,
             message_id=ctx.message_id or 0,
             moderator=ctx.user,
-            user_id=user,
+            user_id=user.id,
             reason=reason,
             duration=duration,
             type=type
@@ -69,7 +69,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
             r = await _.log_dm(
                 type=type, 
                 guild_id=ctx.guild_id,
-                user_id=user,
+                user_id=user.id,
                 reason=reason,
                 duration= duration
             )

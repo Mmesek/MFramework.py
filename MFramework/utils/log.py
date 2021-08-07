@@ -103,7 +103,7 @@ class Infraction(Log):
     username = "Infraction Log"
     async def log(self, guild_id: MFramework.Snowflake, channel_id: MFramework.Snowflake, message_id: MFramework.Snowflake, moderator: MFramework.User, user_id: MFramework.Snowflake, reason: str, type: str, duration: int=0, attachments: List[MFramework.Attachment]=None) -> MFramework.Message:
         from MFramework import Discord_Paths
-        string = f'{moderator.author.username} [{type}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
+        string = f'{moderator.username} [{type}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
         u = f'[<@{user_id}>'
         try:
             user = self.bot.cache[guild_id].members[user_id].user
