@@ -129,7 +129,7 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
         cmd = Command(f, interaction, main, group, guild)
         f._cmd = cmd
         for alias in aliases:
-            aliasList[alias] = _name
+            aliasList[alias] = f"{main.__name__.lower()}.{_name}" if main else _name
         if main:
             if not hasattr(main, '_cmd'):
                 return

@@ -30,6 +30,10 @@ async def check_command(client: Bot, message: Message, dm: bool=False) -> bool:
     # TODO: Command Translations?
     _name = args[0].strip(alias)
     name = get_original_cmd(_name)
+    if '.' in name:
+        name, arg = name.split('.', 1)
+        args[0] = name
+        args.insert(1, arg)
 
     f = commands.get(name, None)
     if not f:
