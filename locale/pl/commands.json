@@ -186,7 +186,12 @@
         "types":{
             "Warn":"Ostrzeżenie",
             "Mute":"Wyciszenie",
-            "Ban":"Ban"
+            "Ban":"Ban",
+            "Unmute":"Odciszenie",
+            "Unban": "Odbanowanie",
+            "tempmute":"Tymczasowe Wyciszenie",
+            "tempban":"Tymczasowy Ban",
+            "Kick":"Wyrzucenie"
         },
         "for_duration": "na %{duration}",
         "active": "🟢",

@@ -184,7 +184,12 @@
         "types":{
             "Warn":"Warn",
             "Mute":"Mute",
-            "Ban":"Ban"
+            "Ban":"Ban",
+            "Unmute":"Unmute",
+            "Unban": "Unban",
+            "tempmute":"Tempmute",
+            "tempban":"Tempban",
+            "Kick":"Kick"
         },
         "for_duration": "for %{duration}",
         "active": "🟢",

@@ -132,7 +132,12 @@ async def list_(ctx: Context, user: User=None, *, language):
                 active="~~" if not infraction.active else ""
             )
         )
-        if infraction.active:
+        if infraction.active and infraction.type not in {
+            types.Infraction.Unban,
+            types.Infraction.Unmute,
+            types.Infraction.DM_Unmute,
+            types.Infraction.Report
+        }:
             active+=1
     session.commit()
     str_infractions = '\n'.join(tr("commands.infractions.row", language, width=width, id_width=id_width, **i._asdict()).format(type=i.type, id=i.id).strip() for i in user_infractions[:10])
