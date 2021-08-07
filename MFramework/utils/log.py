@@ -1,4 +1,5 @@
 import MFramework
+from MFramework.database.alchemy import types
 from typing import List, TYPE_CHECKING, Any, Tuple
 if TYPE_CHECKING:
     from MFramework import Bot
@@ -101,9 +102,9 @@ class Left(User):
 
 class Infraction(Log):
     username = "Infraction Log"
-    async def log(self, guild_id: MFramework.Snowflake, channel_id: MFramework.Snowflake, message_id: MFramework.Snowflake, moderator: MFramework.User, user_id: MFramework.Snowflake, reason: str, type: str, duration: int=0, attachments: List[MFramework.Attachment]=None) -> MFramework.Message:
+    async def log(self, guild_id: MFramework.Snowflake, channel_id: MFramework.Snowflake, message_id: MFramework.Snowflake, moderator: MFramework.User, user_id: MFramework.Snowflake, reason: str, type: types.Infraction, duration: int=0, attachments: List[MFramework.Attachment]=None) -> MFramework.Message:
         from MFramework import Discord_Paths
-        string = f'{moderator.username} [{type}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
+        string = f'{moderator.username} [{type.name.lower()}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
         u = f'[<@{user_id}>'
         try:
             user = self.bot.cache[guild_id].members[user_id].user
@@ -124,7 +125,7 @@ class Infraction(Log):
                     break
                 embeds.append(MFramework.Embed().setImage(attachment.url).setTitle(attachment.filename).embed)
         await self._log(content=string, embeds=embeds)
-    async def log_dm(self, type: str, guild_id: MFramework.Snowflake, user_id: MFramework.Snowflake, reason: str="", duration: int=None) -> MFramework.Message:
+    async def log_dm(self, type: types.Infraction, guild_id: MFramework.Snowflake, user_id: MFramework.Snowflake, reason: str="", duration: int=None) -> MFramework.Message:
         types = {
             "warn": "warned",
             "tempmute":"temporarily muted",
@@ -135,7 +136,7 @@ class Infraction(Log):
             "unban": "unbanned",
             "unmute": "unmuted"
         } #HACK
-        s = f"You've been {types[type]} in {self.bot.cache[guild_id].name} server"
+        s = f"You've been {types[type.name.lower()]} in {self.bot.cache[guild_id].name} server"
         if reason != '':
             s+=f" for {reason}"
         if duration:
