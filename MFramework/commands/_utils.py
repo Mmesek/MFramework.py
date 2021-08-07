@@ -320,5 +320,9 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
                 Channel: ctx.data.mention_channels,
                 Role: ctx.data.mention_roles
             }
-            kwargs[option.name] = list(filter(lambda i: i.id == Snowflake(parseMention(args[x])), mentions.get(option.type)))[0]
+            user_id = Snowflake(parseMention(args[x]))
+            user = list(filter(lambda i: i.id == user_id, mentions.get(option.type)))
+            if not user:
+                user = [ctx.cache.members.get(user_id, User(id=user_id, username=user_id))]
+            kwargs[option.name] = user[0]
     return set_default_arguments(ctx, f, kwargs)
