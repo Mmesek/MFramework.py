@@ -16,15 +16,15 @@ from MFramework.database.alchemy import types, models
 # Perhaps alias interaction?
 # List recently joined users and provide filter/sorter
 @register(group=Groups.HELPER, main_only=True)
-@shortcut(name="warn", group=Groups.HELPER, type=types.Infraction.Warn, help="Warns user")
-@shortcut(name="mute", group=Groups.MODERATOR, type=types.Infraction.Mute, help="Mutes user")
-@shortcut(name="kick", group=Groups.MODERATOR, type=types.Infraction.Kick, help="Kicks user")
-@shortcut(name="ban", group=Groups.MODERATOR, type=types.Infraction.Ban, help="Bans user")
-@shortcut(name="tempmute", group=Groups.HELPER, type=types.Infraction.Temp_Mute, help="Temporarly mutes user")
-@shortcut(name="tempban", group=Groups.HELPER, type=types.Infraction.Temp_Ban, help="Temporarly bans user")
-@shortcut(name="unmute", group=Groups.MODERATOR, type=types.Infraction.Unban, help="Unmutes user")
-@shortcut(name="unban", group=Groups.ADMIN, type=types.Infraction.Unmute, help="Unbans user")
-async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, reason:str="", duration:timedelta=None, increase_counter: bool=True, language):
+#@shortcut(name="warn", group=Groups.HELPER, type=types.Infraction.Warn, help="Warns user")
+#@shortcut(name="mute", group=Groups.MODERATOR, type=types.Infraction.Mute, help="Mutes user")
+#@shortcut(name="kick", group=Groups.MODERATOR, type=types.Infraction.Kick, help="Kicks user")
+#@shortcut(name="ban", group=Groups.MODERATOR, type=types.Infraction.Ban, help="Bans user")
+#@shortcut(name="tempmute", group=Groups.HELPER, type=types.Infraction.Temp_Mute, help="Temporarly mutes user")
+#@shortcut(name="tempban", group=Groups.HELPER, type=types.Infraction.Temp_Ban, help="Temporarly bans user")
+#@shortcut(name="unmute", group=Groups.MODERATOR, type=types.Infraction.Unban, help="Unmutes user")
+#@shortcut(name="unban", group=Groups.ADMIN, type=types.Infraction.Unmute, help="Unbans user")
+async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, reason:str="", duration:timedelta=None, increase_counter: bool=True):
     '''Base command for infractions
     Params
     ------
@@ -196,44 +196,44 @@ async def counter(ctx: Context, type: str, user: User, number: int=1, reason: st
 
 
 @register(group=Groups.HELPER, main=infraction, aliases=["warn"])
-async def warn(ctx: Context, user: UserID, reason: str = "", *, language):
+async def warn(ctx: Context, user: User, reason: str = "", *, language):
     '''Warns user'''
-    return await infraction(ctx, types.Infraction.Warn, user, reason)
+    return await infraction(ctx, type=types.Infraction.Warn, user=user, reason=reason)
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["mute"])
-async def mute(ctx: Context, user: UserID, reason: str = "", *, language):
+async def mute(ctx: Context, user: User, reason: str = "", *, language):
     '''Mutes user'''
-    return await infraction(ctx, types.Infraction.Mute, user, reason)
+    return await infraction(ctx, type=types.Infraction.Mute, user=user, reason=reason)
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["kick"])
-async def kick(ctx: Context, user: UserID, reason: str = "", *, language):
+async def kick(ctx: Context, user: User, reason: str = "", *, language):
     '''Kicks user'''
-    return await infraction(ctx, types.Infraction.Kick, user, reason)
+    return await infraction(ctx, type=types.Infraction.Kick, user=user, reason=reason)
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["ban"])
-async def ban(ctx: Context, user: UserID, reason: str = "", *, language):
+async def ban(ctx: Context, user: User, reason: str = "", *, language):
     '''Bans user'''
-    return await infraction(ctx, types.Infraction.Ban, user, reason)
+    return await infraction(ctx, type=types.Infraction.Ban, user=user, reason=reason)
 
 @register(group=Groups.HELPER, main=infraction, aliases=["tempmute"])
-async def tempmute(ctx: Context, user: UserID, reason: str = "", duration: int=0, *, language):
+async def tempmute(ctx: Context, user: User, duration: timedelta=None, reason: str = "", *, language):
     '''Temporarly mutes user'''
-    return await infraction(ctx, types.Infraction.Temp_Mute, user, reason, duration)
+    return await infraction(ctx, type=types.Infraction.Temp_Mute, user=user, reason=reason, duration=duration)
 
 @register(group=Groups.HELPER, main=infraction, aliases=["tempban"])
-async def tempban(ctx: Context, user: UserID, reason: str = "", duration: int=0, *, language):
+async def tempban(ctx: Context, user: User, duration: timedelta=None, reason: str = "", *, language):
     '''Temporarly bans user'''
-    return await infraction(ctx, types.Infraction.Temp_Ban, user, reason, duration)
+    return await infraction(ctx, type=types.Infraction.Temp_Ban, user=user, reason=reason, duration=duration)
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["unmute"])
-async def unmute(ctx: Context, user: UserID, reason: str = "", *, language):
+async def unmute(ctx: Context, user: User, reason: str = "", *, language):
     '''Unmutes user'''
-    return await infraction(ctx, types.Infraction.Unmute, user, reason)
+    return await infraction(ctx, type=types.Infraction.Unmute, user=user, reason=reason)
 
 @register(group=Groups.ADMIN, main=infraction, aliases=["unban"])
-async def unban(ctx: Context, user: UserID, reason: str = "", *, language):
+async def unban(ctx: Context, user: User, reason: str = "", *, language):
     '''Unbans user'''
-    return await infraction(ctx, types.Infraction.Unban, user, reason)
+    return await infraction(ctx, type=types.Infraction.Unban, user=user, reason=reason)
 
 @register(group=Groups.GLOBAL, interaction=False)
 async def report(ctx: Context, message: Message, *msg: str, language, **kwargs):
