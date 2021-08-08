@@ -66,13 +66,16 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
             type=type
         )
         if ctx.bot.user_id:
-            r = await _.log_dm(
-                type=type, 
-                guild_id=ctx.guild_id,
-                user_id=user.id,
-                reason=reason,
-                duration= duration
-            )
+            try:
+                r = await _.log_dm(
+                    type=type, 
+                    guild_id=ctx.guild_id,
+                    user_id=user.id,
+                    reason=reason,
+                    duration= duration
+                )
+            except Exception as ex:
+                r = None
             if not r:
                 await ctx.send("Couldn't deliver DM message")
     
