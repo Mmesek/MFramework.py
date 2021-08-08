@@ -28,7 +28,8 @@ async def check_command(client: Bot, message: Message, dm: bool=False) -> bool:
     args = get_arguments(client, message)
     # TODO: Allow some way of specifying keyword-only arguments like -flag=value from command arguments
     # TODO: Command Translations?
-    _name = args[0].strip(alias)
+    args[0] = args[0].strip(alias)
+    _name = args[0]
     name = get_original_cmd(_name)
     if '.' in name:
         name, arg = name.split('.', 1)
