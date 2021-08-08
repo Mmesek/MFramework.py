@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context, log, commits
+from MFramework import register, Groups, Context, log
 from MFramework.utils.timers import finalize
 from MFramework.database.alchemy.types import Flags
 
@@ -46,13 +46,17 @@ async def update(ctx: Context, *args, language, **kwargs):
     import git
     repos = ctx.bot.cfg.get('Repos', {})
     should_reset = False
+    msg = []
     for repo in repos:
-        g = git.Repo(repos[repo]).remotes.origin.pull()
-        if g[0].commit.hexsha == commits[-1].newhexsha:
-            await ctx.reply(f"[{repo}] No new commits.")
+        r = git.Repo(repos[repo]).remotes.origin
+        previous = r.log()[-1].newhexsha
+        g = r.pull()
+        if g[0].commit.hexsha == previous:
+            msg.append(f"[{repo}] No new commits.")
         else:
             should_reset = True
-            await ctx.reply(f"[{repo}] Pulled `{g[0].commit.summary}`")
+            msg.append(f"[{repo}] Pulled `{g[0].commit.summary}`")
+    await ctx.reply("\n".join(msg))
     if should_reset:
         import os, sys
         log.warning("Restarting bot")
