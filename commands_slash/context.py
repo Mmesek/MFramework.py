@@ -218,11 +218,9 @@ async def createcharacter(ctx: Context, answers: Dict[str, str], translated: Dic
             deduplicated_items = list(deduplicated_items.keys())
             _items = [f"- ||{i}||" + f' x {deduplicated_items_values[x]}' if deduplicated_items_values[x] > 1 else f"- ||{i}||" for x, i in enumerate(deduplicated_items[:3])]
             items_ = '\n'.join(_items)
-            e.addField("Posiadane Przedmioty", items_)
+            e.addField("Posiadane Przedmioty", items_, inline=True)
         else:
-            if answer == 'gender':
-                answers[answer] = True if 'Mężczyzna' else False
-            elif answer == 'color':
+            if answer == 'color':
                 color = answers[answer]
                 try:
                     if "#" in color:
@@ -236,6 +234,8 @@ async def createcharacter(ctx: Context, answers: Dict[str, str], translated: Dic
                 answers[answer] = color
             if answer not in {"name", "color", "story"}:
                 e.addField(translated.get(answer), f"||{answers[answer]}||", inline=True)
+            if answer == 'gender':
+                answers[answer] = True if 'Mężczyzna' in answers[answer] else False
             setattr(character, answer, answers[answer])
     if merge:
         s.merge(character)
