@@ -187,8 +187,8 @@
             "Ban":"Ban",
             "Unmute":"Unmute",
             "Unban": "Unban",
-            "tempmute":"Tempmute",
-            "tempban":"Tempban",
+            "Temp_Mute":"Tempmute",
+            "Temp_Ban":"Tempban",
             "Kick":"Kick"
         },
         "for_duration": "for %{duration}",

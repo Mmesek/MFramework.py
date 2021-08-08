@@ -189,8 +189,8 @@
             "Ban":"Ban",
             "Unmute":"Odciszenie",
             "Unban": "Odbanowanie",
-            "tempmute":"Tymczasowe Wyciszenie",
-            "tempban":"Tymczasowy Ban",
+            "Temp_Mute":"Tymczasowe Wyciszenie",
+            "Temp_Ban":"Tymczasowy Ban",
             "Kick":"Wyrzucenie"
         },
         "for_duration": "na %{duration}",
