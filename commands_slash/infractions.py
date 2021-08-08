@@ -50,8 +50,9 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
     if (ctx.bot.emoji.get('fake_infraction', '😜') not in reason or type not in {types.Infraction.Unban, types.Infraction.Unmute, types.Infraction.DM_Unmute, types.Infraction.Report}) and increase_counter:
         active = True
     u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active)
+    ending = "ned" if type.name.endswith('n') else "ed" if not type.name.endswith("e") else "d"
 
-    await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+('ed' if not type.name.endswith('e') else 'd')}{' for ' if reason else ''}{reason}")
+    await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+ending}{' for ' if reason else ''}{reason}")
 
     _ = ctx.cache.logging.get("infraction", None)
     if _:
