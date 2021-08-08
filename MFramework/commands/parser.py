@@ -52,7 +52,7 @@ async def parse(ctx: Bot, data: Message):
     from ._utils import detect_group, Groups
     g = detect_group(ctx, data.author.id, data.guild_id, data.member.roles)
     #for role in set(data.member.roles) & set(cache.responses.keys()):
-    groups = [i for i in Groups if i.value >= g.value and i.value <= Groups.GLOBAL.value]
+    groups = [i for i in Groups if g.can_use(i) and i.can_use(Groups.GLOBAL)]
     for group in groups:
         triggers = cache.responses.get(group, None)
         if not triggers:
