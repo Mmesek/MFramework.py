@@ -73,7 +73,7 @@ class Influx:
     def get_server(self, limit, interval, guild_id, measurement, fn="count", additional=""):
         return self.get(f'|> range(start: -{interval})\
 |> filter(fn: (r) => r["_measurement"] == "{measurement}")\
-|> filter(fn: (r) => r["server"] == {guild_id})\
+|> filter(fn: (r) => r["server"] == "{guild_id}")\
 |> group(columns: ["user"], mode:"by")\
 |> aggregateWindow(every: {interval}, fn: {fn})\
 |> sum()\
