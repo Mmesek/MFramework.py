@@ -58,7 +58,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
     ):
         active = True
     u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active)
-    ending = "ned" if type.name.endswith('n') else "ed" if not type.name.endswith("e") else "d"
+    ending = "ned" if type.name.endswith('n') and type is not types.Infraction.Warn else "ed" if not type.name.endswith("e") else "d"
 
     await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+ending}{' for ' if reason else ''}{reason}")
 
