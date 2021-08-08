@@ -86,7 +86,10 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
             except Exception as ex:
                 r = None
             if not r:
-                await ctx.send("Couldn't deliver DM message")
+                if ctx.is_message:
+                    await ctx.data.react(ctx.bot.emoji.get("failure"))
+                else:
+                    await ctx.send("Couldn't deliver DM message")
     
     if active:
         await auto_moderation(ctx, session, user, type)
