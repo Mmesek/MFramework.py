@@ -49,7 +49,7 @@ async def update(ctx: Context, *args, language, **kwargs):
     msg = []
     for repo in repos:
         r = git.Repo(repos[repo]).remotes.origin
-        previous = r.log()[-1].newhexsha
+        previous = r.repo.head.commit.hexsha
         g = r.pull()
         if g[0].commit.hexsha == previous:
             msg.append(f"[{repo}] No new commits.")
