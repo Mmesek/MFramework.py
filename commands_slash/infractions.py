@@ -113,6 +113,8 @@ async def auto_moderation(ctx: Context, session, user: User, type: types.Infract
 async def list_(ctx: Context, user: User=None, *, language):
     '''Lists user's infractions'''
     await ctx.deferred()
+    if not ctx.permission_group.can_use(Groups.HELPER) and user.id != ctx.user_id:
+        user = ctx.user
     session = ctx.db.sql.session()
     u = models.User.fetch_or_add(session, id = user.id)
     _infractions = u.infractions
