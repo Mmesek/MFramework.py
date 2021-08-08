@@ -4,7 +4,7 @@ from mdiscord.types import Discord_Paths
 from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
-async def docket(ctx: Context, interaction: Interaction, docket: str, description: str='', publish: bool=False, *args, language, **kwargs):
+async def docket(ctx: Context, interaction: Interaction, docket: str, description: str='', publish: bool=False):
     '''
     Sends new docket in an embed
     
@@ -43,7 +43,7 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
         await msg.publish()
 
 @register(group=Groups.MODERATOR, interaction=False)
-async def bookmark(ctx: Context, *title: str, language, **kwargs):
+async def bookmark(ctx: Context, title: str=None):
     '''
     Bookmark a moment in chat to save in your DMs for easy navigation
     Params
@@ -51,11 +51,11 @@ async def bookmark(ctx: Context, *title: str, language, **kwargs):
     title:
         title of the bookmark
     '''
-    title = title[0] if len(title) else "Your bookmark"
+    title = title or "Your bookmark"
     await ctx.send_dm(content=title+': \n'+Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.message_id))
 
 @register(group=Groups.GLOBAL, guild=340185368655560704)
-async def loadout(ctx: Context, *args, language, **kwargs):
+async def loadout(ctx: Context):
     '''
     Losuje ekwipunek
     '''
