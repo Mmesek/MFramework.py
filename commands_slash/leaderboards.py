@@ -88,7 +88,7 @@ async def top(ctx: Context, limit: int=10, type: TopLeaderboards=None, count: bo
         for result in r[:limit]:
             names[result] = await get_usernames(ctx.bot, ctx.guild_id, result)
         t = format_leaderboard(r[:limit], user_id, get_name=lambda x: f'`{names.get(x, "Error")}`', get_value=get_value, get_id=lambda x: x)
-        embed.setDescription('\n'.join(t))
+        embed.setDescription('\n'.join(t) or "No activity detected. It might not be tracked in this server")
         return await ctx.reply(embeds=[embed])
     session = ctx.db.sql.session()
     r = log.Statistic.filter(session, server_id=ctx.guild_id)#.limit(limit).all() #TODO
