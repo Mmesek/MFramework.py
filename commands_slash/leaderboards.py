@@ -60,10 +60,9 @@ async def top(ctx: Context, limit: int=10, type: TopLeaderboards=None, count: bo
     '''
     await ctx.deferred(False)
     embed = Embed().setColor(ctx.cache.color)
-    chat = type == TopLeaderboards.Chat
-    voice = type == TopLeaderboards.Voice
-    games = type == TopLeaderboards.Games
-    chat = type is None
+    chat = type is TopLeaderboards.Chat or type is None
+    voice = type is TopLeaderboards.Voice
+    games = type is TopLeaderboards.Games
     if activity:
         server_messages = ctx.db.influx.get_server(limit, interval, ctx.guild_id, "VoiceSession" if voice else "GamePresence" if games else "MessageActivity", "count" if not voice and not games else "sum")
         if not chat and not voice and not games:
