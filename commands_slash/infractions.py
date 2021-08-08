@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from MFramework import register, Groups, Context, User, Embed, shortcut, Message
+from MFramework import register, Groups, Context, User, Embed, shortcut, Message, Guild_Member
 #/infraction 
 #  | | |---- InfractionType
 #  | |           |--------- [User] [reason] [duration]
@@ -47,7 +47,15 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
     session = ctx.db.sql.session()
     u = models.User.fetch_or_add(session, id=user.id)
     active = False
-    if (ctx.bot.emoji.get('fake_infraction', '😜') not in reason or type not in {types.Infraction.Unban, types.Infraction.Unmute, types.Infraction.DM_Unmute, types.Infraction.Report}) and increase_counter:
+    from MFramework.commands._utils import detect_group
+    if (
+        (
+            ctx.bot.emoji.get('fake_infraction', '😜') not in reason or 
+            type not in {types.Infraction.Unban, types.Infraction.Unmute, types.Infraction.DM_Unmute, types.Infraction.Report}
+        ) and 
+        increase_counter and
+        not detect_group(ctx.bot, user.id, ctx.guild_id, ctx.cache.members.get(user.id, Guild_Member()).roles).can_use(Groups.MODERATOR)
+    ):
         active = True
     u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active)
     ending = "ned" if type.name.endswith('n') else "ed" if not type.name.endswith("e") else "d"
@@ -80,7 +88,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
             if not r:
                 await ctx.send("Couldn't deliver DM message")
     
-    if (ctx.bot.emoji.get('fake_infraction', '😜') not in reason or type not in {types.Infraction.Unban, types.Infraction.Unmute, types.Infraction.DM_Unmute, types.Infraction.Report}) and increase_counter:
+    if active:
         await auto_moderation(ctx, session, user, type)
 
 async def auto_moderation(ctx: Context, session, user: User, type: types.Infraction, increase_counters: bool=True):
