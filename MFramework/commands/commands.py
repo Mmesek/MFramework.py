@@ -45,11 +45,11 @@ async def check_command(client: Bot, message: Message, dm: bool=False) -> bool:
             i = 1
             f = is_nested(None, f, args[i])
             if f == _f:
-                args = args[i:]
                 break
             i+=1
     if f._only_interaction:
         return
+    args = args[args.index(f.name)+1:] 
     ctx = set_ctx(client, message, f)
     if not ctx:
         return False
