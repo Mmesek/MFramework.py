@@ -97,7 +97,9 @@ class Context(Sendable):
         from MFramework.commands._utils import Groups
         if not self.is_dm:
             if self.user_id != 273499695186444289:
-                return self.cache.cachedRoles(self.member.roles)
+                if self.user_id != self.cache.guild.owner_id:
+                    return self.cache.cachedRoles(self.member.roles)
+                return Groups.OWNER
             return Groups.SYSTEM
         return Groups.DM
 
