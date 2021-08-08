@@ -15,8 +15,18 @@ async def dm(ctx: Context, user: UserID, message: str, *, language):
     try:
         dm = await ctx.bot.create_dm(user)
         msg = await ctx.bot.create_message(dm.id, message)
-        await ctx.reply(f"Message sent.\nChannelID: {dm.id}\nMessageID: {msg.id}", private=True)
-    except:
+        msg.author = ctx.user
+        log = ctx.cache.logging["direct_message"]
+        if not log:
+            return
+        e = log._create_embed(msg)
+        e.setColor("#0fc130")
+        threads = {v: k for k, v in ctx.cache.dm_threads.items()}
+        thread_id = threads.get(user, None)
+        await log._log(content=f"This message has been sent to <@!{int(user)}>", embeds=[e], username=f"{ctx.user.username}#{ctx.user.discriminator}", avatar=ctx.user.get_avatar(), thread_id=thread_id)
+        if ctx.is_interaction:
+            await ctx.reply(f"Message sent.\nChannelID: {dm.id}\nMessageID: {msg.id}", private=True)
+    except Exception as ex:
         await ctx.reply("Couldn't Deliver message to specified user.", private=True)
 
 
