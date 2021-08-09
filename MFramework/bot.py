@@ -84,6 +84,7 @@ class Context(Sendable):
             self.user_id = data.author.id
             self.user = data.author
             self.member = data.member
+            self.member.user = data.author
             self.is_interaction = False
             self.is_message = True
         self.direct_message = cache[0].get(self.user_id, None)
