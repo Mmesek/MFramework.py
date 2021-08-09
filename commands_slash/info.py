@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context, Embed, UserID, Snowflake, RoleID, ChannelID, Role
+from MFramework import register, Groups, Context, Embed, Snowflake, RoleID, ChannelID, Role, Bitwise_Permission_Flags, Guild_Member, Premium_Types, User_Flags
 
 @register()
 async def info(ctx: Context, *args, language, **kwargs):
@@ -6,18 +6,110 @@ async def info(ctx: Context, *args, language, **kwargs):
     pass
 
 @register(group=Groups.GLOBAL, main=info)
-async def user(ctx: Context, user_id: UserID = 0, *args, language, group, **kwargs):
-    '''Shows user info'''
+async def user(ctx: Context, member: Guild_Member = None):
+    '''Shows user info
+    Params
+    ------
+    member:
+        Member to show info about'''
     await ctx.deferred()
-    if group < Groups.MODERATOR or user_id == 0:
-        user_id = ctx.member.user.id
-    user = await ctx.bot.get_user(user_id)
-    member = await ctx.bot.get_guild_member(ctx.guild_id, user_id)
-    print(member.user == user) #If True, we don't need to query get_user
+    if not member or not ctx.permission_group.can_use(Groups.MODERATOR):
+        member = ctx.member
+    from mlib.colors import get_main_color
+    embed = (
+        Embed()
+            .setAuthor(name=f"{member.user.username}#{member.user.discriminator}", icon_url=member.user.get_avatar())
+            .setThumbnail(member.user.get_avatar())
+            .setColor(get_main_color(member.user.get_avatar()))
+            .setFooter(text=f"ID: {member.user.id}")
+    )
+    
+    dates = []
+    dates.append(("On Discord since", member.user.id.styled_date()))
+    if member:
+        import time
+        dates.append(("Joined Server at", f"<t:{int(time.mktime(member.joined_at.timetuple()))}>"))
+        try:
+            dates.append(("Booster since", f"<t:{int(time.mktime(member.premium_since.timetuple()))}>"))
+        except:
+            pass
+    embed.addField("Dates", '\n'.join(format_values(dates)))
+    
+    names = [
+        ("Nick", member.nick),
+        ("Username", member.user.username)
+    ]
+    if member.nick:
+        embed.addField("Names", "\n".join(format_values(names, lambda x: x[1])), False)
 
-    embed = Embed().setTitle("User Info").setThumbnail("").setDescription("")
+    flags = [
+        ("Verified", member.user.verified),
+        ("System", member.user.system),
+        ("Bot", member.user.bot),
+        ("Pending", member.pending),
+        ("Multi Factor Authentication", member.user.mfa_enabled)
+    ]
+    if any(i[1] for i in flags):
+        embed.addField("User Flags", '\n'.join([f[0] for f in flags if f[1]]), True)
+
+    badges = User_Flags.current_permissions(User_Flags, member.user.public_flags)
+    if badges != ["NONE"]:
+        embed.addField("Badges", ", ".join(i.title().replace("_", " ") for i in badges if i != "NONE"), True)
+
+    if member.user.locale:
+        embed.addField("Language", member.user.locale, True)
+
+    vc_state = [
+        ("Muted", member.mute),
+        ("Deafed", member.deaf)
+    ]
+    if any(i[1] for i in vc_state):
+        embed.addField("Voice", ", ".join([i[0] for i in vc_state if i[1]]), True)
+
+    if member.user.premium_type:
+        embed.addField("Nitro Type", Premium_Types.get(member.user.premium_type).name.title(), True)
+
+    roles = [f"<@&{i}>" for i in member.roles]
+    if len(roles):
+        embed.addField(f"Roles [{len(roles)}]", ", ".join(roles))
+
+    permissions = Bitwise_Permission_Flags.current_permissions(Bitwise_Permission_Flags, int(member.permissions))
+    if permissions:
+        embed.addField("Permissions", ", ".join(i.title().replace("_", " ") for i in permissions))
+
+    embed.addField("\u200b", "\u200b")
+
+    s = ctx.db.sql.session()
+    from MFramework.database.alchemy import User
+    u = User.by_id(s, id=member.user.id)
+    if u:
+        infractions = list(filter(lambda x: x.server_id == ctx.guild_id, u.infractions))
+        if infractions:
+            _ = [
+                ("Total", len(infractions)),
+                ("Active", len([i.active for i in infractions]))
+            ]
+            embed.addField("Infractions", "\n".join(format_values(_, lambda x: x[1])), True)
+        mod_actions = list(filter(lambda x: x.server_id == ctx.guild_id, u.mod_actions))
+        if mod_actions:
+            embed.addField("Moderation Actions", str(len(mod_actions)), True)
+        _stats = []
+        for stat in filter(lambda x: x.server_id == ctx.guild_id, u.statistics):
+            _stats.append((stat.name.name, stat.value))
+        if _stats:
+            embed.addField("Statistics", "\n".join(format_values(_stats)), False)
 
     await ctx.reply(embeds=[embed])
+
+from typing import Callable, List, Tuple
+def format_values(iterable: List[Tuple[str, str]], check: Callable = None):
+    if check:
+        iterable = list(filter(check, iterable))
+    longest_string = max([len(i[0]) for i in iterable])
+    r = []
+    for name, value in iterable:
+        r.append(f"`{name.replace('_', ' '):>{longest_string}}`: {value}")
+    return r
 
 @register(group=Groups.MODERATOR, main=info)
 async def server(ctx: Context, guild_id: Snowflake = 0, *args, language, group, **kwargs):
@@ -174,10 +266,6 @@ async def created(ctx: Context, snowflake: Snowflake, *, language):
             names.append(("Booster since", f"<t:{int(time.mktime(_member.premium_since.timetuple()))}>"))
         except:
             pass
-    longest_string = max([len(i[0]) for i in names])
-    r = []
-    for name, format in names:
-        r.append(f"`{name:>{longest_string}}`: {format}")
     embed = Embed()
-    embed.addField(f"{snowflake}",'\n'.join(r))
+    embed.addField(f"{snowflake}",'\n'.join(format_values(names)))
     await ctx.reply(embeds=[embed])
