@@ -169,4 +169,6 @@ async def when(ctx: Context):
     date = datetime(2021, 12, 7, 19)
     timestamp = int(date.timestamp())
     delta = date - datetime.now()
+    if delta.total_seconds() < 0:
+        return await ctx.reply("Released!")
     await ctx.reply(f"Remaining `{delta}` until <t:{timestamp}:D> which is <t:{timestamp}:R>")
