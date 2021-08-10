@@ -121,7 +121,7 @@ def detect_group(Client: 'Bot', user_id: Snowflake, guild_id: Snowflake, roles: 
 
 def is_nested(group: Groups, command: Command, name: str) -> Command:
     for sub_command in command.sub_commands:
-        if name == sub_command.name:
+        if name.lower() == sub_command.name.lower():
             return sub_command
         if sub_command.sub_commands != []:
             return is_nested(group, sub_command, name)
@@ -284,7 +284,7 @@ def get_arguments(client: 'Bot', message: Message) -> List[str]:
     return args
 
 def get_original_cmd(_name: str) -> str:
-    return aliasList.get(_name, _name)
+    return aliasList.get(_name.lower(), _name)
 
 def set_ctx(client: 'Bot', message: Message, f: Command) -> 'Context':
     from MFramework import Context

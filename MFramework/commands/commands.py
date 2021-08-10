@@ -36,7 +36,7 @@ async def check_command(client: Bot, message: Message, dm: bool=False) -> bool:
         args[0] = name
         args.insert(1, arg)
 
-    f = commands.get(name, None)
+    f = commands.get(name.lower(), None)
     if not f:
         return
     
