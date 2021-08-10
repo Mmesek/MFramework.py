@@ -156,3 +156,15 @@ async def loadout(ctx: Context):
         embed.addField(tr("commands.loadout."+k, language='pl'), v, True)
 
     await ctx.reply(None, [embed])
+
+@register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
+async def when(ctx: Context):
+    '''
+    Shows remaining delta    
+    '''
+    from random import SystemRandom as random
+    if random().random < 5 / 100:
+        return await ctx.reply("When it's ready.")
+    from datetime import datetime
+    delta = datetime(2021, 12, 7, 19) - datetime.now()
+    await ctx.reply(str(delta))
