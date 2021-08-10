@@ -163,7 +163,7 @@ async def when(ctx: Context):
     Shows remaining delta    
     '''
     from random import SystemRandom as random
-    if random().random < 5 / 100:
+    if random().random() < 5 / 100:
         return await ctx.reply("When it's ready.")
     from datetime import datetime
     delta = datetime(2021, 12, 7, 19) - datetime.now()
