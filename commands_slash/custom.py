@@ -166,5 +166,7 @@ async def when(ctx: Context):
     if random().random() < 5 / 100:
         return await ctx.reply("When it's ready.")
     from datetime import datetime
-    delta = datetime(2021, 12, 7, 19) - datetime.now()
-    await ctx.reply(str(delta))
+    date = datetime(2021, 12, 7, 19)
+    timestamp = int(date.timestamp())
+    delta = date - datetime.now()
+    await ctx.reply(f"Remaining `{delta}` until <t:{timestamp}:D> which is <t:{timestamp}:R>")
