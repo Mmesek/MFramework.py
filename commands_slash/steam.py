@@ -1,5 +1,5 @@
 from MFramework import register, Groups, Context, Interaction, Embed
-from MFramework.api.steam import Steam
+from MFramework.api.steam import Steam, loadSteamIndex
 
 from mlib.localization import tr
 
@@ -14,11 +14,6 @@ async def refreshAppIndex(ctx: Context, *args, data, **kwargs):
     import json
     with open("data/steamstoreindex.json", "w", newline="", encoding="utf-8") as file:
         json.dump(index, file)
-
-async def loadSteamIndex(ctx):
-    with open("data/steamstoreindex.json") as fjson:
-        import json
-        ctx.bot.index = json.load(fjson)
 
 
 @register(group=Groups.GLOBAL)
@@ -184,21 +179,6 @@ async def game(ctx: Context, interaction: Interaction, game: str, *args, languag
                 embed.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
         embed.addField(tr("commands.game.open", language), f"steam://store/{appid}/")
         await ctx.reply(embeds=[embed])
-
-
-@register(group=Groups.GLOBAL, interaction=False)
-async def steamsearch(ctx: Context, game: str, *args, language, **kwargs):
-    '''Search Steam Index'''
-    from difflib import get_close_matches
-    game = " ".join(game)
-    if not hasattr(ctx.bot, "index"):
-        await loadSteamIndex(ctx.bot)
-    game = get_close_matches(game, ctx.bot.index.keys(), 10)
-    t= ''
-    for g in game:
-        t += '\n- ' + g
-    embed = Embed().setDescription(t[:2024])
-    await ctx.reply(embeds=[embed])
 
 
 @register(group=Groups.GLOBAL, main=steam)

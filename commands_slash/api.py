@@ -283,3 +283,18 @@ async def lyrics(ctx: Context, artist: str, song: str):
         await ctx.reply(embeds=[embe])
     else:
         await ctx.reply('404')
+
+@register(group=Groups.GLOBAL, main=search, interaction=False)
+async def steam(ctx: Context, game: str):
+    '''Search Steam Index'''
+    from difflib import get_close_matches
+    game = " ".join(game)
+    if not hasattr(ctx.bot, "index"):
+        from MFramework.api.steam import loadSteamIndex
+        await loadSteamIndex(ctx.bot)
+    game = get_close_matches(game, ctx.bot.index.keys(), 10)
+    t= ''
+    for g in game:
+        t += '\n- ' + g
+    embed = Embed().setDescription(t[:2024])
+    await ctx.reply(embeds=[embed])

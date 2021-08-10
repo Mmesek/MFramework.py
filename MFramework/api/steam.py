@@ -52,3 +52,8 @@ class Steam:
             cc = 'us'
             l = 'english'
         return await Steam.api_call(path="appdetails/", querry=f"?appids={appid}&l={l}&cc={cc}", api=URL.STORE)
+
+async def loadSteamIndex(ctx):
+    with open("data/steamstoreindex.json") as fjson:
+        import json
+        ctx.bot.index = json.load(fjson)
