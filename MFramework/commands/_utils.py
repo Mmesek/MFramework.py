@@ -3,7 +3,7 @@ from types import FunctionType
 from inspect import signature, Signature
 
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
-    Channel, User, Role, Guild_Member, Message, Enum,
+    Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
     log, BadRequest
     )
@@ -332,7 +332,7 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
                 mentioned = [caches.get(option.type).get(_id, None)]
                 if not mentioned:
                     mentioned = [Guild_Member(user=User(id=_id, username=_id))]
-                if option.type is User and type(mentioned[0]) is Guild_Member:
+                if option.type is User and type(mentioned[0]) in {Guild_Member, Guild_Member_Update}:
                     mentioned = [mentioned[0].user]
             kwargs[option.name] = mentioned[0]
     return set_default_arguments(ctx, f, kwargs)
