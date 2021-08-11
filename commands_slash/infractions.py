@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from MFramework import register, Groups, Context, User, Embed, shortcut, Message, Guild_Member
+from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member
 #/infraction 
 #  | | |---- InfractionType
 #  | |           |--------- [User] [reason] [duration]
@@ -10,7 +10,6 @@ from MFramework import register, Groups, Context, User, Embed, shortcut, Message
 from MFramework.database.alchemy import types, models
 #TODO:
 # Each infraction as separate command instead of choice type?
-# Action on infraction like ban or kick
 # move everything to infraction command group?
 # or make infraction list an info subcommand or some other?
 # Perhaps alias interaction?
@@ -92,7 +91,9 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
                     await ctx.send("Couldn't deliver DM message")
     
     if active:
-        await auto_moderation(ctx, session, user, type)
+        return await auto_moderation(ctx, session, user, type)
+    elif type in {types.Infraction.Unban, types.Infraction.Unmute, types.Infraction.DM_Unmute}:
+        return True
 
 async def auto_moderation(ctx: Context, session, user: User, type: types.Infraction, increase_counters: bool=True):
     from MFramework.database.alchemy import log, types
@@ -110,6 +111,8 @@ async def auto_moderation(ctx: Context, session, user: User, type: types.Infract
     elif autoban and active.value >= autoban and type is not types.Infraction.Ban:
         await ctx.bot.create_guild_ban(ctx.guild_id, user.id, reason=f"{active.value} active infractions")
         await infraction(ctx, types.Infraction.Ban, user, reason=f"{active.value} active infractions", increase_counter=False)
+    else:
+        return True
 
 
 @register(group=Groups.GLOBAL, main=infraction, aliases=["infractions"])
@@ -227,40 +230,56 @@ async def warn(ctx: Context, user: User, reason: str = "", *, language):
 @register(group=Groups.MODERATOR, main=infraction, aliases=["mute"])
 async def mute(ctx: Context, user: User, reason: str = "", *, language):
     '''Mutes user'''
-    return await infraction(ctx, type=types.Infraction.Mute, user=user, reason=reason)
+    if await infraction(ctx, type=types.Infraction.Mute, user=user, reason=reason):
+        MUTED = ctx.cache.groups.get(Groups.MUTED, [None])[0]
+        await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, role_id=MUTED, reason=reason or f"User Muted by {ctx.user.username}")
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["kick"])
 async def kick(ctx: Context, user: User, reason: str = "", *, language):
     '''Kicks user'''
-    return await infraction(ctx, type=types.Infraction.Kick, user=user, reason=reason)
+    if await infraction(ctx, type=types.Infraction.Kick, user=user, reason=reason):
+        await ctx.bot.remove_guild_member(ctx.guild_id, user.id, reason=reason or f"User Kicked by {ctx.user.username}")
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["ban"])
 async def ban(ctx: Context, user: User, reason: str = "", *, language):
     '''Bans user'''
-    return await infraction(ctx, type=types.Infraction.Ban, user=user, reason=reason)
+    if await infraction(ctx, type=types.Infraction.Ban, user=user, reason=reason):
+        await ctx.bot.create_guild_ban(ctx.guild_id, user.id, None, reason=reason or f"User banned by {ctx.user.username}")
 
 @register(group=Groups.HELPER, main=infraction, aliases=["tempmute"])
 async def tempmute(ctx: Context, user: User, duration: timedelta=None, reason: str = "", *, language):
     '''Temporarly mutes user'''
-    return await infraction(ctx, type=types.Infraction.Temp_Mute, user=user, reason=reason, duration=duration)
+    if await infraction(ctx, type=types.Infraction.Temp_Mute, user=user, reason=reason, duration=duration):
+        MUTED = ctx.cache.groups.get(Groups.MUTED, [None])[0]
+        await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, role_id=MUTED, reason=reason or f"User temporarly muted by {ctx.user.username} for {str(duration)}")
+        import asyncio
+        await asyncio.sleep(duration.total_seconds())
+        await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, MUTED, reason="Unmuted as timer ran out")
 
 @register(group=Groups.HELPER, main=infraction, aliases=["tempban"])
 async def tempban(ctx: Context, user: User, duration: timedelta=None, reason: str = "", *, language):
     '''Temporarly bans user'''
-    return await infraction(ctx, type=types.Infraction.Temp_Ban, user=user, reason=reason, duration=duration)
+    if await infraction(ctx, type=types.Infraction.Temp_Ban, user=user, reason=reason, duration=duration):
+        await ctx.bot.create_guild_ban(ctx.guild_id, user.id, None, reason=reason or f"User temporarly banned by {ctx.user.username} for {str(duration)}")
+        import asyncio
+        await asyncio.sleep(duration.total_seconds())
+        await ctx.bot.remove_guild_ban(ctx.guild_id, user.id, reason="Unbanned as timer ran out")
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["unmute"])
 async def unmute(ctx: Context, user: User, reason: str = "", *, language):
     '''Unmutes user'''
-    return await infraction(ctx, type=types.Infraction.Unmute, user=user, reason=reason)
+    if await infraction(ctx, type=types.Infraction.Unmute, user=user, reason=reason):
+        MUTED = ctx.cache.groups.get(Groups.MUTED, [None])[0]
+        await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, MUTED, reason=f"Unmuted by {ctx.user.username}")
 
 @register(group=Groups.ADMIN, main=infraction, aliases=["unban"])
 async def unban(ctx: Context, user: User, reason: str = "", *, language):
     '''Unbans user'''
-    return await infraction(ctx, type=types.Infraction.Unban, user=user, reason=reason)
+    if await infraction(ctx, type=types.Infraction.Unban, user=user, reason=reason):
+        await ctx.bot.remove_guild_ban(ctx.guild_id, user.id, reason=f"Unbanned by {ctx.user.username}")
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def report(ctx: Context, message: Message, *msg: str, language, **kwargs):
+async def report(ctx: Context, msg: str, *, language, **kwargs):
     '''
     Report situation on server to Moderators
     Params
@@ -268,7 +287,25 @@ async def report(ctx: Context, message: Message, *msg: str, language, **kwargs):
     msg:
         optional message about what's happening
     '''
-    await ctx.cache.logging["report"](message)
-    for moderator in filter(lambda x: message.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
-        await ctx.cache.logging["report"].log_dm(message)
-    await message.react(ctx.bot.emoji.get("success"))
+    await ctx.cache.logging["report"](ctx.data)
+    for moderator in filter(lambda x: ctx.data.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
+        await ctx.cache.logging["report"].log_dm(ctx.data)
+    await ctx.data.react(ctx.bot.emoji.get("success"))
+
+@register(group=Groups.ADMIN, main=infraction)
+async def expire(ctx: Context, infraction_id: int, *, language):
+    '''
+    Expires an infraction
+    Params
+    ------
+    infraction_id:
+        Infraction to expire
+    '''
+    session = ctx.db.sql.session()
+    from MFramework.database.alchemy import Infraction
+    infraction = Infraction.filter(session, server_id=ctx.guild_id, id=infraction_id).first()
+    if not infraction:
+        return await ctx.reply("Couldn't find infraction with provided id")
+    infraction.active = False
+    session.commit()
+    await ctx.reply(f"Successfully expired infraction with reason `{infraction.reason}` added by {infraction.moderator_id}")
