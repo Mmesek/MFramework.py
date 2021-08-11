@@ -1,7 +1,7 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from datetime import datetime, timedelta, timezone
 
-from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment
+from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove
 from MFramework.utils.log import Log
 from MFramework.database.alchemy import types, models
 #/infraction 
@@ -384,7 +384,7 @@ class Infraction_Event(Infraction):
             string += f' for "{reason}"'
         await self._log(string)
 
-    async def get_ban_data(self, data: Message, type: str, audit_type: str) -> Tuple[bool, bool]:
+    async def get_ban_data(self, data: Union[Guild_Ban_Add, Guild_Ban_Remove], type: types.Infraction, audit_type: str) -> Tuple[bool, bool]:
         import asyncio
         await asyncio.sleep(3)
         audit = await self.bot.get_guild_audit_log(data.guild_id, action_type=audit_type)
@@ -395,25 +395,29 @@ class Infraction_Event(Infraction):
                 moderator = obj.user_id
                 reason = obj.reason
                 break
-        if reason is None and type == 'ban':
+        if reason is None and type is types.Infraction.Ban:
             #Fall back to fetching ban manually
             reason = await self.bot.get_guild_ban(data.guild_id, data.user.id)
             reason = reason.reason
-        r = None #TODO: Get from database
+        s = self.bot.db.sql.session()
+        from MFramework.database.alchemy import Infraction as db_Infraction
+        r = db_Infraction.filter(s, server_id=self.guild_id, user_id=data.user.id, reason=reason, type=type).first()
         if r is None:
-            #TODO: Add to Databse
+            u = models.User.fetch_or_add(s, id=data.user.id)
+            u.add_infraction(data.guild_id, moderator, type, reason)
+            s.commit()
             return reason, moderator
         return False, False
 
 class Guild_Ban_Add(Infraction_Event):
-    async def log(self, data: Message):
-        reason, moderator = await self.get_ban_data(data, "ban", 22) #TODO: Move it to log, actually turn it all into a logger instead of dispatch thing
+    async def log(self, data: Guild_Ban_Add):
+        reason, moderator = await self.get_ban_data(data, types.Infraction.Ban, 22)
         # TODO: Hey! Idea, maybe make decorator like @onDispatch, but like @log or something to make it a logger and register etc?
         if reason is not False:
             await super().log(data, type="banned", reason=reason, by_user=moderator)
 
 class Guild_Ban_Remove(Infraction_Event):
-    async def log(self, data: Message):
-        reason, moderator = await self.get_ban_data(data, "unban", 23)
+    async def log(self, data: Guild_Ban_Remove):
+        reason, moderator = await self.get_ban_data(data, types.Infraction.Unban, 23)
         if reason is not False:
             await super().log(data, type="unbanned", reason=reason, by_user=moderator)
