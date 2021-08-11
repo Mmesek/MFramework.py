@@ -1,5 +1,9 @@
+from typing import List, Tuple
 from datetime import datetime, timedelta, timezone
-from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member
+
+from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment
+from MFramework.utils.log import Log
+from MFramework.database.alchemy import types, models
 #/infraction 
 #  | | |---- InfractionType
 #  | |           |--------- [User] [reason] [duration]
@@ -7,7 +11,6 @@ from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_M
 #  |-------- counter
 #                |--------- [User] increase [reason]
 #                |--------- [User] decrease [reason]
-from MFramework.database.alchemy import types, models
 #TODO:
 # Each infraction as separate command instead of choice type?
 # move everything to infraction command group?
@@ -104,9 +107,9 @@ async def auto_moderation(ctx: Context, session, user: User, type: types.Infract
     automute = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, None)
     autoban = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, None)
     if automute and active.value == automute and type is not types.Infraction.Mute:
-        MUTED_ROLE = ctx.cache.groups.get(Groups.MUTED, [None])[0]
+        MUTED_ROLE = list(ctx.cache.groups.get(Groups.MUTED, [None]))
         if MUTED_ROLE:
-            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, MUTED_ROLE, reason=f"{active.value} active infractions")
+            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, MUTED_ROLE[0], reason=f"{active.value} active infractions")
             await infraction(ctx, types.Infraction.Mute, user, reason=f"{active.value} active infractions", duration=ctx.cache.settings.get(types.Setting.Auto_Mute_Duration, '12h'), increase_counter=False)
     elif autoban and active.value >= autoban and type is not types.Infraction.Ban:
         await ctx.bot.create_guild_ban(ctx.guild_id, user.id, reason=f"{active.value} active infractions")
@@ -231,8 +234,9 @@ async def warn(ctx: Context, user: User, reason: str = "", *, language):
 async def mute(ctx: Context, user: User, reason: str = "", *, language):
     '''Mutes user'''
     if await infraction(ctx, type=types.Infraction.Mute, user=user, reason=reason):
-        MUTED = ctx.cache.groups.get(Groups.MUTED, [None])[0]
-        await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, role_id=MUTED, reason=reason or f"User Muted by {ctx.user.username}")
+        MUTED = list(ctx.cache.groups.get(Groups.MUTED, [None]))
+        if MUTED:
+            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, role_id=MUTED[0], reason=reason or f"User Muted by {ctx.user.username}")
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["kick"])
 async def kick(ctx: Context, user: User, reason: str = "", *, language):
@@ -250,11 +254,12 @@ async def ban(ctx: Context, user: User, reason: str = "", *, language):
 async def tempmute(ctx: Context, user: User, duration: timedelta=None, reason: str = "", *, language):
     '''Temporarly mutes user'''
     if await infraction(ctx, type=types.Infraction.Temp_Mute, user=user, reason=reason, duration=duration):
-        MUTED = ctx.cache.groups.get(Groups.MUTED, [None])[0]
-        await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, role_id=MUTED, reason=reason or f"User temporarly muted by {ctx.user.username} for {str(duration)}")
-        import asyncio
-        await asyncio.sleep(duration.total_seconds())
-        await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, MUTED, reason="Unmuted as timer ran out")
+        MUTED = list(ctx.cache.groups.get(Groups.MUTED, [None]))
+        if MUTED:
+            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, role_id=MUTED[0], reason=reason or f"User temporarly muted by {ctx.user.username} for {str(duration)}")
+            import asyncio
+            await asyncio.sleep(duration.total_seconds())
+            await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, MUTED[0], reason="Unmuted as timer ran out")
 
 @register(group=Groups.HELPER, main=infraction, aliases=["tempban"])
 async def tempban(ctx: Context, user: User, duration: timedelta=None, reason: str = "", *, language):
@@ -269,8 +274,9 @@ async def tempban(ctx: Context, user: User, duration: timedelta=None, reason: st
 async def unmute(ctx: Context, user: User, reason: str = "", *, language):
     '''Unmutes user'''
     if await infraction(ctx, type=types.Infraction.Unmute, user=user, reason=reason):
-        MUTED = ctx.cache.groups.get(Groups.MUTED, [None])[0]
-        await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, MUTED, reason=f"Unmuted by {ctx.user.username}")
+        MUTED = list(ctx.cache.groups.get(Groups.MUTED, [None]))
+        if MUTED:
+            await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, MUTED[0], reason=f"Unmuted by {ctx.user.username}")
 
 @register(group=Groups.ADMIN, main=infraction, aliases=["unban"])
 async def unban(ctx: Context, user: User, reason: str = "", *, language):
@@ -292,6 +298,13 @@ async def report(ctx: Context, msg: str, *, language, **kwargs):
         await ctx.cache.logging["report"].log_dm(ctx.data)
     await ctx.data.react(ctx.bot.emoji.get("success"))
 
+class Report(Log):
+    username = "User Report Log"
+    async def log(self, data: Message) -> Message:
+        await self._log()
+    async def log_dm(self, data: Message, user_id: Snowflake) -> Message:
+        await self._log_dm()
+
 @register(group=Groups.ADMIN, main=infraction)
 async def expire(ctx: Context, infraction_id: int, *, language):
     '''
@@ -309,3 +322,98 @@ async def expire(ctx: Context, infraction_id: int, *, language):
     infraction.active = False
     session.commit()
     await ctx.reply(f"Successfully expired infraction with reason `{infraction.reason}` added by {infraction.moderator_id}")
+
+
+class Infraction(Log):
+    username = "Infraction Log"
+    _types = {
+        "warn": "warned",
+        "tempmute":"temporarily muted",
+        "mute": "muted",
+        "kick": "kicked",
+        "tempban":"temporarily banned",
+        "ban": "banned",
+        "unban": "unbanned",
+        "unmute": "unmuted"
+    } #HACK
+    async def log(self, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, moderator: User, user_id: Snowflake, reason: str, type: types.Infraction, duration: int=0, attachments: List[Attachment]=None) -> Message:
+        from MFramework import Discord_Paths
+        string = f'{moderator.username} [{self._types.get(type.name.lower(), type.name)}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
+        u = f'[<@{user_id}>'
+        try:
+            user = self.bot.cache[guild_id].members[user_id].user
+            u += f' | {user.username}#{user.discriminator}'
+        except:
+            pass
+        u += ']'
+        string += u
+        if reason != '':
+            string += f' for "{reason}"'
+        if duration:
+            from mlib.localization import secondsToText
+            string += f" (Duration: {secondsToText(duration)})"
+        embeds = []
+        if attachments is not None:
+            for attachment in attachments:
+                if len(embeds) == 10:
+                    break
+                embeds.append(Embed().setImage(attachment.url).setTitle(attachment.filename).embed)
+        await self._log(content=string, embeds=embeds)
+    async def log_dm(self, type: types.Infraction, guild_id: Snowflake, user_id: Snowflake, reason: str="", duration: int=None) -> Message:
+        s = f"You've been {self._types[type.name.lower()]} in {self.bot.cache[guild_id].guild.name} server"
+        if reason != '':
+            s+=f" for {reason}"
+        if duration:
+            from mlib.localization import secondsToText
+            s += f" ({secondsToText(duration)})"
+        return await self._log_dm(user_id, s)
+
+
+class Infraction_Event(Infraction):
+    username = "Infraction Event Log"
+    async def log(self, data: Message, type: str, reason: str="", by_user: str="") -> Message:
+        if by_user != '':
+            try:
+                by_user = self.bot.cache[data.guild_id].members[int(by_user)].user.username
+            except:
+                pass
+            string = f'{by_user} {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]'
+        else:
+            string = f'[<@{data.user.id}> | {data.user.username}#{data.user.discriminator}] has been {type}'
+        if reason != '' and reason != 'Unspecified':
+            string += f' for "{reason}"'
+        await self._log(string)
+
+    async def get_ban_data(self, data: Message, type: str, audit_type: str) -> Tuple[bool, bool]:
+        import asyncio
+        await asyncio.sleep(3)
+        audit = await self.bot.get_guild_audit_log(data.guild_id, action_type=audit_type)
+        reason = None
+        for obj in audit.audit_log_entries:
+            #Try to find ban in Audit Log
+            if int(obj.target_id) == data.user.id:
+                moderator = obj.user_id
+                reason = obj.reason
+                break
+        if reason is None and type == 'ban':
+            #Fall back to fetching ban manually
+            reason = await self.bot.get_guild_ban(data.guild_id, data.user.id)
+            reason = reason.reason
+        r = None #TODO: Get from database
+        if r is None:
+            #TODO: Add to Databse
+            return reason, moderator
+        return False, False
+
+class Guild_Ban_Add(Infraction_Event):
+    async def log(self, data: Message):
+        reason, moderator = await self.get_ban_data(data, "ban", 22) #TODO: Move it to log, actually turn it all into a logger instead of dispatch thing
+        # TODO: Hey! Idea, maybe make decorator like @onDispatch, but like @log or something to make it a logger and register etc?
+        if reason is not False:
+            await super().log(data, type="banned", reason=reason, by_user=moderator)
+
+class Guild_Ban_Remove(Infraction_Event):
+    async def log(self, data: Message):
+        reason, moderator = await self.get_ban_data(data, "unban", 23)
+        if reason is not False:
+            await super().log(data, type="unbanned", reason=reason, by_user=moderator)

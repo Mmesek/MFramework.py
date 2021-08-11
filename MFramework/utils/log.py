@@ -1,6 +1,5 @@
 import MFramework
-from MFramework.database.alchemy import types
-from typing import List, TYPE_CHECKING, Any, Tuple
+from typing import List, TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from MFramework import Bot
 
@@ -99,100 +98,6 @@ class Left(User):
     username = "Leave Log"
     async def log(self, data: MFramework.Guild_Member_Remove) -> MFramework.Message:
         return await self._log(f"<@{data.user.id}> left server")
-
-class Infraction(Log):
-    username = "Infraction Log"
-    _types = {
-        "warn": "warned",
-        "tempmute":"temporarily muted",
-        "mute": "muted",
-        "kick": "kicked",
-        "tempban":"temporarily banned",
-        "ban": "banned",
-        "unban": "unbanned",
-        "unmute": "unmuted"
-    } #HACK
-    async def log(self, guild_id: MFramework.Snowflake, channel_id: MFramework.Snowflake, message_id: MFramework.Snowflake, moderator: MFramework.User, user_id: MFramework.Snowflake, reason: str, type: types.Infraction, duration: int=0, attachments: List[MFramework.Attachment]=None) -> MFramework.Message:
-        from MFramework import Discord_Paths
-        string = f'{moderator.username} [{self._types.get(type.name.lower(), type.name)}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
-        u = f'[<@{user_id}>'
-        try:
-            user = self.bot.cache[guild_id].members[user_id].user
-            u += f' | {user.username}#{user.discriminator}'
-        except:
-            pass
-        u += ']'
-        string += u
-        if reason != '':
-            string += f' for "{reason}"'
-        if duration:
-            from mlib.localization import secondsToText
-            string += f" (Duration: {secondsToText(duration)})"
-        embeds = []
-        if attachments is not None:
-            for attachment in attachments:
-                if len(embeds) == 10:
-                    break
-                embeds.append(MFramework.Embed().setImage(attachment.url).setTitle(attachment.filename).embed)
-        await self._log(content=string, embeds=embeds)
-    async def log_dm(self, type: types.Infraction, guild_id: MFramework.Snowflake, user_id: MFramework.Snowflake, reason: str="", duration: int=None) -> MFramework.Message:
-        s = f"You've been {self._types[type.name.lower()]} in {self.bot.cache[guild_id].guild.name} server"
-        if reason != '':
-            s+=f" for {reason}"
-        if duration:
-            from mlib.localization import secondsToText
-            s += f" ({secondsToText(duration)})"
-        return await self._log_dm(user_id, s)
-
-
-class Infraction_Event(Infraction):
-    username = "Infraction Event Log"
-    async def log(self, data: MFramework.Message, type: str, reason: str="", by_user: str="") -> MFramework.Message:
-        if by_user != '':
-            try:
-                by_user = self.bot.cache[data.guild_id].members[int(by_user)].user.username
-            except:
-                pass
-            string = f'{by_user} {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]'
-        else:
-            string = f'[<@{data.user.id}> | {data.user.username}#{data.user.discriminator}] has been {type}'
-        if reason != '' and reason != 'Unspecified':
-            string += f' for "{reason}"'
-        await self._log(string)
-
-    async def get_ban_data(self, data: MFramework.Message, type: str, audit_type: str) -> Tuple[bool, bool]:
-        import asyncio
-        await asyncio.sleep(3)
-        audit = await self.bot.get_guild_audit_log(data.guild_id, action_type=audit_type)
-        reason = None
-        for obj in audit.audit_log_entries:
-            #Try to find ban in Audit Log
-            if int(obj.target_id) == data.user.id:
-                moderator = obj.user_id
-                reason = obj.reason
-                break
-        if reason is None and type == 'ban':
-            #Fall back to fetching ban manually
-            reason = await self.bot.get_guild_ban(data.guild_id, data.user.id)
-            reason = reason.reason
-        r = None #TODO: Get from database
-        if r is None:
-            #TODO: Add to Databse
-            return reason, moderator
-        return False, False
-
-class Guild_Ban_Add(Infraction_Event):
-    async def log(self, data: MFramework.Message):
-        reason, moderator = await self.get_ban_data(data, "ban", 22) #TODO: Move it to log, actually turn it all into a logger instead of dispatch thing
-        # TODO: Hey! Idea, maybe make decorator like @onDispatch, but like @log or something to make it a logger and register etc?
-        if reason is not False:
-            await super().log(data, type="banned", reason=reason, by_user=moderator)
-
-class Guild_Ban_Remove(Infraction_Event):
-    async def log(self, data: MFramework.Message):
-        reason, moderator = await self.get_ban_data(data, "unban", 23)
-        if reason is not False:
-            await super().log(data, type="unbanned", reason=reason, by_user=moderator)
 
 class Voice(Log):
     username = "Voice Log"
@@ -326,10 +231,3 @@ class Stream(Log):
             return
         self.logged_streams[data.user.id] = stream.created_at
         await self._log(f"<@{data.user.id}> właśnie transmituje {stream.state} na [{stream.name}]({stream.url})!")
-
-class Report(Log):
-    username = "User Report Log"
-    async def log(self, data: MFramework.types.Message) -> MFramework.Message:
-        await self._log()
-    async def log_dm(self, data: MFramework.types.Message, user_id: MFramework.Snowflake) -> MFramework.Message:
-        await self._log_dm()
