@@ -403,9 +403,10 @@ class Infraction_Event(Infraction):
         from MFramework.database.alchemy import Infraction as db_Infraction
         r = db_Infraction.filter(s, server_id=self.guild_id, user_id=data.user.id, reason=reason, type=type).first()
         if r is None:
-            u = models.User.fetch_or_add(s, id=data.user.id)
-            u.add_infraction(data.guild_id, moderator, type, reason)
-            s.commit()
+            if reason and not "Massbanned by" in reason:
+                u = models.User.fetch_or_add(s, id=data.user.id)
+                u.add_infraction(data.guild_id, moderator, type, reason)
+                s.commit()
             return reason, moderator
         return False, False
 
