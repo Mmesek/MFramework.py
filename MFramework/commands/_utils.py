@@ -329,10 +329,8 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
             _id = Snowflake(parseMention(args[x]))
             mentioned = list(filter(lambda i: i.id == _id, mentions.get(option.type)))
             if not mentioned or option.type is Guild_Member:
-                mentioned = [caches.get(option.type).get(_id, None)]
-                if not mentioned:
-                    mentioned = [Guild_Member(user=User(id=_id, username=_id))]
-                if option.type is User and type(mentioned[0]) in {Guild_Member, Guild_Member_Update}:
-                    mentioned = [mentioned[0].user]
+                mentioned = [caches.get(option.type).get(_id, Guild_Member(user=User(id=_id, username=_id)))]
+            if option.type is User and type(mentioned[0]) in {Guild_Member, Guild_Member_Update}:
+                mentioned = [mentioned[0].user]
             kwargs[option.name] = mentioned[0]
     return set_default_arguments(ctx, f, kwargs)
