@@ -274,9 +274,11 @@ def get_trigger(client: 'Bot', message: Message) -> str:
         return False
     return alias
 
-def get_arguments(client: 'Bot', message: Message) -> List[str]:
+def get_arguments(client: 'Bot', message: Message, alias: str=None) -> List[str]:
     args = message.content
-    if client.username.lower() in message.content.lower():
+    if str(alias) in message.content[:3].lower():
+        args = message.content.split(str(alias), 1)[-1]
+    elif client.username.lower() in message.content.lower():
         args = message.content.split(client.username, 1)[-1]
     elif str(client.user_id) in message.content:
         args = message.content.split(f'{client.user_id}>', 1)[-1]

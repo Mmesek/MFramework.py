@@ -25,7 +25,7 @@ async def check_command(client: Bot, message: Message, dm: bool=False) -> bool:
             return False
         alias = None
     
-    args = get_arguments(client, message)
+    args = get_arguments(client, message, alias)
     # TODO: Allow some way of specifying keyword-only arguments like -flag=value from command arguments
     # TODO: Command Translations?
     args[0] = args[0].strip(alias)
