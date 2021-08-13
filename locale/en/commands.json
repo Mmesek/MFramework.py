@@ -194,7 +194,7 @@
         "for_duration": "for %{duration}",
         "active": "🟢",
         "inactive": "🔴",
-        "row": "%{active} `#{id:%{id_width}}` [<t:%{timestamp}:d>] `[{type:%{width}}]` \"%{reason}\" by <@%{moderator_id}> %{duration}%{active}",
+        "row": "%{active} %{link}`{id:%{id_width}}` [<t:%{timestamp}:d>] `[{type:%{width}}]` \"%{reason}\" by <@%{moderator_id}> %{duration}%{active}",
         "title": "%{username}'s infractions",
         "total": "Total infractions",
         "total_description": "%{active}/%{total}",

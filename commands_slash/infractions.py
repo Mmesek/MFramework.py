@@ -59,7 +59,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
         not detect_group(ctx.bot, user.id, ctx.guild_id, ctx.cache.members.get(user.id, Guild_Member()).roles).can_use(Groups.MODERATOR)
     ):
         active = True
-    u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active)
+    u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active, channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
     ending = "ned" if type.name.endswith('n') and type is not types.Infraction.Warn else "ed" if not type.name.endswith("e") else "d"
     if ctx.is_interaction:
         await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+ending}{' for ' if reason else ''}{reason}")
@@ -123,6 +123,7 @@ async def auto_moderation(ctx: Context, session, user: User, type: types.Infract
 @register(group=Groups.GLOBAL, main=infraction, aliases=["infractions"])
 async def list_(ctx: Context, user: User=None, *, language):
     '''Lists user's infractions'''
+    from MFramework import Discord_Paths
     await ctx.deferred()
     if not ctx.permission_group.can_use(Groups.HELPER) and user.id != ctx.user_id:
         user = ctx.user
@@ -147,6 +148,9 @@ async def list_(ctx: Context, user: User=None, *, language):
         user_infractions.append(
             Row(
                 id=infraction.id,
+                link="[#](<{}>)".format(
+                        Discord_Paths.MessageLink.link.format(guild_id=infraction.server_id, channel_id=infraction.channel_id, message_id=infraction.message_id)
+                    ) if not infraction.message_id else "#",
                 timestamp=int(infraction.timestamp.timestamp()),
                 type=translated,
                 reason=infraction.reason,

@@ -196,7 +196,7 @@
         "for_duration": "na %{duration}",
         "active": "🟢",
         "inactive": "🔴",
-        "row": "%{active} `#{id:%{id_width}}` [<t:%{timestamp}:d>] `[{type:%{width}}]` \"%{reason}\" od <@%{moderator_id}> %{duration}%{active}",
+        "row": "%{active} %{link}`{id:%{id_width}}` [<t:%{timestamp}:d>] `[{type:%{width}}]` \"%{reason}\" od <@%{moderator_id}> %{duration}%{active}",
         "title": "Wykroczenia %{username}",
         "total": "Wszystkie Wykroczenia",
         "total_description": "%{active}/%{total}",
