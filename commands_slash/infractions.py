@@ -150,7 +150,7 @@ async def list_(ctx: Context, user: User=None, *, language):
                 id=infraction.id,
                 link="[#](<{}>)".format(
                         Discord_Paths.MessageLink.link.format(guild_id=infraction.server_id, channel_id=infraction.channel_id, message_id=infraction.message_id)
-                    ) if not infraction.message_id else "#",
+                    ) if infraction.message_id else "#",
                 timestamp=int(infraction.timestamp.timestamp()),
                 type=translated,
                 reason=infraction.reason,
