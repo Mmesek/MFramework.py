@@ -135,7 +135,7 @@ async def list_(ctx: Context, user: User=None, *, language):
     width, id_width, active = 0, 0, 0
     user_infractions = []
     from collections import namedtuple
-    Row = namedtuple("Row", ['id', 'timestamp', 'type', 'reason', 'moderator_id', 'duration', 'active'])
+    Row = namedtuple("Row", ['id', 'link', 'timestamp', 'type', 'reason', 'moderator_id', 'duration', 'active'])
     from mlib.localization import tr, secondsToText
     for infraction in _infractions:
         translated = tr(f"commands.infractions.types.{infraction.type.name}", language)
