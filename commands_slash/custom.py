@@ -166,7 +166,8 @@ async def when(ctx: Context, arg:str=None):
     if arg:
         try:
             with open("data/bad_words.txt", encoding="utf-8") as word_file:
-                bad_words = set(word_file.read().split())
+                bad_words = word_file.read().split("\\n")
+            bad_words = set(i.strip() for i in bad_words)
         except:
             bad_words = set()
         if any(i in bad_words for i in arg.lower().split(' ')):
