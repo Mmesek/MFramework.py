@@ -158,11 +158,19 @@ async def loadout(ctx: Context):
     await ctx.reply(None, [embed])
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
-async def when(ctx: Context):
+async def when(ctx: Context, arg:str=None):
     '''
     Shows remaining delta    
     '''
     from random import SystemRandom as random
+    if arg:
+        try:
+            with open("data/bad_words.txt", encoding="utf-8") as word_file:
+                bad_words = set(word_file.read().split())
+        except:
+            bad_words = set()
+        if any(i in bad_words for i in arg.lower().split(' ')):
+            return await ctx.reply("Hey, that's rude! <:pepemad:676181484238798868>")
     if random().random() < 5 / 100:
         return await ctx.reply("When it's ready.")
     from datetime import datetime
