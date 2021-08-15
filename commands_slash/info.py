@@ -73,7 +73,11 @@ async def user(ctx: Context, member: Guild_Member = None):
     if len(roles):
         embed.addField(f"Roles [{len(roles)}]", ", ".join(roles))
 
-    permissions = Bitwise_Permission_Flags.current_permissions(Bitwise_Permission_Flags, int(member.permissions))
+    try:
+        permissions = Bitwise_Permission_Flags.current_permissions(Bitwise_Permission_Flags, int(member.permissions))
+    except:
+        permissions = []
+
     if permissions:
         embed.addField("Permissions", ", ".join(i.title().replace("_", " ") for i in permissions))
 
