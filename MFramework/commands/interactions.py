@@ -9,10 +9,11 @@ Interaction commands registery & execution framework
 '''
 from datetime import timedelta
 from MFramework import (onDispatch, Ready, Interaction_Type,
-    RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake,
+    RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake, Message,
     Interaction, Guild, Application_Command, Application_Command_Option_Type,
     Context, Bot, Groups, log,
-    Application_Command_Permissions, Application_Command_Permission_Type, Guild_Application_Command_Permissions
+    Application_Command_Permissions, Application_Command_Permission_Type, Guild_Application_Command_Permissions,
+    Application_Command_Type
     )
 
 from ._utils import is_nested, iterate_commands, set_default_arguments, commands, add_extra_arguments, Command
@@ -63,6 +64,16 @@ async def interaction_create(client: Bot, interaction: Interaction):
             if t is Guild_Member:
                 o.user = interaction.data.resolved.users.get(str(option.value), User())
             kwargs[option.name] = o
+    if not interaction.data.options and interaction.data.resolved:
+        for arg in f.arguments.values():
+            if arg.type in {Guild_Member, User, UserID, Channel, Role, ChannelID, RoleID, Message}:
+                t = f.arguments[arg.name].type
+                o = list(getattr(interaction.data.resolved, t.__name__.lower().replace('guild_','')+'s', {}).values())
+                o = o[0] if o else t()
+                if t is Guild_Member:
+                    _user = list(interaction.data.resolved.users.values())[0]
+                    o.user = _user or User()
+                kwargs[arg.name] = o
     kwargs = set_default_arguments(ctx, f, kwargs)
     await f.execute(ctx, kwargs)
 
@@ -111,6 +122,19 @@ async def register_commands(client: Bot, guild: Guild = None):
 
     for command, _command, options in iterate_commands(registered, guild.id if guild else None):
         cmd = Application_Command(name=command, description=_command.help[:100], options=options, default_permission=_command.group == Groups.GLOBAL)
+        if len(options) == 1 and options[0].type is Application_Command_Option_Type.USER:
+            cmd.type = Application_Command_Type.USER
+            cmd.description = None
+            cmd.options = None
+            if any(command == i.name for i in registered):
+                continue
+        elif len(options) == 1 and options[0].type is Message:
+            cmd.type = Application_Command_Type.MESSAGE
+            cmd.description = None
+            cmd.options = None
+            if any(command == i.name for i in registered):
+                continue
+
         if command not in registered_commands:
             new_commands.append(cmd)
         else:
@@ -178,9 +202,9 @@ async def get_commands(client: Bot, guild: Guild = None) -> List[Application_Com
 async def add_command(client: Bot, cmd: Application_Command, guild: Guild = None) -> Application_Command:
     if guild:
         log.info("Registering Guild [%s] command %s on bot %s", guild.id, cmd.name, client.username)
-        return await client.create_guild_application_command(client.application.id, guild.id, cmd.name, cmd.description, cmd.options, cmd.default_permission)
+        return await client.create_guild_application_command(client.application.id, guild.id, cmd.name, cmd.description, cmd.options, cmd.default_permission, type=cmd.type)
     log.info("Registering Global command %s on bot %s", cmd.name, client.username)
-    return await client.create_global_application_command(client.application.id, cmd.name, cmd.description, cmd.options, cmd.default_permission)
+    return await client.create_global_application_command(client.application.id, cmd.name, cmd.description, cmd.options, cmd.default_permission, type=cmd.type)
 
 async def edit_command(client: Bot, cmd: Application_Command, guild: Guild = None) -> Application_Command:
     if guild:

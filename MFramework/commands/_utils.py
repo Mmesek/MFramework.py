@@ -188,7 +188,8 @@ _types = {
     Guild_Member: Application_Command_Option_Type.USER,
     GuildID: Application_Command_Option_Type.STRING,
     Mentionable: Application_Command_Option_Type.MENTIONABLE,
-    float: Application_Command_Option_Type.NUMBER
+    float: Application_Command_Option_Type.NUMBER,
+    Message: Message,
 }
 
 def parse_arguments(_command: Command) -> List[str]:
@@ -198,19 +199,20 @@ def parse_arguments(_command: Command) -> List[str]:
             continue
         elif v.kind in {'VAR_POSITIONAL', 'KEYWORD_ONLY'}:
             break
-        elif i.lower() == 'message' and _command.arguments[i].type is Message:
+        elif i.lower() == '_message' and _command.arguments[i].type is Message:
             break
         _i = _command.arguments[i]
         choices = []
         for choice in _i.choices:
             choices.append(Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice]))
 
-        options.append(Application_Command_Option(
-            type=_types.get(_i.type,
-                Application_Command_Option_Type.INTEGER if issubclass(_i.type, int) else 
-                Application_Command_Option_Type.STRING).value,
+        a = Application_Command_Option(
             name=i.strip(), description=_i.help[:100].strip(), required=True if _i.default is Signature.empty else False, choices=choices, options=[]
-        ))
+        )
+        a.type=_types.get(_i.type,
+                Application_Command_Option_Type.INTEGER if issubclass(_i.type, int) else 
+                Application_Command_Option_Type.STRING)
+        options.append(a)
     for i in _command.sub_commands:
         options.append(Application_Command_Option(
             type= Application_Command_Option_Type.SUB_COMMAND if i.sub_commands == [] else Application_Command_Option_Type.SUB_COMMAND_GROUP,
