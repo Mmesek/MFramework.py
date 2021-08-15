@@ -408,6 +408,7 @@ class Infraction_Event(Infraction):
         await asyncio.sleep(3)
         audit = await self.bot.get_guild_audit_log(data.guild_id, action_type=audit_type)
         reason = None
+        moderator = None
         for obj in audit.audit_log_entries:
             #Try to find ban in Audit Log
             if int(obj.target_id) == data.user.id:
