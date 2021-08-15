@@ -106,7 +106,7 @@ async def user(ctx: Context, member: Guild_Member = None):
     await ctx.reply(embeds=[embed])
 
 @register(group=Groups.GLOBAL)
-async def user_info(ctx: Context, member: Guild_Member):
+async def Info(ctx: Context, member: Guild_Member):
     '''
     Shows User Info
     Params
@@ -115,7 +115,7 @@ async def user_info(ctx: Context, member: Guild_Member):
         User to show
     '''
     await ctx.deferred(private=True)
-    await user(ctx, member)
+    return await user(ctx, member)
 
 from typing import Callable, List, Tuple
 def format_values(iterable: List[Tuple[str, str]], check: Callable = None):

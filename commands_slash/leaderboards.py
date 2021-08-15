@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Event, UserID, Embed, Snowflake
+from MFramework import register, Groups, Event, User, UserID, Embed, Snowflake
 from mlib.localization import tr, secondsToText
 from MFramework.bot import Context
 from MFramework.database.alchemy import log, types
@@ -9,15 +9,16 @@ async def leaderboard(ctx: Context, *args, language, **kwargs):
     pass
 
 @register(group=Groups.GLOBAL, main=leaderboard)
-async def exp(ctx: Context, user: UserID=None, *args, language, **kwargs):
+async def exp(ctx: Context, user: User=None):
     '''Shows exp
     Params
     ------
     user:
         if provided, shows exp of specified user, otherwise your own
     '''
+    language = ctx.language
     session = ctx.db.sql.session()
-    r = log.Statistic.filter(session, server_id=ctx.guild_id, user_id=user).all()
+    r = log.Statistic.filter(session, server_id=ctx.guild_id, user_id=user.id).all()
     t = ''
     for _t in r:
         if _t.name == types.Statistic.Chat:
@@ -27,10 +28,23 @@ async def exp(ctx: Context, user: UserID=None, *args, language, **kwargs):
     if t == '':
         t = tr("commands.exp.none", language)
     embed = Embed(
+        title=f"{user.username}",
         color=ctx.cache.color,
         description=t
     )
     await ctx.reply(embeds=[embed])
+
+@register(group=Groups.GLOBAL)
+async def Experience(ctx: Context, user: User):
+    '''
+    Shows Experience of user
+    Params
+    ------
+    user:
+        User's exp to show
+    '''
+    await ctx.deferred(private=True)
+    return await exp(ctx, user)
 
 from enum import Enum
 class TopLeaderboards(Enum):

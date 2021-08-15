@@ -121,10 +121,11 @@ async def auto_moderation(ctx: Context, session, user: User, type: types.Infract
 
 
 @register(group=Groups.GLOBAL, main=infraction, aliases=["infractions"])
-async def list_(ctx: Context, user: User=None, *, language):
+async def list_(ctx: Context, user: User=None):
     '''Lists user's infractions'''
     from MFramework import Discord_Paths
     await ctx.deferred()
+    language = ctx.language
     if not ctx.permission_group.can_use(Groups.HELPER) and user.id != ctx.user_id:
         user = ctx.user
     session = ctx.db.sql.session()
@@ -188,6 +189,18 @@ async def list_(ctx: Context, user: User=None, *, language):
         e.setFooter(tr("commands.infractions.counter", language, currently_active="-".join(currently_active), active=active, total=len(user_infractions)))
         return await ctx.reply(embeds=[e])
     return await ctx.reply(tr("commands.infractions.no_infractions", language))
+
+@register(group=Groups.GLOBAL)
+async def Infractions(ctx: Context, user: User):
+    '''
+    Shows user Infractions
+    Params
+    ------
+    user:
+        User which infractions to show
+    '''
+    await ctx.deferred(private=True)
+    return await list_(ctx, user)
 
 @register(group=Groups.MODERATOR, main=infraction)
 async def counter(ctx: Context, type: str, user: User, number: int=1, reason: str=None, affect_total: bool=False):
