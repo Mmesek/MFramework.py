@@ -118,8 +118,7 @@ class Context(Sendable):
         return dm.id
     
     async def send_dm(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, message_reference: Message_Reference=None, reply: bool=None) -> Message:
-        if self.is_message:
-            return await self.send(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, reply=reply, channel_id=await self.get_dm())
+        return await self.send(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, reply=reply, channel_id=await self.get_dm())
 
     async def reply(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, message_reference: Message_Reference=None, private: bool=None) -> Message:
         return await self.data.reply(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, private=private)

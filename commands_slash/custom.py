@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from mdiscord.types import Discord_Paths
-from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author
+from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author, Discord_Paths, Message
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
 async def docket(ctx: Context, interaction: Interaction, docket: str, description: str='', publish: bool=False):
@@ -53,6 +52,18 @@ async def bookmark(ctx: Context, title: str=None):
     '''
     title = title or "Your bookmark"
     await ctx.send_dm(content=title+': \n'+Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.message_id))
+
+@register(group=Groups.GLOBAL)
+async def Bookmark(ctx: Context, message: Message):
+    '''Bookmark a moment in chat to save in your DMs for easy navigation'''
+    await ctx.deferred(private=True)
+    e = Embed(title="Your bookmark", description=message.content or None)
+    e = message.attachments_as_embed(e)
+    try:
+        await ctx.send_dm(content=Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=message.channel_id, message_id=message.id), embeds=[e])
+        await ctx.reply("Bookmarked in your DM successfully!")
+    except:
+        await ctx.reply("Couldn't send you a DM message!")
 
 @register(group=Groups.GLOBAL, guild=340185368655560704)
 async def loadout(ctx: Context):
