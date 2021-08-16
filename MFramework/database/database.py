@@ -62,13 +62,14 @@ class Influx:
             .field("words", words)
         ))
     
-    def commitCommandUsage(self, server_id, command_name, bot_name, success=True):
+    def commitCommandUsage(self, server_id, command_name, bot_name, success=True, user_id=0):
         self.write_api.write(bucket="MFramework", record=(
             Point("Commands")
             .tag("server", server_id)
             .tag("command", command_name)
             .tag("bot", bot_name)
             .field("success", success)
+            .field("user", user_id)
         ))
 
     def getSession(self, user, interval):
