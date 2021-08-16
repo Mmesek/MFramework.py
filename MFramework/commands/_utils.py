@@ -97,10 +97,10 @@ class Command:
             await self.maybe_reply(ctx, str(ex))
     async def maybe_reply(self, ctx: 'Context', msg: str):
         try:
-            await ctx.reply(str(msg))
+            await ctx.reply(f"<@{ctx.user_id}> an exception occured: {msg}")
         except Exception:
             log.debug("Failed to reply to message. Falling back to default Message creation")
-            await ctx.bot.create_message(ctx.channel_id, str(msg))
+            await ctx.bot.create_message(ctx.channel_id, f"<@{ctx.user_id}> an exception occured: {msg}")
 
 class Error(Exception):
     pass
