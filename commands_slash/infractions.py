@@ -47,7 +47,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
         duration = total_seconds(duration)
 
     session = ctx.db.sql.session()
-    u = models.User.fetch_or_add(session, id=user.id)
+    u = models.User.filter(session, id=user.id).first()
     active = False
     from MFramework.commands._utils import detect_group
     if (
@@ -59,6 +59,11 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
         not detect_group(ctx.bot, user.id, ctx.guild_id, ctx.cache.members.get(user.id, Guild_Member()).roles).can_use(Groups.MODERATOR)
     ):
         active = True
+    if not u:
+        u = models.User(id = user.id)
+        if type not in {types.Infraction.Ban}:
+            session.add(u)
+            session.commit()
     u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active, channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
     ending = "ned" if type.name.endswith('n') and type is not types.Infraction.Warn else "ed" if not type.name.endswith("e") else "d"
     if ctx.is_interaction:
