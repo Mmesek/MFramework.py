@@ -64,6 +64,8 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
         if type not in {types.Infraction.Ban}:
             session.add(u)
             session.commit()
+        else:
+            increase_counter =False
     u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active, channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
     ending = "ned" if type.name.endswith('n') and type is not types.Infraction.Warn else "ed" if not type.name.endswith("e") else "d"
     if ctx.is_interaction:
