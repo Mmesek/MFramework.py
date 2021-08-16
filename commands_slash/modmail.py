@@ -105,9 +105,9 @@ class Direct_Message(MessageLog):
                 for _msg in past_messages:
                     if not _msg.content:
                         _msg.content = "Attachments"
-                    _past_messages.append((_msg.author.username, _msg.content))
+                    _past_messages.append((f"<t:{int(_msg.timestamp.timestamp())}:R>", _msg.author.username, _msg.content))
                 from MFramework import Embed
-                _past_messages = "\n".join("[**`{}`**]: {}".format(i[0], i[1]) for i in reversed(_past_messages))
+                _past_messages = "\n".join("[{}] [**`{}`**]: {}".format(i[0], i[1], i[2]) for i in reversed(_past_messages))
                 embeds.append(Embed(title=f"Previous messages (#{len(past_messages)})").setDescription(_past_messages))
             #for moderator in filter(lambda x: self.channel_id in x["moderated_channels"], self.bot.cache[self.guild_id].moderators):
             #    await self.bot.add_thread_member(thread_id, moderator, "Added User to DM thread")
