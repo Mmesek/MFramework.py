@@ -81,6 +81,7 @@ class Command:
     async def execute(self, ctx: 'Context', kwargs: Dict[str, Any]):
         try:
             await self.func(**kwargs)
+            ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True)
         except TypeError as ex:
             if 'missing' in str(ex):
                 ex = str(ex).split(' ', 1)[1].replace("'", '`').capitalize()
@@ -89,8 +90,10 @@ class Command:
             await self.maybe_reply(ctx, ex)
         except BadRequest as ex:
             log.error(ex)
+            ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, False)
         except Exception as ex:
             log.exception("Exception occured during command execution", exc_info=ex)
+            ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, False)
             await self.maybe_reply(ctx, str(ex))
     async def maybe_reply(self, ctx: 'Context', msg: str):
         try:

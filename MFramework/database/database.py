@@ -61,6 +61,16 @@ class Influx:
             .tag("user", user)
             .field("words", words)
         ))
+    
+    def commitCommandUsage(self, server_id, command_name, bot_name, success=True):
+        self.write_api.write(bucket="MFramework", record=(
+            Point("Commands")
+            .tag("server", server_id)
+            .tag("command", command_name)
+            .tag("bot", bot_name)
+            .field("success", success)
+        ))
+
     def getSession(self, user, interval):
         return self.query_api.query_data_frame(f'from(bucket:"Sessions/VoiceSession") |> filter(user={user})')
     

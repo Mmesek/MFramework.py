@@ -80,3 +80,4 @@ async def parse(ctx: Bot, data: Message):
                     asyncio.sleep(r[x+1])
                     continue
                 should_skip = await COMMANDS[command](ctx, data, r, x) or 0
+            ctx.db.influx.commitCommandUsage(data.guild_id, f"parser-{match}", ctx.username, True)
