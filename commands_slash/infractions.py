@@ -66,7 +66,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
             session.commit()
         else:
             increase_counter =False
-    u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active, channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
+    infractions = u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active, channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
     ending = "ned" if type.name.endswith('n') and type is not types.Infraction.Warn else "ed" if not type.name.endswith("e") else "d"
     if ctx.is_interaction:
         await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+ending}{' for ' if reason else ''}{reason}")
@@ -102,27 +102,23 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
                 else:
                     await ctx.send("Couldn't deliver DM message")
     
-    if active:
-        return await auto_moderation(ctx, session, user, type)
+    if active and type not in {types.Infraction.Mute, types.Infraction.Kick, types.Infraction.Ban}:
+        return await auto_moderation(ctx, session, user, type, infractions)
     elif type in {types.Infraction.Unban, types.Infraction.Unmute, types.Infraction.DM_Unmute}:
         return True
 
-async def auto_moderation(ctx: Context, session, user: User, type: types.Infraction, increase_counters: bool=True):
-    from MFramework.database.alchemy import log, types
-    if increase_counters:
-        log.Statistic.increment(session, ctx.guild_id, user.id, types.Statistic.Infractions_Active)
-        log.Statistic.increment(session, ctx.guild_id, user.id, types.Statistic.Infractions_Total)
-    active = log.Statistic.get(session, ctx.guild_id, user.id, types.Statistic.Infractions_Active)
+async def auto_moderation(ctx: Context, session, user: User, type: types.Infraction, infractions: List=[]):
+    active = len(list(filter(lambda x: x.server_id == ctx.guild_id and x.active, infractions)))
     automute = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, None)
     autoban = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, None)
-    if automute and active.value == automute and type is not types.Infraction.Mute:
+    if automute and active == automute and type is not types.Infraction.Mute:
         MUTED_ROLE = list(ctx.cache.groups.get(Groups.MUTED, [None]))
         if MUTED_ROLE:
-            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, MUTED_ROLE[0], reason=f"{active.value} active infractions")
-            await infraction(ctx, types.Infraction.Mute, user, reason=f"{active.value} active infractions", duration=ctx.cache.settings.get(types.Setting.Auto_Mute_Duration, '12h'), increase_counter=False)
-    elif autoban and active.value >= autoban and type is not types.Infraction.Ban:
-        await ctx.bot.create_guild_ban(ctx.guild_id, user.id, reason=f"{active.value} active infractions")
-        await infraction(ctx, types.Infraction.Ban, user, reason=f"{active.value} active infractions", increase_counter=False)
+            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, MUTED_ROLE[0], reason=f"{active} active infractions")
+            await infraction(ctx, types.Infraction.Mute, user, reason=f"{active} active infractions", duration=ctx.cache.settings.get(types.Setting.Auto_Mute_Duration, '12h'), increase_counter=False)
+    elif autoban and active >= autoban and type is not types.Infraction.Ban:
+        await ctx.bot.create_guild_ban(ctx.guild_id, user.id, reason=f"{active} active infractions")
+        await infraction(ctx, types.Infraction.Ban, user, reason=f"{active} active infractions", increase_counter=False)
     else:
         return True
 
