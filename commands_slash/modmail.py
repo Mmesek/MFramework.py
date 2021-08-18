@@ -103,8 +103,10 @@ class Direct_Message(MessageLog):
             if past_messages:
                 _past_messages = []
                 for _msg in past_messages:
-                    if not _msg.content:
-                        _msg.content = "Attachments"
+                    if not _msg.content and len(_msg.attachments):
+                        _msg.content = f"[Attachments: {len(_msg.attachments)}]"
+                    elif not _msg.content and len(_msg.stickers):
+                        _msg.content = f"[Stickers: {len(_msg.stickers)}]"
                     _past_messages.append((f"<t:{int(_msg.timestamp.timestamp())}:R>", _msg.author.username, _msg.content))
                 from MFramework import Embed
                 _past_messages = "\n".join("[{}] [**`{}`**]: {}".format(i[0], i[1], i[2]) for i in reversed(_past_messages))
