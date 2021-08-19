@@ -59,14 +59,18 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
         not detect_group(ctx.bot, user.id, ctx.guild_id, ctx.cache.members.get(user.id, Guild_Member()).roles).can_use(Groups.MODERATOR)
     ):
         active = True
+    should_commit = True
     if not u:
         u = models.User(id = user.id)
         if type not in {types.Infraction.Ban}:
             session.add(u)
             session.commit()
         else:
-            increase_counter =False
+            increase_counter = False
+            should_commit = False
     infractions = u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, active=active, channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
+    if should_commit:
+        session.commit()
     ending = "ned" if type.name.endswith('n') and type is not types.Infraction.Warn else "ed" if not type.name.endswith("e") else "d"
     if ctx.is_interaction:
         await ctx.reply(f"{user.username} has been {type.name.replace('_',' ').lower()+ending}{' for ' if reason else ''}{reason}")
