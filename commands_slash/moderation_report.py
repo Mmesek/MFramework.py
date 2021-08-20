@@ -27,7 +27,7 @@ async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *ar
     for infraction in infractions:
         if infraction.moderator_id not in uids:
             try:
-                uname = await get_usernames(ctx, infraction.server_id, infraction.moderator_id)
+                uname = await get_usernames(ctx.bot, infraction.server_id, infraction.moderator_id)
             except:
                 uname = infraction.moderator_id
             uids[infraction.moderator_id] = uname

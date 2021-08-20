@@ -157,7 +157,7 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
         for i in r:
             if game:
                 from MFramework.utils.utils import get_usernames
-                name = await get_usernames(ctx, ctx.guild_id, i.user_id)
+                name = await get_usernames(ctx.bot, ctx.guild_id, i.user_id)
                 a += [(name, i.duration)]
             else:
                 a += [(i.name, i.duration)]
