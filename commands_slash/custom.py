@@ -68,7 +68,7 @@ async def Bookmark(ctx: Context, message: Message):
 @register(group=Groups.GLOBAL)
 async def Quote(ctx: Context, message: Message):
     '''Quotes a message'''
-    if any(Bitwise_Permission_Flags.check(None, int(i.deny), 2048) for i in list(filter(lambda x: x.id in ctx.member.roles, ctx.channel.permission_overwrites))+[ctx.guild_id]):
+    if any(Bitwise_Permission_Flags.check(None, int(i.deny), 2048) for i in list(filter(lambda x: x.id in ctx.member.roles+[ctx.guild_id], ctx.channel.permission_overwrites))):
         await ctx.deferred(private=True)
         return await ctx.reply("Sorry, you can't use it here")
     await ctx.deferred()
