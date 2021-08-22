@@ -397,7 +397,7 @@ class Infraction(Log):
 
 class Infraction_Event(Infraction):
     username = "Infraction Event Log"
-    async def log(self, data: Message, type: str, reason: str="", by_user: str="") -> Message:
+    async def log(self, data: Union[Guild_Ban_Add, Guild_Ban_Remove], type: str, reason: str="", by_user: str="") -> Message:
         if by_user != '':
             try:
                 by_user = self.bot.cache[data.guild_id].members[int(by_user)].user.username
@@ -406,7 +406,15 @@ class Infraction_Event(Infraction):
             string = f'{by_user} {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]'
         else:
             string = f'[<@{data.user.id}> | {data.user.username}#{data.user.discriminator}] has been {type}'
-        if reason != '' and reason != 'Unspecified':
+        if reason and reason == "Too many infractions":
+            s = self.bot.db.sql.session()
+            from MFramework.database.alchemy import Infraction as db_Infraction
+            infractions = db_Infraction.filter(s, server_id=self.guild_id, user_id=data.user.id, active=True).all()
+            if infractions:
+                string += " for:\n" + "\n".join([f"- {infraction.reason}" for infraction in infractions])
+            else:
+                string += f' for "{reason}"'
+        elif reason != '' and reason != 'Unspecified':
             string += f' for "{reason}"'
         await self._log(string)
 
