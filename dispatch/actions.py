@@ -110,6 +110,20 @@ async def deduplicate_messages(self: Bot, data: Message) -> bool:
     self.cache[data.guild_id].last_messages[data.channel_id].append(data)# = data
     return False
 
+@onDispatch(event="message_create", priority=5)
+async def deduplicate_across_channels(self: Bot, data: Message) -> bool:
+    c = self.cache[data.guild_id].last_messages
+    for _msg in c.values():
+        if (_msg[0].content == data.content and
+            _msg[0].author.id == data.author.id and
+            _msg[0].attachments == data.attachments and
+            _msg[0].referenced_message == data.referenced_message
+        ):
+            log.debug('Deleting Message "%s" because of being duplicate across channels', data.content)
+            await data.delete(reason="Duplicate Message across channels")
+            return True
+    return False
+
 import re
 URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
 @onDispatch(event="message_create", priority=10)
