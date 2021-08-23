@@ -1,8 +1,9 @@
+from typing import Dict, Union
+
 from mdiscord import *
 
-from .database.database import Database
-from .database.cache import GuildCache
-from typing import Dict
+from MFramework.database.cache import GuildCache
+from MFramework.database.database import Database
 
 class Bot(Client):
     session_id: str = None
@@ -32,8 +33,6 @@ class Bot(Client):
             if id and id in self.cache:
                 await self.cache[id].logging[data.t.lower()](data.d)
 
-from typing import Union
-from MFramework.database.cache import GuildCache
 class Context(Sendable):
     '''This is meant as an unified context object used for universal 
     commands that can be issued as both a message or an interaction'''
