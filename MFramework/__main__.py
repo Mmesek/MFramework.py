@@ -45,10 +45,11 @@ async def main(name):
 def run(name):
     asyncio.run(main(name))
 
-from multiprocessing.dummy import Pool
-pool = Pool(3)
-try:
-    while True:
-        pool.map(run, cfg["DiscordTokens"])
-except KeyboardInterrupt:
-    print("KeyboardInterrupt. Job done.")
+if __name__ == "__main__":
+    from multiprocessing.dummy import Pool
+    pool = Pool(3)
+    try:
+        while True:
+            pool.map(run, cfg["DiscordTokens"])
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt. Job done.")
