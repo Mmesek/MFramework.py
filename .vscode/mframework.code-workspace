@@ -36,10 +36,11 @@
                 "name": "MFramework.py",
                 "type": "python",
                 "request": "launch",
-                "program": "${workspaceFolder:MFramework}/__main__.py",
+                "program": "MFramework",
                 "console": "integratedTerminal",
-                "cwd": "${workspaceFolder:MFramework}",
-                "env": {"PYTHONPATH": "${workspaceFolder:MFramework}"}
+                "cwd": "${workspaceFolder:Root}",
+                "env": {"PYTHONPATH": "${workspaceFolder:Root}"},
+                "args": ["--log=DEBUG"]
             },{
                 "name": "Python: Current File (Integrated Terminal)",
                 "type": "python",
