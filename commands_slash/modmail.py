@@ -97,6 +97,18 @@ class Direct_Message(MessageLog):
             if not self.channel_id:
                 await self.get_wh_channel()
             thread = await self.bot.start_thread_without_message(channel_id=self.channel_id, name=f"{msg.author.username} - {msg.author.id}", type= Channel_Types.GUILD_PUBLIC_THREAD, reason="Received DM from new user")
+            try:
+                from copy import copy
+                _msg = copy(msg)
+                _msg.guild_id = self.guild_id
+                _msg.channel_id = thread.id
+                _msg.id = None
+                _msg.member = self.bot.cache[self.guild_id].members.get(msg.author.id)
+                ctx = Context(self.bot.cache, self.bot, _msg)
+                from .info import user
+                await user(ctx)
+            except:
+                pass
             thread_id = thread.id
             self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
             past_messages = await self.bot.get_channel_messages(msg.channel_id, before=msg.id, limit=15)
@@ -110,7 +122,7 @@ class Direct_Message(MessageLog):
                     _past_messages.append((f"<t:{int(_msg.timestamp.timestamp())}:R>", _msg.author.username, _msg.content))
                 from MFramework import Embed
                 _past_messages = "\n".join("[{}] [**`{}`**]: {}".format(i[0], i[1], i[2]) for i in reversed(_past_messages))
-                embeds.append(Embed(title=f"Previous messages (#{len(past_messages)})").setDescription(_past_messages))
+                embeds.append(Embed(title=f"Previous messages (#{len(past_messages)})").setDescription(_past_messages).setColor("#646363"))
             #for moderator in filter(lambda x: self.channel_id in x["moderated_channels"], self.bot.cache[self.guild_id].moderators):
             #    await self.bot.add_thread_member(thread_id, moderator, "Added User to DM thread")
         embeds.append(embed)
