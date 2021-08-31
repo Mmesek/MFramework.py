@@ -86,14 +86,14 @@ class Command:
         except TypeError as ex:
             if 'missing' in str(ex):
                 ex = str(ex).split(' ', 1)[1].replace("'", '`').capitalize()
-            await self.maybe_reply(ctx, ex)
+            await self.maybe_reply(ctx, str(ex))
         except Error as ex:
-            await self.maybe_reply(ctx, ex)
+            await self.maybe_reply(ctx, str(ex))
         except BadRequest as ex:
             log.error(ex)
             _dm = ctx.bot.cfg.get(ctx.bot.username.lower(), {}).get("log_dm", None)
             if _dm:
-                await ctx.bot.create_message(_dm, ex)
+                await ctx.bot.create_message(_dm, str(ex))
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, False, ctx.user_id)
         except Exception as ex:
             log.exception("Exception occured during command execution", exc_info=ex)
@@ -101,7 +101,7 @@ class Command:
             await self.maybe_reply(ctx, str(ex))
             _dm = ctx.bot.cfg.get(ctx.bot.username.lower(), {}).get("log_dm", None)
             if _dm:
-                await ctx.bot.create_message(_dm, ex)
+                await ctx.bot.create_message(_dm, str(ex))
     async def maybe_reply(self, ctx: 'Context', msg: str):
         try:
             await ctx.reply(f"<@{ctx.user_id}> an exception occured: {msg}")
