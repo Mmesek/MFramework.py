@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import List, Dict, Any, Type, Generator, Optional, Union, TYPE_CHECKING, Tuple
 from types import FunctionType
 from inspect import signature, Signature
@@ -346,4 +347,7 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
             if option.type is User and type(mentioned[0]) in {Guild_Member, Guild_Member_Update}:
                 mentioned = [mentioned[0].user]
             kwargs[option.name] = mentioned[0]
+        elif option.type is timedelta:
+            from mlib.converters import total_seconds
+            kwargs[option.name] = total_seconds(option.value)
     return set_default_arguments(ctx, f, kwargs)
