@@ -20,11 +20,14 @@ i18n.set('filename_format','{namespace}.{format}')
 i18n.set('skip_locale_root_data', True)
 i18n.set('file_format', 'json')
 
-import git, time
-commits = git.Repo().heads.Interactions.log()
-ver_msg = commits[-1].message
-__version__ = f"4.{len(commits)}"
-ver_date = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(commits[-1].time[0]))
+try:
+    import git, time
+    commits = git.Repo().heads.Interactions.log()
+    ver_msg = commits[-1].message
+    __version__ = f"4.{len(commits)}"
+    ver_date = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(commits[-1].time[0]))
+except:
+    pass
 
 import logging
 from mlib import logger
