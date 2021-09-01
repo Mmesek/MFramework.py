@@ -3,15 +3,18 @@
         "path": "..",
         "name": "Root"
     },{
-        "path": "../locale/",
+        "path": "D:/Mmesek/tm/E/Workstation/Code/Discord Bots/Python/bot",
+        "name": "Bot"
+    },{
+        "path": "D:/Mmesek/tm/E/Workstation/Code/Discord Bots/Python/bot/locale/",
         "name": "Localization"
+    },{
+	    "path": "D:/Mmesek/tm/E/Workstation/Code/Discord Bots/Python/bot/data/",
+		"name": "Data"
     },{
         "path": "../.vscode/",
         "name": "Settings"
     },{
-	    "path": "../data/",
-		"name": "Data"
-	},{
 	    "path": "../tools/",
 		"name": "Tools"
 	},{
@@ -36,11 +39,11 @@
                 "name": "MFramework.py",
                 "type": "python",
                 "request": "launch",
-                "program": "MFramework",
+                "module": "MFramework",
                 "console": "integratedTerminal",
-                "cwd": "${workspaceFolder:Root}",
-                "env": {"PYTHONPATH": "${workspaceFolder:Root}"},
-                "args": ["--log=DEBUG"]
+                "cwd": "${workspaceFolder:Bot}",
+                "env": {"PYTHONPATH": "${workspaceFolder:Bot}"},
+                "args": ["dispatch", "commands_slash", "--log=DEBUG", "--cfg=data/secrets.ini"]
             },{
                 "name": "Python: Current File (Integrated Terminal)",
                 "type": "python",
