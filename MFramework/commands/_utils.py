@@ -4,7 +4,7 @@ from types import FunctionType
 from inspect import signature, Signature
 
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
-    Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update,
+    Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update, Guild_Member_Add,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
     log, BadRequest
     )
@@ -344,7 +344,7 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
             mentioned = list(filter(lambda i: i.id == _id, mentions.get(option.type)))
             if not mentioned or option.type is Guild_Member:
                 mentioned = [caches.get(option.type).get(_id, Guild_Member(user=User(id=_id, username=_id)))]
-            if option.type is User and type(mentioned[0]) in {Guild_Member, Guild_Member_Update}:
+            if option.type is User and type(mentioned[0]) in {Guild_Member, Guild_Member_Update, Guild_Member_Add}:
                 mentioned = [mentioned[0].user]
             kwargs[option.name] = mentioned[0]
         elif option.type is timedelta:
