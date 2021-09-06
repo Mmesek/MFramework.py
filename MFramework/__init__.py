@@ -22,11 +22,12 @@ i18n.set('file_format', 'json')
 
 try:
     import git, time
-    commits = git.Repo().heads.Interactions.log()
-    ver_msg = commits[-1].message
-    __version__ = f"4.{len(commits)}"
-    ver_date = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(commits[-1].time[0]))
+    last_commit = git.Repo().remotes.origin.repo.head.commit
+    ver_msg = last_commit.message
+    __version__ = f"4.{last_commit.count()}"
+    ver_date = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(last_commit.committed_date))
 except:
+    ver_date = None
     pass
 
 import logging
