@@ -90,6 +90,16 @@ class Influx:
 |> sum()\
 |> group()\
 |> top(columns: ["_value"], n: {limit})' + additional)
+    def get_command_usage(self, guild_id, interval="30d"):
+        return self.get(f'''
+  |> range(start: -32d)
+  |> filter(fn: (r) => r["_measurement"] == "Commands")
+  |> filter(fn: (r) => r["server"] == "{guild_id}")
+  |> filter(fn: (r) => r["_field"] == "user")
+  |> map(fn: (r)=> ({'{r with user: r["_value"]}'}))
+  |> group(columns: ["user"])
+  |> aggregateWindow(every: {interval}, fn: count, createEmpty: false, column: "_value")
+  |> yield(name: "count")''')
 
     async def influxPing(self):
         return self.influx.health()
