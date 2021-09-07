@@ -10,7 +10,7 @@ from .items import Inventory
 from . import log
 
 class User(HasDictSettingsRelated, Snowflake, Base):
-    '''Users table represting user in Database
+    '''Users table representing user in Database
 
     Columns
     -------
@@ -97,7 +97,7 @@ class User(HasDictSettingsRelated, Snowflake, Base):
         return self.transfer(server_id, recipent, [from_race], [into_race], False, True) # That is definitly not what was planned #FIXME
 
 class Server(HasDictSettingsRelated, Snowflake, Base):
-    '''Servers table represting server in Database'''
+    '''Servers table representing server in Database'''
     channels: List[Channel] = relationship("Channel", back_populates="server")
     roles: List[Role] = relationship("Role", back_populates="server")
     snippets: List[Snippet] = relationship("Snippet")
@@ -106,11 +106,11 @@ class Server(HasDictSettingsRelated, Snowflake, Base):
     webhooks: List[Webhook] = relationship("Webhook")
 
 class Role(HasDictSettingsRelated, ServerID, Snowflake, Base):
-    '''Roles table represting role in Database'''
+    '''Roles table representing role in Database'''
     server: Server = relationship("Server", back_populates="roles")
 
 class Channel(HasDictSettingsRelated, ServerID, Snowflake, Base):
-    '''Channels table represting channel in Database'''
+    '''Channels table representing channel in Database'''
     server: Server = relationship("Server", back_populates="channels")
     webhooks: List[Webhook] = relationship("Webhook", back_populates="channel")
 
@@ -161,7 +161,7 @@ class Subscription(Base):
     regex: str = Column(String, primary_key=True)
 
 class RSS(Base):
-    '''Table represting RSS sources alongside their metadata'''
+    '''Table representing RSS sources alongside their metadata'''
     source: str = Column(String, primary_key=True)
     last: int = Column(Integer)
     url: str = Column(String)
@@ -171,7 +171,7 @@ class RSS(Base):
     refresh_rate: timedelta = Column(Interval)
 
 class Spotify(Base):
-    '''Table represnting tracked Spotify artists'''
+    '''Table representing tracked Spotify artists'''
     id: str = Column(String, primary_key=True)
     artist: str = Column(String)
     added_by: Snowflake = Column(ForeignKey("User.id", ondelete='SET NULL', onupdate='Cascade'))
