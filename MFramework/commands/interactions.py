@@ -40,7 +40,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
     if f.group.value < g.value:
         return
     kwargs = {}
-    kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client= client, interaction=interaction, language='en', group=g)
+    kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client= client, interaction=interaction, language='en')
     for option in interaction.data.options:
         t = f.arguments[option.name].type
         if issubclass(t, Snowflake) and not option.value.isdigit():
