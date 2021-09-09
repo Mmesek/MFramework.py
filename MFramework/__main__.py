@@ -9,11 +9,13 @@ arguments.add("-update_translation", action='store_true', help="Specifies whethe
 arguments.add("-update-permissions", action="store_true", help="Specifies whether permissions should be forced to update in guilds")
 arguments.add("paths", nargs="*", help="List of relative paths to import", default="bot")
 arguments.add("--cfg", help="Specifies relative path to config", default="secrets.ini")
+arguments.add("--ext", help="Path to directory with extensions to load (Packages containing __init__.py)", default="extensions")
 
 import MFramework
-from mlib.import_functions import import_from
+from mlib.import_functions import import_from, import_modules
 for path in arguments.parse().paths:
     import_from(path)
+import_modules(arguments.parse().ext)
 
 if '-generate-translation' in sys.argv or '-update-translation' in sys.argv:
     exit()
