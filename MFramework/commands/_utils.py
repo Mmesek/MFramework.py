@@ -81,7 +81,16 @@ class Command:
         self.choices[name] = func
     async def execute(self, ctx: 'Context', kwargs: Dict[str, Any]):
         try:
-            await self.func(**kwargs)
+            r = await self.func(**kwargs)
+            from MFramework import Embed, Component
+            if isinstance(r, Message):
+                await r.send()
+            elif isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
+                await ctx.reply(embeds=r)
+            elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
+                await ctx.reply(components=r)
+            elif r:
+                await ctx.reply(str(r))
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id)
         except TypeError as ex:
             if 'missing' in str(ex):
@@ -302,6 +311,7 @@ def get_original_cmd(_name: str) -> str:
 
 def set_ctx(client: 'Bot', message: Message, f: Command) -> 'Context':
     from MFramework import Context
+    #ctx = client.Context(client.cache, client, message)
     ctx = Context(client.cache, client, message)
     if not f or f.group < ctx.permission_group:
         return False
