@@ -7,7 +7,7 @@ arguments.add("-clear_guild_interactions", action='store_true', help="Specifies 
 arguments.add("-generate_translations", action='store_true', help="Specifies whether translation file should be generated")
 arguments.add("-update_translation", action='store_true', help="Specifies whether translation file should be updated")
 arguments.add("-update-permissions", action="store_true", help="Specifies whether permissions should be forced to update in guilds")
-arguments.add("paths", nargs="*", help="List of relative paths to import", default="bot")
+arguments.add("paths", nargs="*", help="List of relative paths to import", default=["bot"])
 arguments.add("--cfg", help="Specifies relative path to config", default="secrets.ini")
 arguments.add("--ext", help="Path to directory with extensions to load (Packages containing __init__.py)", default="extensions")
 
