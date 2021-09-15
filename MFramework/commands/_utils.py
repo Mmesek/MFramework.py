@@ -83,9 +83,9 @@ class Command:
         try:
             r = await self.func(**kwargs)
             from MFramework import Embed, Component
-            if isinstance(r, Message):
-                await r.send()
-            elif isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
+            #if isinstance(r, Message):
+            #    await ctx.send(r.content, r.embeds, r.components)
+            if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
                 await ctx.reply(embeds=r)
             elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
                 await ctx.reply(components=r)
