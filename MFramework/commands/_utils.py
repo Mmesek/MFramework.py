@@ -82,13 +82,18 @@ class Command:
     async def execute(self, ctx: 'Context', kwargs: Dict[str, Any]):
         try:
             r = await self.func(**kwargs)
-            from MFramework import Embed, Component
+            from MFramework import Embed, Component, Emoji
             #if isinstance(r, Message):
             #    await ctx.send(r.content, r.embeds, r.components)
             if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
                 await ctx.reply(embeds=r)
             elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
                 await ctx.reply(components=r)
+            elif isinstance(r, Emoji):
+                if ctx.is_message:
+                    await ctx.data.react(f"{r.name}:{r.id or 0}")
+                else:
+                    await ctx.reply(f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>")
             elif r:
                 await ctx.reply(str(r))
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id)
