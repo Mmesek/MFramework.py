@@ -120,20 +120,20 @@ class Context(Sendable):
         return await self.send(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, reply=reply, channel_id=await self.get_dm())
 
     async def reply(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, message_reference: Message_Reference=None, private: bool=None) -> Message:
-        return await self.data.reply(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, private=private)
+        return await self.data.reply(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, private=private) or self.data
 
     async def send(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, message_reference: Message_Reference=None, reply: bool=None, private: bool=None, channel_id: Snowflake =None) -> Message:
         if private and self.is_message:
             channel_id = await self.get_dm()
-        return await self.data.send(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, reply=reply, private=private, channel_id=channel_id)
+        return await self.data.send(content=content, embeds=embeds, components=components, file=file, filename=filename, allowed_mentions=allowed_mentions, message_reference=message_reference, reply=reply, private=private, channel_id=channel_id) or self.data
 
     async def edit(self, content: str=None, embeds: List[Embed]=None, components: List[Component]=None, attachments: List[Attachment]=None, file: bytes=None, filename: str=None, allowed_mentions: Allowed_Mentions=None, flags: Message_Flags=None) -> Message:
-        return await self.data.edit(content=content, embeds=embeds, components=components, attachments=attachments, file=file, filename=filename, allowed_mentions=allowed_mentions, flags=flags)
+        return await self.data.edit(content=content, embeds=embeds, components=components, attachments=attachments, file=file, filename=filename, allowed_mentions=allowed_mentions, flags=flags) or self.data
 
     async def delete(self, message_id: Snowflake=None, reason: str = None) -> None:
         return await self.data.delete(message_id=message_id, reason=reason)
 
-    async def deferred(self, private: bool=False):
+    async def deferred(self, private: bool=False) -> None:
         '''Shows loading state when executed on Interaction or typing when executed on Message'''
         if self.is_message:
             return await self.data.typing(await self.get_dm() if private else None, private)
