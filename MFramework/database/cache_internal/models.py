@@ -6,6 +6,9 @@ from mdiscord import *
 from .backends import Redis, Dictionary
 
 class Cache:
+    '''Base Cache. 
+    
+    Default ID is composed from Class name and `.id` attribute of cached object'''
     _cache: Redis
     _expire: timedelta = None
     _cls: str
