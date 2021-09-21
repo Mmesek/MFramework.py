@@ -197,37 +197,3 @@ class Muted_Change(Member_Update):
             if muted:
                 await self._log(f"<@{data.user.id}> {case}")
                 ctx.cache[data.guild_id].members[data.user.id] = data
-
-class Message_Replay_QnA(Message):
-    username = None
-    async def log(self, msg: MFramework.types.Message) -> MFramework.Message:
-        rmsg = msg.referenced_message
-        question = self.set_metadata(rmsg).setTitle("Question")
-        question.author = None
-        question.setColor("#45f913")
-        question.setUrl(MFramework.Discord_Paths.MessageLink.link.format(
-            guild_id=rmsg.guild_id, channel_id=rmsg.channel_id, message_id=rmsg.id))
-        self.user_in_footer(question, rmsg)
-        if rmsg.attachments != []:
-            question.setImage(url=rmsg.attachments[0].url)
-
-        answer = self.set_metadata(msg).setTitle("Answer")
-        answer.author = None
-        answer.setColor("#ec2025")
-        answer.setUrl(MFramework.Discord_Paths.MessageLink.link.format(
-            guild_id=msg.guild_id, channel_id=msg.channel_id, message_id=msg.id))
-        self.user_in_footer(answer, msg)
-        if msg.attachments != []:
-            answer.setImage(url=msg.attachments[0].url)
-
-        await self._log(None, embeds=[question, answer])
-
-class Stream(Log):
-    username = "Stream Log"
-    async def log(self, data: MFramework.types.Presence_Update, stream: MFramework.types.Activity):
-        if not hasattr(self, 'logged_streams'):
-            self.logged_streams = {}
-        if self.logged_streams.get(data.user.id) == stream.created_at:
-            return
-        self.logged_streams[data.user.id] = stream.created_at
-        await self._log(f"<@{data.user.id}> właśnie transmituje {stream.state} na [{stream.name}]({stream.url})!")
