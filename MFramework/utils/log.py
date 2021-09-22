@@ -89,12 +89,12 @@ class User(Log):
     async def log(self, event: MFramework.Guild_Member) -> MFramework.Message:
         return super().log(event)
 
-class Join(User):
+class Guild_Member_Add(User):
     username = 'Joined Log'
     async def log(self, data: MFramework.Guild_Member_Add) -> MFramework.Message:
         return await self._log(f"<@{data.user.id}> joined server. Account created at {data.user.id.as_date}")
 
-class Left(User):
+class Guild_Member_Remove(User):
     username = "Leave Log"
     async def log(self, data: MFramework.Guild_Member_Remove) -> MFramework.Message:
         return await self._log(f"<@{data.user.id}> left server")
@@ -122,7 +122,7 @@ class Voice(Log):
             string += f" after {secondsToText(after)}"
         await self._log(string, username=self.username+ f' [{status}]')
 
-class Member_Update(Log):
+class Guild_Member_Update(Log):
     username = "Member Update Log"
     async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
@@ -151,7 +151,7 @@ class Member_Update(Log):
         await self._log(string)
         ctx.cache[data.guild_id].members[data.user.id] = data
 
-class Nitro_Change(Member_Update):
+class Nitro_Change(Guild_Member_Update):
     username = "Nitro Log"
     async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
@@ -176,7 +176,7 @@ class Nitro_Change(Member_Update):
                 ctx.cache[data.guild_id].members[data.user.id] = data
                 return s
 
-class Muted_Change(Member_Update):
+class Muted_Change(Guild_Member_Update):
     username = "Muted Log"
     async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
