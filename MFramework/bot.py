@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 from mdiscord import *
 
-from MFramework.database.cache import GuildCache
+from MFramework.database.cache import Cache
 from MFramework.database.database import Database
 
 class Bot(Client):
@@ -17,8 +17,11 @@ class Bot(Client):
     primary_guild: Snowflake = 463433273620824104
 
     db: Database
-    cache: Dict[Snowflake, GuildCache]
-    def __init__(self, name: str, cfg: dict, db: Database=None, cache: GuildCache=None, shard: int=0, total_shards: int=1):
+    cache: Dict[Snowflake, Cache]
+
+    Cache: Cache = Cache
+    Context: 'Context'# = Context
+    def __init__(self, name: str, cfg: dict, db: Database=None, cache: Cache=None, shard: int=0, total_shards: int=1):
         self.db = db
         self.cache = cache
         self.alias = cfg[name].get('alias', '?')
@@ -36,7 +39,7 @@ class Bot(Client):
 class Context(Sendable):
     '''This is meant as an unified context object used for universal 
     commands that can be issued as both a message or an interaction'''
-    cache: GuildCache = GuildCache
+    cache: Cache = Cache
     db: Database
     bot: Bot
     data: Union[Message, Interaction]
@@ -56,7 +59,7 @@ class Context(Sendable):
     is_message: bool
     is_interaction: bool
 
-    def __init__(self, cache: GuildCache, bot: Bot, data: Union[Message, Interaction]):
+    def __init__(self, cache: Cache, bot: Bot, data: Union[Message, Interaction]):
         self.cache = cache[data.guild_id]
         self.bot = bot
         self.db = bot.db
@@ -138,3 +141,5 @@ class Context(Sendable):
         if self.is_message:
             return await self.data.typing(await self.get_dm() if private else None, private)
         return await self.data.deferred(private)
+
+Bot.Context = Context
