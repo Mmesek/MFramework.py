@@ -61,7 +61,7 @@ class Command:
     sub_commands: List['Command']
     choices: Dict[str, 'Command']
     guild: Snowflake
-    def __init__(self, f: FunctionType, interaction: bool = True, main: object = False, group: Groups = Groups.GLOBAL, guild: Snowflake = None, main_only: bool=False) -> None:
+    def __init__(self, f: FunctionType, interaction: bool = True, main: object = False, group: Groups = Groups.GLOBAL, guild: Snowflake = None, main_only: bool=False, **kwargs) -> None:
         self.name = f.__name__.strip("_")
         self.func = f
         _docs = parse_docstring(f)
@@ -315,9 +315,7 @@ def get_original_cmd(_name: str) -> str:
     return aliasList.get(_name.lower(), _name)
 
 def set_ctx(client: 'Bot', message: Message, f: Command) -> 'Context':
-    from MFramework import Context
-    #ctx = client.Context(client.cache, client, message)
-    ctx = Context(client.cache, client, message)
+    ctx = client._Context(client.cache, client, message)
     if not f or f.group < ctx.permission_group:
         return False
     return ctx

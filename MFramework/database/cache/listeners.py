@@ -5,7 +5,7 @@ async def guild_create(bot: Bot, guild: Guild):
     if guild.id not in bot.cache:
         import time
         start = time.time()
-        bot.cache[guild.id] = bot.Cache(bot, guild)
+        bot.cache[guild.id] = bot._Cache(bot, guild)
         from MFramework.utils.scheduler import add_guild_tasks
         add_guild_tasks(bot, guild.id)
         log.info("Guild %s initialized in %s", guild.id, time.time() - start)
