@@ -3,6 +3,7 @@
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/Mmesek/MFramework.py)
 
 Low boilerplate command framework for Discord's REST API used by my bots like [M_Bot](https://github.com/Mmesek/MBot.py)
+
 General usage bot's framework, originally made to use with Discord API
 
 Reference:
@@ -25,9 +26,9 @@ Command example
 ```python
 from MFramework import register, Groups, Context
 @register(group=Groups.GLOBAL)
-async def say(ctx: Context, text: str, i: int=1):
+async def say(ctx: Context, text: str, i: int=1) -> str:
     '''
-    Sends a specifed message x times
+    Sends a specifed message x times and finishes with replying with Done
     Params
     ------
     text:
@@ -37,4 +38,5 @@ async def say(ctx: Context, text: str, i: int=1):
     '''
     for x in range(i):
         await ctx.send(f"{text} x {x}")
+    return "Done"
 ```
