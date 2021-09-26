@@ -6,8 +6,6 @@ async def guild_create(bot: Bot, guild: Guild):
         import time
         start = time.time()
         bot.cache[guild.id] = bot._Cache(bot, guild)
-        from MFramework.utils.scheduler import add_guild_tasks
-        add_guild_tasks(bot, guild.id)
         log.info("Guild %s initialized in %s", guild.id, time.time() - start)
     if len(bot.cache[guild.id].members) < 50:
         await bot.request_guild_members(guild.id)
