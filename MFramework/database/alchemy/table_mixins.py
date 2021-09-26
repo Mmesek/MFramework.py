@@ -1,13 +1,15 @@
 from typing import Any
 import datetime
 
-from .mixins import *
-from . import types
-
-from sqlalchemy import Column, Integer, Enum, Date, String, Boolean
-
+from sqlalchemy import Column, Integer, Enum, Date, String, Boolean, Column, ForeignKey, BigInteger
+from sqlalchemy.orm import declared_attr, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.associationproxy import association_proxy
+
+from mlib.database import Base
+
+from .mixins import Snowflake
+from . import types
 
 class ProxiedDictMixin(object):
     """Adds obj[key] access to a mapped class.
@@ -61,6 +63,7 @@ class HasDictSettingsRelated:#(ProxiedDictMixin):
                 __tablename__=f"Setting_{cls.__tablename__}",
                 id=Column(ForeignKey(f"{cls.__tablename__}.id", ondelete="cascade", onupdate='Cascade'), primary_key=True),
                 #parent=relationship(cls)
+                __table_args__ = {"extend_existing":True}
             )
         )
         return relationship(cls.Setting, collection_class=attribute_mapped_collection("name"), cascade='all, delete-orphan')
