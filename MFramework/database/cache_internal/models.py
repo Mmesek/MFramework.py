@@ -5,8 +5,8 @@ from mdiscord import *
 
 from .backends import Redis, Dictionary
 
-class Cache:
-    '''Base Cache. 
+class Collection:
+    '''Base Collection. 
     
     Default ID is composed from Class name and `.id` attribute of cached object'''
     _cache: Redis
@@ -82,7 +82,7 @@ class Cache:
         '''Delete from Cache'''
         return self._cache.delete(self._combine(obj_id))
 
-class Messages(Cache):
+class Messages(Collection):
     _expire: timedelta = timedelta(days=1)
     _cls: Message = Message
     def _create_id(self, obj: Message) -> str:
@@ -102,35 +102,35 @@ class Messages(Cache):
     def size(self, guild_id, channel_id):
         return self._cache.keys(self._combine(guild_id, channel_id, '*'))
 
-class Channels(Cache):
+class Channels(Collection):
     _cls: Channel = Channel
     def _create_id(self, obj: Channel) -> str:
         return self._combine(obj.guild_id, obj.id)
 
-class Roles(Cache):
+class Roles(Collection):
     _cls: Role = Role
 
-class Users(Cache):
+class Users(Collection):
     _cls: User = User
 
-class Members(Cache):
+class Members(Collection):
     _cls: Guild_Member = Guild_Member
     def _create_id(self, obj: Guild_Member) -> str:
         return self._combine(obj.user.id)
     def size(self, guild_id):
         return self._cache.keys(self._combine(guild_id, '*'))
 
-class Presences(Cache):
+class Presences(Collection):
     _cls = tuple
     def _create_id(self, obj: Presence_Update) -> str:
         return self._combine(obj.user.id)
     def store(self, data: Presence_Update):
         self._cache.add(data.user.id, (data.activities[0].name, data.activities[0].created_at, data.activities[0].application_id), expire_time=self._expire)
 
-class Guilds(Cache):
+class Guilds(Collection):
     _cls: Guild = Guild
 
-class Cooldowns(Cache):
+class Cooldowns(Collection):
     def _create_id(self, guild_id: Snowflake, user_id: Snowflake, type: str) -> str:
         return self._combine(guild_id, user_id, type)
     def has(self, guild_id, user_id, type):
@@ -138,7 +138,7 @@ class Cooldowns(Cache):
     def store(self, guild_id, user_id, type, expire=timedelta(seconds=60)):
         return self._cache.add(self._create_id(guild_id, user_id, type), 1, expire_time=expire)
 
-class Context(Cache):
+class Context(Collection):
     _expire: timedelta = timedelta(minutes=10)
     def _create_id(self, guild_id: Snowflake, channel_id: Snowflake, user_id: Snowflake) -> str:
         return self._combine(guild_id, channel_id, user_id)

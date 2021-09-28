@@ -45,7 +45,7 @@ def create_cache_listeners(Cache: object):
         from MFramework.database.cache_internal import models
         if not hasattr(Cache, collection):
             continue
-        elif not isinstance(getattr(Cache, collection), models.Cache):
+        elif not isinstance(getattr(Cache, collection), models.Collection):
             continue
         method = methods.get(method.lower(), "update")
         def create_listener(collection, method, _event):
