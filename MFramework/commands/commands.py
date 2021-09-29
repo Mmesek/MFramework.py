@@ -50,7 +50,10 @@ async def check_command(client: Bot, message: Message, dm: bool=False) -> bool:
             i+=1
     if f._only_interaction:
         return
-    args = args[args.index(f.name)+1:] 
+    try:
+        args = args[args.index(f.name)+1:]
+    except:
+        pass
     ctx = set_ctx(client, message, f)
     if not ctx:
         return False
