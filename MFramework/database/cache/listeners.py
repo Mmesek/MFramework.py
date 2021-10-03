@@ -38,7 +38,7 @@ def create_cache_listeners(Cache: object):
     for event in Gateway_Events:
         if not hasattr(event.func, 'guild_id'):
             continue
-        if any(i.__name__ == "_autocache" for i in Dispatch.get(event.name.upper(), {}).get(100, [])):
+        if any(i.__name__ == "_autocache" for i in Dispatch.get(event.name.upper(), {}).get(200, [])):
             continue
         collection, method = event.name.rsplit("_", 1)
         collection = collections.get(collection[:-1].lower() if collection.endswith("s") else collection.lower(), collection.lower()).lower()
