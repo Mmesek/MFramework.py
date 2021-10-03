@@ -56,5 +56,5 @@ def create_cache_listeners(Cache: object):
                 except Exception as ex:
                     pass
             return _autocache
-        onDispatch(f=create_listener(collection, method, event.name.lower()), event=event.name, optional=True)
+        onDispatch(f=create_listener(collection, method, event.name.lower()), priority=200, event=event.name, optional=True)
         log.debug(f"Registering auto cache {method} method for {collection} on {event}")
