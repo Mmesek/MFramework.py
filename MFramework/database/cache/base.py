@@ -11,11 +11,13 @@ class Base:
     def __init__(self, *, bot, **kwargs) -> None:
         self.groups = {i:set() for i in Groups}
         self.setBot(bot.user_id)
-        self.setColor()
+        if self.bot:
+            self.setColor()
 
     def setBot(self, user_id):
         self.bot = self.members[user_id]
-        self.calculate_permissions()
+        if self.bot:
+            self.calculate_permissions()
 
     def setColor(self):
         color = None
@@ -42,4 +44,4 @@ class Base:
 class Commands(Base):
     alias: str = '?'
 
-    _permissions_set: bool = None
+    _permissions_set: bool = False
