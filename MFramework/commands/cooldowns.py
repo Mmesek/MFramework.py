@@ -12,18 +12,27 @@ cooldowns: Dict[str, Dict[Snowflake, datetime]] = {}
 # Bucket: User | Guild | Channel | Role | Group - Who's on cooldown
 
 class Cooldown:
+    '''Base cooldown calculation class'''
     ctx: Context
     '''Command Context for cooldown calculation'''
     _type: str
     '''Type of this cooldown'''
-    cooldown: timedelta
-    '''Cooldown value'''
 
     def __init__(self, ctx: Context, _cooldown: timedelta, _cooldown_type: str, **kwargs) -> None:
+        '''
+        _cooldown:
+            Delta of a cooldown
+        _cooldown_type:
+            Name of this cooldown'''
         self.ctx: Context = ctx
         self._type = _cooldown_type
-        self.cooldown = _cooldown
+        self._cooldown = _cooldown
     
+    @property
+    def cooldown(self) -> timedelta:
+        '''Cooldown value'''
+        return self._cooldown
+
     @property
     def last_action(self) -> datetime:
         '''Returns time of last execution'''
@@ -51,6 +60,7 @@ class Cooldown:
         return self.remaining.total_seconds() > 0
 
 class CacheCooldown(Cooldown):
+    '''Cooldown stored (and manages) in remote cache like Redis'''
     @property
     def last_action(self) -> datetime:
         return self.ctx.cache.cooldowns.get(self.ctx.user_id, None)
@@ -59,6 +69,7 @@ class CacheCooldown(Cooldown):
         return self.ctx.cache.cooldowns.store(self.ctx.guild_id, self.ctx.user_id, self._type, expire=self.cooldown)
 
 class DatabaseCooldown(Cooldown):
+    '''Cooldown timestamp stored in a database table'''
     def __init__(self, ctx: Context, _cooldown: timedelta, _cooldown_type: str, table: Any, **kwargs) -> None:
         self.table = table
         super().__init__(ctx=ctx, _cooldown=_cooldown, _cooldown_type=_cooldown_type, **kwargs)
@@ -77,14 +88,25 @@ class DatabaseCooldown(Cooldown):
             session.add(self.table(user_id=self.ctx.user_id, server_id=self.ctx.guild_id))
         session.commit()
 
-def cooldown(*, seconds: int=0, minutes: int=0, hours: int=0, days: int=0, weeks: int=0, logic: Cooldown=Cooldown, **cooldown_kwargs):
+def cooldown(rate: int=1, *, seconds: int=0, minutes: int=0, hours: int=0, days: int=0, weeks: int=0, logic: Cooldown=Cooldown, **cooldown_kwargs):
     '''Applies a cooldown on command.
+
+    Parameters
+    ----------
+    rate:
+        After how many uses cooldown should be applied
+    bucket:
+        Group which cooldown is applied to
+    logic:
+        Backend class which handles Cooldown calculation on command invocation
+    cooldown_kwargs:
+        Keyword arguments that should be passed to Cooldown class
     Use it with callable function accepting interaction returning boolean for conditional execution and datetime object with last execution timestamp for cooldown calculation'''
     def inner(f):
         @wraps(f)
         def wrapped(ctx: 'Context'= None, **kwargs):
             _cooldown = timedelta(days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks)
-            c = logic(ctx=ctx, _cooldown=_cooldown, _cooldown_type=f.__name__, **cooldown_kwargs)
+            c = logic(ctx=ctx, _cooldown=_cooldown, _cooldown_type=f.__name__, func_args = kwargs, **cooldown_kwargs)
             if not c.on_cooldown:
                 c.add_cooldown()
                 return f(ctx=ctx, **kwargs)
