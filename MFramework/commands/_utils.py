@@ -6,7 +6,7 @@ from inspect import signature, Signature
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
     Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update, Guild_Member_Add,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
-    log, BadRequest
+    log, BadRequest, NotFound
     )
 
 if TYPE_CHECKING:
@@ -98,10 +98,12 @@ class Command:
                 await ctx.reply(str(r))
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id)
         except TypeError as ex:
+            log.exception("TypeError at command %s", self.name, exc_info=ex)
             if 'missing' in str(ex):
                 ex = str(ex).split(' ', 1)[1].replace("'", '`').capitalize()
             await self.maybe_reply(ctx, str(ex))
         except Error as ex:
+            log.debug("Error at command %s", self.name, exc_info=ex)
             await self.maybe_reply(ctx, str(ex))
         except BadRequest as ex:
             log.error(ex)
@@ -109,6 +111,9 @@ class Command:
             if _dm:
                 await ctx.bot.create_message(_dm, str(ex))
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, False, ctx.user_id)
+        except NotFound as ex:
+            log.warning("%s Not Found", ex.path)
+            await self.maybe_reply(ctx, f"Couldn't find Discord resource and respond, possibly due to expired interaction :( {'Try again.' if 'callback' in ex.path else ''}")
         except Exception as ex:
             log.exception("Exception occured during command execution", exc_info=ex)
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, False, ctx.user_id)
