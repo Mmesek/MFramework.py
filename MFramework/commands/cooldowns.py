@@ -18,15 +18,15 @@ class Cooldown:
     _type: str
     '''Type of this cooldown'''
 
-    def __init__(self, ctx: Context, _cooldown: timedelta, _cooldown_type: str, **kwargs) -> None:
+    def __init__(self, ctx: Context, cooldown: timedelta, cooldown_type: str, **kwargs) -> None:
         '''
         _cooldown:
             Delta of a cooldown
         _cooldown_type:
             Name of this cooldown'''
         self.ctx: Context = ctx
-        self._type = _cooldown_type
-        self._cooldown = _cooldown
+        self._type = cooldown_type
+        self._cooldown = cooldown
     
     @property
     def cooldown(self) -> timedelta:
@@ -70,9 +70,9 @@ class CacheCooldown(Cooldown):
 
 class DatabaseCooldown(Cooldown):
     '''Cooldown timestamp stored in a database table'''
-    def __init__(self, ctx: Context, _cooldown: timedelta, _cooldown_type: str, table: Any, **kwargs) -> None:
+    def __init__(self, ctx: Context, cooldown: timedelta, cooldown_type: str, table: Any, **kwargs) -> None:
         self.table = table
-        super().__init__(ctx=ctx, _cooldown=_cooldown, _cooldown_type=_cooldown_type, **kwargs)
+        super().__init__(ctx=ctx, cooldown=cooldown, cooldown_type=cooldown_type, **kwargs)
     @property
     def last_action(self) -> datetime:
         session = self.ctx.db.sql.session()
@@ -106,7 +106,7 @@ def cooldown(rate: int=1, *, seconds: int=0, minutes: int=0, hours: int=0, days:
         @wraps(f)
         def wrapped(ctx: 'Context'= None, **kwargs):
             _cooldown = timedelta(days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks)
-            c = logic(ctx=ctx, _cooldown=_cooldown, _cooldown_type=f.__name__, func_args = kwargs, **cooldown_kwargs)
+            c = logic(ctx=ctx, cooldown=_cooldown, cooldown_type=f.__name__, func_args = kwargs, **cooldown_kwargs)
             if not c.on_cooldown:
                 c.add_cooldown()
                 return f(ctx=ctx, **kwargs)
