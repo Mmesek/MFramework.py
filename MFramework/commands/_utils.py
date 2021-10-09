@@ -153,7 +153,9 @@ def is_nested(group: Groups, command: Command, name: str) -> Command:
         if name.lower() == sub_command.name.lower():
             return sub_command
         if sub_command.sub_commands != []:
-            return is_nested(group, sub_command, name)
+            nested = is_nested(group, sub_command, name)
+            if nested != sub_command:
+                return nested
     return command
 
 def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Argument]:
