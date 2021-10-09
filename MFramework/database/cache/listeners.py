@@ -29,6 +29,9 @@ collections = {
 attributes = {
     "guild_members_chunk": ".members",
     "guild_member_remove": ".user.id",
+    "guild_role_create": ".role",
+    "guild_role_update": ".role",
+    "guild_role_remove": ".role_id",
     "message_delete": ".id"
 }
 
