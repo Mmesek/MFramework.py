@@ -102,6 +102,9 @@ class Command:
             if 'missing' in str(ex):
                 ex = str(ex).split(' ', 1)[1].replace("'", '`').capitalize()
             await self.maybe_reply(ctx, str(ex))
+        except CooldownError as ex:
+            log.debug("Cooldown triggered on command %s", self.name)
+            await self.maybe_reply(ctx, f"Remaining Cooldown: {ex}")
         except Error as ex:
             log.debug("Error at command %s", self.name, exc_info=ex)
             await self.maybe_reply(ctx, str(ex))
@@ -226,7 +229,7 @@ _types = {
 def parse_arguments(_command: Command) -> List[str]:
     options = []
     for i, v in _command.arguments.items():
-        if i.lower() in ['self', 'ctx', 'client', 'interaction']:
+        if i.lower() in ['self', 'ctx', 'cls', 'client', 'interaction']:
             continue
         elif v.kind in {'VAR_POSITIONAL', 'KEYWORD_ONLY'}:
             break
