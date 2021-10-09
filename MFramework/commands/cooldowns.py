@@ -63,7 +63,7 @@ class CacheCooldown(Cooldown):
     '''Cooldown stored (and manages) in remote cache like Redis'''
     @property
     def last_action(self) -> datetime:
-        return self.ctx.cache.cooldowns.get(self.ctx.user_id, None)
+        return self.ctx.cache.cooldowns.get(self.ctx.guild_id, self.ctx.user_id, self._type)
     
     def add_cooldown(self) -> None:
         return self.ctx.cache.cooldowns.store(self.ctx.guild_id, self.ctx.user_id, self._type, expire=self.cooldown)
@@ -110,6 +110,7 @@ def cooldown(rate: int=1, *, seconds: int=0, minutes: int=0, hours: int=0, days:
             if not c.on_cooldown:
                 c.add_cooldown()
                 return f(ctx=ctx, **kwargs)
-            return c.remaining
+            from ._utils import CooldownError
+            raise CooldownError(c.remaining)
         return wrapped
     return inner

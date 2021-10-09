@@ -133,10 +133,15 @@ class Guilds(Collection):
 class Cooldowns(Collection):
     def _create_id(self, guild_id: Snowflake, user_id: Snowflake, type: str) -> str:
         return self._combine(guild_id, user_id, type)
+    def get(self, guild_id: Snowflake, user_id: Snowflake, type: str):
+        r = self._cache.get(self._combine(guild_id, user_id, type))
+        from datetime import timezone
+        return datetime.fromtimestamp(r, tz=timezone.utc) if r else None
     def has(self, guild_id, user_id, type):
         return self._cache.has(self._combine(guild_id, user_id, type))
     def store(self, guild_id, user_id, type, expire=timedelta(seconds=60)):
-        return self._cache.add(self._create_id(guild_id, user_id, type), 1, expire_time=expire)
+        from datetime import timezone
+        return self._cache.add(self._create_id(guild_id, user_id, type), datetime.now(tz=timezone.utc).timestamp(), expire_time=expire)
 
 class Context(Collection):
     _expire: timedelta = timedelta(minutes=10)
