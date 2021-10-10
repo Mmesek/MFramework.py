@@ -3,7 +3,7 @@ from functools import wraps
 
 from mlib.types import aInvalid
 
-from MFramework.commands._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts, reactions, ChanceError
+from MFramework.commands._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts, reactions, ChanceError, EventInactive
 from MFramework import Message, Snowflake
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ def EventBetween(*, \
             before = datetime(before_year or t.year, before_month or t.month, before_day or t.day, before_hour if before_hour is not None else t.hour, before_minute if before_minute is not None else t.minute)
             if t >= after and t <= before:
                 return f(*args, **kwargs)
-            return aInvalid()
+            raise EventInactive(f"This event is currently inactive! Check back between <t:{int(after.timestamp())}:D> and <t:{int(before.timestamp())}:D>!")
         return wrapped
     return inner
 

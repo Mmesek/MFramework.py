@@ -141,6 +141,9 @@ class CooldownError(Error):
 class ChanceError(Error):
     pass
 
+class EventInactive(Error):
+    pass
+
 commands: Dict[str, Command] = {}
 aliasList: Dict[str, str] = {}
 COMPILED_REGEX: Dict[str, str] = {}
