@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, Callable, List, Union
 from functools import wraps
 
 from mlib.types import aInvalid
 
-from MFramework.commands._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts, reactions
+from MFramework.commands._utils import Groups, commands, Command, aliasList, commands_regex, COMPILED_REGEX, command_shortcuts, reactions, ChanceError
 from MFramework import Message, Snowflake
 
 if TYPE_CHECKING:
@@ -11,9 +11,10 @@ if TYPE_CHECKING:
 
 __all__ = ["Event", "EventBetween", "Cooldown", "Chance", "req_regex", "regex", "register", "shortcut", "any_role", "reaction"]
 
-def Event(*, month=None, day=None, hour=None, minute=None, year=None):
+def Event(*, month: int=None, day: int=None, hour: int=None, minute: int=None, year: int=None):
     '''Executes command only if it's during provided timeframe'''
     def inner(f):
+        @wraps(f)
         def wrapped(*args, **kwargs):
             from datetime import datetime
             t = datetime.today()
@@ -29,17 +30,18 @@ def Event(*, month=None, day=None, hour=None, minute=None, year=None):
     return inner
 
 def EventBetween(*, \
-                after_month=None, after_day=None, after_hour=None, after_minute=None, after_year=None,\
-                before_month=None, before_day=None, before_hour=None, before_minute=None, before_year=None):
+                after_month: int=None, after_day: int=None, after_hour: int=None, after_minute: int=None, after_year: int=None,\
+                before_month: int=None, before_day: int=None, before_hour: int=None, before_minute: int=None, before_year: int=None):
     '''Executes only if it's between provided timeframes
     \nFor year parameters, specify how many years should be added/deduced'''
     def inner(f):
+        @wraps(f)
         def wrapped(*args, **kwargs):
             from datetime import datetime
             t = datetime.today()
             t = t.replace(second=0, microsecond=0)
             nonlocal after_year, before_year
-            if after_year < 0:
+            if after_year and after_year < 0:
                 after_year = t.year + after_year
             if before_year:
                 before_year = t.year + before_year
@@ -51,10 +53,11 @@ def EventBetween(*, \
         return wrapped
     return inner
 
-def Cooldown(*, seconds=None, minutes=None, hours=None, days=None, weeks=None, logic=lambda x: x):
+def Cooldown(*, seconds: int=None, minutes: int=None, hours: int=None, days: int=None, weeks: int=None, logic: Callable=lambda x: x):
     '''Applies a cooldown on command.
     Use it with callable function accepting interaction returning boolean for conditional execution and datetime object with last execution timestamp for cooldown calculation'''
     def inner(f):
+        @wraps(f)
         def wrapped(ctx: 'Context'= None, *args, **kwargs):
             should_execute, last_execution = logic(ctx)
             if should_execute:
@@ -66,14 +69,17 @@ def Cooldown(*, seconds=None, minutes=None, hours=None, days=None, weeks=None, l
         return wrapped
     return inner
 
-def Chance(chance: float=0):
+def Chance(chance: float=0, fail_message: str=None):
     '''Randomizes execution
     \nChance can be between 0 and 100'''
     def inner(f):
+        @wraps(f)
         def wrapped(*args, **kwargs):
             from random import SystemRandom
             if SystemRandom().random() < (chance / 100):
                 return f(*args, **kwargs)
+            if fail_message:
+                raise ChanceError(fail_message)
             return aInvalid()
         return wrapped
     return inner
@@ -83,6 +89,7 @@ def req_regex(expression: str):
     def inner(f):
         import re
         COMPILED_REGEX[expression] = re.compile(expression)
+        @wraps(f)
         def wrapped(data: Message, *args, **kwargs):
             if COMPILED_REGEX[expression].search(data.content):
                 return f(data=data, *args, **kwargs)

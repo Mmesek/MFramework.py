@@ -137,6 +137,9 @@ class Error(Exception):
 class CooldownError(Error):
     pass
 
+class ChanceError(Error):
+    pass
+
 commands: Dict[str, Command] = {}
 aliasList: Dict[str, str] = {}
 COMPILED_REGEX: Dict[str, str] = {}
