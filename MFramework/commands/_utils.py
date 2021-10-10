@@ -103,11 +103,11 @@ class Command:
                 ex = str(ex).split(' ', 1)[1].replace("'", '`').capitalize()
             await self.maybe_reply(ctx, str(ex))
         except CooldownError as ex:
-            log.debug("Cooldown triggered on command %s", self.name)
-            await self.maybe_reply(ctx, f"Remaining Cooldown: {ex}")
+            log.debug("Cooldown triggered on command %s: %s", self.name, ex)
+            await self.maybe_reply(ctx, ex, prefix="<@{user_id}>, Remaining Cooldown: ")
         except Error as ex:
-            log.debug("Error at command %s", self.name, exc_info=ex)
-            await self.maybe_reply(ctx, str(ex))
+            log.debug("Error at command %s: %s", self.name, ex)
+            await self.maybe_reply(ctx, str(ex), prefix="<@{user_id}>: ")
         except BadRequest as ex:
             log.error(ex)
             _dm = ctx.bot.cfg.get(ctx.bot.username.lower(), {}).get("log_dm", None)
@@ -124,12 +124,13 @@ class Command:
             _dm = ctx.bot.cfg.get(ctx.bot.username.lower(), {}).get("log_dm", None)
             if _dm:
                 await ctx.bot.create_message(_dm, str(ex))
-    async def maybe_reply(self, ctx: 'Context', msg: str):
+    async def maybe_reply(self, ctx: 'Context', msg: str, prefix: str = "<@{user_id}> an exception occured: "):
+        s = "{prefix}{msg}".format(prefix=prefix, msg=msg).format(user_id=ctx.user_id)
         try:
-            await ctx.reply(f"<@{ctx.user_id}> an exception occured: {msg}")
+            await ctx.reply(s)
         except Exception:
             log.debug("Failed to reply to message. Falling back to default Message creation")
-            await ctx.bot.create_message(ctx.channel_id, f"<@{ctx.user_id}> an exception occured: {msg}")
+            await ctx.bot.create_message(ctx.channel_id, s)
 
 class Error(Exception):
     pass
