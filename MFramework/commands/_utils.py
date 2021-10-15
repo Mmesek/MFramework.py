@@ -86,9 +86,9 @@ class Command:
             #if isinstance(r, Message):
             #    await ctx.send(r.content, r.embeds, r.components)
             if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
-                await ctx.reply(embeds=r)
+                await ctx.reply(embeds=[r] if type(r) is not list else r)
             elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
-                await ctx.reply(components=r)
+                await ctx.reply(components=[r] if type(r) is not list else r)
             elif isinstance(r, Emoji):
                 if ctx.is_message:
                     await ctx.data.react(f"{r.name}:{r.id or 0}")
