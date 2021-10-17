@@ -104,7 +104,8 @@ class Command:
             await self.maybe_reply(ctx, str(ex))
         except CooldownError as ex:
             log.debug("Cooldown triggered on command %s: %s", self.name, ex)
-            await self.maybe_reply(ctx, ex, prefix="<@{user_id}>, Remaining Cooldown: ")
+            from mlib.localization import secondsToText
+            await self.maybe_reply(ctx, secondsToText(int(ex.args[0].total_seconds())), prefix="<@{user_id}>, Remaining Cooldown: ")
         except Error as ex:
             log.debug("Error at command %s: %s", self.name, ex)
             await self.maybe_reply(ctx, str(ex), prefix="<@{user_id}>: ")
