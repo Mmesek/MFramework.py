@@ -94,9 +94,9 @@ class Command:
                 if ctx.is_message:
                     await ctx.data.react(f"{r.name}:{r.id or 0}")
                 else:
-                    await self.maybe_reply(ctx, f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>")
+                    await self.maybe_reply(ctx, f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>", prefix="")
             elif r:
-                await self.maybe_reply(ctx, str(r))
+                await self.maybe_reply(ctx, str(r), prefix="")
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id)
         except TypeError as ex:
             log.exception("TypeError at command %s", self.name, exc_info=ex)
