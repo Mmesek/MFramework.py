@@ -129,6 +129,8 @@ class Command:
     async def maybe_reply(self, ctx: 'Context', msg: str=None, prefix: str = "<@{user_id}> an exception occured: ", embeds: List[Embed]= None, components: List[Component] = None):
         if msg:
             s = "{prefix}{msg}".format(prefix=prefix, msg=msg).format(user_id=ctx.user_id)
+        else:
+            s = None
         try:
             await ctx.reply(s, embeds=embeds, components=components)
         except Exception:
