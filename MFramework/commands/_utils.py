@@ -6,6 +6,7 @@ from inspect import signature, Signature
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
     Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update, Guild_Member_Add,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
+    Embed, Component,
     log, BadRequest, NotFound
     )
 
@@ -82,20 +83,20 @@ class Command:
     async def execute(self, ctx: 'Context', kwargs: Dict[str, Any]):
         try:
             r = await self.func(**kwargs)
-            from MFramework import Embed, Component, Emoji
+            from MFramework import Emoji
             #if isinstance(r, Message):
             #    await ctx.send(r.content, r.embeds, r.components)
             if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
-                await ctx.reply(embeds=[r] if type(r) is not list else r)
+                await self.maybe_reply(embeds=[r] if type(r) is not list else r)
             elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
-                await ctx.reply(components=[r] if type(r) is not list else r)
+                await self.maybe_reply(components=[r] if type(r) is not list else r)
             elif isinstance(r, Emoji):
                 if ctx.is_message:
                     await ctx.data.react(f"{r.name}:{r.id or 0}")
                 else:
-                    await ctx.reply(f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>")
+                    await self.maybe_reply(f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>")
             elif r:
-                await ctx.reply(str(r))
+                await self.maybe_reply(str(r))
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id)
         except TypeError as ex:
             log.exception("TypeError at command %s", self.name, exc_info=ex)
@@ -125,13 +126,13 @@ class Command:
             _dm = ctx.bot.cfg.get(ctx.bot.username.lower(), {}).get("log_dm", None)
             if _dm:
                 await ctx.bot.create_message(_dm, str(ex))
-    async def maybe_reply(self, ctx: 'Context', msg: str, prefix: str = "<@{user_id}> an exception occured: "):
+    async def maybe_reply(self, ctx: 'Context', msg: str, prefix: str = "<@{user_id}> an exception occured: ", embeds: List[Embed]= None, components: List[Component] = None):
         s = "{prefix}{msg}".format(prefix=prefix, msg=msg).format(user_id=ctx.user_id)
         try:
-            await ctx.reply(s)
+            await ctx.reply(s, embeds=embeds, components=components)
         except Exception:
             log.debug("Failed to reply to message. Falling back to default Message creation")
-            await ctx.bot.create_message(ctx.channel_id, s)
+            await ctx.bot.create_message(ctx.channel_id, s, embeds=embeds, components=components)
 
 class Error(Exception):
     pass
