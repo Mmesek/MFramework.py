@@ -127,7 +127,8 @@ class Command:
             if _dm:
                 await ctx.bot.create_message(_dm, str(ex))
     async def maybe_reply(self, ctx: 'Context', msg: str=None, prefix: str = "<@{user_id}> an exception occured: ", embeds: List[Embed]= None, components: List[Component] = None):
-        s = "{prefix}{msg}".format(prefix=prefix, msg=msg).format(user_id=ctx.user_id)
+        if msg:
+            s = "{prefix}{msg}".format(prefix=prefix, msg=msg).format(user_id=ctx.user_id)
         try:
             await ctx.reply(s, embeds=embeds, components=components)
         except Exception:
