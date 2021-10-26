@@ -87,16 +87,16 @@ class Command:
             #if isinstance(r, Message):
             #    await ctx.send(r.content, r.embeds, r.components)
             if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
-                await self.maybe_reply(embeds=[r] if type(r) is not list else r)
+                await self.maybe_reply(ctx, embeds=[r] if type(r) is not list else r)
             elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
-                await self.maybe_reply(components=[r] if type(r) is not list else r)
+                await self.maybe_reply(ctx, components=[r] if type(r) is not list else r)
             elif isinstance(r, Emoji):
                 if ctx.is_message:
                     await ctx.data.react(f"{r.name}:{r.id or 0}")
                 else:
-                    await self.maybe_reply(f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>")
+                    await self.maybe_reply(ctx, f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>")
             elif r:
-                await self.maybe_reply(str(r))
+                await self.maybe_reply(ctx, str(r))
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id)
         except TypeError as ex:
             log.exception("TypeError at command %s", self.name, exc_info=ex)
@@ -126,7 +126,7 @@ class Command:
             _dm = ctx.bot.cfg.get(ctx.bot.username.lower(), {}).get("log_dm", None)
             if _dm:
                 await ctx.bot.create_message(_dm, str(ex))
-    async def maybe_reply(self, ctx: 'Context', msg: str, prefix: str = "<@{user_id}> an exception occured: ", embeds: List[Embed]= None, components: List[Component] = None):
+    async def maybe_reply(self, ctx: 'Context', msg: str=None, prefix: str = "<@{user_id}> an exception occured: ", embeds: List[Embed]= None, components: List[Component] = None):
         s = "{prefix}{msg}".format(prefix=prefix, msg=msg).format(user_id=ctx.user_id)
         try:
             await ctx.reply(s, embeds=embeds, components=components)
