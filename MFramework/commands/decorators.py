@@ -114,7 +114,17 @@ def shortcut(name:str, group: Groups = Groups.GLOBAL, **kwargs):
         return f
     return inner
 
-def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False, guild: Snowflake = None, choice: bool=None, aliases: List[str] = [], name: str = None, help: str = None, **kwargs):
+def register(
+        group: Groups = Groups.GLOBAL, 
+        interaction: bool = True, 
+        main=False, 
+        guild: Snowflake = None,
+        choice: bool=None, 
+        aliases: List[str] = [], 
+        name: str = None, help: str = None, 
+        auto_defer: bool = True, private_response: bool = False,
+        **kwargs
+    ):
     '''Decorator for creating commands.
     
     Params
@@ -134,12 +144,16 @@ def register(group: Groups = Groups.GLOBAL, interaction: bool = True, main=False
     name:
         Overwrites default name inferred from function name
     help:
-        Overwrites default help string inferred from function's docstring'''
+        Overwrites default help string inferred from function's docstring
+    auto_defer:
+        Whether automatically respond with deferred state upon receiving command.
+    private_response:
+        Whether auto response should be set to private'''
     def inner(f):
         if name:
             f.__name__ = name
         _name = f.__name__.strip('_')
-        cmd = Command(f, interaction, main, group, guild, help=help)
+        cmd = Command(f, interaction, main, group, guild, help=help, auto_defer=auto_defer, private_response=private_response)
         f._cmd = cmd
         for alias in aliases:
             aliasList[alias] = f"{main.__name__}.{_name}" if main else _name

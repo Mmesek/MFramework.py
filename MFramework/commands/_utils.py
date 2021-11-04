@@ -62,7 +62,18 @@ class Command:
     sub_commands: List['Command']
     choices: Dict[str, 'Command']
     guild: Snowflake
-    def __init__(self, f: FunctionType, interaction: bool = True, main: object = False, group: Groups = Groups.GLOBAL, guild: Snowflake = None, main_only: bool=False, **kwargs) -> None:
+    auto_deferred: bool
+    private_response: bool
+    def __init__(self, 
+            f: FunctionType, 
+            interaction: bool = True, 
+            main: object = False, 
+            group: Groups = Groups.GLOBAL, 
+            guild: Snowflake = None,
+            main_only: bool=False, 
+            auto_defer: bool=True, private_response: bool = False, 
+            **kwargs
+        ) -> None:
         self.name = f.__name__.strip("_")
         self.func = f
         _docs = parse_docstring(f)
@@ -76,6 +87,8 @@ class Command:
         self.sub_commands = []
         self.choices = {}
         self.guild = guild
+        self.auto_deferred = auto_defer
+        self.private_response = private_response
     def add_subcommand(self, cmd: 'Command'):
         self.sub_commands.append(cmd)
     def add_choice(self, name: str, func: 'Command'):

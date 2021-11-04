@@ -39,6 +39,8 @@ async def interaction_create(client: Bot, interaction: Interaction):
             interaction.data.options = interaction.data.options[0].options
     if f.group.value < g.value:
         return
+    if f.auto_deferred:
+        await interaction.deferred(f.private_response)
     kwargs = {}
     kwargs = add_extra_arguments(f, kwargs, ctx=ctx, client= client, interaction=interaction, language='en')
     for option in interaction.data.options:
