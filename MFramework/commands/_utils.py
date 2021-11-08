@@ -3,6 +3,8 @@ from typing import List, Dict, Any, Type, Generator, Optional, Union, TYPE_CHECK
 from types import FunctionType
 from inspect import signature, Signature
 
+from mdiscord.exceptions import SoftError
+
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
     Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update, Guild_Member_Add,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
@@ -150,7 +152,7 @@ class Command:
             log.debug("Failed to reply to message. Falling back to default Message creation")
             await ctx.bot.create_message(ctx.channel_id, s, embeds=embeds, components=components)
 
-class Error(Exception):
+class Error(SoftError):
     pass
 
 class CooldownError(Error):
