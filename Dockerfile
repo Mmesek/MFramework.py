@@ -1,8 +1,6 @@
-FROM python:3.10-slim
+FROM python:3.10-slim as base
 
-ENV PYTHONPATH "${PYTHONPATH}:/modules"
-ENV PYTHONPATH "${PYTHONPATH}:/repos"
-VOLUME ["/app/data", "/app/bot", "/modules", "/repos", "/app/extenstions", "/app/locale"]
+VOLUME ["/app/data", "/app/bot", "/app/extenstions", "/app/locale"]
 WORKDIR "/app"
 
 COPY requirements.txt ./
@@ -13,3 +11,13 @@ RUN python -m pip install --upgrade --no-cache-dir pip && \
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 ENTRYPOINT ["/app/docker-entrypoint.sh", "--log=INFO"]
+
+FROM base as dev
+
+VOLUME ["/modules"]
+
+ENV PYTHONPATH "${PYTHONPATH}:/modules"
+ENV DEV 1
+
+COPY get_repos.py ./
+ENTRYPOINT ["/app/docker-entrypoint.sh", "--log=DEBUG"]
