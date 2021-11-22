@@ -50,10 +50,10 @@ class Argument:
         self.type = getattr(type, '__mbase__', type)
         if types and types != ['']:
             try:
-                types = [Channel_Types.get("GUILD_"+i.upper()) for i in types]
+                types = [Channel_Types.get("GUILD_"+i.upper()).value for i in types]
             except Exception as ex:
                 breakpoint
-        self.type_args = types or getattr(type, '__args__', None)
+        self.type_args = types or getattr(type, '__args__', [])
         self.help = help
         self.choices =choices
         self.kind = kind
