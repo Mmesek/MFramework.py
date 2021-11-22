@@ -8,7 +8,7 @@ from mdiscord.exceptions import SoftError
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
     Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update, Guild_Member_Add,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
-    Embed, Component,
+    Embed, Component, Channel_Types,
     log, BadRequest, NotFound
     )
 
@@ -45,10 +45,15 @@ class Argument:
     choices: Dict[str, Any]
     kind: str
     name: str
-    def __init__(self, default: str, type: Type, help: str, choices: Dict[str, Any], kind: str, name: str) -> None:
+    def __init__(self, default: str, type: Type, help: str, choices: Dict[str, Any], kind: str, name: str, types: List[str] = []) -> None:
         self.default = default
         self.type = getattr(type, '__mbase__', type)
-        self.type_args = getattr(type, '__args__', None)
+        if types and types != ['']:
+            try:
+                types = [Channel_Types.get("GUILD_"+i.upper()) for i in types]
+            except Exception as ex:
+                breakpoint
+        self.type_args = types or getattr(type, '__args__', None)
         self.help = help
         self.choices =choices
         self.kind = kind
@@ -202,7 +207,8 @@ def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Arg
                 if not issubclass(sig[parameter].annotation, enum.Enum) 
                 else {k.name: k.value for k in sig[parameter].annotation}),
             kind = sig[parameter].kind.name,
-            name = sig[parameter].name.strip()
+            name = sig[parameter].name.strip(),
+            types = docstring.get("_types", {}).get(sig[parameter].name.strip())
             )
         parameters[sig[parameter].name] = arg
     return parameters
@@ -210,6 +216,7 @@ def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Arg
 def parse_docstring(f: FunctionType) -> Dict[str, Union[str, Dict[str, str]]]:
     docstring = {
         '_doc':f.__doc__.strip().split('Params',1)[0].strip() if f.__doc__ else 'MISSING DOCSTRING',
+        '_types':{},
         'choices':{}
     }
     doc = f.__doc__.split('Params',1) if f.__doc__ else ['']
@@ -228,6 +235,11 @@ def parse_docstring(f: FunctionType) -> Dict[str, Union[str, Dict[str, str]]]:
                     choices.update({i.strip():j.strip() for i,j in [choice.split(' = ')]})
             elif param[-1] == ':':
                 _params.append((param.strip(':'),params[x+1]))
+            if param.strip().lower().startswith("channel:"):
+                p = param.split(':',1)
+                if len(p) > 1:
+                    docstring['_types'][p[0]] = [i.strip() for i in param.strip().split(':',1)[1].split(',')]
+                    docstring[p[0]] = params[x+1]
     for param in _params:
         docstring[param[0]] = param[1].strip()
     return docstring
