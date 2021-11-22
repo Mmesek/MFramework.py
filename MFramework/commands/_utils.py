@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List, Dict, Any, Type, Generator, Optional, Union, TYPE_CHECKING, Tuple
+from typing import List, Dict, Any, Type, Generator, Optional, Union, TYPE_CHECKING, Tuple, Sequence
 from types import FunctionType
 from inspect import signature, Signature
 
@@ -47,7 +47,8 @@ class Argument:
     name: str
     def __init__(self, default: str, type: Type, help: str, choices: Dict[str, Any], kind: str, name: str) -> None:
         self.default = default
-        self.type = type
+        self.type = getattr(type, '__mbase__', type)
+        self.type_args = getattr(type, '__args__', None)
         self.help = help
         self.choices =choices
         self.kind = kind
@@ -235,6 +236,9 @@ class Mentionable(Snowflake):
     '''Snowflake representing any (User, Role or Channel) mentionable object'''
     pass
 
+class ChannelType(Sequence):
+    __mbase__ = Channel
+
 _types = {
     str: Application_Command_Option_Type.STRING,
     int: Application_Command_Option_Type.INTEGER,
@@ -245,6 +249,7 @@ _types = {
     RoleID: Application_Command_Option_Type.ROLE,
     Role: Application_Command_Option_Type.ROLE,
     Channel: Application_Command_Option_Type.CHANNEL,
+    ChannelType: Application_Command_Option_Type.CHANNEL,
     User: Application_Command_Option_Type.USER,
     Guild_Member: Application_Command_Option_Type.USER,
     GuildID: Application_Command_Option_Type.STRING,
@@ -268,7 +273,7 @@ def parse_arguments(_command: Command) -> List[str]:
             choices.append(Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice]))
 
         a = Application_Command_Option(
-            name=i.strip(), description=_i.help[:100].strip(), required=True if _i.default is Signature.empty else False, choices=choices, options=[]
+            name=i.strip(), description=_i.help[:100].strip(), required=True if _i.default is Signature.empty else False, choices=choices, options=[], channel_types=_i.type_args
         )
         a.type=_types.get(_i.type,
                 Application_Command_Option_Type.INTEGER if issubclass(_i.type, int) else 
