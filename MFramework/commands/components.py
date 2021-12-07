@@ -36,9 +36,10 @@ async def interaction_create(client: Bot, interaction: Interaction):
         not_selected = []
         for row in interaction.message.components:
             for select_component in filter(lambda x: x.type == Component_Types.SELECT_MENU, row.components):
-                for value in select_component.options:
-                    if value.value not in interaction.data.values:
-                        not_selected.append(value)
+                if any(v in [_v.value for _v in select_component.options] for v in interaction.data.values):
+                    for value in select_component.options:
+                        if value.value not in interaction.data.values:
+                            not_selected.append(value)
         return await f.execute(ctx, data, interaction.data.values, not_selected)
         # TODO: way to auto send message like for regular commands
 
