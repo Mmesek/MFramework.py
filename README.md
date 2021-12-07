@@ -22,6 +22,8 @@ Required packages:
 python3.7 pip install -r requirements.txt
 ```
 
+## Examples
+
 Command example
 ```python
 from MFramework import register, Groups, Context
@@ -39,4 +41,68 @@ async def say(ctx: Context, text: str, i: int=1) -> str:
     for x in range(i):
         await ctx.send(f"{text} x {x}")
     return "Done"
+```
+
+Button example
+```python
+from MFramework import Context, Button, Select
+class CoolButton(Button):
+    @classmethod
+    async def execute(self, ctx: Context, data: str):
+        # Any kind of logic that happens upon pressing a button
+        pass
+```
+
+Select Button example
+```python
+from typing import List
+from MFramework import Context, Select, Select_Option
+class NiceSelection(Select):
+    @classmethod
+    async def execute(self, ctx: Context, data: str, values: List[str], not_selected: List[Select_Option]):
+        # Any kind of logic that happens upon selecting options from Menu
+        pass
+```
+
+Using components example
+```python
+from MFramework import Row
+@register(group=Groups.GLOBAL)
+async def new_cool_button(ctx: Context, cool_argument: str = "It's cool! Trust!") -> CoolButton:
+    '''
+    Sends new message with cool button
+    Params
+    ------
+    cool_argument:
+        Label's text of this button
+    '''
+    return CoolButton(label=cool_argument)
+
+@register(group=Groups.GLOBAL)
+async def new_cool_button(ctx: Context, name: str = "Cool Option") -> List[Row]:
+    '''
+    Sends new message with 2 rows, first with Selection with two options and second with two buttons
+    Params
+    ------
+    name:
+        name of first option
+    '''
+    rows = [
+        Row(
+            NiceSelection(
+                Option(
+                    label=name, value=123
+                ),
+                Option(
+                    label="Second option", value=256
+                ),
+                placeholder= "Options"
+            )
+        ),
+        Row(
+            CoolButton(label="Cool Button!", style=Button_Styles.SECONDARY),
+            Button(label="Not cool button", style=Button_Styles.DANGER)
+        )
+    ]
+    return rows
 ```
