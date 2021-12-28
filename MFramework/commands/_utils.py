@@ -416,5 +416,5 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
             kwargs[option.name] = mentioned[0]
         elif option.type is timedelta:
             from mlib.converters import total_seconds
-            kwargs[option.name] = total_seconds(option.value)
+            kwargs[option.name] = total_seconds(args[x])
     return set_default_arguments(ctx, f, kwargs)
