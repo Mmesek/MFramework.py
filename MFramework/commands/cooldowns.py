@@ -27,10 +27,10 @@ class Cooldown:
     '''Command Context for cooldown calculation'''
     _type: str
     '''Type of this cooldown'''
-    _bucket: Bucket
+    _bucket: Bucket = Bucket.USER
     '''Bucket for this cooldown'''
 
-    def __init__(self, ctx: Context, cooldown: timedelta, cooldown_type: str, **kwargs) -> None:
+    def __init__(self, ctx: Context, cooldown: timedelta, cooldown_type: str, bucket: Bucket = None, **kwargs) -> None:
         '''
         _cooldown:
             Delta of a cooldown
@@ -39,6 +39,7 @@ class Cooldown:
         self.ctx: Context = ctx
         self._type = cooldown_type
         self._cooldown = cooldown
+        self._bucket = bucket
     
     @property
     def cooldown(self) -> timedelta:
@@ -60,13 +61,13 @@ class Cooldown:
     @property
     def bucket(self) -> Snowflake:
         '''Returns ID of bucket cooldown should be applied to'''
-        return getattr(self.ctx, self._bucket)
+        return getattr(self.ctx, self._bucket.value)
 
     def add_cooldown(self, value = None) -> None:
         '''Saves last execution'''
         if not cooldowns.get(self._type):
             cooldowns[self._type] = {}
-        cooldowns[self._type][self.bucket] = value or self.now()
+        cooldowns[self._type][self.bucket] = value or self.now
 
     @property
     def elapsed(self) -> timedelta:
