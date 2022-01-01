@@ -1,36 +1,15 @@
 {
     "folders": [{
         "path": "..",
-        "name": "Root"
+        "name": "MFramework"
     },{
-        "path": "D:/Mmesek/tm/E/Workstation/Code/Discord Bots/Python/bot",
+        "path": "../../bot",
         "name": "Bot"
-    },{
-        "path": "D:/Mmesek/tm/E/Workstation/Code/Discord Bots/Python/bot/locale/",
-        "name": "Localization"
-    },{
-	    "path": "D:/Mmesek/tm/E/Workstation/Code/Discord Bots/Python/bot/data/",
-		"name": "Data"
-    },{
-        "path": "../.vscode/",
-        "name": "Settings"
-    },{
-	    "path": "../tools/",
-		"name": "Tools"
-	},{
-		"path": "../../RSSReader",
-		"name": "RSS"
-	},{
-        "path": "D:/Mmesek/tm/E/Workstation/Code/mlib/python/mlib",
-        "name": "mLib"
-    },{
-        "path": "D:/Mmesek/tm/E/Workstation/Code/mlib/python/mdiscord",
-        "name": "Discord"
-    }
-],
+    }],
     "extensions": {
         "recommendations": [
-            "ms-python.python"
+            "ms-python.python",
+            "ms-python.vscode-pylance"
         ]
     },
     "launch": {
@@ -42,8 +21,10 @@
                 "module": "MFramework",
                 "console": "integratedTerminal",
                 "cwd": "${workspaceFolder:Bot}",
-                "env": {"PYTHONPATH": "${workspaceFolder:Bot}"},
-                "args": ["dispatch", "commands_slash", "--log=DEBUG", "--cfg=data/secrets.ini"]
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder:Bot}"
+                },
+                "args": ["bot", "--log=DEBUG", "--cfg=data/secrets.ini"]
             },{
                 "name": "Python: Current File (Integrated Terminal)",
                 "type": "python",
@@ -52,136 +33,6 @@
                 "console": "integratedTerminal",
                 "args": ["--log=DEBUG"]
             }
-        ]    
-    },
-    "tasks": {
-        "version": "2.0.0",
-        "tasks": [
-            {
-                "label": "Download Docs",
-                "type": "process",
-                "command": "${config:python.pythonPath}",
-                "args":["${workspaceFolder:MFramework}/tools/generate_from_docs.py","download-docs"],
-                "presentation": {
-                    "echo": false,
-                    "reveal": "silent",
-                    "focus": false,
-                    "panel": "shared",
-                    "showReuseMessage": false,
-                    "clear": false
-                },
-                "options": {
-                    "cwd": "${workspaceFolder:MFramework}/"
-                }
-            },
-            {
-                "label": "Generate Endpoints and Objects",
-                "type": "process",
-                "command": "${config:python.pythonPath}",
-                "args":["${workspaceFolder:MFramework}/tools/generate_from_docs.py"],
-                "presentation": {
-                    "echo": false,
-                    "reveal": "silent",
-                    "focus": false,
-                    "panel": "shared",
-                    "showReuseMessage": false,
-                    "clear": false
-                },
-                "options": {
-                    "cwd": "${workspaceFolder:MFramework}/"
-                },
-                "group": "build"
-            },
-            {
-                "label": "Generate SQL Classes",
-                "type": "process",
-                "command": "${config:python.pythonPath}",
-                "args":["${workspaceFolder:MFramework}/tools/generate_sqlalchemy_classes.py"],
-                "presentation": {
-                    "echo": false,
-                    "reveal": "silent",
-                    "focus": false,
-                    "panel": "shared",
-                    "showReuseMessage": false,
-                    "clear": false
-                },
-                "options": {
-                    "cwd": "${workspaceFolder:MFramework}/"
-                },
-                "group": "build"
-            },
-            {
-                "label": "Run tests",
-                "type": "shell",
-                "command": "echo 'We do not have tests lol'",
-                "group": "test",
-                "presentation": {
-                    "echo": true,
-                    "reveal": "always",
-                    "focus": false,
-                    "panel": "shared",
-                    "showReuseMessage": true,
-                    "clear": false
-                }
-            },
-            {
-                "label": "Generate Config",
-                "type": "process",
-                "command": "${config:python.pythonPath}",
-                "args":["${workspaceFolder:MFramework}/bot/utils/config.py"],
-                "presentation": {
-                    "echo": false,
-                    "reveal": "silent",
-                    "focus": false,
-                    "panel": "shared",
-                    "showReuseMessage": false,
-                    "clear": false
-                },
-                "options": {
-                    "cwd": "${workspaceFolder:MFramework}/"
-                }
-            },
-            {
-                "label": "Generate files",
-                "dependsOn":["Generate Endpoints and Objects", "Generate SQL Classes", "Generate Config", "Run tests"]
-            },
-            {
-                "label": "Generate localizations",
-                "type": "process",
-                "command": "${config:python.pythonPath}",
-                "args":["${workspaceFolder:MFramework}/__main__.py","-generate-translations"],
-                "presentation": {
-                    "echo": false,
-                    "reveal": "silent",
-                    "focus": false,
-                    "panel": "shared",
-                    "showReuseMessage": false,
-                    "clear": false
-                },
-                "options": {
-                    "cwd": "${workspaceFolder:MFramework}/"
-                },
-                "group": "build"
-            }
         ]
-    },
-    "settings": {
-        "git.autofetch": true,
-        "git.autoStash": true,
-		"python.analysis.extraPaths": ["./", "${workspaceFolder:MFramework}", "../", "../MFramework"],
-        "python.analysis.cacheFolderPath": "${workspaceFolder:MFramework}/.cache/",
-        "files.exclude": {
-            ".gitignore": true,
-			"tools/": true,
-			"data/": true,
-        },
-        "editor.tokenColorCustomizations": {
-            "comments": "#696969",
-            "numbers": "#7BBB77",
-            "functions": "#11BCEE",
-            "keywords": "#EFAF5F",
-            "strings": "#DC5577",
-            "types": "#00AAAA",
-        }
     }
 }
