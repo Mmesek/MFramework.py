@@ -105,11 +105,12 @@ async def check_shortcuts(client: Bot, message: Message) -> bool:
     await f.func(**kwargs)
     return True
 
-@onDispatch(event="reaction_add")
-async def check_reaction(client: Bot, reaction: Reaction) -> bool:
+@onDispatch(event="message_reaction_add")
+async def check_reaction(client: Bot, reaction: Message_Reaction_Add) -> bool:
     from ._utils import reactions
-    f = reactions.get(str(reaction), None)
-    ctx = set_ctx(client, reaction, f)
+    f = reactions.get(str(reaction.emoji.name), None)
+    msg = Message(client, reaction.message_id, reaction.channel_id, reaction.guild_id, reactions=[reaction], member=reaction.member, author=User(id=reaction.user_id))
+    ctx = set_ctx(client, msg, f)
     if not ctx:
         return False
     await f.func(ctx, reaction)
