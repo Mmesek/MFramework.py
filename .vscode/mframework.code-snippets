@@ -20,18 +20,6 @@
 		],
 		"description": "Snippet for creating and registering new command in MFramework"
 	},
-	"Register new context command":{
-		"scope":"python",
-		"prefix":"@ctxRegister",
-		"body":[
-			"@ctxRegister(group='$1', help='${2:Short description to use with help command}', alias='$3', category='$4')",
-			"class ${5:commandTrigger}(BaseCtx):",
-			"    '''${6:Extended description to use with detailed help command}'''",
-			"    async def execute(self, *args, data, **kwargs):",
-			"        ${7:pass}"
-		],
-		"description": "Snippet for creating and registering new context command in MFramework"
-	},
 	"Register new interaction":{
 		"scope":"python",
 		"prefix":"@register",
@@ -48,6 +36,28 @@
 			"    ${7:pass}"
 		],
 		"description": "Snippet for creating and registering new interaction command in MFramework"
+	},
+	"New Button":{
+		"scope": "python",
+		"prefix": "class Button",
+		"body": [
+			"class ${1:MyButton}(Button):",
+			"    @classmethod",
+			"    async def execute(cls, ctx: Context, data: str):",
+			"        ${2:pass}"
+		],
+		"description": "Snippet for creating new interaction Button"
+	},
+	"New Selection":{
+		"scope": "python",
+		"prefix": "class Select",
+		"body": [
+			"class ${1:MySelect}(Select):",
+			"    @classmethod",
+			"    async def execute(cls, ctx: Context, data: str, values: List[str], not_selected: List[Select_Option]):",
+			"        ${2:pass}"
+		],
+		"description": "Snippet for creating new interaction Select Button"
 	},
 	"Virtual File":{
 		"scope":"python",
