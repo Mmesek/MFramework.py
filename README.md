@@ -106,3 +106,30 @@ async def new_cool_button(ctx: Context, name: str = "Cool Option") -> List[Row]:
     ]
     return rows
 ```
+
+## Running Bot
+
+### Docker
+
+via docker compose
+```sh
+docker-compose up
+```
+
+Manually
+```sh
+docker run -it Mmesek/MFramework \
+    -v data:/app/data \
+    -v bot:/app/bot \
+```
+
+Build docker image
+```sh
+docker build
+```
+
+### Locally
+
+```sh
+python -m MFramework bot --cfg=tokens.ini --log=INFO
+```
