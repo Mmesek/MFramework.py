@@ -233,6 +233,7 @@ def parse_docstring(f: FunctionType) -> Dict[str, Union[str, Dict[str, str]]]:
                         docstring['choices'][params[x-2].strip(':')] = choices
                         break
                     choices.update({i.strip():j.strip() for i,j in [choice.split(' = ')]})
+                docstring['choices'][params[x-2].strip(':')] = choices
             elif param[-1] == ':':
                 _params.append((param.strip(':'),params[x+1]))
             if param.strip().lower().startswith("channel:"):
