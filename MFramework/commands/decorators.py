@@ -153,7 +153,7 @@ def register(
         if name:
             f.__name__ = name
         _name = f.__name__.strip('_')
-        cmd = Command(f, interaction, main, group, guild, help=help, auto_defer=auto_defer, private_response=private_response)
+        cmd = Command(f, interaction, main, group, guild, help=help, auto_defer=auto_defer, private_response=private_response, **kwargs)
         f._cmd = cmd
         for alias in aliases:
             aliasList[alias] = f"{main.__name__}.{_name}" if main else _name

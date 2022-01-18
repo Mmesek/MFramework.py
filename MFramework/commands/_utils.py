@@ -80,6 +80,7 @@ class Command:
             guild: Snowflake = None,
             main_only: bool=False, 
             auto_defer: bool=True, private_response: bool = False, 
+            only_interaction: bool=False, only_message: bool=False,
             **kwargs
         ) -> None:
         self.name = f.__name__.strip("_")
@@ -87,8 +88,8 @@ class Command:
         _docs = parse_docstring(f)
         self.help = _docs['_doc']
         self.arguments = parse_signature(f, _docs) if not main_only else {}
-        self._only_interaction = self.arguments.get("Interaction", False) and not self.arguments.get("Message", False)
-        self._only_message = self.arguments.get("Message", False) and not self.arguments.get("Interaction", False)
+        self._only_interaction = only_interaction or self.arguments.get("Interaction", False) and not self.arguments.get("Message", False)
+        self._only_message = only_message or self.arguments.get("Message", False) and not self.arguments.get("Interaction", False)
         self.interaction = interaction
         self.master_command = main
         self.group = group
