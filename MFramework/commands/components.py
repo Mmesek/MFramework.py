@@ -105,4 +105,5 @@ class LinkButton(Button):
     style = Button_Styles.LINK
     def __init__(self, label: str, url: str = None, emoji: Emoji = None, disabled: bool = False):
         super().__init__(label, style=Button_Styles.LINK, emoji=emoji, disabled=disabled)
+        self.custom_id = None
         self.url = url
