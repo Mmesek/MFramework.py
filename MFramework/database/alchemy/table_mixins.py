@@ -1,7 +1,7 @@
 from typing import Any
 import datetime
 
-from sqlalchemy import Column, Integer, Enum, Date, String, Boolean, Column, ForeignKey, BigInteger
+from sqlalchemy import Column, Integer, Enum, Date, String, Boolean, Column, ForeignKey, BigInteger, Float
 from sqlalchemy.orm import declared_attr, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -53,6 +53,7 @@ class Setting:
     bool: bool = Column(Boolean, nullable=True)
     snowflake: Snowflake = Column(BigInteger, nullable=True)
     date: datetime.date = Column(Date, nullable=True)
+    float: float = Column(Float, nullable=True)
 
 class HasDictSettingsRelated:#(ProxiedDictMixin):
     @declared_attr

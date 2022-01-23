@@ -24,7 +24,7 @@ class Setting(Enum):
     Flags: int = 0# = enum.IntFlag # Tracking
     Permissions: int = 1# = enum.IntFlag
     Color: int = 2
-    Exp: int = 3
+    Exp: float = 3
     Voice_Exp: int = 4
     Gender: bool = 5
 
