@@ -55,8 +55,10 @@ class Roles(Database):
                 self.groups[g].add(permission.id)
     
     def get_level_roles(self, roles):
-        levels = roles.filter(db.Role.settings.any(name=types.Setting.Exp)).all() #TODO
-        self.level_roles = sorted({role.id: role.float for role in levels}, key=lambda x: x[1])
+        levels = roles.filter(db.Role.settings.any(name=types.Setting.Level)).all()
+        self.level_roles = sorted({role.id: role.get_setting(types.Setting.Level) for role in levels}, key=lambda x: x[1])
+        rates = roles.filter(db.Role.settings.any(name=types.Setting.Exp)).all()
+        self.role_rates = sorted({role.id: role.get_setting(types.Setting.Exp) for role in levels}, key=lambda x: x[1])
 
     def get_Roles(self, session):
         roles = session.query(db.Role).filter(db.Role.server_id == self.guild_id)
@@ -108,8 +110,8 @@ class Settings(Database, ObjectCollections):
     
     def get_exp_settings(self, channels):
         channels = channels.filter(db.Channel.settings.any(name=types.Setting.Exp)).all()
-        self.disabled_channels.extend([channel.id for channel in channels if not channel.float])
-        self.exp_rates = {channel.id: channel.float for channel in channels}
+        self.disabled_channels.extend([channel.id for channel in channels if not channel.get_setting(types.Setting.Exp)])
+        self.exp_rates = {channel.id: channel.get_setting(types.Setting.Exp) for channel in channels}
 
     def get_Channels(self, session):
         channels = session.query(db.Channel).filter(db.Channel.server_id == self.guild_id)
