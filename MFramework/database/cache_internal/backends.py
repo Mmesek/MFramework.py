@@ -29,6 +29,8 @@ class Dictionary(Dict):
         return len(self)
     def has(self, name) -> bool:
         return name in self
+    def exists(self, name) -> bool:
+        return name in self
     def count(self, name) -> int:
         return len(self.keys(name))
     def keys(self, pattern=None) -> List[Any]:
