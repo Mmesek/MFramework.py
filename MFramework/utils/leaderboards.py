@@ -30,6 +30,11 @@ class Leaderboard_Entry:
         '''Username corresponding to this user ID'''
         return self.ctx.cache.members.get(int(self.user_id), Guild_Member(user=User(username=self.user_id))).user.username
 
+    @property
+    def in_guild(self) -> bool:
+        '''Checks if user is still in guild's cache'''
+        return self.user_id in self.ctx.cache.members
+
 class Leaderboard:
     '''Leaderboard builder sorting and formatting leaderboard'''
     user_id: Snowflake
@@ -40,12 +45,14 @@ class Leaderboard:
     _iterable: List[Leaderboard_Entry] = []
     _user_stats: Leaderboard_Entry = None
 
-    def __init__(self, ctx: Context, user_id: Snowflake, iterable: List[Leaderboard_Entry], limit: int = 10, error: str = "No results") -> None:
+    def __init__(self, ctx: Context, user_id: Snowflake, iterable: List[Leaderboard_Entry], limit: int = 10, error: str = "No results", skip_invalid: bool = False) -> None:
         self.ctx = ctx
         self.user_id = user_id
-        self._iterable = list(iterable)
+        self._iterable = list(i for i in iterable if not skip_invalid or i.in_guild)
         self._user_stats = next(filter(lambda x: x.user_id == user_id, iterable), None)
         self._iterable.sort(key=lambda x: (x._value, x.name), reverse=True)
+        if self._user_stats:
+            self._user_position = self._iterable.index(self._user_stats) + 1
         self._iterable = self._iterable[:limit]
         self.error_no_results = error
         self._user_found = False
