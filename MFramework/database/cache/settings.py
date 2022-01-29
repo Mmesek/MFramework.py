@@ -77,7 +77,7 @@ class Settings(Database, ObjectCollections):
 
     nitro_channel: Snowflake
     afk_channel: Snowflake
-    dynamic_channels: Dict[Snowflake, str]
+    dynamic_channels: Dict[Snowflake, Snowflake]
 
     voice_link: Snowflake = None
     flags: int = 0
@@ -90,7 +90,7 @@ class Settings(Database, ObjectCollections):
         self.disabled_roles = []
         self.rpg_channels = []
         self.rpg_dices = []
-        self.dynamic_channels = {"channels":{}}
+        self.dynamic_channels = {}
         super().__init__(bot=bot, guild=guild, **kwargs)
         with bot.db.sql.Session.begin() as s:
             g = self.get_guild(s)
