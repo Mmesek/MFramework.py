@@ -56,9 +56,9 @@ class Roles(Database):
     
     def get_level_roles(self, roles):
         levels = roles.filter(db.Role.settings.any(name=types.Setting.Level)).all()
-        self.level_roles = sorted({role.id: role.get_setting(types.Setting.Level) for role in levels}, key=lambda x: x[1])
+        self.level_roles = sorted({role.id: role.get_setting(types.Setting.Level) for role in levels}.items(), key=lambda x: x[1])
         rates = roles.filter(db.Role.settings.any(name=types.Setting.Exp)).all()
-        self.role_rates = sorted({role.id: role.get_setting(types.Setting.Exp) for role in levels}, key=lambda x: x[1])
+        self.role_rates = {role.id: role.get_setting(types.Setting.Exp) for role in levels}
 
     def get_Roles(self, session):
         roles = session.query(db.Role).filter(db.Role.server_id == self.guild_id)
