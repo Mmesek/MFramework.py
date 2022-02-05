@@ -106,8 +106,33 @@ class Influx:
 
 from mlib.database import SQL
 
+class Supabase:
+    def __init__(self, cfg: dict) -> None:
+        self._url = cfg.get("url")
+        self._headers = {
+            "apikey": cfg.get("apikey"),
+            "Authorization": f"Bearer {cfg.get('token')}"
+        }
+
+    async def api_call(self, path: str, method: str = "GET", **kwargs):
+        import aiohttp
+        async with aiohttp.ClientSession(headers=self._headers) as _session:
+            async with _session.request(method, f"{self._url}/rest/v1/{path}", json=kwargs) as r:
+                try:
+                    r.raise_for_status()
+                    return await r.json()
+                except Exception as ex:
+                    from .. import log
+                    log.exception(r.content._buffer)
+                    return 0
+
+    async def increase_exp(self, server_id: int, user_id: int, value: float = 1) -> float:
+        return await self.api_call(path="rpc/incrExp", method="POST", server_id=server_id, user_id=user_id, value=value)
+
 class Database:
-    def __init__(self, config):
+    def __init__(self, config: dict):
         sql = config['Database']
         self.sql = SQL(sql['db'], sql['user'], sql['password'], sql['location'], sql['port'], sql['name'], sql['echo'])
         self.influx = Influx()
+        if config.get("Supabase", None):
+            self.supabase = Supabase(config['Supabase'])
