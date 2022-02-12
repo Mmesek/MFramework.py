@@ -9,8 +9,10 @@ from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID,
     Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update, Guild_Member_Add,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
     Embed, Component, Channel_Types,
+    Interaction_Response, Interaction_Callback_Type, Interaction_Application_Command_Callback_Data,
     log, BadRequest, NotFound
     )
+from MFramework.commands.components import Modal
 
 if TYPE_CHECKING:
     from MFramework import Bot, Context
@@ -110,6 +112,8 @@ class Command:
             #    await ctx.send(r.content, r.embeds, r.components)
             if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
                 await self.maybe_reply(ctx, embeds=[r] if type(r) is not list else r)
+            elif isinstance(r, Modal):
+                await ctx.bot.create_interaction_response(ctx.data.id, ctx.data.token, Interaction_Response(type=Interaction_Callback_Type.MODAL, data=Interaction_Application_Command_Callback_Data(title=r.title, custom_id=r.custom_id, components=r.components)))
             elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
                 await self.maybe_reply(ctx, components=[r] if type(r) is not list else r)
             elif isinstance(r, Emoji):

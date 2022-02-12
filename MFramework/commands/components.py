@@ -1,7 +1,10 @@
-from typing import Dict, List
+from typing import Dict, List, TYPE_CHECKING
 
-from mdiscord.models import Button_Styles, Emoji, Select_Option
-from MFramework import onDispatch, Context, Bot, Interaction, Interaction_Type, Component_Types, log, Button, Component
+from mdiscord.models import Button_Styles, Emoji, Select_Option, Text_Input_Styles
+from MFramework import onDispatch, Interaction, Interaction_Type, Component_Types, log, Button, Component
+
+if TYPE_CHECKING:
+    from MFramework import Context, Bot
 
 class MetaCommand:
     auto_deferred: bool = True
@@ -11,17 +14,18 @@ class MetaCommand:
         components[cls.__name__] = cls
         return super().__init_subclass__()
     @classmethod
-    async def execute(cls, ctx: Context, data: str, values: List[str] = None, not_selected: List[Select_Option] = None):
+    async def execute(cls, ctx: 'Context', data: str, values: List[str] = None, not_selected: List[Select_Option] = None):
         pass
 
 components: Dict[str, MetaCommand] = {}
 
 @onDispatch
-async def interaction_create(client: Bot, interaction: Interaction):
+async def interaction_create(client: 'Bot', interaction: Interaction):
     '''Called after receiving event INTERACTION_CREATE from Discord
     Reacts only to Components (Buttons)'''
-    if interaction.type != Interaction_Type.MESSAGE_COMPONENT:
+    if interaction.type != Interaction_Type.MESSAGE_COMPONENT and interaction.type != Interaction_Type.MODAL_SUBMIT:
         return
+    from MFramework import Context
     ctx = Context(client.cache, client, interaction)
     name, data = interaction.data.custom_id.split("-", 1)
     f = components.get(name, None)
@@ -32,7 +36,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
     if f.auto_deferred:
         await interaction.deferred(f.private_response)
     
-    if interaction.data.component_type == Component_Types.SELECT_MENU.value:
+    if interaction.data.component_type == Component_Types.SELECT_MENU:
         not_selected = []
         for row in interaction.message.components:
             for select_component in filter(lambda x: x.type == Component_Types.SELECT_MENU, row.components):
@@ -42,6 +46,12 @@ async def interaction_create(client: Bot, interaction: Interaction):
                             not_selected.append(value)
         return await f.execute(ctx, data, interaction.data.values, not_selected)
         # TODO: way to auto send message like for regular commands
+    elif interaction.type == Interaction_Type.MODAL_SUBMIT:
+        inputs = {}
+        for row in interaction.data.components:
+            for text_input in filter(lambda x: x.type == Component_Types.TEXT_INPUT, row.components):
+                inputs[text_input.custom_id.split("-", 1)[-1]] = text_input.value
+        return await f.execute(ctx, data, inputs)
 
     await f.execute(ctx, data)
 
@@ -49,7 +59,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
 # BASE
 
 class Row(Component):
-    type = Component_Types.ACTION_ROW
+    type = Component_Types.ACTION_ROW.value
     components: List[Component]
     def __init__(self, *components: Component):
         self.components = components
@@ -73,7 +83,7 @@ class Select(Component):
         super().__init__(custom_id)
 
     @classmethod
-    async def execute(cls, ctx: Context, data: str, values: List[str]):
+    async def execute(cls, ctx: 'Context', data: str, values: List[str]):
         return await super().execute(ctx, data)
 
 class Option(Select_Option):
@@ -95,7 +105,6 @@ class Button(Component):
     def __init__(self, label: str, custom_id: str = None, style: Button_Styles = Button_Styles.PRIMARY, emoji: Emoji = None, disabled: bool = False):
         self.style = style.value
         super().__init__(custom_id)
-        #self.custom_id = custom_id
         self.type = Component_Types.BUTTON.value
         self.label = label
         self.emoji = emoji
@@ -107,3 +116,29 @@ class LinkButton(Button):
         super().__init__(label, style=Button_Styles.LINK, emoji=emoji, disabled=disabled)
         self.custom_id = None
         self.url = url
+
+# MODALS
+
+class Modal(Component):
+    type = None
+    disabled = None
+    def __init__(self, *components: Component, title: str = None, custom_id: str = None):
+        self.title = title or self.__class__.__name__
+        self.components = components
+        super().__init__(custom_id)
+    
+    @classmethod
+    async def execute(cls, ctx: 'Context', data: str, inputs: Dict[str, str]):
+        return await super().execute(ctx, data)
+
+class TextInput(Component):
+    type: int = Component_Types.TEXT_INPUT.value
+    def __init__(self, label: str, custom_id: str = None, style: Text_Input_Styles = Text_Input_Styles.Paragraph, min_length: int = 0, max_length: int = 4000, required: bool = False, value: str = None, placeholder: str = None):
+        super().__init__(custom_id or label)
+        self.style = style.value
+        self.label = label
+        self.min_length = min_length
+        self.max_length = max_length
+        self.required = required
+        self.value = value
+        self.placeholder = placeholder
