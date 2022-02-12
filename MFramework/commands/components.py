@@ -10,7 +10,7 @@ class MetaCommand:
     auto_deferred: bool = True
     private_response: bool = True
     def __init_subclass__(cls) -> None:
-        print("registering", cls.__name__)
+        log.debug("Registering Component %s", cls.__name__)
         components[cls.__name__] = cls
         return super().__init_subclass__()
     @classmethod
@@ -83,7 +83,7 @@ class Select(Component):
         super().__init__(custom_id)
 
     @classmethod
-    async def execute(cls, ctx: 'Context', data: str, values: List[str]):
+    async def execute(cls, ctx: 'Context', data: str, values: List[str], not_selected: List[Select_Option]):
         return await super().execute(ctx, data)
 
 class Option(Select_Option):
