@@ -1,10 +1,22 @@
 from typing import Dict, List, TYPE_CHECKING
 
 from mdiscord.models import Button_Styles, Emoji, Select_Option, Text_Input_Styles
-from MFramework import onDispatch, Interaction, Interaction_Type, Component_Types, log, Button, Component
+from MFramework import onDispatch, Interaction, Interaction_Type, Component_Types, log, Button, Component, Interaction_Response, Interaction_Callback_Type, Interaction_Application_Command_Callback_Data
 
 if TYPE_CHECKING:
     from MFramework import Context, Bot
+
+async def run_function(cmd: 'MetaCommand', ctx: 'Context', **kwargs):
+    r = await cmd.execute(ctx, **kwargs)
+    from MFramework import Embed
+    if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
+        await ctx.reply(embeds=[r] if type(r) is not list else r)
+    elif isinstance(r, Modal):
+        await ctx.bot.create_interaction_response(ctx.data.id, ctx.data.token, Interaction_Response(type=Interaction_Callback_Type.MODAL, data=Interaction_Application_Command_Callback_Data(title=r.title, custom_id=r.custom_id, components=r.components)))
+    elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
+        await ctx.reply(components=[r] if type(r) is not list else r)
+    elif r:
+        await ctx.reply(str(r))
 
 class MetaCommand:
     auto_deferred: bool = True
@@ -44,17 +56,15 @@ async def interaction_create(client: 'Bot', interaction: Interaction):
                     for value in select_component.options:
                         if value.value not in interaction.data.values:
                             not_selected.append(value)
-        return await f.execute(ctx, data, interaction.data.values, not_selected)
-        # TODO: way to auto send message like for regular commands
+        return await run_function(f, ctx, data=data, values=interaction.data.values, not_selected=not_selected)
     elif interaction.type == Interaction_Type.MODAL_SUBMIT:
         inputs = {}
         for row in interaction.data.components:
             for text_input in filter(lambda x: x.type == Component_Types.TEXT_INPUT, row.components):
                 inputs[text_input.custom_id.split("-", 1)[-1]] = text_input.value
-        return await f.execute(ctx, data, inputs)
+        return await run_function(f, ctx, data=data, inputs=inputs)
 
-    await f.execute(ctx, data)
-
+    return await run_function(f, ctx, data=data)
 
 # BASE
 
