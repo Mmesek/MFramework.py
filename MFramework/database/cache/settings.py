@@ -112,6 +112,7 @@ class Settings(Database, ObjectCollections):
         channels = channels.filter(db.Channel.settings.any(name=types.Setting.Exp)).all()
         self.disabled_channels.extend([channel.id for channel in channels if not channel.get_setting(types.Setting.Exp)])
         self.exp_rates = {channel.id: channel.get_setting(types.Setting.Exp) for channel in channels}
+        self.server_exp_rate = self.settings.get(types.Setting.Exp, 1.0)
 
     def get_Channels(self, session):
         channels = session.query(db.Channel).filter(db.Channel.server_id == self.guild_id)
