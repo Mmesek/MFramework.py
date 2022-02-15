@@ -112,6 +112,8 @@ class ObjectCollections(Guild):
                 self.disabled_channels.append(id)
             elif "nitro" in channel.name:
                 self.nitro_channel = id
+            elif channel.type == 2 and channel.name.startswith("#"):
+                self.dynamic_channels[id] = id
 
     def cachedVoice(self, data):
         join = self.voice.pop(data.user_id, None)
