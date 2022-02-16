@@ -10,7 +10,7 @@ from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
     Embed, Component, Channel_Types,
     Interaction_Response, Interaction_Callback_Type, Interaction_Application_Command_Callback_Data,
-    log, BadRequest, NotFound
+    log, BadRequest, NotFound, Attachment
     )
 from MFramework.commands.components import Modal
 
@@ -273,6 +273,7 @@ _types = {
     GuildID: Application_Command_Option_Type.STRING,
     Mentionable: Application_Command_Option_Type.MENTIONABLE,
     float: Application_Command_Option_Type.NUMBER,
+    Attachment: Application_Command_Option_Type.ATTACHMENT,
     Message: Message,
 }
 
