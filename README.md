@@ -2,31 +2,44 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/Mmesek/MFramework.py)
 
-Low boilerplate command framework for Discord's REST API used by my bots like [M_Bot](https://github.com/Mmesek/MBot.py)
+Low boilerplate command framework for Discord's REST API extending [mDiscord](https://github.com/Mmesek/mdiscord) wrapper.
 
-General usage bot's framework, originally made to use with Discord API
 
-Reference:
-- [Discord API](https://discordapp.com/developers/docs/intro)
-- [Python Documentation](https://docs.python.org/3/)
+## Features
+- Commands metadata inferred from Python syntax itself
+- Dual availability of commands - define once and use as either message or interaction based
+- Built-in Database support with SQLAlchemy
+- Built-in remote cache support (Redis)
+- Easly extendable
 
-Notes:
+## Features against using it
+- Volatile
+- Repository was used as a monorepo and a "testbed" for unrelated features, certain parts were moved to separate repositories however there are still remnants of them here
+- Barely any documentation
+- Horror in internal files
+
+## Installation
 ---
-System package requirements:
+System package requirements for Postgres support:
 ```sh
 sudo apt install libpq5
 ```
 
 Required packages:
 ```sh
-python3.7 pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
-## Examples
+# Examples
+
+More examples can be found directly in my [M_Bot](https://github.com/Mmesek/MBot.py) repo.
+
+Unlike other libraries, there is no `bot` or `cog` - everything is registered globally and a lot of information is taken from docstrings and function signatures, mainly for ease of extending.
 
 Command example
 ```python
 from MFramework import register, Groups, Context
+
 @register(group=Groups.GLOBAL)
 async def say(ctx: Context, text: str, i: int=1) -> str:
     '''
@@ -46,6 +59,7 @@ async def say(ctx: Context, text: str, i: int=1) -> str:
 Button example
 ```python
 from MFramework import Context, Button, Select
+
 class CoolButton(Button):
     @classmethod
     async def execute(self, ctx: Context, data: str):
@@ -57,6 +71,7 @@ Select Button example
 ```python
 from typing import List
 from MFramework import Context, Select, Select_Option
+
 class NiceSelection(Select):
     @classmethod
     async def execute(self, ctx: Context, data: str, values: List[str], not_selected: List[Select_Option]):
@@ -67,6 +82,7 @@ class NiceSelection(Select):
 Using components example
 ```python
 from MFramework import Row
+
 @register(group=Groups.GLOBAL)
 async def new_cool_button(ctx: Context, cool_argument: str = "It's cool! Trust!") -> CoolButton:
     '''
@@ -107,9 +123,11 @@ async def new_cool_button(ctx: Context, name: str = "Cool Option") -> List[Row]:
     return rows
 ```
 
-## Running Bot
+# Running Bot
 
-### Docker
+## Docker
+
+###### Note: This section is not entirely tested, it's more a PoC rather than final version
 
 via docker compose
 ```sh
@@ -118,18 +136,22 @@ docker-compose up
 
 Manually
 ```sh
-docker run -it Mmesek/MFramework \
+docker run -it Mmesek/mframework \
     -v data:/app/data \
     -v bot:/app/bot \
 ```
 
 Build docker image
 ```sh
-docker build
+docker build -t mframework
 ```
 
-### Locally
+## Locally
 
 ```sh
 python -m MFramework bot --cfg=tokens.ini --log=INFO
 ```
+
+# Contributing
+
+Any sort of contribution, be it a Documentation, feature implementation, feature suggestion, bug fix, bug report or even a typo fix is welcome. For bigger changes open an issue first.
