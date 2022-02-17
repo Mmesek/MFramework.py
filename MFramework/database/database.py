@@ -1,11 +1,13 @@
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS 
 import datetime
+from MFramework import log
 
 class Influx:
     __slots__ = ('influx', 'write_api', 'query_api')
-    def __init__(self):
-        self.influx = InfluxDBClient.from_config_file("data/secrets.ini")
+    def __init__(self, cfg: dict):
+        influx = cfg.get('influx2', {})
+        self.influx = InfluxDBClient(cfg.get('url', None), cfg.get('token', None), org=cfg.get('org', None))
         self.write_api = self.influx.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.influx.query_api()
     def point(self, measurement_name):
@@ -131,8 +133,13 @@ class Supabase:
 
 class Database:
     def __init__(self, config: dict):
-        sql = config['Database']
-        self.sql = SQL(sql['db'], sql['user'], sql['password'], sql['location'], sql['port'], sql['name'], sql['echo'])
-        self.influx = Influx()
+        sql = config.get('Database', {})
+        self.sql = SQL(sql.get('db', None), sql.get('user', None), sql.get('password', None), sql.get('location', None), sql.get('port', None), sql.get('name', None), sql.get('echo', None))
+        if config.get("influx2", None):
+            self.influx = Influx(config["influx2"])
+        else:
+            log.info("Influx config not specified, skipping")
         if config.get("Supabase", None):
             self.supabase = Supabase(config['Supabase'])
+        else:
+            log.info("Supabase config not specified, skipping")
