@@ -23,7 +23,7 @@ if '-generate-translation' in sys.argv or '-update-translation' in sys.argv:
 from mlib.config import ConfigToDict
 from os.path import dirname, realpath
 path = dirname(realpath('__file__'))+ f"/{arguments.parse().cfg}"
-cfg = ConfigToDict(path)
+cfg = ConfigToDict(path, {"DiscordTokens":{"bot":"YOUR_TOKEN"}})
 
 db = MFramework.Database(cfg)
 db.sql.create_tables()
