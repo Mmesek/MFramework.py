@@ -1,6 +1,7 @@
 git+ssh://git@github.com:Mmesek/mdiscord.git
 git+ssh://git@github.com:Mmesek/mlib.git
 sqlalchemy
-psycopg2
+psycopg2-binary
 redis
 influxdb-client
+python-git
