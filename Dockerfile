@@ -3,6 +3,11 @@ FROM python:3.10-slim as base
 VOLUME ["/app/data", "/app/bot", "/app/extenstions", "/app/locale"]
 WORKDIR "/app"
 
+RUN apt-get update && \
+    apt-get install git -y && \
+    apt-get clean && \
+    apt-get autoremove
+
 COPY requirements.txt ./
 RUN python -m pip install --upgrade --no-cache-dir pip && \
     python -m pip install --no-cache-dir -r requirements.txt && \
