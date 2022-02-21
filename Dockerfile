@@ -15,7 +15,7 @@ RUN python -m pip install --upgrade --no-cache-dir pip && \
 
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
-ENTRYPOINT ["/app/docker-entrypoint.sh", "--log=INFO"]
+ENTRYPOINT ["./docker-entrypoint.sh", "--log=INFO"]
 
 FROM base as dev
 
@@ -25,4 +25,4 @@ ENV PYTHONPATH "${PYTHONPATH}:/modules"
 ENV DEV 1
 
 COPY get_repos.py ./
-ENTRYPOINT ["/app/docker-entrypoint.sh", "--log=DEBUG"]
+ENTRYPOINT ["./docker-entrypoint.sh", "--log=DEBUG"]

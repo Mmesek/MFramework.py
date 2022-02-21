@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if $DEV
 then
     python get_repos.py
