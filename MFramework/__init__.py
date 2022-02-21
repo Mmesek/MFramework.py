@@ -13,12 +13,15 @@ __version__ = "4.0"
 __package__ = "MFramework"
 __module__ = "MFramework"
 
-import i18n
-i18n.load_path.append("././locale")
-#i18n.set('filename_format', '{locale}.{format}')
-i18n.set('filename_format','{namespace}.{format}')
-i18n.set('skip_locale_root_data', True)
-i18n.set('file_format', 'json')
+try:
+    import i18n
+    i18n.load_path.append("././locale")
+    #i18n.set('filename_format', '{locale}.{format}')
+    i18n.set('filename_format','{namespace}.{format}')
+    i18n.set('skip_locale_root_data', True)
+    i18n.set('file_format', 'json')
+except:
+    pass
 
 try:
     import git, time

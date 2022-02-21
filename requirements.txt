@@ -5,3 +5,4 @@ psycopg2-binary
 redis
 influxdb-client
 python-git
+python-i18n
