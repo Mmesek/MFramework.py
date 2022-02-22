@@ -1,27 +1,32 @@
 FROM python:3.10-slim as base
 
-VOLUME ["/app/data", "/app/bot", "/app/extenstions", "/app/locale"]
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONPATH "${PYTHONPATH}:/modules"
+
 WORKDIR "/app"
 
-RUN apt-get update && \
-    apt-get install git -y && \
-    apt-get clean && \
-    apt-get autoremove
+RUN apt-get update \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends git \
+    && apt-get clean \
+    && apt-get autoremove
 
 COPY requirements.txt ./
-RUN python -m pip install --upgrade --no-cache-dir pip && \
-    python -m pip install --no-cache-dir -r requirements.txt && \
-    sed -i -e 's/_init_params,/_init_params + ["**kwargs"],/g' /usr/local/lib/python3.10/dataclasses.py
+RUN python -m pip --disable-pip-version-check --no-cache-dir install -r requirements.txt \ 
+    && rm -rf requirements.txt \
+    && sed -i -e 's/_init_params,/_init_params + ["**kwargs"],/g' /usr/local/lib/python3.10/dataclasses.py
 
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
+
+VOLUME ["/app/data", "/app/bot", "/app/extenstions", "/app/locale"]
+
 ENTRYPOINT ["./docker-entrypoint.sh", "--log=INFO"]
 
 FROM base as dev
 
 VOLUME ["/modules"]
 
-ENV PYTHONPATH "${PYTHONPATH}:/modules"
 ENV DEV 1
 
 COPY get_repos.py ./
