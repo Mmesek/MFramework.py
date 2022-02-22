@@ -1,6 +1,6 @@
 from typing import Dict
 
-from mdiscord import Snowflake, Application, Client, Gateway_Payload, Guild
+from mdiscord import Snowflake, Application, Client, Gateway_Payload, Guild, Ready, onDispatch
 
 from MFramework.database.cache import Cache
 from MFramework.database.database import Database
@@ -36,3 +36,9 @@ class Bot(Client):
             id = data.d.guild_id if hasattr(data.d, 'guild_id') else data.d.id
             if id and id in self.cache:
                 await self.cache[id].logging[data.t.lower()](data.d)
+
+@onDispatch
+async def ready(self: Bot, ready: Ready):
+    self.session_id = ready.session_id
+    import time
+    self.start_time = time.time()
