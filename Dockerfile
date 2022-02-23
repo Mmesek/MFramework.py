@@ -16,6 +16,10 @@ RUN python -m pip --disable-pip-version-check --no-cache-dir install -r requirem
     && rm -rf requirements.txt \
     && sed -i -e 's/_init_params,/_init_params + ["**kwargs"],/g' /usr/local/lib/python3.10/dataclasses.py
 
+COPY . ./pkg
+RUN python -m pip --disable-pip-version-check --no-cache-dir install ./pkg \
+    && rm -rf ./pkg
+
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
