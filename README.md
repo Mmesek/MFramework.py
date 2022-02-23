@@ -136,14 +136,23 @@ docker-compose up
 
 Manually
 ```sh
-docker run -it Mmesek/mframework \
+docker run -it \
     -v data:/app/data \
     -v bot:/app/bot \
+    Mmesek/mframework
 ```
 
 Build docker image
 ```sh
-docker build -t mframework
+docker build --target base -t mframework:latest .
+```
+
+Run built image with autoremoving
+```sh
+docker run -it \
+    -v "PATH_TO_DATA_FOLDER:/app/data" \
+    -v "PATH_TO_BOT_CODE:/app/bot" \
+    --rm mframework
 ```
 
 ## Locally
