@@ -13,17 +13,47 @@ arguments.add("--ext", help="Path to directory with extensions to load (Packages
 
 import MFramework
 from mlib.import_functions import import_from, import_modules
-for path in arguments.parse().paths:
-    import_from(path)
-import_modules(arguments.parse().ext)
+
+try:
+    for path in arguments.parse().paths:
+        import_from(path)
+    import_modules(arguments.parse().ext)
+except Exception as ex:
+    print(ex)
 
 if '-generate-translation' in sys.argv or '-update-translation' in sys.argv:
     exit()
 
 from mlib.config import ConfigToDict
-from os.path import dirname, realpath
+from os.path import dirname, realpath, isfile
+
+default_cfg = {
+    "DiscordTokens":{
+        "bot":"YOUR_TOKEN"
+    },
+    "bot":{
+        "alias":"!"
+    }
+}
+
+if isfile("/proc/self/cgroup") and any("docker" in line for line in open("/proc/self/cgroup")):
+    default_cfg.update({
+        "redis":{
+            "host":"redis"
+        }, 
+        "Database":{
+            "db":"postgresql+psycopg2", 
+            "user":"postgres", 
+            "password":"postgres", 
+            "location":"postgres", 
+            "name":"postgres", 
+            "port":5432, 
+            "echo":False
+        }
+    })
+
 path = dirname(realpath('__file__'))+ f"/{arguments.parse().cfg}"
-cfg = ConfigToDict(path, {"DiscordTokens":{"bot":"YOUR_TOKEN"}})
+cfg = ConfigToDict(path, default_cfg)
 
 db = MFramework.Database(cfg)
 db.sql.create_tables()
