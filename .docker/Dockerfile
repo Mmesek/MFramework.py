@@ -16,16 +16,18 @@ RUN python -m pip --disable-pip-version-check --no-cache-dir install -r requirem
     && rm -rf requirements.txt \
     && sed -i -e 's/_init_params,/_init_params + ["**kwargs"],/g' /usr/local/lib/python3.10/dataclasses.py
 
-COPY . ./pkg
+COPY ["setup.py", "README.md", "requirements.txt", "./pkg/"]
+COPY MFramework ./pkg/MFramework
 RUN python -m pip --disable-pip-version-check --no-cache-dir install ./pkg \
     && rm -rf ./pkg
 
-COPY docker-entrypoint.sh ./
+COPY .docker/docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
 VOLUME ["/app/data", "/app/bot", "/app/extenstions", "/app/locale"]
 
-ENTRYPOINT ["./docker-entrypoint.sh", "--log=INFO"]
+ENTRYPOINT [ "python", "-m", "MFramework", "bot", "--cfg=data/secrets.ini", "--log=DEBUG" ]
+#ENTRYPOINT ["./docker-entrypoint.sh", "--log=INFO"]
 
 FROM base as dev
 
