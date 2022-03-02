@@ -289,7 +289,7 @@ def parse_arguments(_command: Command) -> List[str]:
         _i = _command.arguments[i]
         choices = []
         for choice in _i.choices:
-            choices.append(Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice]))
+            choices.append(Application_Command_Option_Choice(name=choice.strip(), value=_i.type(_i.choices[choice])))
 
         a = Application_Command_Option(
             name=i.strip(), description=_i.help[:100].strip(), required=True if _i.default is Signature.empty else False, choices=choices, options=[], channel_types=_i.type_args
