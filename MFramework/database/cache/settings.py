@@ -100,7 +100,7 @@ class Settings(Database, ObjectCollections):
             self.load_voice_states(guild.voice_states)
 
     def load_settings(self, guild):
-        self.settings = guild.settings
+        self.settings = {setting: getattr(value, setting.annotation.__name__.lower()) for setting, value in guild.settings.items()}
         for setting, value in guild.settings.items():
             setattr(self, setting.name.lower(), getattr(value, setting.annotation.__name__.lower(), None))
 
