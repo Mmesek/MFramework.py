@@ -7,9 +7,9 @@
 [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Mmesek/MFramework.py)]()
 [![GitHub repo size](https://img.shields.io/github/repo-size/Mmesek/MFramework.py)]()
 
-[![GitHub issues](https://img.shields.io/github/issues/Mmesek/MFramework.py)](/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/Mmesek/MFramework.py)](/pulls)
-[![GitHub contributors](https://img.shields.io/github/contributors/Mmesek/MFramework.py)](/graphs/contributors)
+[![GitHub issues](https://img.shields.io/github/issues/Mmesek/MFramework.py)](../../issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/Mmesek/MFramework.py)](../../pulls)
+[![GitHub contributors](https://img.shields.io/github/contributors/Mmesek/MFramework.py)](../../graphs/contributors)
 
 ---
 
