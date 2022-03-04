@@ -60,8 +60,9 @@ class Setting(Enum):
     Allowed_Duplicated_Messages: int = 50
     Should_Remove_Links: bool = 51
     Auto_Mute_Infractions: int = 52
-    Auto_Ban_Infractions: int = 53
-    Limit_Nitro_Roles: int = 54
+    Auto_Mute_Duration: str = 53
+    Auto_Ban_Infractions: int = 54
+    Limit_Nitro_Roles: int = 55
     Stream: str = 60
 
 
