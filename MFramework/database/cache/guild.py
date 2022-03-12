@@ -30,6 +30,7 @@ class ObjectCollections(Guild):
     last_messages: Dict[Snowflake, Message]
     threads: Dict[Snowflake, Snowflake]
     dm_threads: Dict[Snowflake, Snowflake]
+    kv: collections.KeyValue = collections.KeyValue()
     def __init__(self, *, bot, guild: Guild, rds: Optional[collections.Redis] = None, **kwargs) -> None:
         if not rds:
             host = bot.cfg.get("redis", {}).get("host", None)
@@ -50,6 +51,7 @@ class ObjectCollections(Guild):
         self.afk_channel = guild.afk_channel_id
         self.messages = collections.Messages(r)
         self.cooldowns = collections.Cooldowns(r)
+        self.kv = collections.KeyValue(r, guild.id)
         self.presence = collections.Presences()
         self.threads = {i.id: i.parent_id for i in guild.threads}
         self.dm_threads = {i.id: int(i.name.split('-')[-1].strip()) for i in guild.threads if i.name.split('-')[-1].strip().isdigit()}

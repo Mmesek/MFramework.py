@@ -147,3 +147,12 @@ class Context(Collection):
     _expire: timedelta = timedelta(minutes=10)
     def _create_id(self, guild_id: Snowflake, channel_id: Snowflake, user_id: Snowflake) -> str:
         return self._combine(guild_id, channel_id, user_id)
+
+class KeyValue(Collection):
+    def __init__(self, guild_id: int = 0, cache: Union[Dictionary, Redis] = None) -> None:
+        self.guild_id = guild_id
+        super().__init__(cache)
+    def store(self, key: str, value: str, expire_time: timedelta = None):
+        return self._cache.add(key, value, expire_time)
+    def get(self, key: str):
+        return self._cache.get(key)
