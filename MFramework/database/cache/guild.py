@@ -36,7 +36,7 @@ class ObjectCollections(Guild):
             _redis = bot.cfg.get("redis", {})
             host = _redis.get("host", None)
             if host:
-                r = collections.Redis(host, passsword=_redis.get("password", None), port=_redis.get("port", 6379), db=_redis.get("_db", 0))
+                r = collections.Redis(host, password=_redis.get("password", None), port=_redis.get("port", 6379), db=_redis.get("_db", 0))
             else:
                 r = collections.Dictionary()
         else:
