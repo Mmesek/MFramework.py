@@ -33,9 +33,10 @@ class ObjectCollections(Guild):
     kv: collections.KeyValue = collections.KeyValue()
     def __init__(self, *, bot, guild: Guild, rds: Optional[collections.Redis] = None, **kwargs) -> None:
         if not rds:
-            host = bot.cfg.get("redis", {}).get("host", None)
+            _redis = bot.cfg.get("redis", {})
+            host = _redis.get("host", None)
             if host:
-                r = collections.Redis(host)
+                r = collections.Redis(host, passsword=_redis.get("password", None), port=_redis.get("port", 6379), db=_redis.get("_db", 0))
             else:
                 r = collections.Dictionary()
         else:
