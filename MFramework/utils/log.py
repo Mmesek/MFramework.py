@@ -7,7 +7,7 @@ class Log:
     '''Base Log class. Subclass it and overwrite `.log()` and optionally `.log_dm()` to create new log. 
     If it's about one of Discord Dispatch events, the name should match (For example: `Message_Delete` for logging deleted messages)
 
-    Atributtes
+    Attributes
     ----------
     username:
         Name webhook when using this logger

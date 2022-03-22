@@ -34,8 +34,8 @@ class Groups(Enum):
     LIMBO = 220
     def can_use(cls, value: 'Groups') -> bool:
         '''Checks if Group is higher or equal than provided one
-        Params
-        ------
+        Parameters
+        ----------
         value:
             Group to compare to. For example, Minimal group that can use'''
         return cls.value <= value.value

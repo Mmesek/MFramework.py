@@ -127,8 +127,8 @@ def register(
     ):
     '''Decorator for creating commands.
     
-    Params
-    ------
+    Parameters
+    ----------
     group:
         is a lowest group that can access this command (Highest digit). DM and Muted are special groups
     interaction:
@@ -173,8 +173,8 @@ def register(
 def any_role(*required: Union[Snowflake, str]):
     '''Checks if user has any provided role.
 
-    Params
-    ------
+    Parameters
+    ----------
     required:
         Checks if provided role IDs or role names are present on calling user
     '''
@@ -194,8 +194,8 @@ def any_role(*required: Union[Snowflake, str]):
 def reaction(reaction: str, group: Groups = Groups.GLOBAL, guild: Snowflake = None):
     '''Makes command respond to reaction as a trigger
 
-    Params
-    ------
+    Parameters
+    ----------
     reaction:
         Reaction which should trigger this function
     group:
