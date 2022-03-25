@@ -2,7 +2,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/Mmesek/MFramework.py)
 
-[![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Mmesek/MFramework.py)]()
+[![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Mmesek/MFramework.py)](https://www.codefactor.io/repository/github/mmesek/mframework.py)
 [![Lines of code](https://img.shields.io/tokei/lines/github/Mmesek/MFramework.py)]()
 [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Mmesek/MFramework.py)]()
 [![GitHub repo size](https://img.shields.io/github/repo-size/Mmesek/MFramework.py)]()
