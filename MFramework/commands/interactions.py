@@ -18,6 +18,18 @@ from MFramework import (onDispatch, Ready, Interaction_Type,
 
 from ._utils import is_nested, iterate_commands, set_default_arguments, commands, add_extra_arguments, Command
 
+LOCALIZATIONS = []
+try:
+    import i18n
+    import os
+    for path in i18n.load_path:
+        for locale in os.listdir(path):
+            if locale == 'en':
+                locale = 'en-US'
+            LOCALIZATIONS.append(locale)
+except ImportError:
+    log.debug("Package i18n not found. Localizations are unavailable")
+
 @onDispatch
 async def interaction_create(client: Bot, interaction: Interaction):
     '''Called after receiving event INTERACTION_CREATE from Discord'''
@@ -123,7 +135,13 @@ async def register_commands(client: Bot, guild: Guild = None):
 
 
     for command, _command, options in iterate_commands(registered, guild.id if guild else None):
-        cmd = Application_Command(name=command, description=_command.help[:100], options=options, default_permission=_command.group == Groups.GLOBAL)
+        name_localized = {}
+        desc_localized = {}
+        for locale in LOCALIZATIONS:
+            from mlib.localization import check_translation
+            name_localized[locale] = check_translation("name", locale, command)
+            desc_localized[locale] = check_translation("description", locale, _command.help[:100])
+        cmd = Application_Command(name=command, description=_command.help[:100], options=options, default_permission=_command.group == Groups.GLOBAL, name_localizations=name_localized, description_localizations=desc_localized)
         if len(options) == 1 and options[0].type is Application_Command_Option_Type.USER:
             cmd.type = Application_Command_Type.USER
             cmd.description = None
