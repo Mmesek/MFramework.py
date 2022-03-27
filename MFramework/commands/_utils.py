@@ -14,6 +14,18 @@ from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID,
     )
 from MFramework.commands.components import Modal
 
+LOCALIZATIONS = []
+try:
+    import i18n
+    import os
+    for path in i18n.load_path:
+        for locale in os.listdir(path):
+            if locale == 'en':
+                locale = 'en-US'
+            LOCALIZATIONS.append(locale)
+except ImportError:
+    log.debug("Package i18n not found. Localizations are unavailable")
+
 if TYPE_CHECKING:
     from MFramework import Bot, Context
 
@@ -289,7 +301,12 @@ def parse_arguments(_command: Command) -> List[str]:
         _i = _command.arguments[i]
         choices = []
         for choice in _i.choices:
+            name_localized = {}
+            for locale in LOCALIZATIONS:
+                from mlib.localization import check_translation
+                name_localized[locale] = check_translation(f"commands.{_command.name}.{i.lower()}.{choice.strip()}", locale, choice.strip())
             _choice = Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice])
+            _choice.name_localizations = name_localized
             if _i.type in {int, bool}:
                 # Workaround due to currently autocasting to str by constructor
                 _choice.value = _i.type(_choice.value)
@@ -298,6 +315,16 @@ def parse_arguments(_command: Command) -> List[str]:
         a = Application_Command_Option(
             name=i.strip(), description=_i.help[:100].strip(), required=True if _i.default is Signature.empty else False, choices=choices, options=[], channel_types=_i.type_args
         )
+
+        name_localized = {}
+        desc_localized = {}
+        for locale in LOCALIZATIONS:
+            from mlib.localization import check_translation
+            name_localized[locale] = check_translation(f"commands.{_command.name}.{i.lower()}.name", locale, i.strip())
+            desc_localized[locale] = check_translation(f"commands.{_command.name}.{i.lower()}.description", locale, _i.help[:100])
+        a.name_localizations = name_localized
+        a.description_localizations = desc_localized
+
         a.type=_types.get(_i.type,
                 Application_Command_Option_Type.INTEGER if issubclass(_i.type, int) else 
                 Application_Command_Option_Type.STRING)
