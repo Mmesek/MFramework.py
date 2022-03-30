@@ -55,6 +55,8 @@ async def interaction_create(client: Bot, interaction: Interaction):
             if type(t) is timedelta:
                 from mlib.converters import total_seconds
                 v = total_seconds(option.value)
+            if t == dict:
+                v = ({v: k for k, v in f.arguments[option.name].choices.items()}.get(option.value), option.value)
             else:
                 v = f.arguments[option.name].type(option.value)
             kwargs[option.name] = v

@@ -218,10 +218,11 @@ def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Arg
         import enum
         arg = Argument(
             default = sig[parameter].default,
-            type = sig[parameter].annotation,
+            type = sig[parameter].annotation if type(sig[parameter].annotation) is type else type(sig[parameter].annotation),
             help = docstring.get(sig[parameter].name, 'MISSING DOCSTRING').strip(),
             choices = docstring.get('choices').get(sig[parameter].name, []
-                if not issubclass(sig[parameter].annotation, enum.Enum) 
+                if type(sig[parameter].annotation) is not dict and not issubclass(sig[parameter].annotation, enum.Enum) 
+                else sig[parameter].annotation if type(sig[parameter].annotation) is dict
                 else {k.name: k.value for k in sig[parameter].annotation}),
             kind = sig[parameter].kind.name,
             name = sig[parameter].name.strip(),
