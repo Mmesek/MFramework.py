@@ -133,6 +133,8 @@ class Command:
                     await ctx.data.react(f"{r.name}:{r.id or 0}")
                 else:
                     await self.maybe_reply(ctx, f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>", prefix="")
+            elif isinstance(r, Attachment) or (type(r) is list and all(isinstance(i, Attachment) for i in r)):
+                await self.maybe_reply(ctx, attachments=[r] if type(r) is not list else r)
             elif r:
                 await self.maybe_reply(ctx, str(r), prefix="")
             ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id)
@@ -164,13 +166,13 @@ class Command:
             _dm = ctx.bot.cfg.get(ctx.bot.username.lower(), {}).get("log_dm", None)
             if _dm:
                 await ctx.bot.create_message(_dm, str(ex))
-    async def maybe_reply(self, ctx: 'Context', msg: str=None, prefix: str = "<@{user_id}> an exception occured: ", embeds: List[Embed]= None, components: List[Component] = None):
+    async def maybe_reply(self, ctx: 'Context', msg: str=None, prefix: str = "<@{user_id}> an exception occured: ", embeds: List[Embed]= None, components: List[Component] = None, attachments: List[Attachment]=None):
         if msg:
             s = "{prefix}{msg}".format(prefix=prefix, msg=msg).format(user_id=ctx.user_id)
         else:
             s = None
         try:
-            await ctx.reply(s, embeds=embeds, components=components)
+            await ctx.reply(s, embeds=embeds, components=components, attachments=attachments)
         except Exception:
             log.debug("Failed to reply to message. Falling back to default Message creation")
             await ctx.bot.create_message(ctx.channel_id, s, embeds=embeds, components=components)
