@@ -9,7 +9,7 @@ Interaction commands registery & execution framework
 '''
 from datetime import timedelta
 from MFramework import (onDispatch, Ready, Interaction_Type,
-    RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake, Message,
+    RoleID, UserID, ChannelID, Role, User, Channel, Guild_Member, Snowflake, Message, Attachment,
     Interaction, Guild, Application_Command, Application_Command_Option_Type,
     Context, Bot, Groups, log,
     Application_Command_Permissions, Application_Command_Permission_Type, Guild_Application_Command_Permissions,
@@ -49,7 +49,7 @@ async def interaction_create(client: Bot, interaction: Interaction):
         if issubclass(t, Snowflake) and not option.value.isdigit():
             from MFramework.utils.utils import parseMention
             option.value = parseMention(option.value)
-        if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID]:
+        if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID, Attachment]:
             if type(option.value) is str and option.value.isdigit():
                 option.value = int(option.value)
             if type(t) is timedelta:
