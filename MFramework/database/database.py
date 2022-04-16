@@ -3,7 +3,42 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 import datetime
 from MFramework import log
 
-class Influx:
+class InfluxBase:
+    def __init__(self, cfg: dict = None) -> None:
+        pass
+    def point(self, measurement_name):
+        pass
+    async def influxMember(self, **kwargs):
+        pass
+    async def influxMembers(self, serverID, users: tuple):
+        pass
+    def getMembersChange(self, server_id, period: str, state: str = "joined"):
+        pass
+    async def influxGetMember(self, server):
+        pass
+    def commitVoiceSession(self, server, channel, user, delta, timestamp=datetime.datetime.now().isoformat()):
+        pass
+    def commitPresence(self, server, user, game, delta, timestamp=datetime.datetime.now().isoformat()):
+        pass
+    def commitMessage(self, server, channel, user, words):
+        pass
+    def commitCommandUsage(self, server_id, command_name, bot_name, success=True, user_id=0):
+        pass
+    def getSession(self, user, interval):
+        pass
+    def getMessages(self, user):
+        pass
+    def get(self, query):
+        pass
+    def get_server(self, limit, interval, guild_id, measurement, fn="count", additional=""):
+        pass
+    def get_command_usage(self, guild_id, interval="30d"):
+        pass
+    async def influxPing(self):
+        return False
+
+
+class Influx(InfluxBase):
     __slots__ = ('influx', 'write_api', 'query_api')
     def __init__(self, cfg: dict):
         influx = cfg.get('influx2', {})
@@ -120,6 +155,7 @@ class Database:
         if config.get("influx2", None):
             self.influx = Influx(config["influx2"])
         else:
+            self.influx = InfluxBase()
             log.info("Influx config not specified, skipping")
         if config.get("Supabase", None):
             self.supabase = Supabase(config['Supabase'])
