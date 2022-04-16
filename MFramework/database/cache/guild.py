@@ -58,6 +58,7 @@ class ObjectCollections(Guild):
         self.dm_threads = {i.id: int(i.name.split('-')[-1].strip()) for i in guild.threads if i.name.split('-')[-1].strip().isdigit()}
         self.last_messages = {}
         self.voice = {}
+        self.responses = {}
         super().__init__(bot=bot, guild=guild, rds=rds, **kwargs)
         self.setRoleGroups()
         self.setChannels()
