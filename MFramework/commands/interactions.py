@@ -125,7 +125,7 @@ async def register_commands(client: Bot, guild: Guild = None):
             await delete_command(client, cmd, guild)
 
 
-    for command, _command, options in iterate_commands(registered, guild.id if guild else None):
+    for command, _command, options in iterate_commands(registered, guild.id if guild else None, client.user_id):
         name_localized = {}
         desc_localized = {}
         for locale in LOCALIZATIONS:

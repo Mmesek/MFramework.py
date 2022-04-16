@@ -84,6 +84,7 @@ class Command:
     sub_commands: List['Command']
     choices: Dict[str, 'Command']
     guild: Snowflake
+    bot: Snowflake
     auto_deferred: bool
     private_response: bool
     def __init__(self, 
@@ -95,6 +96,7 @@ class Command:
             main_only: bool=False, 
             auto_defer: bool=True, private_response: bool = False, 
             only_interaction: bool=False, only_message: bool=False,
+            bot: Snowflake = None,
             **kwargs
         ) -> None:
         self.name = f.__name__.strip("_")
@@ -112,6 +114,7 @@ class Command:
         self.guild = guild
         self.auto_deferred = auto_defer
         self.private_response = private_response
+        self.bot = bot
     def add_subcommand(self, cmd: 'Command'):
         self.sub_commands.append(cmd)
     def add_choice(self, name: str, func: 'Command'):
@@ -339,9 +342,9 @@ def parse_arguments(_command: Command) -> List[str]:
         ))
     return options
 
-def iterate_commands(registered: List[Application_Command]=[], guild_id: Optional[Snowflake] = None) -> Generator[Tuple[str, Command, List[str]], None, None]:
+def iterate_commands(registered: List[Application_Command]=[], guild_id: Optional[Snowflake] = None, bot_id: Optional[Snowflake] = None) -> Generator[Tuple[str, Command, List[str]], None, None]:
     for command, cmd in commands.items():
-        if guild_id != cmd.guild or cmd.master_command or not cmd.interaction:
+        if guild_id != cmd.guild or cmd.master_command or not cmd.interaction or cmd.bot != bot_id:
             continue
         _command = commands[command]
         options = parse_arguments(_command)
