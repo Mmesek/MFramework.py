@@ -56,7 +56,10 @@ class Context(Sendable):
         else:
             self.user_id = data.author.id
             self.user = data.author
-            self.member = data.member or cache.members.get(data.user_id, None) or Guild_Member()
+            try:
+                self.member = data.member or cache.members.get(data.user_id, None) or Guild_Member()
+            except:
+                self.member = Guild_Member()
             self.member.user = data.author
             self.is_interaction = False
             self.is_message = True
