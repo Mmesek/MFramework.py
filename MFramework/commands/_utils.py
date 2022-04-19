@@ -6,13 +6,14 @@ from inspect import signature, Signature
 from mdiscord.exceptions import SoftError
 
 from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID, 
-    Channel, User, Role, Guild_Member, Message, Enum, Guild_Member_Update, Guild_Member_Add,
+    Channel, User, Role, Guild_Member, Message, Guild_Member_Update, Guild_Member_Add,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
     Embed, Component, Channel_Types,
     Interaction_Response, Interaction_Callback_Type, Interaction_Application_Command_Callback_Data,
     log, BadRequest, NotFound, Attachment
     )
 from MFramework.commands.components import Modal
+from MFramework.commands import Groups
 
 LOCALIZATIONS = []
 try:
@@ -28,29 +29,6 @@ except ImportError:
 
 if TYPE_CHECKING:
     from MFramework import Bot, Context
-
-class Groups(Enum):
-    SYSTEM = 0
-    OWNER = 5
-    ADMIN = 10
-    MODERATOR = 20
-    HELPER = 30
-    SUPPORT = 40
-    PARTNER = 50
-    NITRO = 60
-    SUPPORTER = 70
-    VIP = 80
-    GLOBAL = 100
-    DM = 200
-    MUTED = 210
-    LIMBO = 220
-    def can_use(cls, value: 'Groups') -> bool:
-        '''Checks if Group is higher or equal than provided one
-        Parameters
-        ----------
-        value:
-            Group to compare to. For example, Minimal group that can use'''
-        return cls.value <= value.value
 
 class Argument:
     default: str
