@@ -322,7 +322,7 @@ def parse_arguments(_command: Command) -> List[str]:
 
 def iterate_commands(registered: List[Application_Command]=[], guild_id: Optional[Snowflake] = None, bot_id: Optional[Snowflake] = None) -> Generator[Tuple[str, Command, List[str]], None, None]:
     for command, cmd in commands.items():
-        if guild_id != cmd.guild or cmd.master_command or not cmd.interaction or cmd.bot != bot_id:
+        if guild_id != cmd.guild or cmd.master_command or not cmd.interaction or (cmd.bot and cmd.bot != bot_id):
             continue
         _command = commands[command]
         options = parse_arguments(_command)
