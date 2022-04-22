@@ -291,9 +291,9 @@ def parse_arguments(_command: Command) -> List[str]:
                 name_localized[locale] = check_translation(f"commands.{_command.name}.{i.lower()}.{choice.strip()}", locale, choice.strip())
             _choice = Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice])
             _choice.name_localizations = name_localized
-            if _i.type in {int, bool}:
+            #if _i.type in {int, bool}:
                 # Workaround due to currently autocasting to str by constructor
-                _choice.value = _i.type(_choice.value)
+            #    _choice.value = _i.type(_choice.value)
             choices.append(_choice)
 
         a = Application_Command_Option(
