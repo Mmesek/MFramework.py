@@ -105,8 +105,8 @@ async def guild_create(client: Bot, guild: Guild):
     
     _commands = await register_commands(client, guild)
     
-    if client.cache[guild.id]._permissions_set is False or UPDATE_PERMISSIONS:
-        await set_permissions(client, guild.id, _commands)
+    #if client.cache[guild.id]._permissions_set is False or UPDATE_PERMISSIONS:
+    #    await set_permissions(client, guild.id, _commands)
 
 async def register_commands(client: Bot, guild: Guild = None):
     registered = await get_commands(client, guild)
