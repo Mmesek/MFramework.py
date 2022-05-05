@@ -26,14 +26,15 @@ from MFramework.commands._utils import (
     set_context,
     get_original_cmd,
     CommandNotFound,
-    WrongContext
+    WrongContext,
 )
+from MFramework.commands.components import components
 
 if TYPE_CHECKING:
     from MFramework import Context, Bot
 
 
-#ARGUMENTS = re.compile("")
+# ARGUMENTS = re.compile("")
 
 
 def get_name(data: Union[Message, Interaction]) -> str:
@@ -128,7 +129,7 @@ class Arguments(dict):
                 self.kwargs[name] = o
 
     def _set_resolved(self):
-        # TODO: Fetch from cache in case of missing 
+        # TODO: Fetch from cache in case of missing
         for arg in self.cmd.arguments.values():
             if arg.type in {Guild_Member, User, UserID, Channel, Role, ChannelID, RoleID, Message}:
                 t = self.cmd.arguments[arg.name].type
@@ -163,8 +164,9 @@ class Arguments(dict):
             key = "interaction"
         else:
             key = "message"
-        _k = {key:self.ctx.data, "language": self.ctx.language or "en"}
-        for arg, value in kwargs.items():
+        _k = {key: self.ctx.data, "language": self.ctx.language or "en"}
+        _k.update(kwargs)
+        for arg, value in _k.items():
             if arg in self.cmd.arguments and self.cmd.arguments[arg].kind not in {"KEYWORLD_ONLY"}:
                 if arg not in self.kwargs:
                     # Make sure we are not overwriting, just in case
