@@ -19,7 +19,7 @@ from MFramework import (onDispatch, Ready, Interaction_Type,
 from ._utils import is_nested, iterate_commands, set_default_arguments, commands, add_extra_arguments, Command, LOCALIZATIONS
 
 
-@onDispatch
+#@onDispatch
 async def interaction_create(client: Bot, interaction: Interaction):
     '''Called after receiving event INTERACTION_CREATE from Discord'''
     if interaction.type != Interaction_Type.APPLICATION_COMMAND:

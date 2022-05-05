@@ -42,7 +42,7 @@ from mdiscord import * # noqa: F401
 
 from .bot import * # noqa: F401
 from .commands import * # noqa: F401
-from .commands import commands, interactions, parser # noqa: F401
+from .commands import command_runner, interactions, parser # noqa: F401
 
 class Priority(Enum):
     Commands = 5

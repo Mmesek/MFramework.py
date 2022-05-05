@@ -10,9 +10,9 @@ from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID,
     Application_Command, Application_Command_Option, Application_Command_Option_Choice, Application_Command_Option_Type,
     Embed, Component, Channel_Types,
     Interaction_Response, Interaction_Callback_Type, Interaction_Application_Command_Callback_Data,
-    log, BadRequest, NotFound, Attachment
+    log, BadRequest, NotFound, Attachment, Interaction
     )
-from MFramework.commands.components import Modal
+from MFramework.commands.components import Modal, TextInput, Row
 from MFramework.commands import Groups
 
 LOCALIZATIONS = []
@@ -23,6 +23,7 @@ try:
         for locale in os.listdir(path):
             if locale == 'en':
                 locale = 'en-US'
+            log.debug("Found directory for locale %s", locale)
             LOCALIZATIONS.append(locale)
 except ImportError:
     log.debug("Package i18n not found. Localizations are unavailable")
@@ -65,6 +66,7 @@ class Command:
     bot: Snowflake
     auto_deferred: bool
     private_response: bool
+    modal: Interaction_Response
     def __init__(self, 
             f: FunctionType, 
             interaction: bool = True, 
@@ -82,15 +84,33 @@ class Command:
         _docs = parse_docstring(f)
         self.help = _docs['_doc']
         self.arguments = parse_signature(f, _docs) if not main_only else {}
+        self.auto_deferred = auto_defer
+        self.modal = None
+        if any(issubclass(arg.type, TextInput) for arg in self.arguments.values()):
+            components = []
+            for arg in self.arguments.values():
+                if issubclass(arg.type, TextInput):
+                    components.append(Row(TextInput(
+                        label=arg.name.replace("_", " ").title(), 
+                        custom_id=str(arg.name),
+                        min_length=int(arg.type.min_length), 
+                        max_length=int(arg.type.max_length), 
+                        placeholder=str(arg.default) if arg.default else None
+                    )))
+            self.modal = Interaction_Response(type=Interaction_Callback_Type.MODAL, data=Interaction_Application_Command_Callback_Data(
+                title=self.name.replace("_", " ").title(), 
+                custom_id="Modal-"+self.name, 
+                components=components))
+            self.auto_deferred = False
         self._only_interaction = only_interaction or self.arguments.get("Interaction", False) and not self.arguments.get("Message", False)
         self._only_message = only_message or self.arguments.get("Message", False) and not self.arguments.get("Interaction", False)
+        self.only_accept = Message if self._only_message else Interaction if self._only_interaction else None
         self.interaction = interaction
         self.master_command = main
         self.group = group
         self.sub_commands = []
         self.choices = {}
         self.guild = guild
-        self.auto_deferred = auto_defer
         self.private_response = private_response
         self.bot = bot
     def add_subcommand(self, cmd: 'Command'):
@@ -169,6 +189,19 @@ class ChanceError(Error):
 
 class EventInactive(Error):
     pass
+
+class CommandException(Error):
+    pass
+
+class MissingPermissions(CommandException):
+    pass
+
+class CommandNotFound(CommandException):
+    pass
+
+class WrongContext(CommandException):
+    pass
+
 
 commands: Dict[str, Command] = {}
 aliasList: Dict[str, str] = {}
@@ -282,6 +315,8 @@ def parse_arguments(_command: Command) -> List[str]:
             break
         elif i.lower() == '_message' and _command.arguments[i].type is Message:
             break
+        elif any(issubclass(v.type, t) for t in {TextInput}):
+            continue
         _i = _command.arguments[i]
         choices = []
         for choice in _i.choices:
@@ -291,9 +326,10 @@ def parse_arguments(_command: Command) -> List[str]:
                 name_localized[locale] = check_translation(f"commands.{_command.name}.{i.lower()}.{choice.strip()}", locale, choice.strip())
             _choice = Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice])
             _choice.name_localizations = name_localized
-            #if _i.type in {int, bool}:
-                # Workaround due to currently autocasting to str by constructor
-            #    _choice.value = _i.type(_choice.value)
+            if _i.type in {int, bool}:
+               # Workaround due to currently autocasting to str by constructor
+                _choice.value = _i.type(_choice.value)
+               # NOTE: This workaround is needed when value is of different type than str, which is possible. Come on, don't comment it out :madge:
             choices.append(_choice)
 
         a = Application_Command_Option(
@@ -335,6 +371,15 @@ def iterate_commands(registered: List[Application_Command]=[], guild_id: Optiona
                 continue
         yield command, _command, options
 
+
+DEFAULTS = {
+    ChannelID: 'channel_id',
+    RoleID: 'guild_id',
+    UserID: 'user_id',
+    User: 'user',
+    Guild_Member: 'member',
+    GuildID: 'guild_id'
+}
 
 def set_default_arguments(ctx: 'Context', f: Command, kwargs: Dict[str, Any]) -> Dict[str, Any]:
     for arg in f.arguments:
@@ -390,10 +435,14 @@ def get_arguments(client: 'Bot', message: Message, alias: str=None) -> List[str]
 def get_original_cmd(_name: str) -> str:
     return aliasList.get(_name.lower(), _name)
 
-def set_ctx(client: 'Bot', message: Message, f: Command) -> 'Context':
-    ctx = client._Context(client.cache, client, message)
-    if not f or f.group < ctx.permission_group:
-        return False
+
+def set_context(client: "Bot", cmd: Command, data: Union[Message, Interaction]) -> "Context":
+    """Sets Context. Raises MissingPermissions"""
+    ctx: 'Context' = client._Context(client.cache, client, data)
+
+    if not ctx.permission_group.can_use(cmd.group):
+        raise MissingPermissions(ctx.permission_group, cmd.group)
+
     return ctx
 
 def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
@@ -440,3 +489,15 @@ def set_kwargs(ctx: 'Context', f: Command, args: List[str]) -> Dict[str, Any]:
             from mlib.converters import total_seconds
             kwargs[option.name] = total_seconds(args[x])
     return set_default_arguments(ctx, f, kwargs)
+
+def unnest_interaction(interaction: Interaction, group: Groups, cmd: Command):
+    """Returns nested command"""
+    if len(interaction.data.options) and interaction.data.options[0].type in {
+        Application_Command_Option_Type.SUB_COMMAND_GROUP,
+        Application_Command_Option_Type.SUB_COMMAND,
+    }:
+        cmd = is_nested(group, cmd, interaction.data.options[0].name)
+        interaction.data.options = interaction.data.options[0].options
+
+        return unnest_interaction(interaction, group, cmd)
+    return cmd

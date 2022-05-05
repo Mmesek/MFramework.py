@@ -2,6 +2,7 @@ from typing import Dict, List, TYPE_CHECKING
 
 from mdiscord.models import Button_Styles, Emoji, Select_Option, Text_Input_Styles
 from MFramework import onDispatch, Interaction, Interaction_Type, Component_Types, log, Button, Component, Interaction_Response, Interaction_Callback_Type, Interaction_Application_Command_Callback_Data
+from ._utils import set_context
 
 if TYPE_CHECKING:
     from MFramework import Context, Bot
@@ -37,10 +38,9 @@ async def interaction_create(client: 'Bot', interaction: Interaction):
     Reacts only to Components (Buttons)'''
     if interaction.type != Interaction_Type.MESSAGE_COMPONENT and interaction.type != Interaction_Type.MODAL_SUBMIT:
         return
-    from MFramework import Context
-    ctx = Context(client.cache, client, interaction)
     name, data = interaction.data.custom_id.split("-", 1)
     f = components.get(name, None)
+    ctx = set_context(client, f, interaction)
     if not f:
         log.debug("Component %s not found", name)
         return
@@ -57,12 +57,6 @@ async def interaction_create(client: 'Bot', interaction: Interaction):
                         if value.value not in interaction.data.values:
                             not_selected.append(value)
         return await run_function(f, ctx, data=data, values=interaction.data.values, not_selected=not_selected)
-    elif interaction.type == Interaction_Type.MODAL_SUBMIT:
-        inputs = {}
-        for row in interaction.data.components:
-            for text_input in filter(lambda x: x.type == Component_Types.TEXT_INPUT, row.components):
-                inputs[text_input.custom_id.split("-", 1)[-1]] = text_input.value
-        return await run_function(f, ctx, data=data, inputs=inputs)
 
     return await run_function(f, ctx, data=data)
 
@@ -142,6 +136,9 @@ class Modal(Component):
         return await super().execute(ctx, data)
 
 class TextInput(Component):
+    '''
+    Usage as a typehint: TextInput[min, max(, step)] or just TextInput[max] where min/max/step are integer values
+    '''
     type: int = Component_Types.TEXT_INPUT.value
     def __init__(self, label: str, custom_id: str = None, style: Text_Input_Styles = Text_Input_Styles.Paragraph, min_length: int = 0, max_length: int = 4000, required: bool = False, value: str = None, placeholder: str = None):
         super().__init__(custom_id or label)
@@ -152,3 +149,16 @@ class TextInput(Component):
         self.required = required
         self.value = value
         self.placeholder = placeholder
+    
+    def __class_getitem__(cls: 'TextInput', obj: tuple) -> 'TextInput':
+        if type(obj) is tuple:
+            if len(obj) == 3:
+                _range = range(int(obj[0]), int(obj[1]), int(obj[2]))
+            _range = range(int(obj[0]), int(obj[1]))
+        else:
+            _range = range(obj)
+        return type('TextInput', (TextInput, ), {"min_length": _range.start, "max_length": _range.stop})
+
+class Autocomplete:
+    def __init__(self, *choices) -> None:
+        self.choices = choices
