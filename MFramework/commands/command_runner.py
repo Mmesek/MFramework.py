@@ -2,6 +2,7 @@ import re
 
 from typing import Dict, List, TYPE_CHECKING, Union
 from datetime import timedelta
+
 from MFramework import (
     onDispatch,
     Interaction,
@@ -18,6 +19,8 @@ from MFramework import (
     Guild_Member,
     Snowflake,
     Attachment,
+    Guild_Member_Add,
+    Guild_Member_Update,
 )
 from MFramework.commands._utils import (
     Command,
@@ -28,7 +31,9 @@ from MFramework.commands._utils import (
     CommandNotFound,
     WrongContext,
 )
+
 from MFramework.commands.components import components
+from MFramework.utils.utils import parseMention
 
 if TYPE_CHECKING:
     from MFramework import Context, Bot
@@ -80,16 +85,27 @@ class Arguments(dict):
         if self.ctx.is_interaction:
             return {option.name: option.value for option in self.ctx.data.data.options}
         args = iter(get_arguments(self.ctx.bot, self.ctx.data))
-        return {name: next(args) for name in self.cmd.arguments}
+        positional = list(filter(lambda x: x.kind == 'POSITIONAL_OR_KEYWORD', self.cmd.arguments.values()))
+        return {arg.name: next(args, None) if arg.name != positional[-1].name else " ".join(list(args)) for arg in positional}
 
     def _set_kwargs(self, arguments: Dict[str, str]):
         """Sets arguments as keywords as well as casts to correct types"""
+        mentions = {
+            User: self.ctx.data.mentions,
+            Guild_Member: self.ctx.data.mentions,
+            Channel: self.ctx.data.mention_channels,
+            Role: self.ctx.data.mention_roles,
+        }
+        caches = {
+            User: self.ctx.cache.members,
+            Guild_Member: self.ctx.cache.members,
+            Channel: self.ctx.cache.channels,
+            Role: self.ctx.cache.roles,
+        }
         for name, value in arguments.items():
             t = self.cmd.arguments[name].type
 
             if issubclass(t, Snowflake) and not value.isdigit():
-                from MFramework.utils.utils import parseMention
-
                 value = parseMention(value)
 
             if t not in [Channel, Role, User, Guild_Member, ChannelID, UserID, RoleID, Attachment]:
@@ -123,8 +139,14 @@ class Arguments(dict):
                     if t is Guild_Member:
                         o.user = self.ctx.data.data.resolved.users.get(str(value), User())
                 else:
-                    # TODO: Version for message based!
-                    o = None
+                    _id = Snowflake(parseMention(value))
+                    o = next(filter(lambda i: i.id == _id, mentions.get(t)))
+
+                    if not o or t is Guild_Member:
+                        o = caches.get(t).get(_id, Guild_Member(user=User(id=_id, username=_id)))
+
+                    if t is User and type(o) in {Guild_Member, Guild_Member_Update, Guild_Member_Add}:
+                        o = o.user
 
                 self.kwargs[name] = o
 
