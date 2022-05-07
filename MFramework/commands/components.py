@@ -2,7 +2,6 @@ from typing import Dict, List, TYPE_CHECKING
 
 from mdiscord.models import Button_Styles, Emoji, Select_Option, Text_Input_Styles
 from MFramework import onDispatch, Interaction, Interaction_Type, Component_Types, log, Button, Component, Interaction_Response, Interaction_Callback_Type, Interaction_Application_Command_Callback_Data
-from ._utils import set_context
 
 if TYPE_CHECKING:
     from MFramework import Context, Bot
@@ -36,7 +35,8 @@ components: Dict[str, MetaCommand] = {}
 async def interaction_create(client: 'Bot', interaction: Interaction):
     '''Called after receiving event INTERACTION_CREATE from Discord
     Reacts only to Components (Buttons)'''
-    if interaction.type != Interaction_Type.MESSAGE_COMPONENT and interaction.type != Interaction_Type.MODAL_SUBMIT:
+    from ._utils import set_context
+    if interaction.type != Interaction_Type.MESSAGE_COMPONENT:
         return
     name, data = interaction.data.custom_id.split("-", 1)
     f = components.get(name, None)
