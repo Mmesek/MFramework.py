@@ -101,7 +101,7 @@ class Command:
                 title=self.name.replace("_", " ").title(), 
                 custom_id="Modal-"+self.name, 
                 components=components))
-            self.auto_deferred = False
+
         self._only_interaction = only_interaction or self.arguments.get("Interaction", False) and not self.arguments.get("Message", False)
         self._only_message = only_message or self.arguments.get("Message", False) and not self.arguments.get("Interaction", False)
         self.only_accept = Message if self._only_message else Interaction if self._only_interaction else None
