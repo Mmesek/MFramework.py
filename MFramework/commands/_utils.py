@@ -99,7 +99,7 @@ class Command:
                     )))
             self.modal = Interaction_Response(type=Interaction_Callback_Type.MODAL, data=Interaction_Application_Command_Callback_Data(
                 title=self.name.replace("_", " ").title(), 
-                custom_id="Modal-"+self.name, 
+                custom_id=self.name+"-None", 
                 components=components))
 
         self._only_interaction = only_interaction or self.arguments.get("Interaction", False) and not self.arguments.get("Message", False)

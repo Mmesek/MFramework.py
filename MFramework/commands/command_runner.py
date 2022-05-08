@@ -48,7 +48,7 @@ def get_name(data: Union[Message, Interaction]) -> str:
         if data.type is not Interaction_Type.MODAL_SUBMIT:
             name = data.data.name
         else:
-            name = data.data.custom_id.split("-", 1)[1]
+            name = data.data.custom_id.split("-", 1)[0]
     else:
         name = get_arguments(data._Client, data)
         name = name[0]
@@ -78,6 +78,7 @@ class Arguments(dict):
             self._set_resolved()
         self._set_defaults()
         self._add_extra(ctx=ctx, client=ctx.bot, interaction=ctx.data, message=ctx.data, language="en")
+        self._strip_extra()
 
     def _get_arguments(self):
         """Get arguments"""
@@ -193,6 +194,11 @@ class Arguments(dict):
                 if arg not in self.kwargs:
                     # Make sure we are not overwriting, just in case
                     self.kwargs[arg] = value
+    
+    def _strip_extra(self):
+        for arg in self.kwargs.copy():
+            if arg not in self.cmd.arguments:
+                self.kwargs.pop(arg)
 
 
 async def modal_response(ctx: "Context", data: Union[Message, Interaction], cmd: Command) -> Dict[str, str]:
@@ -252,13 +258,15 @@ async def parse_modal_submit(interaction: Interaction):
         for text_input in filter(lambda x: x.type == Component_Types.TEXT_INPUT, row.components):
             inputs[text_input.custom_id.split("-", 1)[-1]] = text_input.value
 
+    inputs.update({"inputs": inputs.copy()})
+
     return inputs
 
 
 def retrieve_command(name: str, type: type) -> Command:
     cmd = commands.get(name)
-    if not cmd and type is Interaction:
-        cmd = components.get(name)
+    #if not cmd and type is Interaction:
+    #    cmd = components.get(name)
 
     if not cmd:
         raise CommandNotFound(name)
