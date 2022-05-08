@@ -48,7 +48,7 @@ def get_name(data: Union[Message, Interaction]) -> str:
         if data.type is not Interaction_Type.MODAL_SUBMIT:
             name = data.data.name
         else:
-            name = data.data.custom_id.split("-", 1)[0]
+            name = data.data.custom_id.split("-", 1)[1]
     else:
         name = get_arguments(data._Client, data)
         name = name[0]
@@ -69,10 +69,9 @@ def get_arguments(client: "Bot", message: Message) -> List[str]:
 
 class Arguments(dict):
     def __init__(self, cmd: Command, ctx: "Context", kwargs={}) -> None:
-        self.kwargs = {}
         self.cmd = cmd
         self.ctx = ctx
-        self._kwargs = kwargs
+        self.kwargs = kwargs
         args = self._get_arguments()
         self._set_kwargs(args)
         if not ctx.data.data.options and ctx.data.data.resolved:
@@ -90,12 +89,13 @@ class Arguments(dict):
 
     def _set_kwargs(self, arguments: Dict[str, str]):
         """Sets arguments as keywords as well as casts to correct types"""
-        mentions = {
-            User: self.ctx.data.mentions,
-            Guild_Member: self.ctx.data.mentions,
-            Channel: self.ctx.data.mention_channels,
-            Role: self.ctx.data.mention_roles,
-        }
+        if self.ctx.is_message:
+            mentions = {
+                User: self.ctx.data.mentions,
+                Guild_Member: self.ctx.data.mentions,
+                Channel: self.ctx.data.mention_channels,
+                Role: self.ctx.data.mention_roles,
+            }
         caches = {
             User: self.ctx.cache.members,
             Guild_Member: self.ctx.cache.members,
@@ -195,22 +195,26 @@ class Arguments(dict):
                     self.kwargs[arg] = value
 
 
-async def modal_response(bot: "Bot", data: Union[Message, Interaction], cmd: Command) -> Dict[str, str]:
+async def modal_response(ctx: "Context", data: Union[Message, Interaction], cmd: Command) -> Dict[str, str]:
     """Responds with modal for interactions, or with message based questions awaiting each input"""
     if type(data) is Interaction:
-        await bot.create_interaction_response(data.id, data.token, response=cmd.modal)
+        await ctx.bot.create_interaction_response(data.id, data.token, response=cmd.modal)
         # NOTE: This way we can take additional arguments from regular command and can merge both.
         # Modals are usually ephemeral so timeout shouldn't be a problem.
         # However in case of "raw" Modal input, we still need legacy way to support while making modals from params
-        interaction: Interaction = await bot.wait_for(
+        interaction: Interaction = await ctx.bot.wait_for(
             "interaction_create",
             check=lambda _data: _data.type == Interaction_Type.MODAL_SUBMIT
             and _data.data.custom_id == cmd.modal.data.custom_id
-            and (_data.member.user.id == data.user.id if not data.guild_id else _data.user.id == data.user.id),
+            and (_data.member.user.id == data.member.user.id if data.guild_id else _data.user.id == data.user.id),
             timeout=300,
             # NOTE: If somehow someone sends a modal after timeout expires, it should be handled by separate flow
         )
-        return parse_modal_submit(interaction)
+        # NOTE: Overwriting token and ID since previous one doesn't matter anymore
+        ctx.data.token = interaction.token
+        ctx.data.id = interaction.id
+        # Rest of the payload isn't necessary needed as we are parsing it into dictionary anyway
+        return await parse_modal_submit(interaction)
 
     # NOTE: This is message-based way to take parameters, considering modals are nicer, this is entirely useless
     # TODO: Extend this to take regular parameters in case of message-based command with partial arguments
@@ -281,12 +285,14 @@ async def run(client: "Bot", data: Union[Message, Interaction]) -> bool:
 
     cmd = retrieve_command(name, type(data))
 
+    ctx = set_context(client, cmd, data)
+
     if type(data) is Interaction and data.type is Interaction_Type.MODAL_SUBMIT:
         inputs = await parse_modal_submit(data)
 
     elif cmd.modal:
         try:
-            inputs = await modal_response(client, data, cmd)
+            inputs = await modal_response(ctx, data, cmd)
         except TimeoutError:
             if type(data) is Message:
                 # NOTE: This response is only for message, as interaction can be continued in separate MODAL_SUBMIT
@@ -296,8 +302,6 @@ async def run(client: "Bot", data: Union[Message, Interaction]) -> bool:
 
     else:
         inputs = {}
-
-    ctx = set_context(client, cmd, data)
 
     if cmd.auto_deferred:
         await ctx.deferred(cmd.private_response)
