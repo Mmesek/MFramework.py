@@ -74,7 +74,7 @@ class Arguments(dict):
         self.kwargs = kwargs
         args = self._get_arguments()
         self._set_kwargs(args)
-        if not ctx.data.data.options and ctx.data.data.resolved:
+        if ctx.is_interaction and (not ctx.data.data.options and ctx.data.data.resolved):
             self._set_resolved()
         self._set_defaults()
         self._add_extra(ctx=ctx, client=ctx.bot, interaction=ctx.data, message=ctx.data, language="en")
@@ -85,7 +85,7 @@ class Arguments(dict):
         if self.ctx.is_interaction:
             return {option.name: option.value for option in self.ctx.data.data.options}
         args = iter(get_arguments(self.ctx.bot, self.ctx.data))
-        positional = list(filter(lambda x: x.kind == 'POSITIONAL_OR_KEYWORD', self.cmd.arguments.values()))
+        positional = list(filter(lambda x: x.kind == 'POSITIONAL_OR_KEYWORD' and x.name not in {"ctx", "interaction"}, self.cmd.arguments.values()))
         return {arg.name: next(args, None) if arg.name != positional[-1].name else " ".join(list(args)) for arg in positional}
 
     def _set_kwargs(self, arguments: Dict[str, str]):
@@ -191,7 +191,7 @@ class Arguments(dict):
         _k.update(kwargs)
         for arg, value in _k.items():
             if arg in self.cmd.arguments and self.cmd.arguments[arg].kind not in {"KEYWORLD_ONLY"}:
-                if arg not in self.kwargs:
+                if not self.kwargs.get(arg):
                     # Make sure we are not overwriting, just in case
                     self.kwargs[arg] = value
     
