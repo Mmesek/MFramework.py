@@ -235,7 +235,7 @@ async def modal_response(ctx: "Context", data: Union[Message, Interaction], cmd:
         e.add_field("Maximum characters", str(text_input.max_length), True)
         e.add_field("Required", "Yes" if text_input.required else "Skip by sending `-`", True)
         await data.reply(embeds=[e])
-        msg: Message = await bot.wait_for(
+        msg: Message = await ctx.bot.wait_for(
             "message_create" if not data.guild_id else "direct_message_create",
             check=lambda x: x.author.id == data.author.id
             and x.channel_id == data.channel_id
