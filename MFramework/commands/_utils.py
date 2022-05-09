@@ -12,7 +12,7 @@ from MFramework import (Snowflake, GuildID, ChannelID, UserID, RoleID,
     Interaction_Response, Interaction_Callback_Type, Interaction_Application_Command_Callback_Data,
     log, BadRequest, NotFound, Attachment, Interaction
     )
-from MFramework.commands.components import Modal, TextInput, Row
+from MFramework.commands.components import Modal, TextInput, Row, Text_Input_Styles
 from MFramework.commands import Groups
 
 LOCALIZATIONS = []
@@ -93,9 +93,11 @@ class Command:
                     components.append(Row(TextInput(
                         label=arg.name.replace("_", " ").title(), 
                         custom_id=str(arg.name),
+                        style=Text_Input_Styles.Short if int(arg.type.max_length) <= 150 else Text_Input_Styles.Paragraph,
                         min_length=int(arg.type.min_length), 
                         max_length=int(arg.type.max_length), 
-                        placeholder=str(arg.default) if arg.default else None
+                        placeholder=str(arg.default) if arg.default else None,
+                        required=int(arg.type.min_length) > 0
                     )))
             self.modal = Interaction_Response(type=Interaction_Callback_Type.MODAL, data=Interaction_Application_Command_Callback_Data(
                 title=self.name.replace("_", " ").title(), 
