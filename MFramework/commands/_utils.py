@@ -100,7 +100,7 @@ class Command:
                         required=int(arg.type.min_length) > 0
                     )))
             self.modal = Interaction_Response(type=Interaction_Callback_Type.MODAL, data=Interaction_Application_Command_Callback_Data(
-                title=self.name.replace("_", " ").title(), 
+                title=kwargs.get('modal_title') or self.name.replace("_", " ").title(), 
                 custom_id=self.name+"-None", 
                 components=components))
 
