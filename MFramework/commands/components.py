@@ -35,12 +35,12 @@ components: Dict[str, MetaCommand] = {}
 async def interaction_create(client: 'Bot', interaction: Interaction):
     '''Called after receiving event INTERACTION_CREATE from Discord
     Reacts only to Components (Buttons)'''
-    from ._utils import set_context
-    if interaction.type != Interaction_Type.MESSAGE_COMPONENT:
+    from MFramework import Context
+    if interaction.type != Interaction_Type.MESSAGE_COMPONENT and interaction.type != Interaction_Type.MODAL_SUBMIT:
         return
     name, data = interaction.data.custom_id.split("-", 1)
     f = components.get(name, None)
-    ctx = set_context(client, f, interaction)
+    ctx = Context(client.cache, client, interaction)
     if not f:
         log.debug("Component %s not found", name)
         return
@@ -57,6 +57,12 @@ async def interaction_create(client: 'Bot', interaction: Interaction):
                         if value.value not in interaction.data.values:
                             not_selected.append(value)
         return await run_function(f, ctx, data=data, values=interaction.data.values, not_selected=not_selected)
+    elif interaction.type == Interaction_Type.MODAL_SUBMIT:
+        inputs = {}
+        for row in interaction.data.components:
+            for text_input in filter(lambda x: x.type == Component_Types.TEXT_INPUT, row.components):
+                inputs[text_input.custom_id.split("-", 1)[-1]] = text_input.value
+        return await run_function(f, ctx, data=data, inputs=inputs)
 
     return await run_function(f, ctx, data=data)
 
