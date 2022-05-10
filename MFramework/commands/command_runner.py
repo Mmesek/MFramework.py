@@ -83,7 +83,7 @@ class Arguments(dict):
     def _get_arguments(self):
         """Get arguments"""
         if self.ctx.is_interaction:
-            return {option.name: option.value for option in self.ctx.data.data.options}
+            return {option.name: option.value for option in self.ctx.data.data.options if option.name in self.cmd.arguments}
         args = iter(get_arguments(self.ctx.bot, self.ctx.data))
         positional = list(filter(lambda x: x.kind == 'POSITIONAL_OR_KEYWORD' and x.name not in {"ctx", "interaction"}, self.cmd.arguments.values()))
         return {arg.name: next(args, None) if arg.name != positional[-1].name else " ".join(list(args)) for arg in positional}
