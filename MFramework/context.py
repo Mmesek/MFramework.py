@@ -118,7 +118,7 @@ class Context(Sendable):
 
     async def get_messages(self, before_id: Snowflake = None, messages: List[Message] = [], limit: int = 100) -> List[Message]:
         """Eagerly retrieves messages from channel. Ordered by newest first"""
-        if limit < 1:
-            return messages
         r = await self.bot.get_channel_messages(self.channel_id, before=before_id, limit=min(limit, 100))
+        if limit - len(r) < 1 or len(r) < min(limit, 100):
+            return messages + r
         return await self.get_messages(r[-1].id, messages=messages+r, limit=limit - len(r))
