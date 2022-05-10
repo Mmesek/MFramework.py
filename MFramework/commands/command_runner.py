@@ -30,7 +30,7 @@ from MFramework.commands._utils import (
     get_original_cmd,
     CommandNotFound,
     WrongContext,
-    unnest_interaction
+    unnest_interaction, is_nested
 )
 
 from MFramework.commands.components import components
@@ -74,6 +74,7 @@ class Arguments(dict):
         self.ctx = ctx
         self.kwargs = kwargs
         args = self._get_arguments()
+        args = {k: v for k,v in args.items() if v}
         self._set_kwargs(args)
         if ctx.is_interaction and (not ctx.data.data.options and ctx.data.data.resolved):
             self._set_resolved()
@@ -85,7 +86,7 @@ class Arguments(dict):
         """Get arguments"""
         if self.ctx.is_interaction:
             return {option.name: option.value for option in self.ctx.data.data.options if option.name in self.cmd.arguments}
-        args = iter(get_arguments(self.ctx.bot, self.ctx.data))
+        args = iter(get_arguments(self.ctx.bot, self.ctx.data)[1:])
         positional = list(filter(lambda x: x.kind == 'POSITIONAL_OR_KEYWORD' and x.name not in {"ctx", "interaction"}, self.cmd.arguments.values()))
         return {arg.name: next(args, None) if arg.name != positional[-1].name else " ".join(list(args)) for arg in positional}
 
@@ -268,6 +269,12 @@ def retrieve_command(name: str, data: Union[Message, Interaction]) -> Command:
     cmd = commands.get(name)
     if type(data) is Interaction:
         cmd = unnest_interaction(data, None, cmd)
+    else:
+        if "." in name:
+            for sub in name.split("."):
+                if sub in commands:
+                    cmd = commands.get(sub)
+                cmd = is_nested(None, cmd, sub)
 
     #if not cmd and type is Interaction:
     #    cmd = components.get(name)
