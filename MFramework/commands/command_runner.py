@@ -114,7 +114,7 @@ class Arguments(dict):
                 if type(value) is str and value.isdigit():
                     value = int(value)
 
-                elif t is timedelta:
+                if t is timedelta:
                     from mlib.converters import total_seconds
 
                     v = total_seconds(value)
