@@ -30,6 +30,7 @@ from MFramework.commands._utils import (
     get_original_cmd,
     CommandNotFound,
     WrongContext,
+    unnest_interaction
 )
 
 from MFramework.commands.components import components
@@ -263,16 +264,19 @@ async def parse_modal_submit(interaction: Interaction):
     return inputs
 
 
-def retrieve_command(name: str, type: type) -> Command:
+def retrieve_command(name: str, data: Union[Message, Interaction]) -> Command:
     cmd = commands.get(name)
+    if type(data) is Interaction:
+        cmd = unnest_interaction(data, None, cmd)
+
     #if not cmd and type is Interaction:
     #    cmd = components.get(name)
 
     if not cmd:
         raise CommandNotFound(name)
 
-    if cmd.only_accept and cmd.only_accept is not type:
-        raise WrongContext(type, cmd.only_accept)
+    if cmd.only_accept and cmd.only_accept is not type(data):
+        raise WrongContext(type(data), cmd.only_accept)
 
     return cmd
 
@@ -291,7 +295,7 @@ async def run(client: "Bot", data: Union[Message, Interaction]) -> bool:
     if not name:
         return
 
-    cmd = retrieve_command(name, type(data))
+    cmd = retrieve_command(name, data)
 
     ctx = set_context(client, cmd, data)
 
