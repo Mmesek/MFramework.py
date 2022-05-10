@@ -1,3 +1,5 @@
+import re
+
 from typing import List, Dict
 
 from MFramework import Snowflake, Guild
@@ -103,6 +105,8 @@ class Settings(Database, ObjectCollections):
         self.settings = {setting: getattr(value, setting.annotation.__name__.lower()) for setting, value in guild.settings.items()}
         for setting, value in guild.settings.items():
             setattr(self, setting.name.lower(), getattr(value, setting.annotation.__name__.lower(), None))
+            if setting is types.Setting.Alias:
+                self.set_alias(self.settings[setting])
 
     def get_rpg_channels(self, channels):
         rpg_channels = channels.filter(db.Channel.settings.any(name=types.Setting.RPG)).all()
@@ -122,3 +126,6 @@ class Settings(Database, ObjectCollections):
     def is_tracking(self, flag):
         from mlib.utils import bitflag
         return bitflag(self.flags, flag)
+
+    def set_alias(self, alias):
+        self.alias = re.compile(r"|".join([re.escape(alias), re.escape(self.bot.user.username), f"{self.bot.user.id}>"]))
