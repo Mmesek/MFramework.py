@@ -99,12 +99,13 @@ class Arguments(dict):
                 Channel: self.ctx.data.mention_channels,
                 Role: self.ctx.data.mention_roles,
             }
-        caches = {
-            User: self.ctx.cache.members,
-            Guild_Member: self.ctx.cache.members,
-            Channel: self.ctx.cache.channels,
-            Role: self.ctx.cache.roles,
-        }
+        if not self.ctx.is_dm:
+            caches = {
+                User: self.ctx.cache.members,
+                Guild_Member: self.ctx.cache.members,
+                Channel: self.ctx.cache.channels,
+                Role: self.ctx.cache.roles,
+            }
         for name, value in arguments.items():
             t = self.cmd.arguments[name].type
 
