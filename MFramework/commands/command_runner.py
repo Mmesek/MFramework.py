@@ -274,7 +274,8 @@ def retrieve_command(name: str, data: Union[Message, Interaction]) -> Command:
             for sub in name.split("."):
                 if sub in commands:
                     cmd = commands.get(sub)
-                cmd = is_nested(None, cmd, sub)
+                if cmd:
+                    cmd = is_nested(None, cmd, sub)
 
     #if not cmd and type is Interaction:
     #    cmd = components.get(name)
