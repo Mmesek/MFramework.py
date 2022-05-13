@@ -71,7 +71,7 @@ class Context(Sendable):
 
     @property
     def permission_group(self):
-        from MFramework.commands._utils import Groups
+        from MFramework.commands import Groups
         if not self.is_dm:
             if self.user_id != 273499695186444289:
                 if self.user_id != self.cache.guild.owner_id:

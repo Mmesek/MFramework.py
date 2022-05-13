@@ -202,7 +202,7 @@ def cooldown(
             if not c.on_cooldown:
                 c.add_cooldown()
                 return f(ctx=ctx, **kwargs)
-            from ._utils import CooldownError
+            from .exceptions import CooldownError
             raise CooldownError(c.remaining)
         return wrapped
     return inner
