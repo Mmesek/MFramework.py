@@ -200,6 +200,10 @@ class Command:
             elif isinstance(r, Attachment) or (type(r) is list and all(isinstance(i, Attachment) for i in r)):
                 await self.maybe_reply(ctx, attachments=[r] if type(r) is not list else r)
 
+            elif callable(r):
+                if hasattr(r, '_cmd'):
+                    await ctx.bot.create_interaction_response(ctx.data.id, ctx.data.token, r._cmd.modal)
+
             elif r:
                 await self.maybe_reply(ctx, str(r), prefix="")
 
