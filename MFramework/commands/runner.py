@@ -1,3 +1,4 @@
+import asyncio
 from typing import Dict, TYPE_CHECKING, Union
 
 from MFramework import (
@@ -96,7 +97,7 @@ async def run(client: "Bot", data: Union[Message, Interaction]) -> bool:
     elif cmd.modal:
         try:
             inputs = await modal_response(ctx, data, cmd)
-        except TimeoutError:
+        except asyncio.TimeoutError:
             if type(data) is Message:
                 # NOTE: This response is only for message, as interaction can be continued in separate MODAL_SUBMIT
                 # TODO: However that's a problem if command accepts any other arguments before modal
