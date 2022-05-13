@@ -25,7 +25,7 @@ class Context(Sendable):
     member: Guild_Member
 
     direct_message: Snowflake
-    language: str
+    language: str = 'en'
 
     is_message: bool
     is_interaction: bool
