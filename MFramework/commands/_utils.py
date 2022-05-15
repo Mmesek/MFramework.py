@@ -16,7 +16,7 @@ from MFramework import (
     Groups,
 )
 from .command import Command, commands, aliasList
-from .exceptions import MissingPermissions, WrongContext, CommandNotFound
+from .exceptions import MissingPermissions, WrongContext, CommandNotFound, SoftError
 
 if TYPE_CHECKING:
     from MFramework import Bot, Context
@@ -51,6 +51,8 @@ def get_name(data: Union[Message, Interaction]) -> str:
 
 def get_arguments(client: "Bot", message: Message) -> List[str]:
     """Retrieve list of arguments from text"""
+    if not client.cache[message.guild_id].alias.search(message.content):
+        raise SoftError()
     args = client.cache[message.guild_id].alias.split(message.content, 1)[-1].strip()
     args = args.split(" ")
     return args
