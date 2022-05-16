@@ -109,7 +109,7 @@ class Arguments:
                         o.user = self.ctx.data.data.resolved.users.get(str(value), User())
                 else:
                     _id = Snowflake(parseMention(value))
-                    o = next(filter(lambda i: i.id == _id, mentions.get(t)), _id)
+                    o = next(filter(lambda i: i.id == _id, mentions.get(t)), None)
 
                     if not o or t is Guild_Member:
                         o = caches.get(t).get(_id, Guild_Member(user=User(id=_id, username=_id)))
