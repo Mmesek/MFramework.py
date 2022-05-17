@@ -29,6 +29,7 @@ from MFramework import (
     NotFound,
     Attachment,
     Interaction,
+    Allowed_Mentions,
 )
 from . import Groups
 from .components import Modal, TextInput, Row, Text_Input_Styles
@@ -266,10 +267,10 @@ class Command:
             s = None
 
         try:
-            await ctx.reply(s, embeds=embeds, components=components, attachments=attachments)
+            await ctx.reply(s, embeds=embeds, components=components, attachments=attachments, allowed_mentions=Allowed_Mentions(users=[ctx.user_id], replied_user=True))
         except Exception:
             log.debug("Failed to reply to message. Falling back to default Message creation")
-            await ctx.bot.create_message(ctx.channel_id, s, embeds=embeds, components=components)
+            await ctx.bot.create_message(ctx.channel_id, s, embeds=embeds, components=components, allowed_mentions=Allowed_Mentions(users=[ctx.user_id], replied_user=True))
 
 
 commands: Dict[str, Command] = {}
