@@ -1,3 +1,5 @@
+import re
+
 from typing import List, TYPE_CHECKING, Union
 
 from MFramework import (
@@ -30,6 +32,8 @@ DEFAULTS = {
     GuildID: "guild_id",
 }
 
+_FIRST_CHAR = re.compile("^")
+
 
 def get_name(data: Union[Message, Interaction]) -> str:
     """Retrieves command name from arguments"""
@@ -51,9 +55,15 @@ def get_name(data: Union[Message, Interaction]) -> str:
 
 def get_arguments(client: "Bot", message: Message) -> List[str]:
     """Retrieve list of arguments from text"""
-    if not client.cache[message.guild_id].alias.search(message.content):
+    if message.guild_id:
+        alias = client.cache[message.guild_id].alias
+    else:
+        alias = _FIRST_CHAR
+
+    if not alias.search(message.content):
         raise SoftError()
-    args = client.cache[message.guild_id].alias.split(message.content, 1)[-1].strip()
+
+    args = alias.split(message.content, 1)[-1].strip()
     args = args.split(" ")
     return args
     kwargs = {"positional": args.split(" ")}
