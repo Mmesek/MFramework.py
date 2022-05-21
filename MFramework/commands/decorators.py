@@ -159,14 +159,18 @@ def register(
         f._cmd = cmd
         for alias in aliases:
             aliasList[alias] = f"{main.__name__}.{_name}" if main else _name
+            log.debug("Registering alias [%s] for command [%s]", alias, aliasList[alias])
         if main:
             if not hasattr(main, '_cmd'):
                 return
             if not choice:
+                log.debug("Registering subcommand [%s] for command [%s]", _name, main._cmd.name)
                 main._cmd.add_subcommand(cmd)
             else:
+                log.debug("Registering choice [%s] for command [%s]", _name, main.__name__)
                 main._cmd.add_choice(_name, cmd)
         else:
+            log.debug("Registering Command [%s]", _name)
             commands[_name] = cmd
         return f
     return inner
@@ -207,6 +211,7 @@ def reaction(reaction: str, group: Groups = Groups.GLOBAL, guild: Snowflake = No
     '''
     def inner(f):
         cmd = Command(f, False, None, group, guild)
+        log.debug("Registering Reaction [%s] as a command [%s]", reaction, cmd.name)
         reactions[reaction] = cmd
         return f
     return inner
