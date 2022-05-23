@@ -165,5 +165,5 @@ class Arguments:
 
     def _strip_extra(self):
         for arg in self.kwargs.copy():
-            if arg not in self.cmd.arguments:
+            if arg not in self.cmd.arguments or self.kwargs[arg] is None:
                 self.kwargs.pop(arg)
