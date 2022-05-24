@@ -39,13 +39,10 @@ def get_name(data: Union[Message, Interaction]) -> str:
     """Retrieves command name from arguments"""
     if type(data) is Interaction:
         if data.type is not Interaction_Type.MODAL_SUBMIT:
-            name = data.data.name
-        else:
-            name = data.data.custom_id.split("-", 1)[0]
-    else:
-        name = get_arguments(data._Client, data)
-        name = name[0]
-    name = get_original_cmd(name)
+            return data.data.name
+        return data.data.custom_id.split("-", 1)[0]
+    name = get_arguments(data._Client, data)
+    name = get_original_cmd(name[0])
 
     if not name:
         raise CommandNotFound
