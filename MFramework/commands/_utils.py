@@ -114,7 +114,7 @@ def get_original_cmd(_name: str) -> str:
 
 def set_context(client: "Bot", cmd: Command, data: Union[Message, Interaction]) -> "Context":
     """Sets Context. Raises MissingPermissions"""
-    ctx: "Context" = client._Context(client.cache, client, data)
+    ctx: "Context" = client._Context(client.cache, client, data, cmd=cmd)
 
     if not ctx.permission_group.can_use(cmd.group):
         raise MissingPermissions(ctx.permission_group, cmd.group)

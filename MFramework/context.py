@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Union, List
+from commands.command import Command
 
 from mdiscord import Snowflake, Guild, Channel, Message, Interaction, User, Guild_Member, Sendable, Embed, Component, Allowed_Mentions, Message_Reference, Message_Flags, Attachment
 
@@ -30,7 +31,7 @@ class Context(Sendable):
     is_message: bool
     is_interaction: bool
 
-    def __init__(self, cache: Cache, bot: 'Bot', data: Union[Message, Interaction]):
+    def __init__(self, cache: Cache, bot: 'Bot', data: Union[Message, Interaction], cmd: Command = None):
         self.cache = cache[data.guild_id]
         self.bot = bot
         self.db = bot.db
@@ -68,6 +69,8 @@ class Context(Sendable):
         self._deferred = False
         self._replied = False
         self._followup_id = None
+        if cmd:
+            self._cmd_path = f"{cmd.func.__module__}.{cmd.name}"
 
     @property
     def permission_group(self):
@@ -122,3 +125,15 @@ class Context(Sendable):
         if limit - len(r) < 1 or len(r) < min(limit, 100):
             return messages + r
         return await self.get_messages(r[-1].id, messages=messages+r, limit=limit - len(r))
+
+    def t(self, key: str, _namespace = None, _bot = None, **kwargs) -> str:
+        """Retrieves translation according to key prefixed by user language & context's command"""
+        import i18n
+        keys = [f"{_bot or self.bot.username}.{_namespace or self._cmd_path}", _bot or self.bot.username, _namespace or self._cmd_path]
+        for _key in keys:
+            _key = f"{self.language}.{_key}.{key}"
+            _k = i18n.t(_key, **kwargs)
+            if _k and _k != _key:
+                return _k
+
+        return i18n.t(f"{self.language}.{key}", **kwargs)
