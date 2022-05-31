@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Union, List
-from commands.command import Command
 
 from mdiscord import Snowflake, Guild, Channel, Message, Interaction, User, Guild_Member, Sendable, Embed, Component, Allowed_Mentions, Message_Reference, Message_Flags, Attachment
 
+from MFramework.commands.command import Command
 from MFramework.database.cache import Cache
 from MFramework.database.database import Database
 if TYPE_CHECKING:
