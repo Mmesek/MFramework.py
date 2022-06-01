@@ -40,7 +40,7 @@ try:
     import i18n
     import os
 
-    for path in i18n.load_path:
+    for path in [p for p in i18n.load_path if os.path.exists(p)]:
         for locale in os.listdir(path):
             if locale == "en":
                 locale = "en-US"
