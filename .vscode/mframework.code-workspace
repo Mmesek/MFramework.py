@@ -1,0 +1,38 @@
+{
+    "folders": [{
+        "path": "..",
+        "name": "MFramework"
+    },{
+        "path": "../../bot",
+        "name": "Bot"
+    }],
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.vscode-pylance"
+        ]
+    },
+    "launch": {
+        "configurations": [
+            {
+                "name": "MFramework.py",
+                "type": "python",
+                "request": "launch",
+                "module": "MFramework",
+                "console": "integratedTerminal",
+                "cwd": "${workspaceFolder:Bot}",
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder:Bot}"
+                },
+                "args": ["bot", "--log=DEBUG", "--cfg=data/secrets.ini"]
+            },{
+                "name": "Python: Current File (Integrated Terminal)",
+                "type": "python",
+                "request": "launch",
+                "program": "${file}",
+                "console": "integratedTerminal",
+                "args": ["--log=DEBUG"]
+            }
+        ]
+    }
+}

@@ -1,0 +1,8 @@
+git+https://github.com/Mmesek/mdiscord.git
+git+https://github.com/Mmesek/mlib.git
+sqlalchemy
+psycopg2-binary
+redis
+influxdb-client
+python-git
+python-i18n
