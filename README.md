@@ -1,5 +1,6 @@
 # MFramework.py
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![GitHub](https://img.shields.io/github/license/Mmesek/MFramework.py)](../../LICENSE.md)
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/Mmesek/MFramework.py)
 
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Mmesek/MFramework.py)](https://www.codefactor.io/repository/github/mmesek/mframework.py)
@@ -10,6 +11,8 @@
 [![GitHub issues](https://img.shields.io/github/issues/Mmesek/MFramework.py)](../../issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Mmesek/MFramework.py)](../../pulls)
 [![GitHub contributors](https://img.shields.io/github/contributors/Mmesek/MFramework.py)](../../graphs/contributors)
+[![Discord](https://img.shields.io/discord/517445947446525952)](https://discord.gg/gXWvDzNcMD)
+
 
 ---
 
@@ -17,10 +20,18 @@ Low boilerplate command framework for Discord's REST API extending [mDiscord](ht
 
 
 ## Features
-- Commands metadata inferred from Python syntax itself
-- Dual availability of commands - define once and use as either message or interaction based
-- Built-in Database support with SQLAlchemy
-- Built-in remote cache support (Redis)
+- Command's [metadata](MFramework/commands/command.py) inferred from Python syntax itself
+- Dual availability of [commands](MFramework/commands/runner.py) - define once and use as either message or interaction based
+- Implicit [modals](MFramework/commands/runner.py) inferred from argument typehints available as modal or message-based argument polling depending on invocation
+- [Hierarchy](MFramework/commands/__init__.py)-based internal permission system
+- [Reaction](MFramework/commands/decorators.py)-based commands
+- Basic extendable runtime-defined message custom command [parser](MFramework/commands/parser.py)
+- Webhook-based [logging](MFramework/utils/log.py) of Discord events
+- [Leaderboard](MFramework/utils/leaderboards.py) builder
+- Built-in [Database](MFramework/database/alchemy/) support (SQLAlchemy)
+- Built-in remote [cache](MFramework/database/cache_internal/models.py) support (Redis)
+- Built-in [localization](MFramework/context.py) support (i18n)
+- Run as [module](MFramework/__main__.py)
 - Easly extendable
 
 ## Features against using it
@@ -132,6 +143,25 @@ async def new_cool_button(ctx: Context, name: str = "Cool Option") -> List[Row]:
         )
     ]
     return rows
+```
+
+Modal example
+```py
+from MFramework import register, Groups, Context, Embed
+from MFramework.commands.components import TextInput
+
+@register(group=Groups.GLOBAL)
+async def suggestion(ctx: Context, title: TextInput[1, 100], your_suggestion: TextInput[1, 2000]) -> Embed:
+    '''
+    Make a Suggestion!
+    Params
+    ------
+    title:
+        Title of suggestion
+    your_suggestion:
+        Your suggestion
+    '''
+    return Embed(title=title).set_description(your_suggestion)
 ```
 
 # Running Bot
