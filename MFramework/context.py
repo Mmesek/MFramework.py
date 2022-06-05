@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Union, List
+from typing import TYPE_CHECKING, Union, List, Optional
 
 from mdiscord import Snowflake, Guild, Channel, Message, Interaction, User, Guild_Member, Sendable, Embed, Component, Allowed_Mentions, Message_Reference, Message_Flags, Attachment
 
-from MFramework.commands.command import Command
+from MFramework.commands.command import LOCALIZATIONS, DEFAULT_LOCALE, Command
 from MFramework.database.cache import Cache
 from MFramework.database.database import Database
 if TYPE_CHECKING:
@@ -54,6 +54,7 @@ class Context(Sendable):
                 self.member = data.member
             self.is_message = False
             self.is_interaction = True
+            self.language = data.locale or data.guild_locale
         else:
             self.user_id = data.author.id
             self.user = data.author
@@ -69,8 +70,18 @@ class Context(Sendable):
         self._deferred = False
         self._replied = False
         self._followup_id = None
+
         if cmd:
-            self._cmd_path = f"{cmd.func.__module__}.{cmd.name}"
+            self._cmd_path = [cmd.func.__module__]
+
+            if cmd.master_command:
+                self._cmd_path.append(cmd.master_command._cmd.name)
+                self._cmd_path.append("sub_commands")
+
+            self._cmd_path.append(cmd.name)
+
+        if self.language not in LOCALIZATIONS:
+            self.language = DEFAULT_LOCALE
 
     @property
     def permission_group(self):
@@ -126,14 +137,13 @@ class Context(Sendable):
             return messages + r
         return await self.get_messages(r[-1].id, messages=messages+r, limit=limit - len(r))
 
-    def t(self, key: str, _namespace = None, _bot = None, **kwargs) -> str:
-        """Retrieves translation according to key prefixed by user language & context's command"""
-        import i18n
-        keys = [f"{_bot or self.bot.username}.{_namespace or self._cmd_path}", _bot or self.bot.username, _namespace or self._cmd_path]
-        for _key in keys:
-            _key = f"{self.language}.{_key}.{key}"
-            _k = i18n.t(_key, **kwargs)
-            if _k and _k != _key:
-                return _k
+    def t(self, key: str, _namespace: Optional[str] = None, _bot: Optional[str] = None, **kwargs) -> str:
+        """Retrieves translation according to key prefixed by user language & context's command
 
-        return i18n.t(f"{self.language}.{key}", **kwargs)
+        Injects command namespace into `translate` patterns:
+        - {path}.{group}
+        - {path}.{group}.{sub_commands}
+        - {path}.{group}.{sub_commands}.{command}
+        """
+        from MFramework.utils.localizations import translate
+        return translate(key=key, locale=self.language, _namespace=_namespace or self._cmd_path, _bot=_bot or self.bot.username, **kwargs)
