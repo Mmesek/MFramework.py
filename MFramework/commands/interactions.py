@@ -60,17 +60,11 @@ async def register_commands(client: Bot, guild: Guild = None):
         for cmd in unrecognized_commands:
             await delete_command(client, cmd, guild)
 
-
     for command, _command, options in iterate_commands(registered, guild.id if guild else None, client.user_id):
-        name_localized = {}
-        desc_localized = {}
-        for locale in LOCALIZATIONS:
-            from mlib.localization import check_translation
-            name_localized[locale] = check_translation("commands.name", locale, command)
-            desc_localized[locale] = check_translation("commands.description", locale, _command.help[:100])
-        cmd = Application_Command(name=command, description=_command.help[:100], options=options, default_permission=_command.group == Groups.GLOBAL)
-        cmd.name_localizations = name_localized
-        cmd.description_localizations = desc_localized
+        cmd = Application_Command(name=command, description=_command.description[:100], options=options, default_permission=_command.group == Groups.GLOBAL)
+        cmd.name_localizations = {l: _command.translate(l, "name", default = command)[:100] for l in LOCALIZATIONS}
+        cmd.description_localizations = {l: _command.translate(l, "description", default = _command.description)[:100] for l in LOCALIZATIONS}
+
         if len(options) == 1 and options[0].type is Application_Command_Option_Type.USER:
             cmd.type = Application_Command_Type.USER
             cmd.description = None

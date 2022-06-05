@@ -36,6 +36,8 @@ from .components import Modal, TextInput, Row, Text_Input_Styles
 from .exceptions import CooldownError, Error
 
 LOCALIZATIONS = []
+DEFAULT_LOCALE = "en"
+
 try:
     import i18n
     import os
@@ -43,26 +45,40 @@ try:
     for path in [p for p in i18n.load_path if os.path.exists(p)]:
         for locale in os.listdir(path):
             if locale == "en":
+                log.warn("Detected locale 'en' which is ambigiuous. Rename it to either en-US or en-GB. Setting up as en-US")
                 locale = "en-US"
             log.debug("Found directory for locale %s", locale)
             LOCALIZATIONS.append(locale)
+
+    if len(LOCALIZATIONS) == 1:
+        log.debug("Found only one %s locale. Setting up as default", LOCALIZATIONS[0])
+        DEFAULT_LOCALE = LOCALIZATIONS[0]
+
 except ImportError:
     log.debug("Package i18n not found. Localizations are unavailable")
 
 if TYPE_CHECKING:
     from MFramework import Context
 
+class Localizable:
+    def translate(self, locale: str, key: str, default: str = None) -> str:
+        from MFramework.utils.localizations import translate
+        key = f"{self.name}.{key}"
+        if getattr(self, "master_command", False):
+            key = f"{self.master_command._cmd.name}.sub_commands.{key}"
+        return translate(key, locale, self.func.__module__, default=default)
 
-class Parameter:
+
+class Parameter(Localizable):
     default: str
     type: type
-    help: str
+    description: str
     choices: Dict[str, Any]
     kind: str
     name: str
 
     def __init__(
-        self, default: str, type: Type, help: str, choices: Dict[str, Any], kind: str, name: str, types: List[str] = []
+        self, default: str, type: Type, description: str, choices: Dict[str, Any], kind: str, name: str, types: List[str] = []
     ) -> None:
         self.default = default
         self.type = getattr(type, "__mbase__", type)
@@ -72,16 +88,16 @@ class Parameter:
             except Exception as ex:
                 breakpoint
         self.type_args = types or getattr(type, "__args__", [])
-        self.help = help
+        self.description = description
         self.choices = choices
         self.kind = kind
         self.name = name
 
 
-class Command:
+class Command(Localizable):
     name: str
     func: object
-    help: str
+    description: str
     arguments: Dict[str, Parameter]
     interaction: bool
     master_command: object
@@ -112,7 +128,7 @@ class Command:
         self.name = f.__name__.strip("_")
         self.func = f
         _docs = parse_docstring(f)
-        self.help = _docs["_doc"]
+        self.description = _docs["_doc"]
         self.arguments = parse_signature(f, _docs) if not main_only else {}
         self.auto_deferred = auto_defer
         self.modal = None
@@ -292,7 +308,7 @@ def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Par
             type=sig[parameter].annotation
             if type(sig[parameter].annotation) is type or type(sig[parameter].annotation) is enum.EnumMeta
             else type(sig[parameter].annotation),
-            help=docstring.get(sig[parameter].name, "MISSING DOCSTRING").strip(),
+            description=docstring.get(sig[parameter].name, "MISSING DOCSTRING").strip(),
             choices=docstring.get("choices").get(
                 sig[parameter].name,
                 []
@@ -380,18 +396,14 @@ def parse_arguments(_command: Command) -> List[str]:
             break
         elif any(issubclass(v.type, t) for t in {TextInput}):
             continue
+
         _i = _command.arguments[i]
         choices = []
-        for choice in _i.choices:
-            name_localized = {}
-            for locale in LOCALIZATIONS:
-                from mlib.localization import check_translation
 
-                name_localized[locale] = check_translation(
-                    f"commands.{_command.name}.{i.lower()}.{choice.strip()}", locale, choice.strip()
-                )
+        for choice in _i.choices:
             _choice = Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice])
-            _choice.name_localizations = name_localized
+            _choice.name_localizations = {l: _command.translate(l, f"arguments.{i.lower()}.choices.{choice.lower()}", choice)[:100] for l in LOCALIZATIONS}
+
             if _i.type in {int, bool}:
                 # Workaround due to currently autocasting to str by constructor
                 _choice.value = _i.type(_choice.value)
@@ -400,24 +412,14 @@ def parse_arguments(_command: Command) -> List[str]:
 
         a = Application_Command_Option(
             name=i.strip(),
-            description=_i.help[:100].strip(),
+            description=_i.description[:100].strip(),
             required=True if _i.default is Signature.empty else False,
             choices=choices,
             options=[],
             channel_types=_i.type_args,
         )
-
-        name_localized = {}
-        desc_localized = {}
-        for locale in LOCALIZATIONS:
-            from mlib.localization import check_translation
-
-            name_localized[locale] = check_translation(f"commands.{_command.name}.{i.lower()}.name", locale, i.strip())
-            desc_localized[locale] = check_translation(
-                f"commands.{_command.name}.{i.lower()}.description", locale, _i.help[:100]
-            )
-        a.name_localizations = name_localized
-        a.description_localizations = desc_localized
+        a.name_localizations = {l: _command.translate(l, f"arguments.{i.lower()}.name", default = i)[:100] for l in LOCALIZATIONS}
+        a.description_localizations = {l: _command.translate(l, f"arguments.{i.lower()}.description", default = _i.description)[:100] for l in LOCALIZATIONS}
 
         a.type = _types.get(
             _i.type,
@@ -426,18 +428,21 @@ def parse_arguments(_command: Command) -> List[str]:
             else Application_Command_Option_Type.STRING,
         )
         options.append(a)
+
     for i in _command.sub_commands:
-        options.append(
-            Application_Command_Option(
-                type=Application_Command_Option_Type.SUB_COMMAND
-                if i.sub_commands == []
-                else Application_Command_Option_Type.SUB_COMMAND_GROUP,
-                name=i.name.strip(),
-                description=i.help[:100].strip(),
-                options=parse_arguments(i),
-                choices=[],
-            )
+        a = Application_Command_Option(
+            type=Application_Command_Option_Type.SUB_COMMAND
+            if i.sub_commands == []
+            else Application_Command_Option_Type.SUB_COMMAND_GROUP,
+            name=i.name.strip(),
+            description=i.description[:100].strip(),
+            options=parse_arguments(i),
+            choices=[],
         )
+        a.name_localizations = {l: _command.translate(l, f"sub_commands.{i.name}.name", default=i.name)[:100] for l in LOCALIZATIONS}
+        a.description_localizations = {l: _command.translate(l, f"sub_commands.{i.name}.description", default=i.description)[:100] for l in LOCALIZATIONS}
+
+        options.append(a)
     return options
 
 
