@@ -22,6 +22,8 @@ except Exception as ex:
     print(ex)
 
 if '-generate-translation' in sys.argv or '-update-translation' in sys.argv:
+    from MFramework.utils.localizations import update_all_localizations
+    update_all_localizations()
     exit()
 
 from mlib.config import ConfigToDict
