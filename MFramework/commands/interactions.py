@@ -16,7 +16,7 @@ from MFramework import (onDispatch, Ready,
     Application_Command_Type
     )
 
-from .command import iterate_commands, commands, LOCALIZATIONS
+from .command import iterate_commands, commands
 
 
 from mlib import arguments
@@ -59,6 +59,8 @@ async def register_commands(client: Bot, guild: Guild = None):
     else:
         for cmd in unrecognized_commands:
             await delete_command(client, cmd, guild)
+    
+    from MFramework.utils.localizations import LOCALIZATIONS
 
     for command, _command, options in iterate_commands(registered, guild.id if guild else None, client.user_id):
         cmd = Application_Command(name=command, description=_command.description[:100], options=options, default_permission=_command.group == Groups.GLOBAL)

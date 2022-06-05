@@ -35,28 +35,6 @@ from . import Groups
 from .components import Modal, TextInput, Row, Text_Input_Styles
 from .exceptions import CooldownError, Error
 
-LOCALIZATIONS = []
-DEFAULT_LOCALE = "en"
-
-try:
-    import i18n
-    import os
-
-    for path in [p for p in i18n.load_path if os.path.exists(p)]:
-        for locale in os.listdir(path):
-            if locale == "en":
-                log.warn("Detected locale 'en' which is ambigiuous. Rename it to either en-US or en-GB. Setting up as en-US")
-                locale = "en-US"
-            log.debug("Found directory for locale %s", locale)
-            LOCALIZATIONS.append(locale)
-
-    if len(LOCALIZATIONS) == 1:
-        log.debug("Found only one %s locale. Setting up as default", LOCALIZATIONS[0])
-        DEFAULT_LOCALE = LOCALIZATIONS[0]
-
-except ImportError:
-    log.debug("Package i18n not found. Localizations are unavailable")
-
 if TYPE_CHECKING:
     from MFramework import Context
 
@@ -386,6 +364,8 @@ _types = {
 
 
 def parse_arguments(_command: Command) -> List[str]:
+    from MFramework.utils.localizations import LOCALIZATIONS
+    
     options = []
     for i, v in _command.arguments.items():
         if i.lower() in ["self", "ctx", "cls", "client", "interaction"]:

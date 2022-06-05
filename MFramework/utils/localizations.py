@@ -1,8 +1,37 @@
 import os
 from typing import Union, List, Dict, Optional
 
-from MFramework.commands.command import Command, commands, LOCALIZATIONS
-from mlib.utils import remove_None
+from MFramework import log
+
+LOCALIZATIONS: List[str] = []
+"""Locales found in locale directory"""
+
+DEFAULT_LOCALE: str = "en"
+"""Fallback locale used when user locale couldn't be found"""
+
+try:
+    import i18n
+    import os
+
+    i18n.load_path.append("././locale")
+    i18n.set('filename_format','{namespace}.{format}')
+    i18n.set('skip_locale_root_data', True)
+    i18n.set('file_format', 'json')
+
+    for path in [p for p in i18n.load_path if os.path.exists(p)]:
+        for locale in os.listdir(path):
+            if locale == "en":
+                log.warn("Detected locale 'en' which is ambigiuous. Rename it to either en-US or en-GB. Setting up as en-US")
+                locale = "en-US"
+            log.debug("Found directory for locale %s", locale)
+            LOCALIZATIONS.append(locale)
+
+    if len(LOCALIZATIONS) == 1:
+        log.debug("Found only one %s locale. Setting up as default", LOCALIZATIONS[0])
+        DEFAULT_LOCALE = LOCALIZATIONS[0]
+
+except ImportError:
+    log.debug("Package i18n not found. Localizations are unavailable")
 
 try:
     import yaml, json
@@ -11,8 +40,13 @@ try:
 
 except ImportError:
     import json
+    log.debug("Package yaml not found. Localizations can only use .json format")
 
     _load = json.load
+
+
+from MFramework.commands.command import Command, commands
+from mlib.utils import remove_None
 
 SKIP = ["ctx"]
 
@@ -44,9 +78,9 @@ def _update_locale(locale: str, localization_strings: Dict[str, Union[dict, str]
 
     Parameters
     ---
-    locale: str
+    locale:
         Locale to write for
-    localization_strings: dict
+    localization_strings:
         Dictonary containing localization keys
     """
     for key, value in localization_strings.items():
@@ -71,11 +105,11 @@ def _generate(localization: dict, name: str, obj: Command) -> Dict[str, Union[di
 
     Parameters
     ---
-    localization: dict
+    localization:
         Dictonary containing so far found strings
-    name: str
+    name:
         Name of scope to fetch metadata for (like command name)
-    obj: Command
+    obj:
         object supporting `name`, `description` and optionally `choices`, `arguments` and/or `sub_commands`
     """
     if name in SKIP:

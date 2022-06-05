@@ -2,7 +2,8 @@ from typing import TYPE_CHECKING, Union, List, Optional
 
 from mdiscord import Snowflake, Guild, Channel, Message, Interaction, User, Guild_Member, Sendable, Embed, Component, Allowed_Mentions, Message_Reference, Message_Flags, Attachment
 
-from MFramework.commands.command import LOCALIZATIONS, DEFAULT_LOCALE, Command
+from MFramework.commands.command import Command
+from MFramework.utils.localizations import LOCALIZATIONS, DEFAULT_LOCALE
 from MFramework.database.cache import Cache
 from MFramework.database.database import Database
 if TYPE_CHECKING:
