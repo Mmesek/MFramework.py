@@ -8,7 +8,7 @@
 		"prefix":"@register",
 		"body":[
 			"@register(group=${1:Groups.GLOBAL}, interaction=False)",
-			"async def ${2:commandTrigger}(ctx: Context, ${3:parameter}: ${4:type}, *, language):",
+			"async def ${2:commandTrigger}(ctx: Context, ${3:parameter}: ${4:type}):",
 			"    '''",
 			"    ${5:Description to use with help command}",
 			"    Params",
@@ -25,7 +25,7 @@
 		"prefix":"@register",
 		"body":[
 			"@register(group=${1:Groups.GLOBAL})",
-			"async def ${2:commandTrigger}(ctx: Context, ${3:parameter}: ${4:type}, *, language):",
+			"async def ${2:commandTrigger}(ctx: Context, ${3:parameter}: ${4:type}):",
 			"    '''",
 			"    ${5:Description to use with help command}",
 			"    Params",
