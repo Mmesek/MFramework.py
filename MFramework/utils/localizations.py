@@ -14,14 +14,16 @@ try:
     import os
 
     i18n.load_path.append("././locale")
-    i18n.set('filename_format','{namespace}.{format}')
-    i18n.set('skip_locale_root_data', True)
-    i18n.set('file_format', 'json')
+    i18n.set("filename_format", "{namespace}.{format}")
+    i18n.set("skip_locale_root_data", True)
+    i18n.set("file_format", "json")
 
     for path in [p for p in i18n.load_path if os.path.exists(p)]:
         for locale in os.listdir(path):
             if locale == "en":
-                log.warn("Detected locale 'en' which is ambigiuous. Rename it to either en-US or en-GB. Setting up as en-US")
+                log.warn(
+                    "Detected locale 'en' which is ambigiuous. Rename it to either en-US or en-GB. Setting up as en-US"
+                )
                 locale = "en-US"
             log.debug("Found directory for locale %s", locale)
             LOCALIZATIONS.append(locale)
@@ -40,6 +42,7 @@ try:
 
 except ImportError:
     import json
+
     log.debug("Package yaml not found. Localizations can only use .json format")
 
     _load = json.load
@@ -48,7 +51,8 @@ except ImportError:
 from MFramework.commands.command import Command, commands
 from mlib.utils import remove_None
 
-SKIP = ["ctx"]
+SKIP: List[str] = ["ctx"]
+"""Parameters that should be skipped while generating command localization files"""
 
 
 def _load_locale(locale_path: str) -> Dict[str, Union[dict, str]]:
@@ -155,9 +159,14 @@ def _generate(localization: dict, name: str, obj: Command) -> Dict[str, Union[di
     return localization
 
 
-def update_localization(locale_path: str):
+def update_localization(locale_path: str) -> None:
     """
     Updates localization files with missing keys
+
+    Parameters
+    ---
+    locale_path:
+        Path to locale that should be updated
     """
     localization = _load_locale(locale_path)
 
@@ -188,15 +197,27 @@ def update_localization(locale_path: str):
     _update_locale(locale_path, localization)
 
 
-def update_all_localizations(locale_path: str = "locale"):
+def update_all_localizations(locale_path: str = "locale") -> None:
     """
     Updates all found localization files with missing keys
+
+    Parameters
+    ---
+    locale_path:
+        Path to locale directory that should contain locales
     """
     for locale in LOCALIZATIONS:
         update_localization(locale_path + "/" + locale)
 
 
-def translate(key: str, locale: str, _namespace: Optional[Union[str, List[str]]] = None, _bot: Optional[str] = None, default: Optional[str] = None, **kwargs) -> str:
+def translate(
+    key: str,
+    locale: str,
+    _namespace: Optional[Union[str, List[str]]] = None,
+    _bot: Optional[str] = None,
+    default: Optional[str] = None,
+    **kwargs,
+) -> str:
     """
     Fetches localization strings according to possible patterns
 
@@ -243,7 +264,7 @@ def translate(key: str, locale: str, _namespace: Optional[Union[str, List[str]]]
     keys = []
     if type(_namespace) is not list:
         _namespace = [_namespace]
-    ns = [".".join(_namespace[:x+1]) for x, _ in enumerate(_namespace)]
+    ns = [".".join(_namespace[: x + 1]) for x, _ in enumerate(_namespace)]
     if _bot:
         for _ in ns:
             keys.append(f"{_bot}.{_}")
