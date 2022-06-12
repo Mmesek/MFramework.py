@@ -202,7 +202,7 @@ class Command(Localizable):
             elif r:
                 await self.maybe_reply(ctx, str(r), prefix="")
 
-            ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id, ctx.language)
+            ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id, getattr(ctx.data, 'locale', ctx.language))
 
         except TypeError as ex:
             log.exception("TypeError at command %s", self.name, exc_info=ex)
@@ -230,7 +230,7 @@ class Command(Localizable):
                 await ctx.bot.create_message(_dm, str(ex))
 
             ctx.db.influx.commitCommandUsage(
-                ctx.guild_id, self.name, ctx.bot.username, False, ctx.user_id, ctx.language
+                ctx.guild_id, self.name, ctx.bot.username, False, ctx.user_id, getattr(ctx.data, 'locale', ctx.language)
             )
 
         except NotFound as ex:
