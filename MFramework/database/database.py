@@ -105,9 +105,9 @@ class Influx(InfluxBase):
             .tag("server", server_id)
             .tag("command", command_name)
             .tag("bot", bot_name)
+            .tag("locale", locale)
             .field("success", success)
             .field("user", user_id)
-            .field("locale", locale)
         ))
 
     def getSession(self, user, interval):
