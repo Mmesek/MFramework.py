@@ -29,7 +29,7 @@ class Arguments:
         self.ctx = ctx
         self.kwargs = kwargs
         args = self._get_arguments()
-        args = {k: v for k, v in args.items() if v}
+        args = {k: v for k, v in args.items() if v is not None}
         self._set_kwargs(args)
         if ctx.is_interaction and (not ctx.data.data.options and ctx.data.data.resolved):
             self._set_resolved()
