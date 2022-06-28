@@ -1,46 +1,58 @@
-from typing import List, Dict, Any, Type, Generator, Optional, Union, TYPE_CHECKING, Tuple
+from inspect import Signature, signature
 from types import FunctionType
-from inspect import signature, Signature
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 from MFramework import (
-    Snowflake,
-    GuildID,
-    ChannelID,
-    UserID,
-    RoleID,
-    Channel,
-    User,
-    Role,
-    Guild_Member,
-    Message,
-    Channel_Types,
+    Allowed_Mentions,
     Application_Command,
     Application_Command_Option,
     Application_Command_Option_Choice,
     Application_Command_Option_Type,
-    Embed,
-    Component,
-    Channel_Types,
-    Interaction_Response,
-    Interaction_Callback_Type,
-    Interaction_Application_Command_Callback_Data,
-    log,
-    BadRequest,
-    NotFound,
     Attachment,
+    BadRequest,
+    Channel,
+    Channel_Types,
+    ChannelID,
+    Component,
+    Embed,
+    Guild_Member,
+    GuildID,
     Interaction,
-    Allowed_Mentions,
+    Interaction_Application_Command_Callback_Data,
+    Interaction_Callback_Type,
+    Interaction_Response,
+    Message,
+    NotFound,
+    Role,
+    RoleID,
+    Snowflake,
+    User,
+    UserID,
+    log,
 )
+
 from . import Groups
-from .components import Modal, TextInput, Row, Text_Input_Styles
+from .components import Modal, Row, Text_Input_Styles, TextInput
 from .exceptions import CooldownError, Error
 
 if TYPE_CHECKING:
     from MFramework import Context
 
+
 class Localizable:
     def translate(self, locale: str, key: str, default: str = None) -> str:
         from MFramework.utils.localizations import translate
+
         key = f"{self.name}.{key}"
         if getattr(self, "master_command", False):
             key = f"{self.master_command._cmd.name}.sub_commands.{key}"
@@ -56,7 +68,14 @@ class Parameter(Localizable):
     name: str
 
     def __init__(
-        self, default: str, type: Type, description: str, choices: Dict[str, Any], kind: str, name: str, types: List[str] = []
+        self,
+        default: str,
+        type: Type,
+        description: str,
+        choices: Dict[str, Any],
+        kind: str,
+        name: str,
+        types: List[str] = [],
     ) -> None:
         self.default = default
         self.type = getattr(type, "__mbase__", type)
@@ -178,7 +197,9 @@ class Command(Localizable):
                     Interaction_Response(
                         type=Interaction_Callback_Type.MODAL,
                         data=Interaction_Application_Command_Callback_Data(
-                            title=r.title, custom_id=r.custom_id, components=r.components
+                            title=r.title,
+                            custom_id=r.custom_id,
+                            components=r.components,
                         ),
                     ),
                 )
@@ -190,19 +211,30 @@ class Command(Localizable):
                 if ctx.is_message:
                     await ctx.data.react(f"{r.name}:{r.id or 0}")
                 else:
-                    await self.maybe_reply(ctx, f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>", prefix="")
+                    await self.maybe_reply(
+                        ctx,
+                        f"<{'a:' if r.animated else ''}{r.name}:{r.id or 0}>",
+                        prefix="",
+                    )
 
             elif isinstance(r, Attachment) or (type(r) is list and all(isinstance(i, Attachment) for i in r)):
                 await self.maybe_reply(ctx, attachments=[r] if type(r) is not list else r)
 
             elif callable(r):
-                if hasattr(r, '_cmd'):
+                if hasattr(r, "_cmd"):
                     await ctx.bot.create_interaction_response(ctx.data.id, ctx.data.token, r._cmd.modal)
 
             elif r:
                 await self.maybe_reply(ctx, str(r), prefix="")
 
-            ctx.db.influx.commitCommandUsage(ctx.guild_id, self.name, ctx.bot.username, True, ctx.user_id, getattr(ctx.data, 'locale', ctx.language))
+            ctx.db.influx.commitCommandUsage(
+                ctx.guild_id,
+                self.name,
+                ctx.bot.username,
+                True,
+                ctx.user_id,
+                getattr(ctx.data, "locale", ctx.language),
+            )
 
         except TypeError as ex:
             log.exception("TypeError at command %s", self.name, exc_info=ex)
@@ -215,7 +247,9 @@ class Command(Localizable):
             from mlib.localization import secondsToText
 
             await self.maybe_reply(
-                ctx, secondsToText(int(ex.args[0].total_seconds())), prefix="<@{user_id}>, Remaining Cooldown: "
+                ctx,
+                secondsToText(int(ex.args[0].total_seconds())),
+                prefix="<@{user_id}>, Remaining Cooldown: ",
             )
 
         except Error as ex:
@@ -230,7 +264,12 @@ class Command(Localizable):
                 await ctx.bot.create_message(_dm, str(ex))
 
             ctx.db.influx.commitCommandUsage(
-                ctx.guild_id, self.name, ctx.bot.username, False, ctx.user_id, getattr(ctx.data, 'locale', ctx.language)
+                ctx.guild_id,
+                self.name,
+                ctx.bot.username,
+                False,
+                ctx.user_id,
+                getattr(ctx.data, "locale", ctx.language),
             )
 
         except NotFound as ex:
@@ -263,10 +302,22 @@ class Command(Localizable):
             s = None
 
         try:
-            await ctx.reply(s, embeds=embeds, components=components, attachments=attachments, allowed_mentions=Allowed_Mentions(users=[ctx.user_id], replied_user=True))
+            await ctx.reply(
+                s,
+                embeds=embeds,
+                components=components,
+                attachments=attachments,
+                allowed_mentions=Allowed_Mentions(users=[ctx.user_id], replied_user=True),
+            )
         except Exception:
             log.debug("Failed to reply to message. Falling back to default Message creation")
-            await ctx.bot.create_message(ctx.channel_id, s, embeds=embeds, components=components, allowed_mentions=Allowed_Mentions(users=[ctx.user_id], replied_user=True))
+            await ctx.bot.create_message(
+                ctx.channel_id,
+                s,
+                embeds=embeds,
+                components=components,
+                allowed_mentions=Allowed_Mentions(users=[ctx.user_id], replied_user=True),
+            )
 
 
 commands: Dict[str, Command] = {}
@@ -367,7 +418,7 @@ _types = {
 
 def parse_arguments(_command: Command) -> List[str]:
     from MFramework.utils.localizations import LOCALIZATIONS
-    
+
     options = []
     for i, v in _command.arguments.items():
         if i.lower() in ["self", "ctx", "cls", "client", "interaction"]:
@@ -384,7 +435,10 @@ def parse_arguments(_command: Command) -> List[str]:
 
         for choice in _i.choices:
             _choice = Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice])
-            _choice.name_localizations = {l: _command.translate(l, f"arguments.{i.lower()}.choices.{choice.lower()}", choice)[:100] for l in LOCALIZATIONS}
+            _choice.name_localizations = {
+                l: _command.translate(l, f"arguments.{i.lower()}.choices.{choice.lower()}", choice)[:100]
+                for l in LOCALIZATIONS
+            }
 
             if _i.type in {int, bool}:
                 # Workaround due to currently autocasting to str by constructor
@@ -400,8 +454,13 @@ def parse_arguments(_command: Command) -> List[str]:
             options=[],
             channel_types=_i.type_args,
         )
-        a.name_localizations = {l: _command.translate(l, f"arguments.{i.lower()}.name", default = i)[:100] for l in LOCALIZATIONS}
-        a.description_localizations = {l: _command.translate(l, f"arguments.{i.lower()}.description", default = _i.description)[:100] for l in LOCALIZATIONS}
+        a.name_localizations = {
+            l: _command.translate(l, f"arguments.{i.lower()}.name", default=i)[:100] for l in LOCALIZATIONS
+        }
+        a.description_localizations = {
+            l: _command.translate(l, f"arguments.{i.lower()}.description", default=_i.description)[:100]
+            for l in LOCALIZATIONS
+        }
 
         a.type = _types.get(
             _i.type,
@@ -421,15 +480,22 @@ def parse_arguments(_command: Command) -> List[str]:
             options=parse_arguments(i),
             choices=[],
         )
-        a.name_localizations = {l: _command.translate(l, f"sub_commands.{i.name}.name", default=i.name)[:100] for l in LOCALIZATIONS}
-        a.description_localizations = {l: _command.translate(l, f"sub_commands.{i.name}.description", default=i.description)[:100] for l in LOCALIZATIONS}
+        a.name_localizations = {
+            l: _command.translate(l, f"sub_commands.{i.name}.name", default=i.name)[:100] for l in LOCALIZATIONS
+        }
+        a.description_localizations = {
+            l: _command.translate(l, f"sub_commands.{i.name}.description", default=i.description)[:100]
+            for l in LOCALIZATIONS
+        }
 
         options.append(a)
     return options
 
 
 def iterate_commands(
-    registered: List[Application_Command] = [], guild_id: Optional[Snowflake] = None, bot_id: Optional[Snowflake] = None
+    registered: List[Application_Command] = [],
+    guild_id: Optional[Snowflake] = None,
+    bot_id: Optional[Snowflake] = None,
 ) -> Generator[Tuple[str, Command, List[str]], None, None]:
     for command, cmd in commands.items():
         if guild_id != cmd.guild or cmd.master_command or not cmd.interaction or (cmd.bot and cmd.bot != bot_id):

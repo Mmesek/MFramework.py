@@ -1,21 +1,20 @@
 import re
+from typing import Dict, List
 
-from typing import List, Dict
-
-from MFramework import Snowflake, Guild
-
+from MFramework import Guild, Snowflake
 from MFramework.commands import Groups
-
 from MFramework.database import alchemy as db
 from MFramework.database.alchemy import types
 
 from .database import Database
 from .guild import ObjectCollections
 
+
 class Roles(Database):
     reaction_roles: Dict[str, Dict[Snowflake, Dict[str, List[Snowflake]]]]
     presence_roles: Dict[str, Dict[Snowflake, Dict[str, List[Snowflake]]]]
-    level_roles: List #TODO
+    level_roles: List  # TODO
+
     def __init__(self, *, bot, guild: Guild, **kwargs) -> None:
         self.presence_roles = {}
         self.reaction_roles = {}
@@ -23,7 +22,6 @@ class Roles(Database):
         super().__init__(bot=bot, guild=guild, **kwargs)
         with bot.db.sql.Session.begin() as s:
             self.get_Roles(s)
-
 
     def get_reaction_roles(self, roles):
         reactions = roles.filter(db.Role.settings.any(name=types.Setting.Reaction)).all()
@@ -55,10 +53,13 @@ class Roles(Database):
             g = Groups.get(permission.settings[types.Setting.Permissions].int)
             if g in self.groups:
                 self.groups[g].add(permission.id)
-    
+
     def get_level_roles(self, roles):
         levels = roles.filter(db.Role.settings.any(name=types.Setting.Level)).all()
-        self.level_roles = sorted({role.id: role.get_setting(types.Setting.Level) for role in levels}.items(), key=lambda x: x[1])
+        self.level_roles = sorted(
+            {role.id: role.get_setting(types.Setting.Level) for role in levels}.items(),
+            key=lambda x: x[1],
+        )
         rates = roles.filter(db.Role.settings.any(name=types.Setting.Exp)).all()
         self.role_rates = {role.id: role.get_setting(types.Setting.Exp) for role in levels}
 
@@ -69,6 +70,7 @@ class Roles(Database):
         self.get_role_groups(roles)
         self.get_level_roles(roles)
         breakpoint
+
 
 class Settings(Database, ObjectCollections):
     disabled_channels: List[Snowflake]
@@ -84,9 +86,10 @@ class Settings(Database, ObjectCollections):
     voice_link: Snowflake = None
     flags: int = 0
     permissions: int = 0
-    language: str = 'en'
+    language: str = "en"
     allowed_duplicated_messages: int = 1
     settings: dict
+
     def __init__(self, *, bot, guild: Guild, **kwargs) -> None:
         self.disabled_channels = []
         self.disabled_roles = []
@@ -102,19 +105,27 @@ class Settings(Database, ObjectCollections):
             self.load_voice_states(guild.voice_states)
 
     def load_settings(self, guild):
-        self.settings = {setting: getattr(value, setting.annotation.__name__.lower()) for setting, value in guild.settings.items()}
+        self.settings = {
+            setting: getattr(value, setting.annotation.__name__.lower()) for setting, value in guild.settings.items()
+        }
         for setting, value in guild.settings.items():
-            setattr(self, setting.name.lower(), getattr(value, setting.annotation.__name__.lower(), None))
+            setattr(
+                self,
+                setting.name.lower(),
+                getattr(value, setting.annotation.__name__.lower(), None),
+            )
             if setting is types.Setting.Alias:
                 self.set_alias(self.settings[setting])
 
     def get_rpg_channels(self, channels):
         rpg_channels = channels.filter(db.Channel.settings.any(name=types.Setting.RPG)).all()
         self.rpg_channels = [channel.id for channel in rpg_channels]
-    
+
     def get_exp_settings(self, channels):
         channels = channels.filter(db.Channel.settings.any(name=types.Setting.Exp)).all()
-        self.disabled_channels.extend([channel.id for channel in channels if not channel.get_setting(types.Setting.Exp)])
+        self.disabled_channels.extend(
+            [channel.id for channel in channels if not channel.get_setting(types.Setting.Exp)]
+        )
         self.exp_rates = {channel.id: channel.get_setting(types.Setting.Exp) for channel in channels}
         self.server_exp_rate = self.settings.get(types.Setting.Exp, 1.0)
 
@@ -125,7 +136,16 @@ class Settings(Database, ObjectCollections):
 
     def is_tracking(self, flag):
         from mlib.utils import bitflag
+
         return bitflag(self.flags, flag)
 
     def set_alias(self, alias):
-        self.alias = re.compile(r"|".join([re.escape(alias), re.escape(self.bot.user.username), f"{self.bot.user.id}>"]))
+        self.alias = re.compile(
+            r"|".join(
+                [
+                    re.escape(alias),
+                    re.escape(self.bot.user.username),
+                    f"{self.bot.user.id}>",
+                ]
+            )
+        )

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Commands
 ----------
 
@@ -7,8 +7,9 @@ Command registery & execution framework
 
 :copyright: (c) 2021 Mmesek
 
-'''
+"""
 from mlib.types import Enum
+
 
 class Groups(Enum):
     SYSTEM = 0
@@ -25,12 +26,14 @@ class Groups(Enum):
     DM = 200
     MUTED = 210
     LIMBO = 220
-    def can_use(cls, value: 'Groups') -> bool:
-        '''Checks if Group is higher or equal than provided one
+
+    def can_use(cls, value: "Groups") -> bool:
+        """Checks if Group is higher or equal than provided one
         Parameters
         ----------
         value:
-            Group to compare to. For example, Minimal group that can use'''
+            Group to compare to. For example, Minimal group that can use"""
         return cls.value <= value.value
 
-from .decorators import * # noqa: F401
+
+from .decorators import *  # noqa: F401
