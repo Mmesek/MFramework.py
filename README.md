@@ -164,6 +164,35 @@ async def suggestion(ctx: Context, title: TextInput[1, 100], your_suggestion: Te
     return Embed(title=title).set_description(your_suggestion)
 ```
 
+Localization example
+---
+
+`locale/en-US/bot.json`
+```json
+{
+    "hi": {
+        "hello": "Hello!"
+    }
+}
+```
+
+`locale/pl/bot.json`
+```json
+{
+    "hi": {
+        "hello": "Cześć!"
+    }
+}
+```
+
+`bot.py`
+```py
+@register(group=Groups.GLOBAL)
+async def hi(ctx: Context) -> str:
+    '''Replies in your language'''
+    return ctx.t("hello")
+```
+
 # Running Bot
 
 ## Docker
