@@ -1,17 +1,18 @@
 import os
-from typing import Union, List, Dict, Optional
+from typing import Dict, List, Optional, Union
 
 from MFramework import log
 
 LOCALIZATIONS: List[str] = []
 """Locales found in locale directory"""
 
-DEFAULT_LOCALE: str = "en"
+DEFAULT_LOCALE: str = "en-US"
 """Fallback locale used when user locale couldn't be found"""
 
 try:
-    import i18n
     import os
+
+    import i18n
 
     i18n.load_path.append("././locale")
     i18n.set("filename_format", "{namespace}.{format}")
@@ -36,7 +37,9 @@ except ImportError:
     log.debug("Package i18n not found. Localizations are unavailable")
 
 try:
-    import yaml, json
+    import json
+
+    import yaml
 
     _load = yaml.safe_load
 
@@ -48,8 +51,9 @@ except ImportError:
     _load = json.load
 
 
-from MFramework.commands.command import Command, commands
 from mlib.utils import remove_None
+
+from MFramework.commands.command import Command, commands
 
 SKIP: List[str] = ["ctx"]
 """Parameters that should be skipped while generating command localization files"""
