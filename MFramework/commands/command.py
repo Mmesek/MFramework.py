@@ -185,9 +185,12 @@ class Command(Localizable):
             from MFramework import Emoji
 
             if isinstance(r, Message):
-                await ctx.send(r.content, r.embeds, r.components)
+                await self.maybe_reply(
+                    ctx, r.content, embeds=r.embeds, components=r.components, attachments=r.attachments
+                )
+                # await ctx.send(r.content, r.embeds, r.components)
 
-            if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
+            elif isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
                 await self.maybe_reply(ctx, embeds=[r] if type(r) is not list else r)
 
             elif isinstance(r, Modal):
