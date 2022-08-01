@@ -86,7 +86,7 @@ class Settings(Database, ObjectCollections):
     voice_link: Snowflake = None
     flags: int = 0
     permissions: int = 0
-    language: str = "en"
+    language: str = "en-US"
     allowed_duplicated_messages: int = 1
     settings: dict
 
