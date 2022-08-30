@@ -171,6 +171,16 @@ class Presences(Collection):
             expire_time=self._expire,
         )
 
+    def update(self, data: Presence_Update):
+        self._cache.update(
+            data.user.id,
+            (
+                data.activities[0].name,
+                data.activities[0].created_at,
+                data.activities[0].application_id,
+            ),
+        )
+
 
 class Guilds(Collection):
     _cls: Guild = Guild
