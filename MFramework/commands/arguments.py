@@ -1,23 +1,23 @@
-from typing import Dict, TYPE_CHECKING
 from datetime import timedelta
+from typing import TYPE_CHECKING, Dict
 
 from MFramework import (
-    Message,
-    RoleID,
-    UserID,
-    ChannelID,
-    Role,
-    User,
-    Channel,
-    Guild_Member,
-    Snowflake,
     Attachment,
+    Channel,
+    ChannelID,
+    Guild_Member,
     Guild_Member_Add,
     Guild_Member_Update,
+    Message,
+    Role,
+    RoleID,
+    Snowflake,
+    User,
+    UserID,
 )
 from MFramework.utils.utils import parseMention
 
-from ._utils import get_arguments, Command, DEFAULTS
+from ._utils import DEFAULTS, Command, get_arguments
 
 if TYPE_CHECKING:
     from MFramework import Context
@@ -88,6 +88,9 @@ class Arguments:
 
                 elif t is dict:
                     v = ({v: k for k, v in self.cmd.arguments[name].choices.items()}.get(value), value)
+
+                elif self.cmd.arguments[name].is_autocomplete:
+                    v = value
 
                 else:
                     v = self.cmd.arguments[name].type(value)

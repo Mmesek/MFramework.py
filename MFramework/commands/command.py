@@ -66,6 +66,8 @@ class Parameter(Localizable):
     choices: Dict[str, Any]
     kind: str
     name: str
+    is_autocomplete: bool
+    autocomplete: FunctionType
 
     def __init__(
         self,
@@ -76,6 +78,7 @@ class Parameter(Localizable):
         kind: str,
         name: str,
         types: List[str] = [],
+        autocomplete: FunctionType = None,
     ) -> None:
         self.default = default
         self.type = getattr(type, "__mbase__", type)
@@ -89,6 +92,8 @@ class Parameter(Localizable):
         self.choices = choices
         self.kind = kind
         self.name = name
+        self.is_autocomplete = True if type is FunctionType else False
+        self.autocomplete = autocomplete
 
 
 class Command(Localizable):
@@ -346,7 +351,11 @@ def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Par
             choices=docstring.get("choices").get(
                 sig[parameter].name,
                 []
-                if type(sig[parameter].annotation) is not dict and not issubclass(sig[parameter].annotation, enum.Enum)
+                if (
+                    type(sig[parameter].annotation) is FunctionType
+                    or type(sig[parameter].annotation) is not dict
+                    and not issubclass(sig[parameter].annotation, enum.Enum)
+                )
                 else sig[parameter].annotation
                 if type(sig[parameter].annotation) is dict
                 else {k.name: k.value for k in sig[parameter].annotation},
@@ -354,6 +363,7 @@ def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Par
             kind=sig[parameter].kind.name,
             name=sig[parameter].name.strip(),
             types=docstring.get("_types", {}).get(sig[parameter].name.strip()),
+            autocomplete=sig[parameter].annotation,
         )
         parameters[sig[parameter].name] = arg
     return parameters
@@ -456,6 +466,7 @@ def parse_arguments(_command: Command) -> List[str]:
             choices=choices,
             options=[],
             channel_types=_i.type_args,
+            autocomplete=_i.is_autocomplete,
         )
         a.name_localizations = {
             l: _command.translate(l, f"arguments.{i.lower()}.name", default=i)[:100] for l in LOCALIZATIONS

@@ -164,6 +164,26 @@ async def suggestion(ctx: Context, title: TextInput[1, 100], your_suggestion: Te
     return Embed(title=title).set_description(your_suggestion)
 ```
 
+Autocomplete example
+```python
+from MFramework import register, Groups, Context, Interaction
+
+async def animals(interaction: Interaction, current: str) -> list[str]:
+    """Current represents what user typed so far"""
+    return ["Sheep", "Dog", "Cat"]
+
+@register(group=Groups.GLOBAL)
+async def choose(ctx: Context, animal: animals) -> str:
+    """
+    Choose an animal
+    Params
+    ------
+    animal:
+        Autocomplete that suggests animal names
+    """
+    return f"Selected animal: {animal}"
+```
+
 Localization example
 ---
 

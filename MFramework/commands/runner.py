@@ -1,22 +1,28 @@
 import asyncio
-from typing import Dict, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Dict, Union
 
-from MFramework import (
-    onDispatch,
-    Interaction,
-    Message,
-    Interaction_Type,
-    Component_Types,
-    Embed,
+from mdiscord.models import (
+    Application_Command_Option_Choice,
+    Interaction_Application_Command_Callback_Data,
+    Interaction_Callback_Type,
+    Interaction_Response,
 )
 
-from .command import Command
-from .arguments import Arguments
-from ._utils import set_context, retrieve_command
+from MFramework import (
+    Component_Types,
+    Embed,
+    Interaction,
+    Interaction_Type,
+    Message,
+    onDispatch,
+)
 
+from ._utils import retrieve_command, set_context
+from .arguments import Arguments
+from .command import Command
 
 if TYPE_CHECKING:
-    from MFramework import Context, Bot
+    from MFramework import Bot, Context
 
 
 async def modal_response(ctx: "Context", data: Union[Message, Interaction], cmd: Command) -> Dict[str, str]:
@@ -111,4 +117,36 @@ async def run(client: "Bot", data: Union[Message, Interaction]) -> bool:
 
     kwargs = Arguments(cmd, ctx, inputs)
     await cmd.execute(ctx, kwargs.kwargs)
+    return True
+
+
+@onDispatch(event="interaction_create", predicate=lambda x: x.type == Interaction_Type.APPLICATION_COMMAND_AUTOCOMPLETE)
+async def autocomplete_response(client: "Bot", interaction: Interaction):
+    cmd = retrieve_command(interaction)
+
+    focused = next(filter(lambda x: x.focused, interaction.data.options))
+
+    choices = await cmd.arguments[focused.name].autocomplete(interaction, focused.value)
+    if not choices:
+        return
+
+    if type(choices) is list:
+        if type(choices[0]) in {tuple, list}:
+            choices = [Application_Command_Option_Choice(name=i[0], value=i[1]) for i in choices]
+        elif type(choices[0]) in {str, int, float}:
+            choices = [Application_Command_Option_Choice(name=i, value=i) for i in choices]
+    elif type(choices) is dict:
+        choices = [Application_Command_Option_Choice(name=k, value=v) for k, v in choices.items()]
+    # NOTE: Choice object supports name_localizations,
+    # though not sure if there really is a reason to fill it in considering it's for specific user anyway
+    # and nature of autocomplete is rather ephemeral
+
+    await client.create_interaction_response(
+        interaction_id=interaction.id,
+        interaction_token=interaction.token,
+        response=Interaction_Response(
+            type=Interaction_Callback_Type.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+            data=Interaction_Application_Command_Callback_Data(choices=choices),
+        ),
+    )
     return True
