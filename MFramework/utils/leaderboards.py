@@ -47,7 +47,7 @@ class Leaderboard_Entry:
 
 
 class Leaderboard:
-    """Leaderboard builder sorting and formatting leaderboard"""
+    """Builder sorting and formatting leaderboard"""
 
     user_id: Snowflake
 
@@ -65,12 +65,13 @@ class Leaderboard:
         limit: int = 10,
         error: str = "No results",
         skip_invalid: bool = False,
+        reverse: bool = False,
     ) -> None:
         self.ctx = ctx
         self.user_id = user_id
         self._iterable = list(i for i in iterable if not skip_invalid or i.in_guild)
         self._user_stats = next(filter(lambda x: x.user_id == user_id, iterable), None)
-        self._iterable.sort(key=lambda x: (x._value, x.name), reverse=True)
+        self._iterable.sort(key=lambda x: (x._value, x.name), reverse=not reverse)
         if self._user_stats:
             self._user_position = self._iterable.index(self._user_stats) + 1
         self._iterable = self._iterable[:limit]
