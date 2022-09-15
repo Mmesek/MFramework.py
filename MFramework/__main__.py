@@ -50,7 +50,7 @@ try:
         import_from(path)
     import_modules(arguments.parse().ext)
 except Exception as ex:
-    print(ex)
+    MFramework.log.exception(ex, exc_info=ex)
 
 if "-generate-translation" in sys.argv or "-update-translation" in sys.argv:
     from MFramework.utils.localizations import update_all_localizations
