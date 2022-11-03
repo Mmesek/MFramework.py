@@ -111,6 +111,7 @@ class Command(Localizable):
     auto_deferred: bool
     private_response: bool
     modal: Interaction_Response
+    is_menu: bool = False
 
     def __init__(
         self,
@@ -512,7 +513,12 @@ def iterate_commands(
     bot_id: Optional[Snowflake] = None,
 ) -> Generator[Tuple[str, Command, List[str]], None, None]:
     for command, cmd in commands.items():
-        if guild_id != cmd.guild or cmd.master_command or not cmd.interaction or (cmd.bot and cmd.bot != bot_id):
+        if (
+            guild_id != cmd.guild
+            or (cmd.master_command and not cmd.is_menu)
+            or not cmd.interaction
+            or (cmd.bot and cmd.bot != bot_id)
+        ):
             continue
         _command = commands[command]
         options = parse_arguments(_command)

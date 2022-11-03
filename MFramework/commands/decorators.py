@@ -31,6 +31,7 @@ __all__ = [
     "shortcut",
     "any_role",
     "reaction",
+    "menu_user",
 ]
 
 
@@ -341,6 +342,30 @@ def reaction(reaction: str, group: Groups = Groups.GLOBAL, guild: Snowflake = No
         cmd = Command(f, False, None, group, guild)
         log.debug("Registering Reaction [%s] as a command [%s]", reaction, cmd.name)
         reactions[reaction] = cmd
+        return f
+
+    return inner
+
+
+def menu_user(name: str = None, private_response: bool = None):
+    """
+    Enables command as a context menu item for user
+    """
+
+    def inner(f):
+        log.debug("Registering Menu button on User [%s] for function [%s]", name, f.__name__)
+        cmd = getattr(f, "_cmd", None)
+        if not cmd:
+            raise NameError("Command is not registered!")
+        from copy import deepcopy
+
+        c = deepcopy(cmd)
+        c.name = name
+        c.is_menu = True
+        if private_response is not None:
+            c.private_response = private_response
+        commands[name] = c
+        # TODO Register a middleware command with optional modal output here
         return f
 
     return inner
