@@ -31,7 +31,7 @@ __all__ = [
     "shortcut",
     "any_role",
     "reaction",
-    "menu_user",
+    "menu",
 ]
 
 
@@ -347,13 +347,13 @@ def reaction(reaction: str, group: Groups = Groups.GLOBAL, guild: Snowflake = No
     return inner
 
 
-def menu_user(name: str = None, private_response: bool = None):
+def menu(name: str = None, private_response: bool = None):
     """
-    Enables command as a context menu item for user
+    Enables command as a context menu option
     """
 
     def inner(f):
-        log.debug("Registering Menu button on User [%s] for function [%s]", name, f.__name__)
+        log.debug("Registering Menu button [%s] for function [%s]", name, f.__name__)
         cmd = getattr(f, "_cmd", None)
         if not cmd:
             raise NameError("Command is not registered!")
