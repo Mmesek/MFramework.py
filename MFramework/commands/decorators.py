@@ -349,14 +349,31 @@ def reaction(reaction: str, group: Groups = Groups.GLOBAL, guild: Snowflake = No
 
 def menu(name: str = None, private_response: bool = None):
     """
-    Enables command as a context menu option
+    Enables command as a context menu option. Menu type if inferred from typehint.
+
+    Parameters
+    ----------
+    name:
+        String to use as a button name
+    private_response:
+        Whether response of this button should be private. Default is taken from base command creation
+
+    Examples
+    --------
+    ```py
+    >>> @menu("Option Name")
+    >>> @register()
+    >>> async def discrim(user: User) -> int:
+    >>>     return user.discriminator
+    ```
     """
 
     def inner(f):
         log.debug("Registering Menu button [%s] for function [%s]", name, f.__name__)
         cmd = getattr(f, "_cmd", None)
         if not cmd:
-            raise NameError("Command is not registered!")
+            # NOTE: Perhaps create/register a command here if it's missing instead?
+            raise NameError("Command is not yet registered!")
         from copy import deepcopy
 
         c = deepcopy(cmd)
