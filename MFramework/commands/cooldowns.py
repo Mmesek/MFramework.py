@@ -208,7 +208,7 @@ def cooldown(
     weeks: int = 0,
     logic: Cooldown = Cooldown,
     delta: timedelta = None,
-    **cooldown_kwargs
+    **cooldown_kwargs,
 ):
     """Applies a cooldown on command.
 
@@ -239,14 +239,14 @@ def cooldown(
                 func_args=kwargs,
                 bucket=bucket,
                 capacity=rate,
-                **cooldown_kwargs
+                **cooldown_kwargs,
             )
             if not c.on_cooldown:
                 c.add_cooldown()
                 return f(ctx=ctx, **kwargs)
             from .exceptions import CooldownError
 
-            raise CooldownError(c.remaining)
+            raise CooldownError(f"Cooldown remaining: <t:{int((c.now + c.remaining).timestamp())}:R>")
 
         return wrapped
 
