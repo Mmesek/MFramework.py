@@ -117,7 +117,7 @@ def run(name):
 if __name__ == "__main__":
     from multiprocessing.dummy import Pool
 
-    pool = Pool(3)
+    pool = Pool(len(cfg["DiscordTokens"]))
     try:
         while True:
             pool.map(run, cfg["DiscordTokens"])
