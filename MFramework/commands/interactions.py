@@ -123,8 +123,8 @@ async def register_commands(client: Bot, guild: Guild = None):
 
 async def get_commands(client: Bot, guild: Guild = None) -> List[Application_Command]:
     if guild:
-        return await client.get_guild_application_commands(client.application.id, guild.id)
-    return await client.get_global_application_commands(client.application.id)
+        return await client.get_guild_application_commands(client.application.id, guild.id, True)
+    return await client.get_global_application_commands(client.application.id, True)
 
 
 async def add_command(client: Bot, cmd: Application_Command, guild: Guild = None) -> Application_Command:
