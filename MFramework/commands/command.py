@@ -253,11 +253,10 @@ class Command(Localizable):
 
         except CooldownError as ex:
             log.debug("Cooldown triggered on command %s: %s", self.name, ex)
-            from mlib.localization import secondsToText
 
             await self.maybe_reply(
                 ctx,
-                secondsToText(int(ex.args[0].total_seconds())),
+                f"<t:{ex.args[0]}:R>",
                 prefix="<@{user_id}>, Remaining Cooldown: ",
             )
 

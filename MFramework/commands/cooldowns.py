@@ -246,7 +246,7 @@ def cooldown(
                 return f(ctx=ctx, **kwargs)
             from .exceptions import CooldownError
 
-            raise CooldownError(f"Cooldown remaining: <t:{int((c.now + c.remaining).timestamp())}:R>")
+            raise CooldownError(int((c.now + c.remaining).timestamp()))
 
         return wrapped
 
