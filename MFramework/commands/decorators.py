@@ -64,7 +64,7 @@ def Event(
             t = t.replace(second=0, microsecond=0)
             if t == d:
                 return f(*args, **kwargs)
-            return aInvalid()
+            raise EventInactive(f"This event is currently inactive! Check back during <t:{int(d.timestamp())}:D>!")
 
         return wrapped
 
