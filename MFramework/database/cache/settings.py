@@ -61,7 +61,7 @@ class Roles(Database):
             key=lambda x: x[1],
         )
         rates = roles.filter(db.Role.settings.any(name=types.Setting.Exp)).all()
-        self.role_rates = {role.id: role.get_setting(types.Setting.Exp) for role in levels}
+        self.role_rates = {role.id: role.get_setting(types.Setting.Exp) for role in rates}
 
     def get_Roles(self, session):
         roles = session.query(db.Role).filter(db.Role.server_id == self.guild_id)
