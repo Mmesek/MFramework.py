@@ -117,9 +117,12 @@ def run(name):
 if __name__ == "__main__":
     from multiprocessing.dummy import Pool
 
-    pool = Pool(len(cfg["DiscordTokens"]))
+    pool = Pool(tokens := len(cfg["DiscordTokens"]))
     try:
         while True:
-            pool.map(run, cfg["DiscordTokens"])
+            if tokens == 1:
+                run(next(iter((cfg["DiscordTokens"]))))
+            else:
+                pool.map(run, cfg["DiscordTokens"])
     except KeyboardInterrupt:
         print("KeyboardInterrupt. Job done.")
