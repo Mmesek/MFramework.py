@@ -1,4 +1,3 @@
-import asyncio
 import sys
 
 from mlib import arguments
@@ -98,20 +97,8 @@ from MFramework.database.cache.listeners import create_cache_listeners
 create_cache_listeners(Cache)
 
 
-async def main(name):
-    b = MFramework.Bot(name, cfg, db, cache)
-    while True:
-        async with b:
-            try:
-                await b.receive()
-            except KeyboardInterrupt:
-                return
-            except Exception as ex:
-                MFramework.log.critical(f"Uncaught Exception: {ex}")
-
-
 def run(name):
-    asyncio.run(main(name))
+    MFramework.Bot.run(name=name, cfg=cfg, db=db, cache=cache)
 
 
 if __name__ == "__main__":
