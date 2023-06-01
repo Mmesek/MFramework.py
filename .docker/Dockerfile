@@ -22,3 +22,10 @@ RUN python -m pip --disable-pip-version-check --no-cache-dir install ./pkg \
 VOLUME ["/app/data", "/app/bot", "/app/extenstions", "/app/locale"]
 
 ENTRYPOINT [ "python", "-m", "MFramework", "bot", "--cfg=data/secrets.ini", "--log=DEBUG" ]
+
+FROM base as dev
+
+ENV DEV 1
+ENV PYTHONPATH "${PYTHONPATH}:/modules"
+
+VOLUME ["/modules"]
