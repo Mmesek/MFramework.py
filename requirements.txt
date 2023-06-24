@@ -6,3 +6,4 @@ redis
 influxdb-client
 python-git
 python-i18n
+ujson
