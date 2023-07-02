@@ -36,7 +36,7 @@ jobs:
       with:
         options: |
           --check
-          --line-length 127
+          --line-length 120
         src: ./MFramework
   build:
     uses: ./.github/workflows/docker.yml
