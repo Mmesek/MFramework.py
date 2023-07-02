@@ -22,6 +22,7 @@ from ._utils import DEFAULTS, Command, get_arguments
 if TYPE_CHECKING:
     from MFramework import Context
 
+
 # ARGUMENTS = re.compile("")
 class Arguments:
     def __init__(self, cmd: Command, ctx: "Context", kwargs={}) -> None:

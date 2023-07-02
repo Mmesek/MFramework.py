@@ -134,7 +134,8 @@ def Cooldown(
     logic: Callable = lambda x: x,
 ):
     """Applies a cooldown on command.
-    Use it with callable function accepting interaction returning boolean for conditional execution and datetime object with last execution timestamp for cooldown calculation"""
+    Use it with callable function accepting interaction returning boolean for conditional execution and datetime object with last execution timestamp for cooldown calculation
+    """
 
     def inner(f):
         @wraps(f)

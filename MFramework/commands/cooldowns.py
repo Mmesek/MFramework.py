@@ -226,7 +226,8 @@ def cooldown(
         Delta to be used as a cooldown value
     cooldown_kwargs:
         Keyword arguments that should be passed to Cooldown (logic) class
-    Use it with callable function accepting interaction returning boolean for conditional execution and datetime object with last execution timestamp for cooldown calculation"""
+    Use it with callable function accepting interaction returning boolean for conditional execution and datetime object with last execution timestamp for cooldown calculation
+    """
 
     def inner(f):
         @wraps(f)
