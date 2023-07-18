@@ -1,5 +1,3 @@
-from typing import Dict
-
 from mdiscord import (
     Application,
     Client,
@@ -27,7 +25,7 @@ class Bot(Client):
     primary_guild: Snowflake = 463433273620824104
 
     db: Database
-    cache: Dict[Snowflake, Cache]
+    cache: dict[Snowflake, Cache]
 
     _Cache: Cache = Cache
     _Context: Context = Context
