@@ -10,56 +10,51 @@ class InfluxBase:
     def __init__(self, cfg: dict = None) -> None:
         pass
 
-    def point(self, measurement_name):
+    def point(self, measurement_name, *args, **kwargs):
         pass
 
-    async def influxMember(self, **kwargs):
+    async def influxMember(self, *args, **kwargs):
         pass
 
-    async def influxMembers(self, serverID, users: tuple):
+    async def influxMembers(self, serverID, users: tuple, *args, **kwargs):
         pass
 
-    def getMembersChange(self, server_id, period: str, state: str = "joined"):
+    def getMembersChange(self, server_id, period: str, state: str = "joined", *args, **kwargs):
         pass
 
-    async def influxGetMember(self, server):
+    async def influxGetMember(self, server, *args, **kwargs):
         pass
 
     def commitVoiceSession(
-        self,
-        server,
-        channel,
-        user,
-        delta,
-        timestamp=datetime.datetime.now().isoformat(),
+        self, server, channel, user, delta, timestamp=datetime.datetime.now().isoformat(), *args, **kwargs
     ):
         pass
 
-    def commitPresence(self, server, user, game, delta, timestamp=datetime.datetime.now().isoformat()):
+    def commitPresence(self, server, user, game, delta, timestamp=datetime.datetime.now().isoformat(), *args, **kwargs):
         pass
 
-    def commitMessage(self, server, channel, user, words):
+    def commitMessage(self, server, channel, user, words, *args, **kwargs):
         pass
 
-    def commitCommandUsage(self, server_id, command_name, bot_name, success=True, user_id=0):
+    def commitCommandUsage(self, server_id, command_name, bot_name, success=True, user_id=0, *args, **kwargs):
         pass
 
-    def getSession(self, user, interval):
+    def getSession(self, user, interval, *args, **kwargs):
         pass
 
-    def getMessages(self, user):
+    def getMessages(self, user, *args, **kwargs):
         pass
 
-    def get(self, query):
+    def get(self, query, *args, **kwargs):
         pass
 
-    def get_server(self, limit, interval, guild_id, measurement, fn="count", additional=""):
+    def get_server(self, limit, interval, guild_id, measurement, fn="count", additional="", *args, **kwargs):
         pass
 
-    def get_command_usage(self, guild_id, interval="30d"):
+    def get_command_usage(self, guild_id, interval="30d", *args, **kwargs):
         pass
 
-    async def influxPing(self):
+    async def influxPing(self, *args, **kwargs):
         return False
 
 
