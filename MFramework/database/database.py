@@ -200,22 +200,13 @@ class Supabase(Supabase):
 
 class Database:
     def __init__(self, config: dict):
-        sql = config.get("Database", {})
-        self.sql = SQL(
-            sql.get("db", None),
-            sql.get("user", None),
-            sql.get("password", None),
-            sql.get("location", None),
-            sql.get("port", None),
-            sql.get("name", None),
-            sql.get("echo", None),
-        )
-        if config.get("influx2", None):
+        self.sql = SQL(**config.get("Database", {}))
+        if "influx2" in config:
             self.influx = Influx(config["influx2"])
         else:
             self.influx = InfluxBase()
             log.info("Influx config not specified, skipping")
-        if config.get("Supabase", None):
+        if "Supabase" in config:
             self.supabase = Supabase(config["Supabase"])
         else:
             log.info("Supabase config not specified, skipping")
