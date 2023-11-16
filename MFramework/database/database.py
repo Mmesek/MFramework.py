@@ -190,10 +190,14 @@ class Influx(InfluxBase):
         return self.influx.health()
 
 
-from mlib.database import SQL, Supabase
+from mlib.database import SQL
+from mlib.rest_client import Client
 
 
-class Supabase(Supabase):
+class Supabase(Client):
+    async def rpc(self, func: str, method: str = "POST", **kwargs):
+        return await self.api_call(path="rest/v1/rpc/" + func, method=method, **kwargs)
+
     async def increase_exp(self, server_id: int, user_id: int, value: float = 1) -> float:
         return await self.rpc(func="incrExp", server_id=server_id, user_id=user_id, value=value)
 
