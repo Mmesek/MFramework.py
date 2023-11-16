@@ -20,13 +20,14 @@ from mdiscord import (
 from MFramework.commands.command import Command
 from MFramework.database.cache import Cache
 from MFramework.database.database import Database
-from MFramework.utils.localizations import DEFAULT_LOCALE, LOCALIZATIONS
 
 if TYPE_CHECKING:
     from MFramework.bot import Bot
 
+from .localized import Localizable
 
-class Context(Sendable):
+
+class Context(Sendable, Localizable):
     """This is meant as an unified context object used for universal
     commands that can be issued as both a message or an interaction"""
 
@@ -79,7 +80,6 @@ class Context(Sendable):
                 self.member = data.member
             self.is_message = False
             self.is_interaction = True
-            self.language = data.locale or data.guild_locale
         else:
             self.user_id = data.author.id
             self.user = data.author
@@ -95,30 +95,7 @@ class Context(Sendable):
         self._deferred = False
         self._replied = False
         self._followup_id = None
-
-        if cmd:
-            self._cmd_path = [cmd.func.__module__]
-
-            if cmd.master_command:
-                self._cmd_path.append(cmd.master_command._cmd.name)
-                self._cmd_path.append("sub_commands")
-
-            self._cmd_path.append(cmd.name)
-
-        if self.language not in LOCALIZATIONS:
-            self.language = DEFAULT_LOCALE
-
-    @property
-    def permission_group(self):
-        from MFramework.commands import Groups
-
-        if not self.is_dm:
-            if self.user_id != 273499695186444289:
-                if self.user_id != self.cache.guild.owner_id:
-                    return self.cache.cachedRoles(self.member.roles)
-                return Groups.OWNER
-            return Groups.SYSTEM
-        return Groups.DM
+        super().__init__(data, cmd)
 
     @property
     def is_dm(self):
@@ -247,21 +224,3 @@ class Context(Sendable):
         if limit - len(r) < 1 or len(r) < min(limit, 100):
             return messages + r
         return await self.get_messages(r[-1].id, messages=messages + r, limit=limit - len(r))
-
-    def t(self, key: str, _namespace: Optional[str] = None, _bot: Optional[str] = None, **kwargs) -> str:
-        """Retrieves translation according to key prefixed by user language & context's command
-
-        Injects command namespace into `translate` patterns:
-        - {path}.{group}
-        - {path}.{group}.{sub_commands}
-        - {path}.{group}.{sub_commands}.{command}
-        """
-        from MFramework.utils.localizations import translate
-
-        return translate(
-            key=key,
-            locale=self.language,
-            _namespace=_namespace or self._cmd_path,
-            _bot=_bot or self.bot.username,
-            **kwargs
-        )
