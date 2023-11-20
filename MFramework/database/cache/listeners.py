@@ -7,7 +7,8 @@ async def guild_create(bot: Bot, guild: Guild):
         import time
 
         start = time.time()
-        bot.cache[guild.id] = bot._Cache(bot, guild)
+        bot.cache[guild.id] = bot._Cache(bot=bot, guild=guild)
+        await bot.cache[guild.id].initialize(bot=bot, guild=guild)
         log.info("Guild %s initialized in %s", guild.id, time.time() - start)
     if len(bot.cache[guild.id].members) < 50:
         await bot.request_guild_members(guild.id)
@@ -65,9 +66,9 @@ def create_cache_listeners(Cache: object):
             async def _autocache(bot: Bot, data: event.func):
                 """Manages cached Guild's collections"""
                 try:
-                    exec(f"bot.cache[data.guild_id].{collection}.{method}(data{attributes.get(_event, '')})")
-                except Exception as ex:
-                    pass
+                    await eval(f"bot.cache[data.guild_id].{collection}.{method}(data{attributes.get(_event, '')})")
+                except AttributeError as ex:
+                    log.warn(f"Attempted to use {attributes.get(_event, 'object')} for {collection}.{method} but it's not part of the cache or the object!")
 
             return _autocache
 
