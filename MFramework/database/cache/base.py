@@ -27,5 +27,9 @@ class Commands(Base):
     _permissions_set: bool = False
 
     def __init__(self, *, bot: 'Bot', **kwargs) -> None:
-        self.alias = re.compile(r"|".join([re.escape(bot.alias), re.escape(bot.username), f"{bot.user_id}>"]))
         super().__init__(bot=bot, **kwargs)
+        self.set_alias(bot)
+    
+    def set_alias(self, bot: 'Bot', alias: str = None):
+        self.alias = re.compile(r"|".join([re.escape(alias or bot.alias), re.escape(bot.username), f"{bot.user_id}>"]))
+
