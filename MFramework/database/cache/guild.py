@@ -1,15 +1,29 @@
-from typing import Dict, Optional
+from typing import Optional, TYPE_CHECKING
 
-from MFramework import Emoji, Guild, Message, Snowflake, log
+from MFramework import Guild, Guild_Member, Snowflake, Role
 from MFramework.commands import Groups
 from MFramework.database.cache_internal import models as collections
 
 from .base import Base
 
+if TYPE_CHECKING:
+    from MFramework import Bot
 
-class Guild(Base):
-    guild: Guild
+default_roles = {
+    "admin": Groups.ADMIN,
+    "administrator": Groups.ADMIN,
+    "mod": Groups.MODERATOR,
+    "moderator": Groups.MODERATOR,
+    "nitro booster": Groups.NITRO,
+    "muted": Groups.MUTED,
+    "vip": Groups.VIP,
+    "contributor": Groups.VIP,
+    "limbo": Groups.LIMBO
+}
+
+class GuildCache(Base):
     guild_id: Snowflake
+    guild: Guild
 
     def __init__(self, *, guild: Guild, **kwargs) -> None:
         self.guild_id = guild.id
@@ -17,122 +31,79 @@ class Guild(Base):
         super().__init__(guild=guild, **kwargs)
 
 
-class ObjectCollections(Guild):
-    messages: collections.Messages = collections.Messages()
-    channels: collections.Channels = collections.Channels()
-    roles: collections.Roles = collections.Roles()
-    emojis: Dict[Snowflake, Emoji] = {}
-    members: collections.Members = collections.Members()
-    voice: Dict[Snowflake, Dict[Snowflake, float]]
-    # voice_states: Dict[Snowflake, Voice_State] = {} #
-    # voice_states: Cache[Snowflake, Voice_State] = {} #TODO
-    # voice_channels: Dict[Snowflake, Dict[Snowflake, int]] = {}
-    presence: collections.Presences = collections.Presences()  # [Snowflake, Tuple[str, int, Snowflake]] = {}
-    last_messages: Dict[Snowflake, Message]
-    threads: Dict[Snowflake, Snowflake]
-    dm_threads: Dict[Snowflake, Snowflake]
-    kv: collections.KeyValue = collections.KeyValue()
+class ObjectCollections(GuildCache):
+    messages = collections.Messages()
+    channels = collections.Channels()
+    roles = collections.Roles()
+    members = collections.Members()
+    presence = collections.Presences()
+    kv = collections.KeyValue()
 
-    def __init__(self, *, bot, guild: Guild, rds: Optional[collections.Redis] = None, **kwargs) -> None:
+    async def initialize(self, *, bot: 'Bot', guild: Guild, rds: Optional[collections.Redis] = None, **kwargs) -> None:
         if not rds:
             _redis = bot.cfg.get("redis", {})
-            host = _redis.get("host", None)
-            if host:
-                r = collections.Redis(
-                    host,
+            if host := _redis.get("host", None):
+                rds = collections.Redis(
+                    host=host,
                     password=_redis.get("password", None),
                     port=_redis.get("port", 6379),
                     db=_redis.get("_db", 0),
                 )
             else:
-                r = collections.Dictionary()
-        else:
-            r = rds
-        self.members = collections.Members().from_list(guild.members)
-        self.roles = collections.Roles().from_list(guild.roles)
-        self.channels = collections.Channels().from_list(guild.channels, guild_id=guild.id)
-        # for vs in guild.voice_states:
-        # from MFramework.utils.timers2 import _startTimer
-        # if not vs.self_mute and not vs.self_deaf:
-        #    _startTimer(self.voice_channels, vs.channel_id, vs.user_id) # Don't start if users are muted! TODO
-        # self.voice_states = {i.user_id:i for i in guild.voice_states}
-        self.afk_channel = guild.afk_channel_id
-        self.messages = collections.Messages(r)
-        self.cooldowns = collections.Cooldowns(r)
-        self.kv = collections.KeyValue(r, guild.id)
+                rds = collections.Dictionary()
+
+        self.members = collections.Members()
+        await self.members.from_list(guild.members)
         self.presence = collections.Presences()
-        self.threads = {i.id: i.parent_id for i in guild.threads}
-        self.dm_threads = {
-            i.id: int(i.name.split("-")[-1].strip()) for i in guild.threads if i.name.split("-")[-1].strip().isdigit()
-        }
-        self.last_messages = {}
-        self.voice = {}
-        self.responses = {}
-        super().__init__(bot=bot, guild=guild, rds=rds, **kwargs)
-        self.setRoleGroups()
-        self.setChannels()
 
-    def load_voice_states(self, voice_states):
-        for vc in voice_states:
-            if self.members[vc.user_id].user.bot:
-                continue
-            if vc.channel_id not in self.voice:
-                self.voice[vc.channel_id] = {}
-            if vc.user_id not in self.voice[vc.channel_id]:
-                import time
+        self.roles = collections.Roles()
+        await self.roles.from_list(guild.roles)
 
-                log.debug("init of user %s", vc.user_id)
-                if vc.self_deaf:
-                    i = -1
-                elif len(self.voice[vc.channel_id]) > 0:
-                    i = time.time()
-                else:
-                    i = 0
-                self.voice[vc.channel_id][vc.user_id] = i
-        for c in self.voice:
-            u = list(self.voice[c].keys())[0]
-            if len(self.voice[c]) == 1 and u > 0:
-                self.voice[c][u] = 0
-            elif len(self.voice[c]) > 1 and u == 0:
-                self.voice[c][u] = time.time()
+        self.channels = collections.Channels()
+        await self.channels.from_list(guild.channels, guild_id=guild.id)
 
-    def setRoleGroups(self):
-        for id, role in self.roles.items():
-            if role.name in {"Admin", "Administrator"}:
-                _group = Groups.ADMIN
-            elif role.name == "Moderator":
-                _group = Groups.MODERATOR
-            elif role.name == "Nitro Booster" and role.managed is True:
-                _group = Groups.NITRO
-            elif role.name == "Muted":
-                _group = Groups.MUTED
-            elif role.name.lower() in {"VIP", "Contributor"}:
-                _group = Groups.VIP
-            elif role.name == "Limbo":
-                _group = Groups.LIMBO
-            elif role.name == "No Exp":
-                self.disabled_roles.append(id)
-                continue
-            elif role.name == "Voice":
-                self.voice_link = id
-                continue
-            else:
-                continue
-            self.groups[_group].add(id)
+        self.messages = collections.Messages(rds)
+        self.cooldowns = collections.Cooldowns(rds)
+        self.kv = collections.KeyValue(rds, guild.id)
 
-    def setChannels(self):
-        for id, channel in self.channels.items():
-            if "bot" in channel.name:
-                self.disabled_channels.append(id)
-            elif "nitro" in channel.name:
-                self.nitro_channel = id
-            elif channel.type == 2 and channel.name.startswith("#"):
-                self.dynamic_channels[id] = id
+        #await super().initialize(bot=bot, guild=guild, rds=rds, **kwargs)
+        self.set_role_groups(self.roles)
 
-    def cachedVoice(self, data):
-        join = self.voice.pop(data.user_id, None)
-        if join is not None:
-            import time
+    def set_role_groups(self, roles: dict[Snowflake, Role]):
+        for id, role in roles.items():
+            if _group := default_roles.get(role.name.lower(), None):
+                self.groups[_group].add(id)
 
-            return time.time() - join
-        return 0
+class BotMeta(ObjectCollections):
+    bot: Guild_Member
+    name: str = "Uninitialized"
+    color: int = None
+    permissions: int = 0
+
+    async def initialize(self, *, bot: 'Bot', **kwargs) -> None:
+        await super().initialize(bot=bot, **kwargs)
+
+        self.bot: Guild_Member = await self.members[bot.user_id]
+        if self.bot:
+            self.name = self.bot.nick or self.bot.user.username
+            self.color = await self.get_top_color(self.bot.roles)
+            self.permissions = await self.calculate_permissions(self.bot.roles)
+
+    async def get_top_color(self, roles: list[Snowflake]) -> int:
+        color = None
+        for role_id in roles:
+            role = await self.roles[role_id]
+            if role.managed and role.color:
+                color = (role.position, role.color, True)
+                break
+            elif color == None:
+                color = (role.position, role.color, False)
+            elif role.position > color[0]:
+                color = (role.position, role.color, False)
+        return color[1] if color else None
+
+    async def calculate_permissions(self, roles: list[Snowflake]) -> int:
+        permissions = 0
+        for role in roles:
+            permissions |= int((await self.roles[role]).permissions)
+        return permissions

@@ -3,15 +3,11 @@ from typing import Optional
 from MFramework import Guild
 from MFramework.database.cache_internal import models as collections
 
-from . import base, guild, logging, settings
+from . import base, guild
 
 
 class Cache(
-    settings.Settings,
-    settings.Roles,
-    logging.Logging,
-    guild.ObjectCollections,
+    guild.BotMeta,
     base.Commands,
 ):
-    def __init__(self, bot, guild: Guild, rds: Optional[collections.Redis] = None):
-        super().__init__(bot=bot, guild=guild, rds=rds)
+    pass
