@@ -50,7 +50,7 @@ class Collection(MutableMapping[KT, VT]):
             return iter(self._cache)
         return iter({})
 
-    async def update(self, obj: VT) -> str:
+    async def update(self, obj: VT | list[VT]) -> str:
         """Update current object(s) in cache"""
         if type(obj) is list:
             for i in obj:
