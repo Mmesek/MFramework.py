@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 
 from MFramework import Snowflake
 from MFramework.commands import Groups
@@ -33,3 +34,31 @@ class Commands(Base):
     def set_alias(self, bot: 'Bot', alias: str = None):
         self.alias = re.compile(r"|".join([re.escape(alias or bot.alias), re.escape(bot.username), f"{bot.user_id}>"]))
 
+class Trigger:
+    group: Groups
+    name: str
+    trigger: str
+    content: str
+    cooldown: timedelta
+
+class RuntimeCommands(Commands):
+    triggers: dict[str, Trigger]
+    responses: dict[Groups, re.Pattern]
+
+    async def initialize(self, **kwargs) -> None:
+        await self.recompile_triggers()
+
+    async def recompile_triggers(self, triggers: list[Trigger]):
+        self.triggers = {t.name: t for t in triggers}
+        self.responses = {}
+
+        for group in [t.group for t in triggers]:
+            self.responses[group] = re.compile(
+                r"(?:{})".format(
+                    "|".join(
+                        "(?P<{}>{})".format(k, f) 
+                        for k, f in 
+                        {t.name: t.trigger for t in triggers}.items()
+                    )
+                ), re.IGNORECASE
+            )

@@ -68,14 +68,14 @@ async def parse(ctx: Bot, data: Message):
             continue
         for matches in triggers.finditer(data.content):
             match = matches.lastgroup
-            if match in ctx.cache[data.guild_id].cooldown_values:
+            if ctx.cache[data.guild_id].triggers[match].cooldown:
                 if ctx.cache[data.guild_id].cooldowns.has(data.guild_id, 0, f"regex.{match}"):
                     continue
                 ctx.cache[data.guild_id].cooldowns.store(
                     data.guild_id,
                     0,
                     f"regex.{match}",
-                    expire=int(ctx.cache[data.guild_id].cooldown_values[match].total_seconds()),
+                    expire=int(ctx.cache[data.guild_id].triggers[match].cooldown.total_seconds()),
                 )
             if match in matched:
                 continue

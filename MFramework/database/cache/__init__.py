@@ -3,6 +3,6 @@ from . import base, guild
 
 class Cache(
     guild.Logging,
-    base.Commands,
+    base.RuntimeCommands,
 ):
     pass
