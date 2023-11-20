@@ -1,8 +1,13 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, DefaultDict
+from collections import defaultdict
+
+from mlib.types import aInvalid
+from mlib.utils import all_subclasses
 
 from MFramework import Guild, Guild_Member, Snowflake, Role
 from MFramework.commands import Groups
 from MFramework.database.cache_internal import models as collections
+from MFramework.utils.log import Log
 
 from .base import Base
 
@@ -107,3 +112,18 @@ class BotMeta(ObjectCollections):
         for role in roles:
             permissions |= int((await self.roles[role]).permissions)
         return permissions
+
+class Logging(BotMeta):
+    logging: DefaultDict[str, Log]
+    webhooks: dict[str, tuple[Snowflake, str]] = {}
+
+    async def initialize(self, **kwargs) -> None:
+        self.webhooks = {} # TODO
+        await super().initialize(**kwargs)
+        await self.set_loggers()
+
+    async def set_loggers(self) -> None:
+        self.logging = defaultdict(lambda: aInvalid)
+        _classes = {i.__name__.lower(): i for i in all_subclasses(Log)}
+        for webhook in filter(lambda x: x in _classes, self.webhooks):
+            self.logging[webhook] = _classes[webhook](self.bot, self.guild_id, webhook, *self.webhooks[webhook])

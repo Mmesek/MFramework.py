@@ -2,7 +2,7 @@ from . import base, guild
 
 
 class Cache(
-    guild.BotMeta,
+    guild.Logging,
     base.Commands,
 ):
     pass
