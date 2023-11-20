@@ -1,20 +1,23 @@
 from datetime import timedelta
-from typing import Any, Dict, List
+from typing import Any
 
-import redis
+import orjson
+import redis.asyncio as redis
+
+from mdiscord import DiscordObject, as_dict
 
 
-class Dictionary(Dict):
+class Dictionary(dict):
     def __init__(self, **kwargs):
         super().__init__()
 
-    def add(self, name: str, value: str, expire_time: timedelta = None) -> str:
+    async def add(self, name: str, value: str, expire_time: timedelta = None) -> str:
         """Add new item to a cache"""
         # from datetime import datetime
         # expire = datetime.now() + expire_time
         self[name] = value
 
-    def get(self, name: str) -> str:
+    async def get(self, name: str) -> str:
         """Get item from a cache"""
         return super().get(name, None)
 
@@ -46,7 +49,7 @@ class Dictionary(Dict):
     def count(self, name) -> int:
         return len(self.keys(name))
 
-    def keys(self, pattern=None) -> List[Any]:
+    def keys(self, pattern=None) -> list[Any]:
         if pattern:
             import re
 
@@ -56,42 +59,36 @@ class Dictionary(Dict):
 
 
 class Redis(redis.Redis):
-    def _to_dict(self, value):
+    def _to_dict(self, value: str) -> dict:
         if type(value) is bytes:
-            import ujson
-
-            value = ujson.loads(value)
+            value = orjson.loads(value)
         return value
 
-    def _from_dict(self, value):
-        from mdiscord import DiscordObject, as_dict
-
+    def _from_dict(self, value: dict | Any) -> str:
         if isinstance(value, DiscordObject):
             value = as_dict(value)
         if type(value) is dict:
-            import ujson
-
-            value = ujson.dumps(value)
+            value = orjson.dumps(value)
         return value
 
-    def add(self, name: str, value: str, expire_time: timedelta = None) -> str:
+    async def add(self, name: str, value: str, expire_time: timedelta = None) -> str:
         value = self._from_dict(value)
-        return self.set(name, value, ex=expire_time)
+        return await self.set(name, value, ex=expire_time)
 
-    def get(self, name: str) -> str:
-        r = super().get(name)
+    async def get(self, name: str) -> str:
+        r = await super().get(name)
         return self._to_dict(r)
 
-    def update(self, name: str, new_value: str) -> str:
+    async def update(self, name: str, new_value: str) -> str:
         new_value = self._from_dict(new_value)
-        r = self.getset(name, new_value)
+        r = await self.getset(name, new_value)
         return self._to_dict(r)
 
-    def db_size(self):
-        return self.dbsize()
+    async def db_size(self) -> int:
+        return await self.dbsize()
 
-    def has(self, name):
-        return True if self.exists(name) else False
+    async def has(self, name: str) -> bool:
+        return True if await self.exists(name) else False
 
-    def count(self, name):
-        return self.exists(name)
+    async def count(self, name: str) -> bool:
+        return await self.exists(name)
