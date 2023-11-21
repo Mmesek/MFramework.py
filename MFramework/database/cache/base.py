@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from datetime import timedelta
 
 from MFramework import Snowflake
@@ -56,6 +57,7 @@ class Commands(Base):
         """
         self.alias = re.compile(r"|".join([re.escape(alias or bot.alias), re.escape(bot.username), f"{bot.user_id}>"]))
 
+@dataclass
 class Trigger:
     """Datastructure to store trigger metadata"""
     group: Groups
