@@ -69,16 +69,13 @@ class Trigger:
     cooldown: timedelta
     """Determines how often can this trigger be used by user"""
 
-class RuntimeCommands(Commands):
+class RuntimeCommands(Base):
     triggers: dict[str, Trigger]
     """`Trigger`s objects look-up table"""
     responses: dict[Groups, re.Pattern]
     """Regular expression with compiled triggers"""
 
-    async def initialize(self, **kwargs) -> None:
-        await self.recompile_triggers()
-
-    async def recompile_triggers(self, triggers: list[Trigger]) -> None:
+    def recompile_triggers(self, triggers: list[Trigger]) -> None:
         """Compiles list of known triggers for `commands.parser` commands
 
         Parameters
@@ -95,7 +92,7 @@ class RuntimeCommands(Commands):
                     "|".join(
                         "(?P<{}>{})".format(k, f) 
                         for k, f in 
-                        {t.name: t.trigger for t in triggers}.items()
+                        {t.name: t.trigger for t in triggers if t.group == group}.items()
                     )
                 ), re.IGNORECASE
             )
