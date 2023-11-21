@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="pdoc 14.1.0"/>
-    <title>MFramework.commands.exceptions API documentation</title>
+    <title>MFramework.context.custom API documentation</title>
 
     <style>/*! * Bootstrap Reboot v5.0.0 (https://getbootstrap.com/) * Copyright 2011-2021 The Bootstrap Authors * Copyright 2011-2021 Twitter, Inc. * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE) * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md) */*,::after,::before{box-sizing:border-box}@media (prefers-reduced-motion:no-preference){:root{scroll-behavior:smooth}}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}hr{margin:1rem 0;color:inherit;background-color:currentColor;border:0;opacity:.25}hr:not([size]){height:1px}h1,h2,h3,h4,h5,h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}h1{font-size:calc(1.375rem + 1.5vw)}@media (min-width:1200px){h1{font-size:2.5rem}}h2{font-size:calc(1.325rem + .9vw)}@media (min-width:1200px){h2{font-size:2rem}}h3{font-size:calc(1.3rem + .6vw)}@media (min-width:1200px){h3{font-size:1.75rem}}h4{font-size:calc(1.275rem + .3vw)}@media (min-width:1200px){h4{font-size:1.5rem}}h5{font-size:1.25rem}h6{font-size:1rem}p{margin-top:0;margin-bottom:1rem}abbr[data-bs-original-title],abbr[title]{-webkit-text-decoration:underline dotted;text-decoration:underline dotted;cursor:help;-webkit-text-decoration-skip-ink:none;text-decoration-skip-ink:none}address{margin-bottom:1rem;font-style:normal;line-height:inherit}ol,ul{padding-left:2rem}dl,ol,ul{margin-top:0;margin-bottom:1rem}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}dt{font-weight:700}dd{margin-bottom:.5rem;margin-left:0}blockquote{margin:0 0 1rem}b,strong{font-weight:bolder}small{font-size:.875em}mark{padding:.2em;background-color:#fcf8e3}sub,sup{position:relative;font-size:.75em;line-height:0;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}a{color:#0d6efd;text-decoration:underline}a:hover{color:#0a58ca}a:not([href]):not([class]),a:not([href]):not([class]):hover{color:inherit;text-decoration:none}code,kbd,pre,samp{font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em;direction:ltr;unicode-bidi:bidi-override}pre{display:block;margin-top:0;margin-bottom:1rem;overflow:auto;font-size:.875em}pre code{font-size:inherit;color:inherit;word-break:normal}code{font-size:.875em;color:#d63384;word-wrap:break-word}a>code{color:inherit}kbd{padding:.2rem .4rem;font-size:.875em;color:#fff;background-color:#212529;border-radius:.2rem}kbd kbd{padding:0;font-size:1em;font-weight:700}figure{margin:0 0 1rem}img,svg{vertical-align:middle}table{caption-side:bottom;border-collapse:collapse}caption{padding-top:.5rem;padding-bottom:.5rem;color:#6c757d;text-align:left}th{text-align:inherit;text-align:-webkit-match-parent}tbody,td,tfoot,th,thead,tr{border-color:inherit;border-style:solid;border-width:0}label{display:inline-block}button{border-radius:0}button:focus:not(:focus-visible){outline:0}button,input,optgroup,select,textarea{margin:0;font-family:inherit;font-size:inherit;line-height:inherit}button,select{text-transform:none}[role=button]{cursor:pointer}select{word-wrap:normal}select:disabled{opacity:1}[list]::-webkit-calendar-picker-indicator{display:none}[type=button],[type=reset],[type=submit],button{-webkit-appearance:button}[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled),button:not(:disabled){cursor:pointer}::-moz-focus-inner{padding:0;border-style:none}textarea{resize:vertical}fieldset{min-width:0;padding:0;margin:0;border:0}legend{float:left;width:100%;padding:0;margin-bottom:.5rem;font-size:calc(1.275rem + .3vw);line-height:inherit}@media (min-width:1200px){legend{font-size:1.5rem}}legend+*{clear:left}::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-fields-wrapper,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-text,::-webkit-datetime-edit-year-field{padding:0}::-webkit-inner-spin-button{height:auto}[type=search]{outline-offset:-2px;-webkit-appearance:textfield}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-color-swatch-wrapper{padding:0}::file-selector-button{font:inherit}::-webkit-file-upload-button{font:inherit;-webkit-appearance:button}output{display:inline-block}iframe{border:0}summary{display:list-item;cursor:pointer}progress{vertical-align:baseline}[hidden]{display:none!important}</style>
     <style>/*! syntax-highlighting.css */pre{line-height:125%;}span.linenos{color:inherit; background-color:transparent; padding-left:5px; padding-right:20px;}.pdoc-code .hll{background-color:#49483e}.pdoc-code{background:#272822; color:#f8f8f2}.pdoc-code .c{color:#75715e}.pdoc-code .err{color:#960050; background-color:#1e0010}.pdoc-code .esc{color:#f8f8f2}.pdoc-code .g{color:#f8f8f2}.pdoc-code .k{color:#66d9ef}.pdoc-code .l{color:#ae81ff}.pdoc-code .n{color:#f8f8f2}.pdoc-code .o{color:#f92672}.pdoc-code .x{color:#f8f8f2}.pdoc-code .p{color:#f8f8f2}.pdoc-code .ch{color:#75715e}.pdoc-code .cm{color:#75715e}.pdoc-code .cp{color:#75715e}.pdoc-code .cpf{color:#75715e}.pdoc-code .c1{color:#75715e}.pdoc-code .cs{color:#75715e}.pdoc-code .gd{color:#f92672}.pdoc-code .ge{color:#f8f8f2; font-style:italic}.pdoc-code .gr{color:#f8f8f2}.pdoc-code .gh{color:#f8f8f2}.pdoc-code .gi{color:#a6e22e}.pdoc-code .go{color:#66d9ef}.pdoc-code .gp{color:#f92672; font-weight:bold}.pdoc-code .gs{color:#f8f8f2; font-weight:bold}.pdoc-code .gu{color:#75715e}.pdoc-code .gt{color:#f8f8f2}.pdoc-code .kc{color:#66d9ef}.pdoc-code .kd{color:#66d9ef}.pdoc-code .kn{color:#f92672}.pdoc-code .kp{color:#66d9ef}.pdoc-code .kr{color:#66d9ef}.pdoc-code .kt{color:#66d9ef}.pdoc-code .ld{color:#e6db74}.pdoc-code .m{color:#ae81ff}.pdoc-code .s{color:#e6db74}.pdoc-code .na{color:#a6e22e}.pdoc-code .nb{color:#f8f8f2}.pdoc-code .nc{color:#a6e22e}.pdoc-code .no{color:#66d9ef}.pdoc-code .nd{color:#a6e22e}.pdoc-code .ni{color:#f8f8f2}.pdoc-code .ne{color:#a6e22e}.pdoc-code .nf{color:#a6e22e}.pdoc-code .nl{color:#f8f8f2}.pdoc-code .nn{color:#f8f8f2}.pdoc-code .nx{color:#a6e22e}.pdoc-code .py{color:#f8f8f2}.pdoc-code .nt{color:#f92672}.pdoc-code .nv{color:#f8f8f2}.pdoc-code .ow{color:#f92672}.pdoc-code .w{color:#f8f8f2}.pdoc-code .mb{color:#ae81ff}.pdoc-code .mf{color:#ae81ff}.pdoc-code .mh{color:#ae81ff}.pdoc-code .mi{color:#ae81ff}.pdoc-code .mo{color:#ae81ff}.pdoc-code .sa{color:#e6db74}.pdoc-code .sb{color:#e6db74}.pdoc-code .sc{color:#e6db74}.pdoc-code .dl{color:#e6db74}.pdoc-code .sd{color:#e6db74}.pdoc-code .s2{color:#e6db74}.pdoc-code .se{color:#ae81ff}.pdoc-code .sh{color:#e6db74}.pdoc-code .si{color:#e6db74}.pdoc-code .sx{color:#e6db74}.pdoc-code .sr{color:#e6db74}.pdoc-code .s1{color:#e6db74}.pdoc-code .ss{color:#e6db74}.pdoc-code .bp{color:#f8f8f2}.pdoc-code .fm{color:#a6e22e}.pdoc-code .vc{color:#f8f8f2}.pdoc-code .vg{color:#f8f8f2}.pdoc-code .vi{color:#f8f8f2}.pdoc-code .vm{color:#f8f8f2}</style>
@@ -16,11 +16,11 @@
     <nav class="pdoc">
         <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
         <input id="togglestate" type="checkbox" aria-hidden="true" tabindex="-1">
-        <div>            <a class="pdoc-button module-list-button" href="../commands.html">
+        <div>            <a class="pdoc-button module-list-button" href="../context.html">
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-left" viewBox="0 0 16 16">
   <path fill-rule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 1 0v2A1.5 1.5 0 0 1 9.5 14h-8A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h8A1.5 1.5 0 0 1 11 3.5v2a.5.5 0 0 1-1 0v-2z"/>
   <path fill-rule="evenodd" d="M4.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H14.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
-</svg>                &nbsp;MFramework.commands</a>
+</svg>                &nbsp;MFramework.context</a>
 
 
             <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
@@ -31,50 +31,41 @@
             <h2>API Documentation</h2>
                 <ul class="memberlist">
             <li>
-                    <a class="class" href="#Error">Error</a>
+                    <a class="class" href="#Context_Keys">Context_Keys</a>
                             <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Context_Keys.USER">USER</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Context_Keys.MESSAGE">MESSAGE</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Context_Keys.CHANNEL">CHANNEL</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Context_Keys.SERVER">SERVER</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Context_Keys.GROUP">GROUP</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Context_Keys.member">member</a>
+                        </li>
                 </ul>
 
             </li>
             <li>
-                    <a class="class" href="#CooldownError">CooldownError</a>
+                    <a class="class" href="#Custom_Context">Custom_Context</a>
                             <ul class="memberlist">
-                </ul>
-
-            </li>
-            <li>
-                    <a class="class" href="#ChanceError">ChanceError</a>
-                            <ul class="memberlist">
-                </ul>
-
-            </li>
-            <li>
-                    <a class="class" href="#EventInactive">EventInactive</a>
-                            <ul class="memberlist">
-                </ul>
-
-            </li>
-            <li>
-                    <a class="class" href="#CommandException">CommandException</a>
-                            <ul class="memberlist">
-                </ul>
-
-            </li>
-            <li>
-                    <a class="class" href="#MissingPermissions">MissingPermissions</a>
-                            <ul class="memberlist">
-                </ul>
-
-            </li>
-            <li>
-                    <a class="class" href="#CommandNotFound">CommandNotFound</a>
-                            <ul class="memberlist">
-                </ul>
-
-            </li>
-            <li>
-                    <a class="class" href="#WrongContext">WrongContext</a>
-                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Custom_Context.key">key</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Custom_Context.expire_after">expire_after</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#Custom_Context.namespace">namespace</a>
+                        </li>
                 </ul>
 
             </li>
@@ -92,325 +83,323 @@
     <main class="pdoc">
             <section class="module-info">
                     <h1 class="modulename">
-<a href="./../../MFramework.html">MFramework</a><wbr>.<a href="./../commands.html">commands</a><wbr>.exceptions    </h1>
+<a href="./../../MFramework.html">MFramework</a><wbr>.<a href="./../context.html">context</a><wbr>.custom    </h1>
 
                 
-                        <input id="mod-exceptions-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                        <input id="mod-custom-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 
-                        <label class="view-source-button" for="mod-exceptions-view-source"><span>View Source</span></label>
+                        <label class="view-source-button" for="mod-custom-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">from</span> <span class="nn">mdiscord.exceptions</span> <span class="kn">import</span> <span class="n">SoftError</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntFlag</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="n">SoftError</span><span class="p">):</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>    <span class="k">pass</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Context</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="k">class</span> <span class="nc">CooldownError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>    <span class="k">pass</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="k">class</span> <span class="nc">ChanceError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>    <span class="k">pass</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="k">class</span> <span class="nc">EventInactive</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>    <span class="k">pass</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="k">class</span> <span class="nc">Context_Keys</span><span class="p">(</span><span class="n">IntFlag</span><span class="p">):</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>    <span class="n">USER</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x1</span><span class="p">,</span> <span class="s2">&quot;user_id&quot;</span><span class="p">)</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>    <span class="n">MESSAGE</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x2</span><span class="p">,</span> <span class="s2">&quot;message_id&quot;</span><span class="p">)</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>    <span class="n">CHANNEL</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x4</span><span class="p">,</span> <span class="s2">&quot;channel_id&quot;</span><span class="p">)</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>    <span class="n">SERVER</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x8</span><span class="p">,</span> <span class="s2">&quot;guild_id&quot;</span><span class="p">)</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>    <span class="n">GROUP</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x10</span><span class="p">,</span> <span class="s2">&quot;permission_level&quot;</span><span class="p">)</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>        <span class="n">obj</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>        <span class="n">obj</span><span class="o">.</span><span class="n">member</span> <span class="o">=</span> <span class="n">field</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>        <span class="k">return</span> <span class="n">obj</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="k">class</span> <span class="nc">CommandException</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>    <span class="k">pass</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">member</span> <span class="o">=</span> <span class="n">field</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="k">class</span> <span class="nc">MissingPermissions</span><span class="p">(</span><span class="n">CommandException</span><span class="p">):</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>    <span class="k">pass</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a><span class="k">class</span> <span class="nc">CommandNotFound</span><span class="p">(</span><span class="n">CommandException</span><span class="p">):</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>    <span class="k">pass</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="k">class</span> <span class="nc">Custom_Context</span><span class="p">(</span><span class="n">Context</span><span class="p">):</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>    <span class="n">key</span><span class="p">:</span> <span class="n">Context_Keys</span> <span class="o">=</span> <span class="n">Context_Keys</span><span class="o">.</span><span class="n">USER</span> <span class="o">|</span> <span class="n">Context_Keys</span><span class="o">.</span><span class="n">SERVER</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique key under which context can be found&quot;&quot;&quot;</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>    <span class="n">expire_after</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;How long context should remain active/in cache&quot;&quot;&quot;</span>
 </span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a><span class="k">class</span> <span class="nc">WrongContext</span><span class="p">(</span><span class="n">CommandException</span><span class="p">):</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>    <span class="k">pass</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        <span class="c1"># TODO: Fetch member values from self.key, then assemble unique-ish key based on it</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">member</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">))</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>    <span class="k">def</span> <span class="nf">namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>        <span class="k">return</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">reversed</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">member</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]))</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a>
+</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">Data Structure that can be passed between multiple commands that retains it&#39;s content depending on key settings</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="sd">- context.key is bitshifted value for merging multiple keys</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="sd">- context should be cachable</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="sd">- context should be serializable/deserializable</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="sd">- context can be passed as type to function. Runner will automatically detect it from data type and fetch or create new one</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a><span class="sd">- context can contain methods that are commands within, in that case regular Context should be injected into it as self</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="sd">- should namespace be used and cached instead of context? </span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="sd">    - Namespace would prohibit modifying regular context while guaranteeing context variables to always be an up to date environment related</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a><span class="sd">    - Namespace would also be passed as type to functions instead of context. However that means namespace needs to be explicitly stated, context would do so automatically</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a><span class="sd">    - Namespace couuld act as custom data structure that can be used in functions as type which could work in more generalized situations</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="sd">    - Otherwise serializer would need to only serialize final variables and strip rest</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span></pre></div>
 
 
             </section>
-                <section id="Error">
-                            <input id="Error-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="Context_Keys">
+                            <input id="Context_Keys-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">Error</span><wbr>(<span class="base">mdiscord.exceptions.SoftError</span>):
+    <span class="name">Context_Keys</span><wbr>(<span class="base">enum.IntFlag</span>):
 
-                <label class="view-source-button" for="Error-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="Context_Keys-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#Error"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Error-5"><a href="#Error-5"><span class="linenos">5</span></a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="n">SoftError</span><span class="p">):</span>
-</span><span id="Error-6"><a href="#Error-6"><span class="linenos">6</span></a>    <span class="k">pass</span>
+    <a class="headerlink" href="#Context_Keys"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Context_Keys-8"><a href="#Context_Keys-8"><span class="linenos"> 8</span></a><span class="k">class</span> <span class="nc">Context_Keys</span><span class="p">(</span><span class="n">IntFlag</span><span class="p">):</span>
+</span><span id="Context_Keys-9"><a href="#Context_Keys-9"><span class="linenos"> 9</span></a>    <span class="n">USER</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x1</span><span class="p">,</span> <span class="s2">&quot;user_id&quot;</span><span class="p">)</span>
+</span><span id="Context_Keys-10"><a href="#Context_Keys-10"><span class="linenos">10</span></a>    <span class="n">MESSAGE</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x2</span><span class="p">,</span> <span class="s2">&quot;message_id&quot;</span><span class="p">)</span>
+</span><span id="Context_Keys-11"><a href="#Context_Keys-11"><span class="linenos">11</span></a>    <span class="n">CHANNEL</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x4</span><span class="p">,</span> <span class="s2">&quot;channel_id&quot;</span><span class="p">)</span>
+</span><span id="Context_Keys-12"><a href="#Context_Keys-12"><span class="linenos">12</span></a>    <span class="n">SERVER</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x8</span><span class="p">,</span> <span class="s2">&quot;guild_id&quot;</span><span class="p">)</span>
+</span><span id="Context_Keys-13"><a href="#Context_Keys-13"><span class="linenos">13</span></a>    <span class="n">GROUP</span> <span class="o">=</span> <span class="p">(</span><span class="mh">0x10</span><span class="p">,</span> <span class="s2">&quot;permission_level&quot;</span><span class="p">)</span>
+</span><span id="Context_Keys-14"><a href="#Context_Keys-14"><span class="linenos">14</span></a>
+</span><span id="Context_Keys-15"><a href="#Context_Keys-15"><span class="linenos">15</span></a>    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="Context_Keys-16"><a href="#Context_Keys-16"><span class="linenos">16</span></a>        <span class="n">obj</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span><span id="Context_Keys-17"><a href="#Context_Keys-17"><span class="linenos">17</span></a>        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="Context_Keys-18"><a href="#Context_Keys-18"><span class="linenos">18</span></a>        <span class="n">obj</span><span class="o">.</span><span class="n">member</span> <span class="o">=</span> <span class="n">field</span>
+</span><span id="Context_Keys-19"><a href="#Context_Keys-19"><span class="linenos">19</span></a>        <span class="k">return</span> <span class="n">obj</span>
+</span><span id="Context_Keys-20"><a href="#Context_Keys-20"><span class="linenos">20</span></a>
+</span><span id="Context_Keys-21"><a href="#Context_Keys-21"><span class="linenos">21</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Context_Keys-22"><a href="#Context_Keys-22"><span class="linenos">22</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="Context_Keys-23"><a href="#Context_Keys-23"><span class="linenos">23</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">member</span> <span class="o">=</span> <span class="n">field</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Non fatal exception to be raised by user code that is not important enough to log</p>
+            <div class="docstring"><p>An enumeration.</p>
 </div>
 
 
+                            <div id="Context_Keys.USER" class="classattr">
+                                <div class="attr variable">
+            <span class="name">USER</span>        =
+<span class="default_value">&lt;<a href="#Context_Keys.USER">Context_Keys.USER</a>: 1&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Context_Keys.USER"></a>
+    
+    
+
+                            </div>
+                            <div id="Context_Keys.MESSAGE" class="classattr">
+                                <div class="attr variable">
+            <span class="name">MESSAGE</span>        =
+<span class="default_value">&lt;<a href="#Context_Keys.MESSAGE">Context_Keys.MESSAGE</a>: 2&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Context_Keys.MESSAGE"></a>
+    
+    
+
+                            </div>
+                            <div id="Context_Keys.CHANNEL" class="classattr">
+                                <div class="attr variable">
+            <span class="name">CHANNEL</span>        =
+<span class="default_value">&lt;<a href="#Context_Keys.CHANNEL">Context_Keys.CHANNEL</a>: 4&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Context_Keys.CHANNEL"></a>
+    
+    
+
+                            </div>
+                            <div id="Context_Keys.SERVER" class="classattr">
+                                <div class="attr variable">
+            <span class="name">SERVER</span>        =
+<span class="default_value">&lt;<a href="#Context_Keys.SERVER">Context_Keys.SERVER</a>: 8&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Context_Keys.SERVER"></a>
+    
+    
+
+                            </div>
+                            <div id="Context_Keys.GROUP" class="classattr">
+                                <div class="attr variable">
+            <span class="name">GROUP</span>        =
+<span class="default_value">&lt;<a href="#Context_Keys.GROUP">Context_Keys.GROUP</a>: 16&gt;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Context_Keys.GROUP"></a>
+    
+    
+
+                            </div>
+                            <div id="Context_Keys.member" class="classattr">
+                                <div class="attr variable">
+            <span class="name">member</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Context_Keys.member"></a>
+    
+    
+
+                            </div>
                             <div class="inherited">
                                 <h5>Inherited Members</h5>
                                 <dl>
-                                    <div><dt>builtins.Exception</dt>
-                                <dd id="Error.__init__" class="function">Exception</dd>
+                                    <div><dt>builtins.int</dt>
+                                <dd id="Context_Keys.conjugate" class="function">conjugate</dd>
+                <dd id="Context_Keys.bit_length" class="function">bit_length</dd>
+                <dd id="Context_Keys.bit_count" class="function">bit_count</dd>
+                <dd id="Context_Keys.to_bytes" class="function">to_bytes</dd>
+                <dd id="Context_Keys.from_bytes" class="function">from_bytes</dd>
+                <dd id="Context_Keys.as_integer_ratio" class="function">as_integer_ratio</dd>
+                <dd id="Context_Keys.real" class="variable">real</dd>
+                <dd id="Context_Keys.imag" class="variable">imag</dd>
+                <dd id="Context_Keys.numerator" class="variable">numerator</dd>
+                <dd id="Context_Keys.denominator" class="variable">denominator</dd>
 
             </div>
-            <div><dt>builtins.BaseException</dt>
-                                <dd id="Error.with_traceback" class="function">with_traceback</dd>
-                <dd id="Error.args" class="variable">args</dd>
+            <div><dt>enum.Enum</dt>
+                                <dd id="Context_Keys.name" class="variable">name</dd>
+                <dd id="Context_Keys.value" class="variable">value</dd>
 
             </div>
                                 </dl>
                             </div>
                 </section>
-                <section id="CooldownError">
-                            <input id="CooldownError-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="Custom_Context">
+                            <input id="Custom_Context-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
             
     <span class="def">class</span>
-    <span class="name">CooldownError</span><wbr>(<span class="base"><a href="#Error">Error</a></span>):
+    <span class="name">Custom_Context</span><wbr>(<span class="base"><a href="base.html#Context">MFramework.context.base.Context</a></span>):
 
-                <label class="view-source-button" for="CooldownError-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="Custom_Context-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#CooldownError"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="CooldownError-9"><a href="#CooldownError-9"><span class="linenos"> 9</span></a><span class="k">class</span> <span class="nc">CooldownError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="CooldownError-10"><a href="#CooldownError-10"><span class="linenos">10</span></a>    <span class="k">pass</span>
+    <a class="headerlink" href="#Custom_Context"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Custom_Context-26"><a href="#Custom_Context-26"><span class="linenos">26</span></a><span class="k">class</span> <span class="nc">Custom_Context</span><span class="p">(</span><span class="n">Context</span><span class="p">):</span>
+</span><span id="Custom_Context-27"><a href="#Custom_Context-27"><span class="linenos">27</span></a>    <span class="n">key</span><span class="p">:</span> <span class="n">Context_Keys</span> <span class="o">=</span> <span class="n">Context_Keys</span><span class="o">.</span><span class="n">USER</span> <span class="o">|</span> <span class="n">Context_Keys</span><span class="o">.</span><span class="n">SERVER</span>
+</span><span id="Custom_Context-28"><a href="#Custom_Context-28"><span class="linenos">28</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique key under which context can be found&quot;&quot;&quot;</span>
+</span><span id="Custom_Context-29"><a href="#Custom_Context-29"><span class="linenos">29</span></a>    <span class="n">expire_after</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="Custom_Context-30"><a href="#Custom_Context-30"><span class="linenos">30</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;How long context should remain active/in cache&quot;&quot;&quot;</span>
+</span><span id="Custom_Context-31"><a href="#Custom_Context-31"><span class="linenos">31</span></a>
+</span><span id="Custom_Context-32"><a href="#Custom_Context-32"><span class="linenos">32</span></a>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="Custom_Context-33"><a href="#Custom_Context-33"><span class="linenos">33</span></a>        <span class="c1"># TODO: Fetch member values from self.key, then assemble unique-ish key based on it</span>
+</span><span id="Custom_Context-34"><a href="#Custom_Context-34"><span class="linenos">34</span></a>        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">member</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">))</span>
+</span><span id="Custom_Context-35"><a href="#Custom_Context-35"><span class="linenos">35</span></a>
+</span><span id="Custom_Context-36"><a href="#Custom_Context-36"><span class="linenos">36</span></a>    <span class="k">def</span> <span class="nf">namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="Custom_Context-37"><a href="#Custom_Context-37"><span class="linenos">37</span></a>        <span class="k">return</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">reversed</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">member</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]))</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Non fatal exception to be raised by user code that is not important enough to log</p>
+            <div class="docstring"><p>This is meant as an unified context object used for universal
+commands that can be issued as both a message or an interaction</p>
 </div>
 
 
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt>builtins.Exception</dt>
-                                <dd id="CooldownError.__init__" class="function">Exception</dd>
+                            <div id="Custom_Context.key" class="classattr">
+                                <div class="attr variable">
+            <span class="name">key</span><span class="annotation">: <a href="#Context_Keys">Context_Keys</a></span>        =
+<span class="default_value">&lt;<a href="#Context_Keys.SERVER">Context_Keys.SERVER</a>|USER: 9&gt;</span>
 
-            </div>
-            <div><dt>builtins.BaseException</dt>
-                                <dd id="CooldownError.with_traceback" class="function">with_traceback</dd>
-                <dd id="CooldownError.args" class="variable">args</dd>
+        
+    </div>
+    <a class="headerlink" href="#Custom_Context.key"></a>
+    
+            <div class="docstring"><p>Unique key under which context can be found</p>
+</div>
 
-            </div>
-                                </dl>
+
                             </div>
-                </section>
-                <section id="ChanceError">
-                            <input id="ChanceError-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-<div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">ChanceError</span><wbr>(<span class="base"><a href="#Error">Error</a></span>):
+                            <div id="Custom_Context.expire_after" class="classattr">
+                                <div class="attr variable">
+            <span class="name">expire_after</span><span class="annotation">: datetime.timedelta</span>        =
+<span class="default_value">datetime.timedelta(days=1)</span>
 
-                <label class="view-source-button" for="ChanceError-view-source"><span>View Source</span></label>
-
+        
     </div>
-    <a class="headerlink" href="#ChanceError"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="ChanceError-13"><a href="#ChanceError-13"><span class="linenos">13</span></a><span class="k">class</span> <span class="nc">ChanceError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="ChanceError-14"><a href="#ChanceError-14"><span class="linenos">14</span></a>    <span class="k">pass</span>
-</span></pre></div>
-
-
-            <div class="docstring"><p>Non fatal exception to be raised by user code that is not important enough to log</p>
+    <a class="headerlink" href="#Custom_Context.expire_after"></a>
+    
+            <div class="docstring"><p>How long context should remain active/in cache</p>
 </div>
 
 
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt>builtins.Exception</dt>
-                                <dd id="ChanceError.__init__" class="function">Exception</dd>
-
-            </div>
-            <div><dt>builtins.BaseException</dt>
-                                <dd id="ChanceError.with_traceback" class="function">with_traceback</dd>
-                <dd id="ChanceError.args" class="variable">args</dd>
-
-            </div>
-                                </dl>
                             </div>
-                </section>
-                <section id="EventInactive">
-                            <input id="EventInactive-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-<div class="attr class">
+                            <div id="Custom_Context.namespace" class="classattr">
+                                        <input id="Custom_Context.namespace-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
-    <span class="def">class</span>
-    <span class="name">EventInactive</span><wbr>(<span class="base"><a href="#Error">Error</a></span>):
+        <span class="def">def</span>
+        <span class="name">namespace</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
 
-                <label class="view-source-button" for="EventInactive-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="Custom_Context.namespace-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#EventInactive"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="EventInactive-17"><a href="#EventInactive-17"><span class="linenos">17</span></a><span class="k">class</span> <span class="nc">EventInactive</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="EventInactive-18"><a href="#EventInactive-18"><span class="linenos">18</span></a>    <span class="k">pass</span>
+    <a class="headerlink" href="#Custom_Context.namespace"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Custom_Context.namespace-36"><a href="#Custom_Context.namespace-36"><span class="linenos">36</span></a>    <span class="k">def</span> <span class="nf">namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="Custom_Context.namespace-37"><a href="#Custom_Context.namespace-37"><span class="linenos">37</span></a>        <span class="k">return</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">reversed</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">member</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]))</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Non fatal exception to be raised by user code that is not important enough to log</p>
-</div>
+    
 
-
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt>builtins.Exception</dt>
-                                <dd id="EventInactive.__init__" class="function">Exception</dd>
-
-            </div>
-            <div><dt>builtins.BaseException</dt>
-                                <dd id="EventInactive.with_traceback" class="function">with_traceback</dd>
-                <dd id="EventInactive.args" class="variable">args</dd>
-
-            </div>
-                                </dl>
                             </div>
-                </section>
-                <section id="CommandException">
-                            <input id="CommandException-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-<div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">CommandException</span><wbr>(<span class="base"><a href="#Error">Error</a></span>):
-
-                <label class="view-source-button" for="CommandException-view-source"><span>View Source</span></label>
-
-    </div>
-    <a class="headerlink" href="#CommandException"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="CommandException-21"><a href="#CommandException-21"><span class="linenos">21</span></a><span class="k">class</span> <span class="nc">CommandException</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="CommandException-22"><a href="#CommandException-22"><span class="linenos">22</span></a>    <span class="k">pass</span>
-</span></pre></div>
-
-
-            <div class="docstring"><p>Non fatal exception to be raised by user code that is not important enough to log</p>
-</div>
-
-
                             <div class="inherited">
                                 <h5>Inherited Members</h5>
                                 <dl>
-                                    <div><dt>builtins.Exception</dt>
-                                <dd id="CommandException.__init__" class="function">Exception</dd>
+                                    <div><dt><a href="base.html#Context">MFramework.context.base.Context</a></dt>
+                                <dd id="Custom_Context.__init__" class="function"><a href="base.html#Context.__init__">Context</a></dd>
+                <dd id="Custom_Context.cache" class="variable"><a href="base.html#Context.cache">cache</a></dd>
+                <dd id="Custom_Context.db" class="variable"><a href="base.html#Context.db">db</a></dd>
+                <dd id="Custom_Context.bot" class="variable"><a href="base.html#Context.bot">bot</a></dd>
+                <dd id="Custom_Context.data" class="variable"><a href="base.html#Context.data">data</a></dd>
+                <dd id="Custom_Context.guild_id" class="variable"><a href="base.html#Context.guild_id">guild_id</a></dd>
+                <dd id="Custom_Context.guild" class="variable"><a href="base.html#Context.guild">guild</a></dd>
+                <dd id="Custom_Context.channel_id" class="variable"><a href="base.html#Context.channel_id">channel_id</a></dd>
+                <dd id="Custom_Context.channel" class="variable"><a href="base.html#Context.channel">channel</a></dd>
+                <dd id="Custom_Context.message_id" class="variable"><a href="base.html#Context.message_id">message_id</a></dd>
+                <dd id="Custom_Context.user_id" class="variable"><a href="base.html#Context.user_id">user_id</a></dd>
+                <dd id="Custom_Context.user" class="variable"><a href="base.html#Context.user">user</a></dd>
+                <dd id="Custom_Context.member" class="variable"><a href="base.html#Context.member">member</a></dd>
+                <dd id="Custom_Context.direct_message" class="variable"><a href="base.html#Context.direct_message">direct_message</a></dd>
+                <dd id="Custom_Context.language" class="variable"><a href="base.html#Context.language">language</a></dd>
+                <dd id="Custom_Context.is_message" class="variable"><a href="base.html#Context.is_message">is_message</a></dd>
+                <dd id="Custom_Context.is_interaction" class="variable"><a href="base.html#Context.is_interaction">is_interaction</a></dd>
+                <dd id="Custom_Context.webhook" class="variable"><a href="base.html#Context.webhook">webhook</a></dd>
+                <dd id="Custom_Context.is_dm" class="variable"><a href="base.html#Context.is_dm">is_dm</a></dd>
+                <dd id="Custom_Context.get_dm" class="function"><a href="base.html#Context.get_dm">get_dm</a></dd>
+                <dd id="Custom_Context.send_dm" class="function"><a href="base.html#Context.send_dm">send_dm</a></dd>
+                <dd id="Custom_Context.reply" class="function"><a href="base.html#Context.reply">reply</a></dd>
+                <dd id="Custom_Context.send" class="function"><a href="base.html#Context.send">send</a></dd>
+                <dd id="Custom_Context.edit" class="function"><a href="base.html#Context.edit">edit</a></dd>
+                <dd id="Custom_Context.delete" class="function"><a href="base.html#Context.delete">delete</a></dd>
+                <dd id="Custom_Context.deferred" class="function"><a href="base.html#Context.deferred">deferred</a></dd>
+                <dd id="Custom_Context.get_messages" class="function"><a href="base.html#Context.get_messages">get_messages</a></dd>
 
             </div>
-            <div><dt>builtins.BaseException</dt>
-                                <dd id="CommandException.with_traceback" class="function">with_traceback</dd>
-                <dd id="CommandException.args" class="variable">args</dd>
+            <div><dt>mdiscord.types.Sendable</dt>
+                                <dd id="Custom_Context.in_thread" class="variable">in_thread</dd>
+                <dd id="Custom_Context.is_reply" class="variable">is_reply</dd>
+                <dd id="Custom_Context.is_empty" class="variable">is_empty</dd>
+                <dd id="Custom_Context.is_bot" class="variable">is_bot</dd>
+                <dd id="Custom_Context.typing" class="function">typing</dd>
+                <dd id="Custom_Context.get" class="function">get</dd>
+                <dd id="Custom_Context.publish" class="function">publish</dd>
+                <dd id="Custom_Context.send_followup" class="function">send_followup</dd>
+                <dd id="Custom_Context.edit_followup" class="function">edit_followup</dd>
+                <dd id="Custom_Context.delete_followup" class="function">delete_followup</dd>
 
             </div>
-                                </dl>
-                            </div>
-                </section>
-                <section id="MissingPermissions">
-                            <input id="MissingPermissions-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-<div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">MissingPermissions</span><wbr>(<span class="base"><a href="#CommandException">CommandException</a></span>):
-
-                <label class="view-source-button" for="MissingPermissions-view-source"><span>View Source</span></label>
-
-    </div>
-    <a class="headerlink" href="#MissingPermissions"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="MissingPermissions-25"><a href="#MissingPermissions-25"><span class="linenos">25</span></a><span class="k">class</span> <span class="nc">MissingPermissions</span><span class="p">(</span><span class="n">CommandException</span><span class="p">):</span>
-</span><span id="MissingPermissions-26"><a href="#MissingPermissions-26"><span class="linenos">26</span></a>    <span class="k">pass</span>
-</span></pre></div>
-
-
-            <div class="docstring"><p>Non fatal exception to be raised by user code that is not important enough to log</p>
-</div>
-
-
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt>builtins.Exception</dt>
-                                <dd id="MissingPermissions.__init__" class="function">Exception</dd>
-
-            </div>
-            <div><dt>builtins.BaseException</dt>
-                                <dd id="MissingPermissions.with_traceback" class="function">with_traceback</dd>
-                <dd id="MissingPermissions.args" class="variable">args</dd>
-
-            </div>
-                                </dl>
-                            </div>
-                </section>
-                <section id="CommandNotFound">
-                            <input id="CommandNotFound-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-<div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">CommandNotFound</span><wbr>(<span class="base"><a href="#CommandException">CommandException</a></span>):
-
-                <label class="view-source-button" for="CommandNotFound-view-source"><span>View Source</span></label>
-
-    </div>
-    <a class="headerlink" href="#CommandNotFound"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="CommandNotFound-29"><a href="#CommandNotFound-29"><span class="linenos">29</span></a><span class="k">class</span> <span class="nc">CommandNotFound</span><span class="p">(</span><span class="n">CommandException</span><span class="p">):</span>
-</span><span id="CommandNotFound-30"><a href="#CommandNotFound-30"><span class="linenos">30</span></a>    <span class="k">pass</span>
-</span></pre></div>
-
-
-            <div class="docstring"><p>Non fatal exception to be raised by user code that is not important enough to log</p>
-</div>
-
-
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt>builtins.Exception</dt>
-                                <dd id="CommandNotFound.__init__" class="function">Exception</dd>
-
-            </div>
-            <div><dt>builtins.BaseException</dt>
-                                <dd id="CommandNotFound.with_traceback" class="function">with_traceback</dd>
-                <dd id="CommandNotFound.args" class="variable">args</dd>
-
-            </div>
-                                </dl>
-                            </div>
-                </section>
-                <section id="WrongContext">
-                            <input id="WrongContext-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-<div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">WrongContext</span><wbr>(<span class="base"><a href="#CommandException">CommandException</a></span>):
-
-                <label class="view-source-button" for="WrongContext-view-source"><span>View Source</span></label>
-
-    </div>
-    <a class="headerlink" href="#WrongContext"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="WrongContext-33"><a href="#WrongContext-33"><span class="linenos">33</span></a><span class="k">class</span> <span class="nc">WrongContext</span><span class="p">(</span><span class="n">CommandException</span><span class="p">):</span>
-</span><span id="WrongContext-34"><a href="#WrongContext-34"><span class="linenos">34</span></a>    <span class="k">pass</span>
-</span></pre></div>
-
-
-            <div class="docstring"><p>Non fatal exception to be raised by user code that is not important enough to log</p>
-</div>
-
-
-                            <div class="inherited">
-                                <h5>Inherited Members</h5>
-                                <dl>
-                                    <div><dt>builtins.Exception</dt>
-                                <dd id="WrongContext.__init__" class="function">Exception</dd>
-
-            </div>
-            <div><dt>builtins.BaseException</dt>
-                                <dd id="WrongContext.with_traceback" class="function">with_traceback</dd>
-                <dd id="WrongContext.args" class="variable">args</dd>
+            <div><dt><a href="localized.html#Localizable">MFramework.context.localized.Localizable</a></dt>
+                                <dd id="Custom_Context.t" class="function"><a href="localized.html#Localizable.t">t</a></dd>
 
             </div>
                                 </dl>
