@@ -51,8 +51,7 @@ class ObjectCollections(GuildCache):
     """Mapping of User IDs to last presence's updates"""
     kv = collections.KeyValue()
     """Custom Key-Value store"""
-
-    async def initialize(self, *, bot: 'Bot', guild: Guild, rds: Optional[collections.Redis] = None, **kwargs) -> None:
+    def __init__(self, *, bot: "Bot", guild: Guild, rds: Optional[collections.Redis] = None, **kwargs) -> None:
         if not rds:
             _redis = bot.cfg.get("redis", {})
             if host := _redis.get("host", None):
@@ -64,22 +63,20 @@ class ObjectCollections(GuildCache):
                 )
             else:
                 rds = collections.Dictionary()
-
         self.members = collections.Members()
-        await self.members.from_list(guild.members)
         self.presence = collections.Presences()
-
         self.roles = collections.Roles()
-        await self.roles.from_list(guild.roles)
-
         self.channels = collections.Channels()
-        await self.channels.from_list(guild.channels, guild_id=guild.id)
 
         self.messages = collections.Messages(rds)
         self.cooldowns = collections.Cooldowns(rds)
         self.kv = collections.KeyValue(rds, guild.id)
+        super().__init__(guild=guild, **kwargs)
 
-        #await super().initialize(bot=bot, guild=guild, rds=rds, **kwargs)
+    async def initialize(self, *, guild: Guild, **kwargs) -> None:
+        await self.members.from_list(guild.members)
+        await self.roles.from_list(guild.roles)
+        await self.channels.from_list(guild.channels, guild_id=guild.id)
         self.set_role_groups(self.roles)
 
     def set_role_groups(self, roles: dict[Snowflake, Role]) -> None:
