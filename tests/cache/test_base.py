@@ -1,6 +1,6 @@
 import re
 from MFramework import Bot, Groups
-from MFramework.database.cache.base import Base, Commands, RuntimeCommands, Trigger
+from MFramework.cache.base import Base, Commands, RuntimeCommands, Trigger
 
 class Bot:
     username = "Test"

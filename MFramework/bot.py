@@ -9,7 +9,7 @@ from mdiscord import (
 )
 
 from MFramework.context import Context
-from MFramework.database.cache import Cache
+from MFramework.cache import Cache
 from MFramework.database.database import Database
 
 

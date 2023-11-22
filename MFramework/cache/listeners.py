@@ -1,5 +1,6 @@
 from MFramework import Bot, Guild, log, onDispatch
 
+from ._internal import models
 
 @onDispatch
 async def guild_create(bot: Bot, guild: Guild):
@@ -54,7 +55,6 @@ def create_cache_listeners(Cache: object):
             collection[:-1].lower() if collection.endswith("s") else collection.lower(),
             collection.lower(),
         ).lower()
-        from MFramework.database.cache_internal import models
 
         if not hasattr(Cache, collection):
             continue

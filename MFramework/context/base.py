@@ -18,7 +18,7 @@ from mdiscord import (
 )
 
 from MFramework.commands.command import Command
-from MFramework.database.cache import Cache
+from MFramework.cache import Cache
 from MFramework.database.database import Database
 
 if TYPE_CHECKING:

@@ -91,8 +91,8 @@ db.sql.extend_enums(types)
 cache = {0: {}}  # MFramework.database.cache.MainCache(cfg)
 # cache = MFramework.Cache(cfg)
 
-from MFramework.database.cache import Cache
-from MFramework.database.cache.listeners import create_cache_listeners
+from MFramework.cache import Cache
+from MFramework.cache.listeners import create_cache_listeners
 
 create_cache_listeners(Cache)
 

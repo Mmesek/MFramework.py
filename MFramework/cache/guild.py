@@ -6,9 +6,9 @@ from mlib.utils import all_subclasses
 
 from MFramework import Guild, Guild_Member, Snowflake, Role
 from MFramework.commands import Groups
-from MFramework.database.cache_internal import models as collections
 from MFramework.utils.log import Log
 
+from ._internal import models as collections
 from .base import Base
 
 if TYPE_CHECKING:
