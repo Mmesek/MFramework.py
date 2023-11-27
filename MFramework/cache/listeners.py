@@ -68,7 +68,10 @@ def create_cache_listeners(Cache: object):
                 try:
                     await eval(f"bot.cache[data.guild_id].{collection}.{method}(data{attributes.get(_event, '')})")
                 except AttributeError as ex:
-                    log.warn(f"Attempted to use {attributes.get(_event, 'object')} for {collection}.{method} but it's not part of the cache or the object!")
+                    log.warn(
+                        f"Attempted to use {attributes.get(_event, 'object')} for {collection}.{method} but it's not part of the cache or the object!",
+                        exc_info=ex,
+                    )
 
             return _autocache
 

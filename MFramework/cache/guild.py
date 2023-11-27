@@ -9,7 +9,7 @@ from MFramework.commands import Groups
 from MFramework.utils.log import Log
 
 from ._internal import models as collections
-from .base import Base
+from .base import BasicCache, Base
 
 if TYPE_CHECKING:
     from MFramework import Bot
@@ -23,10 +23,11 @@ default_roles = {
     "muted": Groups.MUTED,
     "vip": Groups.VIP,
     "contributor": Groups.VIP,
-    "limbo": Groups.LIMBO
+    "limbo": Groups.LIMBO,
 }
 
-class GuildCache(Base):
+
+class GuildCache(BasicCache):
     guild_id: Snowflake
     """Guild ID this cache is related to"""
     guild: Guild
@@ -38,7 +39,7 @@ class GuildCache(Base):
         super().__init__(guild=guild, **kwargs)
 
 
-class ObjectCollections(GuildCache):
+class ObjectCollections(Base):
     messages = collections.Messages()
     """Mapping of IDs to Message objects"""
     channels = collections.Channels()
@@ -51,6 +52,7 @@ class ObjectCollections(GuildCache):
     """Mapping of User IDs to last presence's updates"""
     kv = collections.KeyValue()
     """Custom Key-Value store"""
+
     def __init__(self, *, bot: "Bot", guild: Guild, rds: Optional[collections.Redis] = None, **kwargs) -> None:
         if not rds:
             _redis = bot.cfg.get("redis", {})
@@ -81,7 +83,7 @@ class ObjectCollections(GuildCache):
 
     def set_role_groups(self, roles: dict[Snowflake, Role]) -> None:
         """Associates default `Groups` roles based on `default_roles` mapping
-        
+
         Parameters
         ----------
         roles:
@@ -89,6 +91,7 @@ class ObjectCollections(GuildCache):
         for id, role in roles.items():
             if _group := default_roles.get(role.name.lower(), None):
                 self.groups[_group].add(id)
+
 
 class BotMeta(ObjectCollections):
     bot: Guild_Member
@@ -100,7 +103,7 @@ class BotMeta(ObjectCollections):
     permissions: int = 0
     """Current bot permissions within guild"""
 
-    async def initialize(self, *, bot: 'Bot', **kwargs) -> None:
+    async def initialize(self, *, bot: "Bot", **kwargs) -> None:
         await super().initialize(bot=bot, **kwargs)
 
         self.bot: Guild_Member = await self.members[bot.user_id]
@@ -117,7 +120,7 @@ class BotMeta(ObjectCollections):
         roles:
             List of role IDs
         """
-        color = None
+        color: tuple[int, int, bool] = [0, 0, False]
         for role_id in roles:
             role = await self.roles[role_id]
             if role.managed and role.color:
@@ -142,14 +145,16 @@ class BotMeta(ObjectCollections):
             permissions |= int((await self.roles[role]).permissions)
         return permissions
 
-class Logging(BotMeta):
+
+class Logging(BotMeta, GuildCache):
     logging: DefaultDict[str, Log]
     """Mapping of logger name to Log objects"""
     webhooks: dict[str, tuple[Snowflake, str]] = {}
     """Mapping of webhook name to Webhook ID & Token"""
 
     async def initialize(self, **kwargs) -> None:
-        self.webhooks = {} # TODO
+        self.webhooks = {}  # TODO
+        self.logging = defaultdict(lambda: aInvalid)
         await super().initialize(**kwargs)
         await self.set_loggers()
 

@@ -10,12 +10,26 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from MFramework import Bot
 
-class Base:
+
+class BasicCache:
+    def __init__(self, **kwargs) -> None:
+        """Regular cache initialization"""
+        pass
+
+    async def initialize(self, **kwargs) -> None:
+        """Async cache initialization (External cache, database, loading resources etc)"""
+        pass
+
+
+class Base(BasicCache):
     groups: dict[Groups, set[Snowflake]]
     """Mapping of Groups to set of role IDs"""
 
     def __init__(self, **kwargs) -> None:
         self.groups = {i: set() for i in Groups}
+
+    async def initialize(self, **kwargs) -> None:
+        return
 
     def cached_roles(self, roles: list[Snowflake]) -> Groups:
         """
@@ -23,7 +37,7 @@ class Base:
         ----------
         roles:
             List of role IDs
-        
+
         Returns
         -------
         Highest group based on roles
@@ -34,18 +48,18 @@ class Base:
         return Groups.GLOBAL
 
 
-class Commands(Base):
+class Commands(BasicCache):
     alias: re.Pattern
     """Guild custom alias to use bot commands"""
 
     _permissions_set: bool = False
     """Determines whether interaction commands permissions were already set"""
 
-    def __init__(self, *, bot: 'Bot', **kwargs) -> None:
+    def __init__(self, *, bot: "Bot", **kwargs) -> None:
         super().__init__(bot=bot, **kwargs)
         self.set_alias(bot)
-    
-    def set_alias(self, bot: 'Bot', alias: str = None) -> None:
+
+    def set_alias(self, bot: "Bot", alias: str = None) -> None:
         """Compiles regex for command alias based on string, name or mention
 
         Parameters
@@ -57,9 +71,11 @@ class Commands(Base):
         """
         self.alias = re.compile(r"|".join([re.escape(alias or bot.alias), re.escape(bot.username), f"{bot.user_id}>"]))
 
+
 @dataclass
 class Trigger:
     """Datastructure to store trigger metadata"""
+
     group: Groups
     """Required group that can use this trigger"""
     name: str
@@ -71,7 +87,8 @@ class Trigger:
     cooldown: timedelta
     """Determines how often can this trigger be used by user"""
 
-class RuntimeCommands(Base):
+
+class RuntimeCommands(BasicCache):
     triggers: dict[str, Trigger]
     """`Trigger`s objects look-up table"""
     responses: dict[Groups, re.Pattern]
@@ -92,9 +109,9 @@ class RuntimeCommands(Base):
             self.responses[group] = re.compile(
                 r"(?:{})".format(
                     "|".join(
-                        "(?P<{}>{})".format(k, f) 
-                        for k, f in 
-                        {t.name: t.trigger for t in triggers if t.group == group}.items()
+                        "(?P<{}>{})".format(k, f)
+                        for k, f in {t.name: t.trigger for t in triggers if t.group == group}.items()
                     )
-                ), re.IGNORECASE
+                ),
+                re.IGNORECASE,
             )
