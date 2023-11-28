@@ -2,6 +2,7 @@ from MFramework import Bot, Guild, log, onDispatch
 
 from ._internal import models
 
+
 @onDispatch
 async def guild_create(bot: Bot, guild: Guild):
     if guild.id not in bot.cache:
@@ -9,7 +10,8 @@ async def guild_create(bot: Bot, guild: Guild):
 
         start = time.time()
         bot.cache[guild.id] = bot._Cache(bot=bot, guild=guild)
-        await bot.cache[guild.id].initialize(bot=bot, guild=guild)
+        with bot.db.sql.session() as session:
+            await bot.cache[guild.id].initialize(bot=bot, session=session, guild=guild)
         log.info("Guild %s initialized in %s", guild.id, time.time() - start)
     if len(bot.cache[guild.id].members) < 50:
         await bot.request_guild_members(guild.id)

@@ -73,13 +73,14 @@ class ObjectCollections(Base):
         self.messages = collections.Messages(rds)
         self.cooldowns = collections.Cooldowns(rds)
         self.kv = collections.KeyValue(rds, guild.id)
-        super().__init__(guild=guild, **kwargs)
+        super().__init__(guild=guild, bot=bot, rds=rds, **kwargs)
 
     async def initialize(self, *, guild: Guild, **kwargs) -> None:
         await self.members.from_list(guild.members)
         await self.roles.from_list(guild.roles)
         await self.channels.from_list(guild.channels, guild_id=guild.id)
         self.set_role_groups(self.roles)
+        await super().initialize(guild=guild, **kwargs)
 
     def set_role_groups(self, roles: dict[Snowflake, Role]) -> None:
         """Associates default `Groups` roles based on `default_roles` mapping
@@ -103,8 +104,8 @@ class BotMeta(ObjectCollections):
     permissions: int = 0
     """Current bot permissions within guild"""
 
-    async def initialize(self, *, bot: "Bot", **kwargs) -> None:
-        await super().initialize(bot=bot, **kwargs)
+    async def initialize(self, *, bot: "Bot", guild: Guild, **kwargs) -> None:
+        await super().initialize(bot=bot, guild=guild, **kwargs)
 
         self.bot: Guild_Member = await self.members[bot.user_id]
         if self.bot:
@@ -146,16 +147,16 @@ class BotMeta(ObjectCollections):
         return permissions
 
 
-class Logging(BotMeta, GuildCache):
+class Logging(GuildCache, BotMeta):
     logging: DefaultDict[str, Log]
     """Mapping of logger name to Log objects"""
     webhooks: dict[str, tuple[Snowflake, str]] = {}
     """Mapping of webhook name to Webhook ID & Token"""
 
-    async def initialize(self, **kwargs) -> None:
+    async def initialize(self, bot: "Bot", guild: Guild, **kwargs) -> None:
         self.webhooks = {}  # TODO
         self.logging = defaultdict(lambda: aInvalid)
-        await super().initialize(**kwargs)
+        await super().initialize(bot=bot, guild=guild, **kwargs)
         await self.set_loggers()
 
     async def set_loggers(self) -> None:
