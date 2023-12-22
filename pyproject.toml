@@ -1,0 +1,31 @@
+[project]
+name = "MFramework.py"
+version = 5
+authors = [
+    { name="Mmesek" }
+]
+description = "Command framework for mDiscord"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Mmesek/MFramework.py"
+"Bug Tracker" = "https://github.com/Mmesek/MFramework.py/issues"
+"Source Code" = "https://github.com/Mmesek/MFramework.py"
+
+[project.license]
+file = "LICENSE"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=MFramework tests/"
