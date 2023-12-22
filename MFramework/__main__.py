@@ -84,9 +84,6 @@ cfg = ConfigToDict(path, default_cfg)
 
 db = MFramework.Database(cfg)
 db.sql.create_tables()
-from MFramework.database.alchemy import types
-
-db.sql.extend_enums(types)
 
 cache = {0: {}}  # MFramework.database.cache.MainCache(cfg)
 # cache = MFramework.Cache(cfg)
