@@ -6,6 +6,7 @@ from MFramework import (
     Button,
     Component,
     Component_Types,
+    Embed,
     Interaction,
     Interaction_Application_Command_Callback_Data,
     Interaction_Callback_Type,
@@ -15,13 +16,20 @@ from MFramework import (
     onDispatch,
 )
 
+from .exceptions import CooldownError
+
+
 if TYPE_CHECKING:
     from MFramework import Bot, Context
 
 
 async def run_function(cmd: "MetaCommand", ctx: "Context", **kwargs):
-    r = await cmd.execute(ctx, **kwargs)
-    from MFramework import Embed
+    try:
+        r = await cmd.execute(ctx, **kwargs)
+    except CooldownError as ex:
+        return await ctx.reply(
+            f"<@{ctx.user_id}>, Remaining Cooldown: <t:{ex.args[0]}:R>",
+        )
 
     if isinstance(r, Embed) or (type(r) is list and all(isinstance(i, Embed) for i in r)):
         await ctx.reply(embeds=[r] if type(r) is not list else r)
