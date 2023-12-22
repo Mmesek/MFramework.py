@@ -5,11 +5,11 @@ MFramework
 
 Discord API framework with Database support.
 
-:copyright: (c) 2020-2021 Mmesek
+:copyright: (c) 2020-2023 Mmesek
 
 """
 __name__ = "MFramework"
-__version__ = "4.0"
+__version__ = "5.0"
 __package__ = "MFramework"
 __module__ = "MFramework"
 
@@ -20,7 +20,7 @@ try:
 
     last_commit = git.Repo().remotes.origin.repo.head.commit
     ver_msg = last_commit.message
-    __version__ = f"4.{last_commit.count()}"
+    __version__ = f"5.{last_commit.count()}"
     ver_date = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(last_commit.committed_date))
 except:
     ver_date = None
