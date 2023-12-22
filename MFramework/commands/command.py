@@ -1,3 +1,5 @@
+import enum
+
 from inspect import Signature, signature
 from types import FunctionType
 from typing import (
@@ -25,6 +27,7 @@ from MFramework import (
     ChannelID,
     Component,
     Embed,
+    Emoji,
     Guild_Member,
     GuildID,
     Interaction,
@@ -40,6 +43,8 @@ from MFramework import (
     UserID,
     log,
 )
+
+from MFramework.utils.localizations import LOCALIZATIONS, translate
 
 from . import Groups
 from .components import Modal, Row, Text_Input_Styles, TextInput
@@ -340,8 +345,6 @@ def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Par
     sig = signature(f).parameters
     parameters = {}
     for parameter in sig:
-        import enum
-
         arg = Parameter(
             default=sig[parameter].default,
             type=sig[parameter].annotation
@@ -430,8 +433,6 @@ _types = {
 
 
 def parse_arguments(_command: Command) -> List[str]:
-    from MFramework.utils.localizations import LOCALIZATIONS
-
     options = []
     for i, v in _command.arguments.items():
         if i.lower() in ["self", "ctx", "cls", "client", "interaction"]:
