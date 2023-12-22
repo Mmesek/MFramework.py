@@ -88,10 +88,7 @@ class Parameter(Localizable):
         self.default = default
         self.type = getattr(type, "__mbase__", type)
         if types and types != [""]:
-            try:
-                types = [Channel_Types.get("GUILD_" + i.upper()).value for i in types]
-            except Exception as ex:
-                breakpoint
+            types = [Channel_Types.get("GUILD_" + i.upper()).value for i in types]
         self.type_args = types or getattr(type, "__args__", [])
         self.description = description
         self.choices = choices
