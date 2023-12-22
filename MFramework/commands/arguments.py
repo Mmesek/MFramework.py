@@ -16,6 +16,7 @@ from MFramework import (
     UserID,
 )
 from MFramework.utils.utils import parseMention
+from mdiscord.exceptions import UserError
 
 from ._utils import DEFAULTS, Command, get_arguments
 
@@ -112,7 +113,10 @@ class Arguments:
                     if t is Guild_Member:
                         o.user = self.ctx.data.data.resolved.users.get(str(value), User())
                 else:
-                    _id = Snowflake(parseMention(value))
+                    try:
+                        _id = Snowflake(parseMention(value))
+                    except ValueError as ex:
+                        raise UserError(f"ID needs to be a digit or a mention. Got `{ex}`")
                     o = next(filter(lambda i: i.id == _id, mentions.get(t)), None)
 
                     if not o or t is Guild_Member:
