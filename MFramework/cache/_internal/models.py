@@ -49,6 +49,11 @@ class Collection(MutableMapping[KT, VT]):
         if type(self._cache) is Dictionary:
             return iter(self._cache)
         return iter({})
+    
+    async def __aiter__(self):
+        if type(self._cache) is Dictionary:
+            return aiter(self._cache)
+        return iter({})
 
     async def update(self, obj: VT | list[VT]) -> str:
         """Update current object(s) in cache"""
