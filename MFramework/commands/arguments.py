@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Any
 
 from MFramework import (
     Attachment,
@@ -38,8 +38,8 @@ class Arguments:
         self._add_extra(ctx=ctx, client=ctx.bot, interaction=ctx.data, message=ctx.data, language="en")
         self._strip_extra()
 
-    def _get_arguments(self):
-        """Get arguments"""
+    def _get_arguments(self) -> dict[str, Any]:
+        """Get arguments from interaction or parse them from message"""
         if self.ctx.is_interaction:
             return {
                 option.name: option.value for option in self.ctx.data.data.options if option.name in self.cmd.arguments
@@ -56,7 +56,7 @@ class Arguments:
             for arg in positional
         }
 
-    def _set_kwargs(self, arguments: Dict[str, str]):
+    def _set_kwargs(self, arguments: dict[str, str]):
         """Sets arguments as keywords as well as casts to correct types"""
         if self.ctx.is_message:
             mentions = {
