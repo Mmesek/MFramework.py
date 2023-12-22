@@ -14,6 +14,9 @@ from typing import (
     Union,
 )
 
+from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from MFramework import (
     Allowed_Mentions,
     Application_Command,
@@ -43,8 +46,6 @@ from MFramework import (
     UserID,
     log,
 )
-
-from MFramework.utils.localizations import LOCALIZATIONS, translate
 
 from . import Groups
 from .components import Modal, Row, Text_Input_Styles, TextInput
@@ -189,8 +190,16 @@ class Command(Localizable):
 
     async def execute(self, ctx: "Context", kwargs: Dict[str, Any]):
         try:
-            r = await self.func(**kwargs)
-            from MFramework import Emoji
+            if "session" in self.arguments and self.arguments.get("session").type is Session:
+                with ctx.db.sql.session() as session:
+                    kwargs.update({"session": session})
+                    r = await self.func(**kwargs)
+            elif "session" in self.arguments and self.arguments.get("session").type is AsyncSession:
+                async with ctx.db.sql.session() as session:
+                    kwargs.update({"session": session})
+                    r = await self.func(**kwargs)
+            else:
+                r = await self.func(**kwargs)
 
             if isinstance(r, Message):
                 await self.maybe_reply(
@@ -430,6 +439,8 @@ _types = {
 
 
 def parse_arguments(_command: Command) -> List[str]:
+    from MFramework.utils.localizations import LOCALIZATIONS
+
     options = []
     for i, v in _command.arguments.items():
         if i.lower() in ["self", "ctx", "cls", "client", "interaction"]:
