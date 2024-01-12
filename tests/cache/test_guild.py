@@ -45,7 +45,7 @@ def test_collections_set_groups():
     cache = ObjectCollections(bot=Bot(), guild=guild)
     cache.set_role_groups({r.id: r  for r in roles})
     assert cache.groups[Groups.ADMIN].symmetric_difference({1}) == set()
-    assert cache.groups[Groups.NITRO].symmetric_difference({5}) == set()
+    assert cache.groups[Groups.NITRO].symmetric_difference({9}) == set()
     assert cache.groups[Groups.VIP].symmetric_difference({6,7, 8}) == set()
 
 @pytest.mark.asyncio
@@ -82,3 +82,30 @@ async def test_meta_permissions():
     assert await cache.calculate_permissions([1,2,3]) == 7
     assert await cache.calculate_permissions([9,3]) == 260
     assert await cache.calculate_permissions([5,3,4]) == 28
+
+@pytest.mark.asyncio
+async def test_logging_cache():
+    guild = Guild(id=1, roles=roles)
+    cache = Logging(bot=Bot(), guild=guild)
+    await cache.initialize(bot=Bot(), guild=guild)
+    assert cache.webhooks == {}
+    assert cache.logging == {}
+    raise NotImplementedError
+
+@pytest.mark.asyncio
+async def test_logging_get_webhooks():
+    guild = Guild(id=1, roles=roles)
+    cache = Logging(bot=Bot(), guild=guild)
+    await cache.initialize(bot=Bot(), guild=guild)
+    assert cache.webhooks == {}
+    assert cache.logging == {}
+    raise NotImplementedError
+
+@pytest.mark.asyncio
+async def test_logging_set_loggers():
+    guild = Guild(id=1, roles=roles)
+    cache = Logging(bot=Bot(), guild=guild)
+    await cache.initialize(bot=Bot(), guild=guild)
+    assert cache.webhooks == {}
+    assert cache.logging == {}
+    raise NotImplementedError
