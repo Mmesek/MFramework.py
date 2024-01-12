@@ -125,7 +125,7 @@ def set_context(client: "Bot", cmd: Command, data: Union[Message, Interaction]) 
 def detect_group(Client: "Bot", user_id: Snowflake, guild_id: Snowflake, roles: Snowflake) -> Groups:
     if user_id != 273499695186444289:
         if user_id != Client.cache[guild_id].guild.owner_id:
-            return Client.cache[guild_id].cachedRoles(roles)
+            return Client.cache[guild_id].cached_roles(roles)
         return Groups.OWNER
     return Groups.SYSTEM
 
