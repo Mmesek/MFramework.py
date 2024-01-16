@@ -13,7 +13,7 @@ async def guild_create(bot: Bot, guild: Guild):
         with bot.db.sql.session() as session:
             await bot.cache[guild.id].initialize(bot=bot, session=session, guild=guild)
         log.info("Guild %s initialized in %s", guild.id, time.time() - start)
-    if len(bot.cache[guild.id].members) < 50:
+    if await bot.cache[guild.id].members.length() < 50:
         await bot.request_guild_members(guild.id)
 
 

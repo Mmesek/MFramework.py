@@ -316,7 +316,9 @@ def any_role(*required: Union[Snowflake, str]):
             if ctx.member:
                 nonlocal required
                 if not all(issubclass(type(i), int) for i in required):
-                    required = [i.id for i in ctx.cache.roles.values() if i.name in required or i.id in required]
+                    required = [
+                        i.id for i in ctx.cache.roles.values() if i.name in required or i.id in required
+                    ]  # FIXME?
                 if len(set(required) & set(ctx.member.roles)):
                     return f(ctx, *args, **kwargs)
             return aInvalid()

@@ -11,12 +11,12 @@ def param(message: str) -> list:
 
 async def get_usernames(self, guild_id: int, user_id: int) -> str:
     try:
-        u = self.cache[guild_id].members[user_id].user.username
+        u = await self.cache[guild_id].members[user_id].user.username
     except:
         try:
             u = await self.get_guild_member(guild_id, user_id)
         except Exception as ex:
             return user_id  # None
-        self.cache[guild_id].members[user_id] = u
+        await self.cache[guild_id].members.update(u)
         u = u.user.username
     return u

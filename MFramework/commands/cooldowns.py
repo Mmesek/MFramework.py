@@ -93,12 +93,17 @@ class Cooldown:
 class CacheCooldown(Cooldown):
     """Cooldown stored (and manages) in remote cache like Redis"""
 
+    async def get_last_action(self) -> datetime:
+        self._last_action = await self.ctx.cache.cooldowns.get(self.ctx.guild_id, self.ctx.user_id, self._type)
+
     @property
     def last_action(self) -> datetime:
-        return self.ctx.cache.cooldowns.get(self.ctx.guild_id, self.ctx.user_id, self._type)
+        return self._last_action
 
-    def add_cooldown(self) -> None:
-        return self.ctx.cache.cooldowns.store(self.ctx.guild_id, self.ctx.user_id, self._type, expire=self.cooldown)
+    async def add_cooldown(self) -> None:
+        return await self.ctx.cache.cooldowns.store(
+            self.ctx.guild_id, self.ctx.user_id, self._type, expire=self.cooldown
+        )
 
 
 class DatabaseCooldown(Cooldown):
@@ -230,24 +235,50 @@ def cooldown(
     """
 
     def inner(f):
-        @wraps(f)
-        def wrapped(ctx: "Context" = None, **kwargs):
-            _cooldown = delta or timedelta(days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks)
-            c = logic(
-                ctx=ctx,
-                cooldown=_cooldown,
-                cooldown_type=scope or f.__name__,
-                func_args=kwargs,
-                bucket=bucket,
-                capacity=rate,
-                **cooldown_kwargs,
-            )
-            if not c.on_cooldown:
-                c.add_cooldown()
-                return f(ctx=ctx, **kwargs)
-            from .exceptions import CooldownError
+        import asyncio
 
-            raise CooldownError(int((c.now + c.remaining).timestamp()))
+        if asyncio.iscoroutinefunction(logic):
+
+            @wraps(f)
+            async def wrapped(ctx: "Context" = None, **kwargs):
+                _cooldown = delta or timedelta(days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks)
+                c = logic(
+                    ctx=ctx,
+                    cooldown=_cooldown,
+                    cooldown_type=scope or f.__name__,
+                    func_args=kwargs,
+                    bucket=bucket,
+                    capacity=rate,
+                    **cooldown_kwargs,
+                )
+                await c.get_last_action()
+                if not c.on_cooldown:
+                    await c.add_cooldown()
+                    return f(ctx=ctx, **kwargs)
+                from .exceptions import CooldownError
+
+                raise CooldownError(int((c.now + c.remaining).timestamp()))
+
+        else:
+
+            @wraps(f)
+            def wrapped(ctx: "Context" = None, **kwargs):
+                _cooldown = delta or timedelta(days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks)
+                c = logic(
+                    ctx=ctx,
+                    cooldown=_cooldown,
+                    cooldown_type=scope or f.__name__,
+                    func_args=kwargs,
+                    bucket=bucket,
+                    capacity=rate,
+                    **cooldown_kwargs,
+                )
+                if not c.on_cooldown:
+                    c.add_cooldown()
+                    return f(ctx=ctx, **kwargs)
+                from .exceptions import CooldownError
+
+                raise CooldownError(int((c.now + c.remaining).timestamp()))
 
         return wrapped
 

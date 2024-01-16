@@ -38,12 +38,12 @@ class Leaderboard_Entry:
         """Username corresponding to this user ID"""
         return self.ctx.cache.members.get(
             int(self.user_id), Guild_Member(user=User(username=self.user_id))
-        ).user.username
+        ).user.username  # FIXME: .members is async
 
     @property
     def in_guild(self) -> bool:
         """Checks if user is still in guild's cache"""
-        return self.user_id in self.ctx.cache.members
+        return self.user_id in self.ctx.cache.members  # FIXME: .members is async
 
 
 class Leaderboard:

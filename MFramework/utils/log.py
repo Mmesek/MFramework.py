@@ -110,12 +110,12 @@ class Message(Log):
     def user_in_footer(self, embed: MFramework.Embed, msg: MFramework.Message) -> MFramework.Embed:
         return embed.setFooter(text=msg.author.username, icon_url=msg.author.get_avatar())
 
-    def get_cached_message(self, key: MFramework.Snowflake) -> MFramework.Message:
-        return self.bot.cache[self.guild_id].messages[key]
+    async def get_cached_message(self, key: MFramework.Snowflake) -> MFramework.Message:
+        return await self.bot.cache[self.guild_id].messages[key]
         # return self.bot.cache[self.guild_id].messages.get(key, None) #getMessage(message_id, channel_id)
 
-    def cached_message(self, msg: MFramework.Message) -> MFramework.Embed:
-        cached = self.get_cached_message(f"{msg.guild_id}.{msg.channel_id}.{msg.id}")
+    async def cached_message(self, msg: MFramework.Message) -> MFramework.Embed:
+        cached = await self.get_cached_message(f"{msg.guild_id}.{msg.channel_id}.{msg.id}")
         if cached:
             embed = self.set_metadata(cached)
             if cached.attachments != None:
@@ -129,7 +129,7 @@ class Message(Log):
 
 class Message_Update(Message):
     async def log(self, msg: MFramework.Message) -> MFramework.Message:
-        embed = self.cached_message(msg)
+        embed = await self.cached_message(msg)
         embed.setTitle(f"Message edited in <#{msg.channel_id}>\nBefore:")
         embed.addFields("After:", msg.content)
         await self._log(embeds=embed)
@@ -137,7 +137,7 @@ class Message_Update(Message):
 
 class Message_Delete(Message):
     async def log(self, msg: MFramework.Message) -> MFramework.Message:
-        embed = self.cached_message(msg)
+        embed = await self.cached_message(msg)
         await self._log(
             content=f"Message deleted in <#{msg.channel_id}>",
             embeds=[embed] if embed else None,
@@ -185,7 +185,7 @@ class Voice(Log):
             status = "+"
             channel = data.channel_id
         if channel == -1:
-            channel = self.bot.cache[data.guild_id].afk_channel
+            channel = self.bot.cache[data.guild_id].afk_channel  # FIXME?
         string += f"<#{channel}>"
         if after is not None and after > 0:
             from mlib.localization import secondsToText
@@ -199,9 +199,9 @@ class Guild_Member_Update(Log):
 
     async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
-        if data.user.id not in ctx.cache[data.guild_id].members:
+        if not await ctx.cache[data.guild_id].members.has(data.user.id):
             return
-        c = ctx.cache[data.guild_id].members[data.user.id]
+        c = await ctx.cache[data.guild_id].members[data.user.id]
         diff = set(c.roles) ^ set(data.roles)
 
         if len(diff) == 0:
@@ -212,7 +212,7 @@ class Guild_Member_Update(Log):
             case = "removed"
         roles = ""
         for i in diff:
-            if i == ctx.cache[data.guild_id].voice_link:
+            if i == ctx.cache[data.guild_id].voice_link:  # FIXME?
                 if len(diff) == 1:
                     return
                 continue
@@ -222,7 +222,7 @@ class Guild_Member_Update(Log):
             s = "s"
         string = f"<@{data.user.id}> role{s} {case}: {roles}"
         await self._log(string)
-        ctx.cache[data.guild_id].members[data.user.id] = data
+        await ctx.cache[data.guild_id].members.update(data)
 
 
 class Nitro_Change(Guild_Member_Update):
@@ -230,8 +230,8 @@ class Nitro_Change(Guild_Member_Update):
 
     async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
-        if data.user.id in ctx.cache[data.guild_id].members:
-            c = ctx.cache[data.guild_id].members[data.user.id]
+        if await ctx.cache[data.guild_id].members.has(data.user.id):
+            c = await ctx.cache[data.guild_id].members[data.user.id]
             diff = set(c.roles) ^ set(data.roles)
             if len(diff) == 0:
                 return
@@ -248,7 +248,7 @@ class Nitro_Change(Guild_Member_Update):
                     break
             if booster:
                 await self._log(f"<@{data.user.id}> {case}")
-                ctx.cache[data.guild_id].members[data.user.id] = data
+                await ctx.cache[data.guild_id].members.update(data)
                 return s
 
 
@@ -257,8 +257,8 @@ class Muted_Change(Guild_Member_Update):
 
     async def log(self, data: MFramework.Guild_Member_Update) -> MFramework.Message:
         ctx = self.bot
-        if data.user.id in ctx.cache[data.guild_id].members:
-            c = ctx.cache[data.guild_id].members[data.user.id]
+        if await ctx.cache[data.guild_id].members.has(data.user.id):
+            c = await ctx.cache[data.guild_id].members[data.user.id]
             diff = set(c.roles) ^ set(data.roles)
             if len(diff) == 0:
                 return
@@ -273,4 +273,4 @@ class Muted_Change(Guild_Member_Update):
                     break
             if muted:
                 await self._log(f"<@{data.user.id}> {case}")
-                ctx.cache[data.guild_id].members[data.user.id] = data
+                await ctx.cache[data.guild_id].members.update(data)

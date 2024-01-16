@@ -65,8 +65,8 @@ class Context(Sendable, Localizable):
         self.guild_id = data.guild_id
         if data.guild_id:
             self.guild = self.cache.guild
-            self.channel = self.cache.channels[data.channel_id]
-            self.language = self.cache.language
+            self.channel = self.cache.channels[data.channel_id]  # FIXME: .channels is async
+            self.language = self.cache.language  # FIXME?
         self.channel_id = data.channel_id
         self.message_id = data.id
         if type(data) is Interaction:
