@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Dict, List
+from functools import partial
 
 from mdiscord.models import Button_Styles, Emoji, Select_Option, Text_Input_Styles
 
@@ -62,6 +63,9 @@ class MetaCommand:
         components[cls.__name__] = cls
         return super().__init_subclass__()
 
+    def __init__(self) -> None:
+        self.func = self.__class__
+
     @classmethod
     async def execute(
         cls,
@@ -86,7 +90,7 @@ async def interaction_create(client: "Bot", interaction: Interaction):
         return
     name, data = interaction.data.custom_id.split("-", 1)
     f = components.get(name, None)
-    ctx = Context(client.cache, client, interaction)
+    ctx = Context(client.cache, client, interaction)  # , f)  # FIXME _cmd path not set
     if not f:
         log.debug("Component %s not found", name)
         return
@@ -143,7 +147,7 @@ class Select(Component):
         placeholder: str = None,
         min_values: int = 0,
         max_values: int = 1,
-        disabled: bool = False
+        disabled: bool = False,
     ):
         self.type = Component_Types.SELECT_MENU.value
         self.options = options
@@ -273,6 +277,103 @@ class TextInput(Component):
         )
 
 
-class Autocomplete:
-    def __init__(self, *choices) -> None:
-        self.choices = choices
+def button(name: str = None, style: Button_Styles = Button_Styles.PRIMARY, emoji: Emoji = None):
+    """
+    Allows using decorated function like it's a button (in place of) factory.
+    Creates button that responds or injects Modal response to fill remaining arguments
+
+    Parameters
+    ----------
+    name:
+        Default label of the button
+    style:
+        Default Style of the button
+    emoji:
+        Default Emoji of the button
+
+    Examples
+    --------
+    ```py
+    >>> @register()
+    >>> @button("Click Click Click")
+    >>> async def multiply_text(text: str, number: int = 0) -> str:
+            '''
+            Params
+            ------
+            text:
+                Text you want to send!
+            number:
+                How many times should it be duplicated?
+            '''
+    >>>     return text * amount
+
+    >>> @register()
+    >>> async def create_button():
+            '''Sends button that executes multiply_text'''
+    >>>     return multiply_text.button()
+    ```
+    """
+
+    def inner(f):
+        components = []
+        for arg in f.command.arguments.values()[:5]:
+            components.append(
+                Row(
+                    TextInput(
+                        label=arg.name.replace("_", " ").title(),
+                        custom_id=str(arg.name),
+                        style=Text_Input_Styles.Short if issubclass(arg.type, int) else Text_Input_Styles.Paragraph,
+                        placeholder=arg.description,
+                        required=arg.default != None,
+                    )
+                )
+            )
+        f.button = partial(
+            type(
+                f.__name__,
+                (Button),
+                {
+                    "execute": lambda x: Modal(
+                        *components,
+                        title=f.__name__.replace("_", " ").title(),
+                        custom_id=f.__name__ + "-None",
+                    )
+                    if components
+                    else f
+                },
+            ),
+            style=style,
+            label=name or f.__name__.title(),
+            emoji=emoji,
+        )
+
+        return f
+
+    return inner
+
+
+def select(placeholder: str = None, min_values: int = None, max_values: int = None):
+    """
+    Allows using function like it's a select menu (in place of) factory.
+    Creates select menu that responds or injects Modal response to fill remaining arguments
+
+    Parameters
+    ----------
+    placeholder:
+        Default placeholder of the select menu
+    min_values:
+        Minimal amount of values to select
+    max_values:
+        Maximal amount of values to select
+    """
+
+    def inner(f):
+        f.select = partial(
+            type(f.__name__, (Select), {"execute": f}),
+            placeholder=placeholder,
+            min_values=min_values,
+            max_values=max_values,
+        )
+        return f
+
+    return inner
