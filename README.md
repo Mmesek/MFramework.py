@@ -1,10 +1,10 @@
 # MFramework.py
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![GitHub](https://img.shields.io/github/license/Mmesek/MFramework.py)](../../LICENSE.md)
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/Mmesek/MFramework.py)
+[![Open in Visual Studio Code](https://img.shields.io/static/v1?logo=visualstudiocode&label=&message=Open%20in%20Visual%20Studio%20Code&labelColor=2c2c32&color=007acc&logoColor=007acc)](https://open.vscode.dev/Mmesek/MFramework.py)
 
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Mmesek/MFramework.py)](https://www.codefactor.io/repository/github/mmesek/mframework.py)
-[![Lines of code](https://img.shields.io/tokei/lines/github/Mmesek/MFramework.py)]()
+[![Lines of code](https://sloc.xyz/github/Mmesek/MFramework.py)]()
 [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Mmesek/MFramework.py)]()
 [![GitHub repo size](https://img.shields.io/github/repo-size/Mmesek/MFramework.py)]()
 
@@ -13,7 +13,7 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/Mmesek/MFramework.py)](../../graphs/contributors)
 [![Discord](https://img.shields.io/discord/517445947446525952)](https://discord.gg/gXWvDzNcMD)
 
-
+[![Docker Image Size (latest by date)](https://ghcr-badge.egpl.dev/Mmesek/mframework/size?tag=main)](../../pkgs/container/mframework)
 ---
 
 Low boilerplate command framework for Discord's REST API extending [mDiscord](https://github.com/Mmesek/mdiscord) wrapper.
