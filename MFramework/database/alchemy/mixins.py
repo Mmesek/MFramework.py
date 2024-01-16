@@ -4,9 +4,16 @@ from sqlalchemy import BigInteger, Column, ForeignKey
 from sqlalchemy.orm import declared_attr, relationship
 from sqlalchemy.sql.sqltypes import Interval
 
+from typing import Annotated
+from sqlalchemy import orm
+
+
+int_pk = Annotated[int, orm.mapped_column(BigInteger, primary_key=True, autoincrement=False, nullable=False)]
+
 
 class Snowflake:
-    id: int = Column(BigInteger, primary_key=True, autoincrement=False, nullable=False)
+    # id: int  # = Column(BigInteger, primary_key=True, autoincrement=False, nullable=False)
+    id: orm.Mapped[int_pk]
 
 
 class Cooldown:
