@@ -98,6 +98,15 @@ class Context(Sendable, Localizable):
         super().__init__(data, cmd)
 
     @property
+    def permission_group(self):
+        from MFramework.commands._utils import detect_group
+        from MFramework import Groups
+
+        if not self.is_dm:
+            return detect_group(self.bot, self.user_id, self.guild_id, self.member.roles)
+        return Groups.DM
+
+    @property
     def is_dm(self):
         return not self.guild_id
 
