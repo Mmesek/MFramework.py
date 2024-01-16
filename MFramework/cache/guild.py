@@ -147,6 +147,15 @@ class BotMeta(ObjectCollections):
         return permissions
 
 
+class Permissions(BotMeta):
+    async def user_roles(self, user_id: Snowflake) -> list[int]:
+        member = await self.members.get(user_id)
+        return member.roles
+
+    async def user_permissions(self, user_id: Snowflake):
+        raise NotImplementedError
+
+
 class Logging(GuildCache, BotMeta):
     logging: DefaultDict[str, Log]
     """Mapping of logger name to Log objects"""
