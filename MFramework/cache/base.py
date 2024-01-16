@@ -26,6 +26,7 @@ class Base(BasicCache):
     """Mapping of Groups to set of role IDs"""
 
     def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.groups = {i: set() for i in Groups}
 
     async def initialize(self, **kwargs) -> None:
@@ -48,7 +49,7 @@ class Base(BasicCache):
         return Groups.GLOBAL
 
 
-class Commands(BasicCache):
+class Commands(Base):
     alias: re.Pattern
     """Guild custom alias to use bot commands"""
 
