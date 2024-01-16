@@ -16,7 +16,8 @@
 [![Docker Image Size (latest by date)](https://ghcr-badge.egpl.dev/Mmesek/mframework/size?tag=main)](../../pkgs/container/mframework)
 ---
 
-Low boilerplate command framework for Discord's REST API extending [mDiscord](https://github.com/Mmesek/mdiscord) wrapper.
+Low boilerplate command framework for Discord's REST API with Database, external Cache, Localization, Event Logging support and more.
+Bleeding-edge low boilerplate command framework for Discord's REST API extending [mDiscord](https://github.com/Mmesek/mdiscord) wrapper. Batteries Included.
 
 
 ## Features
