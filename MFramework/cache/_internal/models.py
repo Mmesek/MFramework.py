@@ -8,6 +8,7 @@ from .backends import Dictionary, Redis
 KT = TypeVar("KT")
 VT = TypeVar("VT")
 
+
 class Collection(MutableMapping[KT, VT]):
     """Base Collection.
 
@@ -27,6 +28,9 @@ class Collection(MutableMapping[KT, VT]):
         await self._cache.add(self._combine(key), value, self._expire)
 
     async def __len__(self) -> int:
+        return await self._cache.db_size()
+
+    async def length(self) -> int:
         return await self._cache.db_size()
 
     async def __delitem__(self, key: KT) -> None:
@@ -49,7 +53,7 @@ class Collection(MutableMapping[KT, VT]):
         if type(self._cache) is Dictionary:
             return iter(self._cache)
         return iter({})
-    
+
     async def __aiter__(self):
         if type(self._cache) is Dictionary:
             return aiter(self._cache)
@@ -63,7 +67,7 @@ class Collection(MutableMapping[KT, VT]):
             return
         return await self._cache.update(self._create_id(obj), obj)
 
-    async def pop(self, *args, default: Any=None) -> int | Any:
+    async def pop(self, *args, default: Any = None) -> int | Any:
         return await self._cache.delete(*args) or default
 
     async def __contains__(self, o: VT) -> bool:
@@ -92,7 +96,7 @@ class Collection(MutableMapping[KT, VT]):
         return ".".join([self.__class__.__name__] + [str(i) for i in args])
 
     # External API
-    async def from_list(self, iterable: list[VT], guild_id: Snowflake=None) -> None:
+    async def from_list(self, iterable: list[VT], guild_id: Snowflake = None) -> None:
         """Fill cache from list"""
         for i in iterable:
             if guild_id:
@@ -198,7 +202,9 @@ class Cooldowns(Collection[str, str]):
     def has(self, guild_id: Snowflake, user_id: Snowflake, type: str) -> bool:
         return self._cache.has(self._combine(guild_id, user_id, type))
 
-    def store(self, guild_id: Snowflake, user_id: Snowflake, type: str, expire: timedelta=timedelta(seconds=60)) -> str:
+    def store(
+        self, guild_id: Snowflake, user_id: Snowflake, type: str, expire: timedelta = timedelta(seconds=60)
+    ) -> str:
         return self._cache.add(
             self._create_id(guild_id, user_id, type),
             datetime.now(tz=timezone.utc).timestamp(),

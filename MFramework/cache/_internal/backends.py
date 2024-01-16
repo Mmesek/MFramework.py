@@ -38,7 +38,7 @@ class Dictionary(dict):
         return False
 
     async def db_size(self) -> int:
-        return await len(self)
+        return len(self)
 
     def has(self, name) -> bool:
         return name in self
@@ -48,19 +48,19 @@ class Dictionary(dict):
 
     async def __contains__(self, __key: object) -> bool:
         return super().__contains__(__key)
-    
+
     async def __anext__(self):
         return super().__next__()
-    
+
     async def __aiter__(self):
         return self.__iter__()
-    
-    async def __len__(self) -> int:
+
+    async def __alen__(self) -> int:
         return super().__len__()
 
     def __len__(self) -> int:
         return super().__len__()
-    
+
     def count(self, name) -> int:
         return len(self.keys(name))
 
