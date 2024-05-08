@@ -1,9 +1,7 @@
 [project]
 name = "MFramework.py"
-version = 5
-authors = [
-    { name="Mmesek" }
-]
+version = "5"
+authors = [{ name = "Mmesek" }]
 description = "Command framework for mDiscord"
 readme = "README.md"
 classifiers = [
@@ -25,7 +23,7 @@ profile = "black"
 
 [tool.black]
 line-length = 120
-target-version = ["py311"]
+target-version = ["py312"]
 
 [tool.pytest.ini_options]
 addopts = "--cov=MFramework tests/"
