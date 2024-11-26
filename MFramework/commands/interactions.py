@@ -103,7 +103,7 @@ async def register_commands(client: Bot, guild: Guild = None):
             cmd.id = registered_commands[cmd.name]
             updated_commands.append(cmd)
 
-    if len(new_commands) == len(commands):
+    if len(new_commands) == len(commands) and len(registered) != 0 != len(commands):
         _cmds = await overwrite_commands(client, new_commands + updated_commands, guild)
     else:
         for cmd in new_commands:
