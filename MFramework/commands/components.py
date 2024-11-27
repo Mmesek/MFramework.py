@@ -1,11 +1,9 @@
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Optional
 from functools import partial
 
-from mdiscord.models import Button_Styles, Emoji, Select_Option, Text_Input_Styles
+from mdiscord.types import Button_Styles, Emoji, Select_Option, Text_Input_Styles
 
 from MFramework import (
-    Button,
-    Component,
     Component_Types,
     Embed,
     Interaction,
@@ -56,10 +54,21 @@ async def run_function(cmd: "MetaCommand", ctx: "Context", **kwargs):
 
 class MetaCommand:
     auto_deferred: bool = True
+    """Whether receiving interaction should automatically provide feedback"""
     private_response: bool = True
+    """Whether response to this interaction should be private"""
     _no_interaction: bool = False
+    """Whether this button is front-only and doesn't send us any information"""
 
     def __init_subclass__(cls) -> None:
+        if (
+            all(
+                base.__name__ in {"MetaCommand", "Component", "object"}
+                for base in [cls.__base__, cls.__base__.__base__]
+            )
+            or cls._no_interaction
+        ):
+            return
         log.debug("Registering Component %s", cls.__name__)
         components[cls.__name__] = cls
         return super().__init_subclass__()
@@ -72,23 +81,21 @@ class MetaCommand:
         cls,
         ctx: "Context",
         data: str,
-        values: List[str] = None,
-        not_selected: List[Select_Option] = None,
+        values: list[str] = None,
+        not_selected: list[Select_Option] = None,
     ):
         pass
 
 
-components: Dict[str, MetaCommand] = {}
+components: dict[str, MetaCommand] = {}
 
 
-@onDispatch
+@onDispatch(predicate=lambda x: x.type in {Interaction_Type.MESSAGE_COMPONENT, Interaction_Type.MODAL_SUBMIT})
 async def interaction_create(client: "Bot", interaction: Interaction):
     """Called after receiving event INTERACTION_CREATE from Discord
     Reacts only to Components (Buttons)"""
     from MFramework import Context
 
-    if interaction.type != Interaction_Type.MESSAGE_COMPONENT and interaction.type != Interaction_Type.MODAL_SUBMIT:
-        return
     name, data = interaction.data.custom_id.split("-", 1)
     f = components.get(name, None)
     ctx = Context(client.cache, client, interaction)  # , f)  # FIXME _cmd path not set
@@ -118,29 +125,37 @@ async def interaction_create(client: "Bot", interaction: Interaction):
     return await run_function(f, ctx, data=data)
 
 
-# BASE
+# BASE ----------------------------------------------------------------------------------------------------------------
+
+
+class Component(MetaCommand):
+    type: Component_Types = None
+    custom_id: str
+    """Developer-defined identifier for the button; max 100 characters"""
+
+    def __init__(self, custom_id: str = None):
+        self.custom_id = self.__class__.__name__ + "-" + str(custom_id)
+        if len(self.custom_id) > 100:
+            log.warning("Custom ID of a component is longer than 100 character! %s", self.custom_id)
 
 
 class Row(Component):
-    type = Component_Types.ACTION_ROW.value
-    components: List[Component]
+    type = Component_Types.ACTION_ROW
+    components: list[Component] = list
 
     def __init__(self, *components: Component):
         self.components = components
 
 
-ActionRow = Row
-
-
-class Component(Component, MetaCommand):
-    def __init__(self, custom_id: str = None):
-        self.custom_id = self.__class__.__name__ + "-" + str(custom_id)
-
-
-# SELECT MENUS
+# SELECT MENUS --------------------------------------------------------------------------------------------------------
 
 
 class Select(Component):
+    options: list[Select_Option] = None
+    min_values: int = None
+    max_values: int = None
+    placeholder: str = None
+
     def __init__(
         self,
         *options: Select_Option,
@@ -149,8 +164,9 @@ class Select(Component):
         min_values: int = 0,
         max_values: int = 1,
         disabled: bool = False,
+        select_type: Component_Types = Component_Types.STRING_SELECT,
     ):
-        self.type = Component_Types.SELECT_MENU.value
+        self.type = select_type
         self.options = options
         self.placeholder = placeholder
         self.min_values = min_values
@@ -163,37 +179,24 @@ class Select(Component):
         cls,
         ctx: "Context",
         data: str,
-        values: List[str],
-        not_selected: List[Select_Option],
+        values: list[str],
+        not_selected: list[Select_Option],
     ):
         return await super().execute(ctx, data)
 
 
-class Option(Select_Option):
-    def __init__(
-        self,
-        label: str,
-        value: str,
-        description: str = None,
-        emoji: Emoji = None,
-        default: bool = False,
-    ):
-        self.label = label
-        self.value = value
-        self.description = description
-        self.emoji = emoji
-        self.default = default
-
-
-SelectMenu = Select
-SelectOption = Option
-
-# BUTTONS
+# BUTTONS -------------------------------------------------------------------------------------------------------------
 
 
 class Button(Component):
-    type = Component_Types.BUTTON
-    style = Button_Styles.PRIMARY
+    type: Component_Types = Component_Types.BUTTON
+    style: Button_Styles = Button_Styles.PRIMARY
+    label: str
+    """Text that appears on the button; max 80 characters"""
+    emoji: Emoji
+    """name, id, and animated"""
+    disabled: Optional[bool] = None
+    """Whether the button is disabled"""
 
     def __init__(
         self,
@@ -203,16 +206,18 @@ class Button(Component):
         emoji: Emoji = None,
         disabled: bool = False,
     ):
-        self.style = style.value
+        self.style = style
         super().__init__(custom_id)
-        self.type = Component_Types.BUTTON.value
-        self.label = label
+        self.label = label[:80]
         self.emoji = emoji
         self.disabled = disabled
 
 
 class LinkButton(Button):
+    _no_interaction: bool = True
     style = Button_Styles.LINK
+    url: Optional[str] = None
+    """URL for link-style buttons"""
 
     def __init__(self, label: str, url: str = None, emoji: Emoji = None, disabled: bool = False):
         super().__init__(label, style=Button_Styles.LINK, emoji=emoji, disabled=disabled)
@@ -220,20 +225,17 @@ class LinkButton(Button):
         self.url = url
 
 
-# MODALS
+# MODALS --------------------------------------------------------------------------------------------------------------
 
 
 class Modal(Component):
-    type = None
-    disabled = None
-
     def __init__(self, *components: Component, title: str = None, custom_id: str = None):
         self.title = title or self.__class__.__name__
         self.components = components
         super().__init__(custom_id)
 
     @classmethod
-    async def execute(cls, ctx: "Context", data: str, inputs: Dict[str, str]):
+    async def execute(cls, ctx: "Context", data: str, inputs: dict[str, str]):
         return await super().execute(ctx, data)
 
 
@@ -242,13 +244,18 @@ class TextInput(Component):
     Usage as a typehint: TextInput[min, max(, step)] or just TextInput[max] where min/max/step are integer values
     """
 
-    type: int = Component_Types.TEXT_INPUT.value
+    type = Component_Types.TEXT_INPUT
+    style: Text_Input_Styles = Text_Input_Styles.PARAGRAPH
+    min_length: int = None
+    max_length: int = None
+    required: bool = None
+    placeholder: str = None
 
     def __init__(
         self,
         label: str,
         custom_id: str = None,
-        style: Text_Input_Styles = Text_Input_Styles.Paragraph,
+        style: Text_Input_Styles = Text_Input_Styles.PARAGRAPH,
         min_length: int = 0,
         max_length: int = 4000,
         required: bool = False,
@@ -276,6 +283,9 @@ class TextInput(Component):
             (TextInput,),
             {"min_length": _range.start, "max_length": _range.stop},
         )
+
+
+# ---------------------------------------------------------------------------------------------------------------------
 
 
 def button(name: str = None, style: Button_Styles = Button_Styles.PRIMARY, emoji: Emoji = None):
@@ -320,12 +330,12 @@ def button(name: str = None, style: Button_Styles = Button_Styles.PRIMARY, emoji
         for arg in f.command.arguments.values()[:5]:
             components.append(
                 Row(
-                    TextInput(
+                    components=TextInput(
                         label=arg.name.replace("_", " ").title(),
                         custom_id=str(arg.name),
                         style=Text_Input_Styles.Short if issubclass(arg.type, int) else Text_Input_Styles.Paragraph,
                         placeholder=arg.description,
-                        required=arg.default != None,
+                        required=arg.default is not None,
                     )
                 )
             )
@@ -334,13 +344,15 @@ def button(name: str = None, style: Button_Styles = Button_Styles.PRIMARY, emoji
                 f.__name__,
                 (Button),
                 {
-                    "execute": lambda x: Modal(
-                        *components,
-                        title=f.__name__.replace("_", " ").title(),
-                        custom_id=f.__name__ + "-None",
+                    "execute": lambda x: (
+                        Modal(
+                            *components,
+                            title=f.__name__.replace("_", " ").title(),
+                            custom_id=f.__name__ + "-None",
+                        )
+                        if components
+                        else f
                     )
-                    if components
-                    else f
                 },
             ),
             style=style,
