@@ -57,6 +57,7 @@ async def run_function(cmd: "MetaCommand", ctx: "Context", **kwargs):
 class MetaCommand:
     auto_deferred: bool = True
     private_response: bool = True
+    _no_interaction: bool = False
 
     def __init_subclass__(cls) -> None:
         log.debug("Registering Component %s", cls.__name__)
