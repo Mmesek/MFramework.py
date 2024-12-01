@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Optional
+from dataclasses import dataclass, field
 from functools import partial
 
 from mdiscord.types import Button_Styles, Emoji, Select_Option, Text_Input_Styles
@@ -128,8 +129,13 @@ async def interaction_create(client: "Bot", interaction: Interaction):
 # BASE ----------------------------------------------------------------------------------------------------------------
 
 
+@dataclass
 class Component(MetaCommand):
-    type: Component_Types = None
+    type: Component_Types = field(init=False, kw_only=True)
+
+
+@dataclass
+class ComponentInteractive(Component):
     custom_id: str
     """Developer-defined identifier for the button; max 100 characters"""
 
@@ -139,8 +145,9 @@ class Component(MetaCommand):
             log.warning("Custom ID of a component is longer than 100 character! %s", self.custom_id)
 
 
+@dataclass
 class Row(Component):
-    type = Component_Types.ACTION_ROW
+    type: Component_Types = Component_Types.ACTION_ROW
     components: list[Component] = list
 
     def __init__(self, *components: Component):
@@ -150,7 +157,8 @@ class Row(Component):
 # SELECT MENUS --------------------------------------------------------------------------------------------------------
 
 
-class Select(Component):
+@dataclass
+class Select(ComponentInteractive):
     options: list[Select_Option] = None
     min_values: int = None
     max_values: int = None
@@ -188,12 +196,13 @@ class Select(Component):
 # BUTTONS -------------------------------------------------------------------------------------------------------------
 
 
-class Button(Component):
-    type: Component_Types = Component_Types.BUTTON
+@dataclass
+class Button(ComponentInteractive):
+    type: Component_Types = field(init=False, kw_only=True, default=Component_Types.BUTTON)
     style: Button_Styles = Button_Styles.PRIMARY
-    label: str
+    label: str = None
     """Text that appears on the button; max 80 characters"""
-    emoji: Emoji
+    emoji: Emoji = None
     """name, id, and animated"""
     disabled: Optional[bool] = None
     """Whether the button is disabled"""
@@ -213,9 +222,10 @@ class Button(Component):
         self.disabled = disabled
 
 
+@dataclass
 class LinkButton(Button):
     _no_interaction: bool = True
-    style = Button_Styles.LINK
+    style: Button_Styles = Button_Styles.LINK
     url: Optional[str] = None
     """URL for link-style buttons"""
 
@@ -228,7 +238,8 @@ class LinkButton(Button):
 # MODALS --------------------------------------------------------------------------------------------------------------
 
 
-class Modal(Component):
+@dataclass
+class Modal(ComponentInteractive):
     def __init__(self, *components: Component, title: str = None, custom_id: str = None):
         self.title = title or self.__class__.__name__
         self.components = components
@@ -239,7 +250,8 @@ class Modal(Component):
         return await super().execute(ctx, data)
 
 
-class TextInput(Component):
+@dataclass
+class TextInput(ComponentInteractive):
     """
     Usage as a typehint: TextInput[min, max(, step)] or just TextInput[max] where min/max/step are integer values
     """
