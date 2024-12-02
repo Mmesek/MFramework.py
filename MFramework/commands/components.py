@@ -109,10 +109,10 @@ async def interaction_create(client: "Bot", interaction: Interaction):
     if f.auto_deferred:
         await interaction.deferred(f.private_response)
 
-    if interaction.data.component_type == Component_Types.SELECT_MENU:
+    if interaction.data.component_type == Component_Types.STRING_SELECT:
         not_selected = []
         for row in interaction.message.components:
-            for select_component in filter(lambda x: x.type == Component_Types.SELECT_MENU, row.components):
+            for select_component in filter(lambda x: x.type == Component_Types.STRING_SELECT, row.components):
                 if any(v in [_v.value for _v in select_component.options] for v in interaction.data.values):
                     for value in select_component.options:
                         if value.value not in interaction.data.values:
