@@ -10,7 +10,6 @@ from MFramework import (
     Interaction,
     Interaction_Application_Command_Callback_Data,
     Interaction_Callback_Type,
-    Interaction_Response,
     Interaction_Type,
     log,
     onDispatch,
@@ -37,18 +36,21 @@ async def run_function(cmd: "MetaCommand", ctx: "Context", **kwargs):
         await ctx.bot.create_interaction_response(
             ctx.data.id,
             ctx.data.token,
-            Interaction_Response(
-                type=Interaction_Callback_Type.MODAL,
-                data=Interaction_Application_Command_Callback_Data(
-                    title=r.title, custom_id=r.custom_id, components=r.components
-                ),
+            Interaction_Callback_Type.MODAL,
+            Interaction_Application_Command_Callback_Data(
+                title=r.title, custom_id=r.custom_id, components=r.components
             ),
         )
     elif isinstance(r, Component) or (type(r) is list and all(isinstance(i, Component) for i in r)):
         await ctx.reply(components=[r] if type(r) is not list else r)
     elif callable(r):
         if hasattr(r, "_cmd"):
-            await ctx.bot.create_interaction_response(ctx.data.id, ctx.data.token, r._cmd.modal)
+            await ctx.bot.create_interaction_response(
+                ctx.data.id,
+                ctx.data.token,
+                Interaction_Callback_Type.MODAL,
+                r._cmd.modal,
+            )
     elif r:
         await ctx.reply(str(r))
 
