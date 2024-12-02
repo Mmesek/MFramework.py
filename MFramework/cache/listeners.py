@@ -1,3 +1,8 @@
+import time
+
+from mdiscord.websocket.opcodes import DISPATCH
+from mdiscord.types import Gateway_Events
+
 from MFramework import Bot, Guild, log, onDispatch
 
 from ._internal import models
@@ -6,8 +11,6 @@ from ._internal import models
 @onDispatch
 async def guild_create(bot: Bot, guild: Guild):
     if guild.id not in bot.cache:
-        import time
-
         start = time.time()
         bot.cache[guild.id] = bot._Cache(bot=bot, guild=guild)
         with bot.db.sql.session() as session:
@@ -44,13 +47,10 @@ attributes = {
 
 
 def create_cache_listeners(Cache: object):
-    from mdiscord.opcodes import Dispatch
-    from mdiscord.types import Gateway_Events
-
     for event in Gateway_Events:
         if not hasattr(event.func, "guild_id"):
             continue
-        if any(i.__name__ == "_autocache" for i in Dispatch.get(event.name.upper(), {}).get(200, [])):
+        if any(i.__name__ == "_autocache" for i in DISPATCH.get(event.name.upper(), {}).get(200, [])):
             continue
         collection, method = event.name.rsplit("_", 1)
         collection = collections.get(
@@ -70,7 +70,7 @@ def create_cache_listeners(Cache: object):
                 try:
                     await eval(f"bot.cache[data.guild_id].{collection}.{method}(data{attributes.get(_event, '')})")
                 except AttributeError as ex:
-                    log.warn(
+                    log.warning(
                         f"Attempted to use {attributes.get(_event, 'object')} for {collection}.{method} but it's not part of the cache or the object!",
                         exc_info=ex,
                     )

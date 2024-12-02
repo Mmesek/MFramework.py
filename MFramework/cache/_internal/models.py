@@ -1,7 +1,8 @@
-from datetime import timedelta, timezone
-from typing import Union, MutableMapping, TypeVar
+from datetime import datetime, timedelta, timezone
+from typing import Union, MutableMapping, TypeVar, Any
 
-from mdiscord import *
+from mdiscord import Snowflake, Presence_Update, Message, Channel, Role, Guild_Member
+from MFramework import log
 
 from .backends import Dictionary, Redis
 
@@ -132,7 +133,8 @@ class Messages(Collection[Snowflake, Message]):
         all[1].sort()
         try:
             r = await self._cache.get(all[1][-1])
-        except:
+        except Exception as ex:
+            log.warning(ex)
             return None
         if type(r) is dict:
             return self._cls(**r)

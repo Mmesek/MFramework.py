@@ -1,10 +1,13 @@
+import re
+
 from datetime import timedelta
 from typing import Any
 
 import orjson
 import redis.asyncio as redis
 
-from mdiscord import DiscordObject, as_dict
+from mdiscord import DiscordObject
+from mdiscord.utils.serializer import as_dict
 
 
 class Dictionary(dict):
@@ -66,8 +69,6 @@ class Dictionary(dict):
 
     def keys(self, pattern=None) -> list[Any]:
         if pattern:
-            import re
-
             p = re.compile(pattern)
             return list(filter(lambda x: p.search(x), self))
         return super().keys()
