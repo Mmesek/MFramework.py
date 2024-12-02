@@ -258,7 +258,7 @@ class TextInput(ComponentInteractive):
     Usage as a typehint: TextInput[min, max(, step)] or just TextInput[max] where min/max/step are integer values
     """
 
-    type = Component_Types.TEXT_INPUT
+    label: str = None
     style: Text_Input_Styles = Text_Input_Styles.PARAGRAPH
     min_length: int = None
     max_length: int = None
