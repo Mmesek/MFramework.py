@@ -40,17 +40,17 @@ class GuildCache(BasicCache):
 
 
 class ObjectCollections(Base):
-    messages = collections.Messages()
+    messages: collections.Messages = collections.Messages()
     """Mapping of IDs to Message objects"""
-    channels = collections.Channels()
+    channels: collections.Channels = collections.Channels()
     """Mapping of IDs to Channel objects"""
-    roles = collections.Roles()
+    roles: collections.Roles = collections.Roles()
     """Mapping of IDs to Role objects"""
-    members = collections.Members()
+    members: collections.Members = collections.Members()
     """Mapping of User IDs to Guild Member objects"""
-    presence = collections.Presences()
+    presence: collections.Presences = collections.Presences()
     """Mapping of User IDs to last presence's updates"""
-    kv = collections.KeyValue()
+    kv: collections.KeyValue = collections.KeyValue()
     """Custom Key-Value store"""
 
     def __init__(self, *, bot: "Bot", guild: Guild, rds: Optional[collections.Redis] = None, **kwargs) -> None:
@@ -127,7 +127,7 @@ class BotMeta(ObjectCollections):
             if role.managed and role.color:
                 color = (role.position, role.color, True)
                 break
-            elif color == None:
+            elif color is None:
                 color = (role.position, role.color, False)
             elif role.position > color[0]:
                 color = (role.position, role.color, False)
