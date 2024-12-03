@@ -16,10 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.11
+    - name: Set up Python 3.12
       uses: actions/setup-python@v3
       with:
-        python-version: "3.11"
+        python-version: "3.12"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -29,9 +29,10 @@ jobs:
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    - uses: psf/black@stable
+    - uses: astral-sh/ruff-action@v1
       with:
-        options: |
+        args: |
+          format
           --check
           --line-length 120
           --diff
