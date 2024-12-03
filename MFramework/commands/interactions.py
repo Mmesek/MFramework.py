@@ -135,21 +135,21 @@ async def add_command(client: Bot, cmd: Application_Command, guild: Guild = None
             client.username,
         )
         return await client.create_guild_application_command(
-            client.application.id,
-            guild.id,
-            cmd.name,
-            cmd.description,
-            cmd.options,
-            cmd.default_permission,
+            application_id=client.application.id,
+            guild_id=guild.id,
+            name=cmd.name,
+            description=cmd.description,
+            options=cmd.options,
+            default_permission=cmd.default_permission,
             type=cmd.type,
         )
     log.info("Registering Global command %s on bot %s", cmd.name, client.username)
     return await client.create_global_application_command(
-        client.application.id,
-        cmd.name,
-        cmd.description,
-        cmd.options,
-        cmd.default_permission,
+        application_id=client.application.id,
+        name=cmd.name,
+        description=cmd.description,
+        options=cmd.options,
+        default_permission=cmd.default_permission,
         type=cmd.type,
     )
 
@@ -163,22 +163,22 @@ async def edit_command(client: Bot, cmd: Application_Command, guild: Guild = Non
             client.username,
         )
         return await client.edit_guild_application_command(
-            client.application.id,
-            guild.id,
-            cmd.id,
-            cmd.name,
-            cmd.description,
-            cmd.options,
-            cmd.default_permission,
+            application_id=client.application.id,
+            guild_id=guild.id,
+            command_id=cmd.id,
+            name=cmd.name,
+            description=cmd.description,
+            options=cmd.options,
+            default_permission=cmd.default_permission,
         )
     log.info("Editing existing Global command %s on bot %s", cmd.name, client.username)
     return await client.edit_global_application_command(
-        client.application.id,
-        cmd.id,
-        cmd.name,
-        cmd.description,
-        cmd.options,
-        cmd.default_permission,
+        application_id=client.application.id,
+        command_id=cmd.id,
+        name=cmd.name,
+        description=cmd.description,
+        options=cmd.options,
+        default_permission=cmd.default_permission,
     )
 
 
@@ -205,6 +205,6 @@ async def overwrite_commands(
             len(commands),
             client.username,
         )
-        return await client.bulk_overwrite_guild_application_commands(client.application.id, guild.id, commands)
+        return await client.bulk_overwrite_guild_application_commands(client.application.id, guild.id, payload=commands)
     log.info("Overwriting Global commands [%s] on bot %s", len(commands), client.username)
-    return await client.bulk_overwrite_global_application_commands(client.application.id, commands)
+    return await client.bulk_overwrite_global_application_commands(client.application.id, payload=commands)
