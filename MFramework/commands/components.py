@@ -133,12 +133,12 @@ async def interaction_create(client: "Bot", interaction: Interaction):
 
 @dataclass
 class Component(MetaCommand):
-    type: Component_Types = field(init=False, kw_only=True)
+    type: Component_Types = None
 
 
 @dataclass
 class ComponentInteractive(Component):
-    custom_id: str
+    custom_id: str = None
     """Developer-defined identifier for the button; max 100 characters"""
 
     def __init__(self, custom_id: str = None):
@@ -154,6 +154,7 @@ class Row(Component):
 
     def __init__(self, *components: Component):
         self.components = components
+        self.type = Component_Types.ACTION_ROW
 
 
 # SELECT MENUS --------------------------------------------------------------------------------------------------------
@@ -200,7 +201,7 @@ class Select(ComponentInteractive):
 
 @dataclass
 class Button(ComponentInteractive):
-    type: Component_Types = field(init=False, kw_only=True, default=Component_Types.BUTTON)
+    type: Component_Types = Component_Types.BUTTON
     style: Button_Styles = Button_Styles.PRIMARY
     label: str = None
     """Text that appears on the button; max 80 characters"""
@@ -242,6 +243,9 @@ class LinkButton(Button):
 
 @dataclass
 class Modal(ComponentInteractive):
+    title: str = None
+    components: list[Component] = list
+
     def __init__(self, *components: Component, title: str = None, custom_id: str = None):
         self.title = title or self.__class__.__name__
         self.components = components
@@ -258,6 +262,7 @@ class TextInput(ComponentInteractive):
     Usage as a typehint: TextInput[min, max(, step)] or just TextInput[max] where min/max/step are integer values
     """
 
+    type: Component_Types = Component_Types.TEXT_INPUT
     label: str = None
     style: Text_Input_Styles = Text_Input_Styles.PARAGRAPH
     min_length: int = None
@@ -284,6 +289,7 @@ class TextInput(ComponentInteractive):
         self.required = required
         self.value = value
         self.placeholder = placeholder
+        self.type = Component_Types.TEXT_INPUT
 
     def __class_getitem__(cls: "TextInput", obj: tuple) -> "TextInput":
         if type(obj) is tuple:
