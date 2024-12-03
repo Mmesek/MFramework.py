@@ -1,15 +1,16 @@
-from typing import Optional, TYPE_CHECKING, DefaultDict
 from collections import defaultdict
+from typing import TYPE_CHECKING, DefaultDict, Optional
 
 from mlib.types import aInvalid
 from mlib.utils import all_subclasses
+from sqlalchemy.orm import Session
 
-from MFramework import Guild, Guild_Member, Snowflake, Role
+from MFramework import Guild, Guild_Member, Role, Snowflake
 from MFramework.commands import Groups
 from MFramework.utils.log import Log
 
 from ._internal import models as collections
-from .base import BasicCache, Base
+from .base import Base, BasicCache
 
 if TYPE_CHECKING:
     from MFramework import Bot
@@ -162,10 +163,10 @@ class Logging(GuildCache, BotMeta):
     webhooks: dict[str, tuple[Snowflake, str]] = {}
     """Mapping of webhook name to Webhook ID & Token"""
 
-    async def initialize(self, bot: "Bot", guild: Guild, **kwargs) -> None:
+    async def initialize(self, bot: "Bot", guild: Guild, session: Session, **kwargs) -> None:
         self.webhooks = {}  # TODO
         self.logging = defaultdict(lambda: aInvalid)
-        await super().initialize(bot=bot, guild=guild, **kwargs)
+        await super().initialize(bot=bot, guild=guild, session=session, **kwargs)
         await self.set_loggers()
 
     async def set_loggers(self) -> None:
@@ -174,3 +175,11 @@ class Logging(GuildCache, BotMeta):
         _classes = {i.__name__.lower(): i for i in all_subclasses(Log)}
         for webhook in filter(lambda x: x in _classes, self.webhooks):
             self.logging[webhook] = _classes[webhook](self.bot, self.guild_id, webhook, *self.webhooks[webhook])
+
+
+class Localization(GuildCache):
+    language: str
+
+    async def initialize(self, bot: "Bot", guild: Guild, **kwargs) -> None:
+        self.language = guild.preferred_locale
+        await super().initialize(bot=bot, guild=guild, **kwargs)
