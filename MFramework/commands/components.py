@@ -347,33 +347,40 @@ def button(name: str = None, style: Button_Styles = Button_Styles.PRIMARY, emoji
 
     def inner(f):
         components = []
-        for arg in f.command.arguments.values()[:5]:
+        for arg in list(f._cmd.arguments.values())[:5]:
             components.append(
                 Row(
-                    components=TextInput(
+                    TextInput(
                         label=arg.name.replace("_", " ").title(),
                         custom_id=str(arg.name),
-                        style=Text_Input_Styles.Short if issubclass(arg.type, int) else Text_Input_Styles.Paragraph,
+                        style=Text_Input_Styles.SHORT if issubclass(arg.type, int) else Text_Input_Styles.PARAGRAPH,
                         placeholder=arg.description,
                         required=arg.default is not None,
                     )
                 )
             )
+
+        async def execute(
+            cls,
+            ctx: "Context",
+            data: str,
+            values: list[str] = None,
+            not_selected: list[Select_Option] = None,
+        ):
+            return await f(ctx)
+
+        if components:
+            f.modal = Modal(
+                *components,
+                title=f.__name__.replace("_", " ").title(),
+                custom_id=f.__name__ + "-None",
+            )
+
         f.button = partial(
             type(
                 f.__name__,
-                (Button),
-                {
-                    "execute": lambda x: (
-                        Modal(
-                            *components,
-                            title=f.__name__.replace("_", " ").title(),
-                            custom_id=f.__name__ + "-None",
-                        )
-                        if components
-                        else f
-                    )
-                },
+                (Button,),
+                {"execute": classmethod(execute)},
             ),
             style=style,
             label=name or f.__name__.title(),
