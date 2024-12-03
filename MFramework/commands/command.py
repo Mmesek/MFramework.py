@@ -11,6 +11,8 @@ from typing import (
     Type,
 )
 
+import msgspec
+
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,7 +27,6 @@ from MFramework import (
     Channel,
     Channel_Types,
     ChannelID,
-    Component,
     Embed,
     Emoji,
     Guild_Member,
@@ -45,7 +46,7 @@ from MFramework import (
 )
 
 from . import Groups
-from .components import Modal, Row, Text_Input_Styles, TextInput
+from .components import Component, Modal, Row, Text_Input_Styles, TextInput
 from .exceptions import CooldownError, Error
 
 if TYPE_CHECKING:
@@ -144,9 +145,9 @@ class Command(Localizable):
                             TextInput(
                                 label=arg.name.replace("_", " ").title(),
                                 custom_id=str(arg.name),
-                                style=Text_Input_Styles.Short
+                                style=Text_Input_Styles.SHORT
                                 if int(arg.type.max_length) <= 150
-                                else Text_Input_Styles.Paragraph,
+                                else Text_Input_Styles.PARAGRAPH,
                                 min_length=int(arg.type.min_length),
                                 max_length=int(arg.type.max_length),
                                 placeholder=str(arg.default) if arg.default else None,
@@ -351,7 +352,9 @@ def parse_signature(f: FunctionType, docstring: dict[str, Any]) -> dict[str, Par
         arg = Parameter(
             default=sig[parameter].default,
             type=sig[parameter].annotation
-            if type(sig[parameter].annotation) is type or type(sig[parameter].annotation) is enum.EnumMeta
+            if type(sig[parameter].annotation) is type
+            or type(sig[parameter].annotation) is msgspec.Struct
+            or type(sig[parameter].annotation) is enum.EnumMeta
             else type(sig[parameter].annotation),
             description=docstring.get(sig[parameter].name, "MISSING DOCSTRING").strip(),
             choices=docstring.get("choices").get(
