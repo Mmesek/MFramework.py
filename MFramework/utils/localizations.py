@@ -30,6 +30,8 @@ try:
                     "Detected locale 'en' which is ambigiuous. Rename it to either en-US or en-GB. Setting up as en-US"
                 )
                 locale = "en-US"
+            if locale not in Locales:
+                continue
             log.debug("Found directory for locale %s", locale)
             LOCALIZATIONS.append(locale)
 
