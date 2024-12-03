@@ -1,9 +1,9 @@
 git+https://github.com/Mmesek/mdiscord.git
-git+https://github.com/Mmesek/mlib.git@main
-sqlalchemy==1.4.47
+git+https://github.com/Mmesek/mlib.git
+msgspec
+sqlalchemy
 psycopg2-binary
 redis
 influxdb-client
 python-git
 python-i18n
-ujson
