@@ -87,8 +87,16 @@ async def parse_modal_submit(interaction: Interaction):
     return inputs
 
 
+def check_cmd(x):
+    return x.type in {
+        Interaction_Type.APPLICATION_COMMAND,
+        Interaction_Type.MODAL_SUBMIT,
+    }
+
+
 @onDispatch(event="message_create", optional=True, priority=5)
 @onDispatch(event="direct_message_create", optional=True, priority=5)
+@onDispatch(event="interaction_create", predicate=check_cmd)
 async def run(client: "Bot", data: Message | Interaction) -> bool:
     cmd = retrieve_command(data)
 
