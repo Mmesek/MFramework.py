@@ -1,7 +1,7 @@
 import asyncio
-from typing import TYPE_CHECKING, Dict, Union
+from typing import TYPE_CHECKING
 
-from mdiscord.models import (
+from mdiscord.types import (
     Application_Command_Option_Choice,
     Interaction_Application_Command_Callback_Data,
     Interaction_Callback_Type,
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from MFramework import Bot, Context
 
 
-async def modal_response(ctx: "Context", data: Union[Message, Interaction], cmd: Command) -> Dict[str, str]:
+async def modal_response(ctx: "Context", data: Message | Interaction, cmd: Command) -> dict[str, str]:
     """Responds with modal for interactions, or with message based questions awaiting each input"""
     if type(data) is Interaction:
         await ctx.bot.create_interaction_response(data.id, data.token, response=cmd.modal)
@@ -89,11 +89,7 @@ async def parse_modal_submit(interaction: Interaction):
 
 @onDispatch(event="message_create", optional=True, priority=5)
 @onDispatch(event="direct_message_create", optional=True, priority=5)
-@onDispatch(
-    event="interaction_create",
-    predicate=lambda x: x.type in {Interaction_Type.APPLICATION_COMMAND, Interaction_Type.MODAL_SUBMIT},
-)
-async def run(client: "Bot", data: Union[Message, Interaction]) -> bool:
+async def run(client: "Bot", data: Message | Interaction) -> bool:
     cmd = retrieve_command(data)
 
     ctx = set_context(client, cmd, data)

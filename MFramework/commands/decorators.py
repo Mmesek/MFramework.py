@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, List, Union
+from typing import TYPE_CHECKING, Callable
 
 from mlib.types import aInvalid
 
@@ -226,10 +226,10 @@ def shortcut(name: str, group: Groups = Groups.GLOBAL, **kwargs):
 def register(
     group: Groups = Groups.GLOBAL,
     interaction: bool = True,
-    main=False,
+    main: Callable = None,
     guild: Snowflake = None,
     choice: bool = None,
-    aliases: List[str] = [],
+    aliases: list[str] = [],
     name: str = None,
     help: str = None,
     auto_defer: bool = True,
@@ -301,7 +301,7 @@ def register(
     return inner
 
 
-def any_role(*required: Union[Snowflake, str]):
+def any_role(*required: Snowflake | str):
     """Checks if user has any provided role.
 
     Parameters

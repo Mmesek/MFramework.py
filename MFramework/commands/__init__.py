@@ -8,8 +8,10 @@ Command registery & execution framework
 :copyright: (c) 2021 Mmesek
 
 """
+
 from mlib.types import Enum
 from typing import Union
+
 
 class Groups(Enum):
     SYSTEM = 0

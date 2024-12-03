@@ -1,16 +1,12 @@
 from datetime import datetime, timedelta, timezone
 from functools import wraps
-from typing import Any, Dict
-
-from mdiscord import Snowflake
-
-from MFramework import Context
-
-cooldowns: Dict[str, Dict[Snowflake, datetime]] = {}
-
+from typing import Any
 from enum import Enum
 
-from MFramework import Groups
+from mdiscord import Snowflake
+from MFramework import Context, Groups
+
+cooldowns: dict[str, dict[Snowflake, datetime]] = {}
 
 
 class Bucket(Enum):

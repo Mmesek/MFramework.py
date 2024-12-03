@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING
 
 from mdiscord import (
     Allowed_Mentions,
@@ -34,7 +34,7 @@ class Context(Sendable, Localizable):
     cache: Cache = Cache
     db: Database
     bot: "Bot"
-    data: Union[Message, Interaction]
+    data: Message | Interaction
 
     guild_id: Snowflake
     guild: Guild
@@ -51,13 +51,7 @@ class Context(Sendable, Localizable):
     is_message: bool
     is_interaction: bool
 
-    def __init__(
-        self,
-        cache: Cache,
-        bot: "Bot",
-        data: Union[Message, Interaction],
-        cmd: Command = None,
-    ):
+    def __init__(self, cache: Cache, bot: "Bot", data: Message | Interaction, cmd: Command = None):
         self.cache = cache[data.guild_id]
         self.bot = bot
         self.db = bot.db
@@ -125,9 +119,9 @@ class Context(Sendable, Localizable):
     async def send_dm(
         self,
         content: str = None,
-        embeds: List[Embed] = None,
-        components: List[Component] = None,
-        attachments: List[Attachment] = None,
+        embeds: list[Embed] = None,
+        components: list[Component] = None,
+        attachments: list[Attachment] = None,
         allowed_mentions: Allowed_Mentions = None,
         message_reference: Message_Reference = None,
         reply: bool = None,
@@ -146,9 +140,9 @@ class Context(Sendable, Localizable):
     async def reply(
         self,
         content: str = None,
-        embeds: List[Embed] = None,
-        components: List[Component] = None,
-        attachments: List[Attachment] = None,
+        embeds: list[Embed] = None,
+        components: list[Component] = None,
+        attachments: list[Attachment] = None,
         allowed_mentions: Allowed_Mentions = None,
         message_reference: Message_Reference = None,
         private: bool = None,
@@ -169,9 +163,9 @@ class Context(Sendable, Localizable):
     async def send(
         self,
         content: str = None,
-        embeds: List[Embed] = None,
-        components: List[Component] = None,
-        attachments: List[Attachment] = None,
+        embeds: list[Embed] = None,
+        components: list[Component] = None,
+        attachments: list[Attachment] = None,
         allowed_mentions: Allowed_Mentions = None,
         message_reference: Message_Reference = None,
         reply: bool = None,
@@ -198,9 +192,9 @@ class Context(Sendable, Localizable):
     async def edit(
         self,
         content: str = None,
-        embeds: List[Embed] = None,
-        components: List[Component] = None,
-        attachments: List[Attachment] = None,
+        embeds: list[Embed] = None,
+        components: list[Component] = None,
+        attachments: list[Attachment] = None,
         allowed_mentions: Allowed_Mentions = None,
         flags: Message_Flags = None,
     ) -> Message:
@@ -228,9 +222,9 @@ class Context(Sendable, Localizable):
     async def get_messages(
         self,
         before_id: Snowflake = None,
-        messages: List[Message] = [],
+        messages: list[Message] = [],
         limit: int = 100,
-    ) -> List[Message]:
+    ) -> list[Message]:
         """Eagerly retrieves messages from channel. Ordered by newest first"""
         r = await self.bot.get_channel_messages(self.channel_id, before=before_id, limit=min(limit, 100))
         if limit - len(r) < 1 or len(r) < min(limit, 100):

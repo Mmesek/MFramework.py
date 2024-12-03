@@ -8,6 +8,7 @@ Discord API framework with Database support.
 :copyright: (c) 2020-2023 Mmesek
 
 """
+
 __name__ = "MFramework"
 __version__ = "5.0"
 __package__ = "MFramework"

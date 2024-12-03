@@ -5,13 +5,10 @@ from types import FunctionType
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
     Generator,
-    List,
     Optional,
     Tuple,
     Type,
-    Union,
 )
 
 from sqlalchemy.orm import Session
@@ -69,7 +66,7 @@ class Parameter(Localizable):
     default: str
     type: type
     description: str
-    choices: Dict[str, Any]
+    choices: dict[str, Any]
     kind: str
     name: str
     is_autocomplete: bool
@@ -80,10 +77,10 @@ class Parameter(Localizable):
         default: str,
         type: Type,
         description: str,
-        choices: Dict[str, Any],
+        choices: dict[str, Any],
         kind: str,
         name: str,
-        types: List[str] = [],
+        types: list[str] = [],
         autocomplete: FunctionType = None,
     ) -> None:
         self.default = default
@@ -103,12 +100,12 @@ class Command(Localizable):
     name: str
     func: object
     description: str
-    arguments: Dict[str, Parameter]
+    arguments: dict[str, Parameter]
     interaction: bool
     master_command: object
     group: Groups
-    sub_commands: List["Command"]
-    choices: Dict[str, "Command"]
+    sub_commands: list["Command"]
+    choices: dict[str, "Command"]
     guild: Snowflake
     bot: Snowflake
     auto_deferred: bool
@@ -188,7 +185,7 @@ class Command(Localizable):
     def add_choice(self, name: str, func: "Command"):
         self.choices[name] = func
 
-    async def execute(self, ctx: "Context", kwargs: Dict[str, Any]):
+    async def execute(self, ctx: "Context", kwargs: dict[str, Any]):
         try:
             if "session" in self.arguments and self.arguments.get("session").type is Session:
                 with ctx.db.sql.session() as session:
@@ -311,9 +308,9 @@ class Command(Localizable):
         ctx: "Context",
         msg: str = None,
         prefix: str = "<@{user_id}> an exception occured: ",
-        embeds: List[Embed] = None,
-        components: List[Component] = None,
-        attachments: List[Attachment] = None,
+        embeds: list[Embed] = None,
+        components: list[Component] = None,
+        attachments: list[Attachment] = None,
     ):
         if msg:
             s = "{prefix}{msg}".format(prefix=prefix, msg=msg).format(user_id=ctx.user_id)
@@ -339,15 +336,15 @@ class Command(Localizable):
             )
 
 
-commands: Dict[str, Command] = {}
-aliasList: Dict[str, str] = {}
-COMPILED_REGEX: Dict[str, str] = {}
-commands_regex: Dict[str, Command] = {}
-command_shortcuts: Dict[str, Tuple[Command, Dict[str, Any]]] = {}
-reactions: Dict[str, Command] = {}
+commands: dict[str, Command] = {}
+aliasList: dict[str, str] = {}
+COMPILED_REGEX: dict[str, str] = {}
+commands_regex: dict[str, Command] = {}
+command_shortcuts: dict[str, Tuple[Command, dict[str, Any]]] = {}
+reactions: dict[str, Command] = {}
 
 
-def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Parameter]:
+def parse_signature(f: FunctionType, docstring: dict[str, Any]) -> dict[str, Parameter]:
     sig = signature(f).parameters
     parameters = {}
     for parameter in sig:
@@ -378,7 +375,7 @@ def parse_signature(f: FunctionType, docstring: Dict[str, Any]) -> Dict[str, Par
     return parameters
 
 
-def parse_docstring(f: FunctionType) -> Dict[str, Union[str, Dict[str, str]]]:
+def parse_docstring(f: FunctionType) -> dict[str, str | dict[str, str]]:
     docstring = {
         "_doc": f.__doc__.strip().split("Params", 1)[0].strip() if f.__doc__ else "MISSING DOCSTRING",
         "_types": {},
@@ -438,7 +435,7 @@ _types = {
 }
 
 
-def parse_arguments(_command: Command) -> List[str]:
+def parse_arguments(_command: Command) -> list[str]:
     from MFramework.utils.localizations import LOCALIZATIONS
 
     options = []
@@ -516,10 +513,10 @@ def parse_arguments(_command: Command) -> List[str]:
 
 
 def iterate_commands(
-    registered: List[Application_Command] = [],
+    registered: list[Application_Command] = [],
     guild_id: Optional[Snowflake] = None,
     bot_id: Optional[Snowflake] = None,
-) -> Generator[Tuple[str, Command, List[str]], None, None]:
+) -> Generator[Tuple[str, Command, list[str]], None, None]:
     for command, cmd in commands.items():
         if (
             guild_id != cmd.guild

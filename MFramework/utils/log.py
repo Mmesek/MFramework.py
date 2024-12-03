@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any
 
 import MFramework
 
@@ -54,8 +54,8 @@ class Log:
     async def _log(
         self,
         content: str = "",
-        embeds: List[MFramework.Embed] = None,
-        components: List[MFramework.Component] = None,
+        embeds: list[MFramework.Embed] = None,
+        components: list[MFramework.Component] = None,
         *,
         username: str = None,
         avatar: str = None,
@@ -79,8 +79,8 @@ class Log:
         self,
         user_id: MFramework.Snowflake,
         content: str = "",
-        embeds: List[MFramework.Embed] = None,
-        components: List[MFramework.Component] = None,
+        embeds: list[MFramework.Embed] = None,
+        components: list[MFramework.Component] = None,
     ) -> MFramework.Message:
         _dm = await self.bot.create_dm(user_id)
         return await self.bot.create_message(

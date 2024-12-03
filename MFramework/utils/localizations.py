@@ -1,9 +1,13 @@
 import os
-from typing import Dict, List, Optional, Union
+from typing import Optional
+
+from mdiscord.types import Locales
+from mlib.utils import remove_None
 
 from MFramework import log
+from MFramework.commands.command import Command, commands
 
-LOCALIZATIONS: List[str] = []
+LOCALIZATIONS: list[str] = []
 """Locales found in locale directory"""
 
 DEFAULT_LOCALE: str = "en-US"
@@ -51,15 +55,11 @@ except ImportError:
     _load = json.load
 
 
-from mlib.utils import remove_None
-
-from MFramework.commands.command import Command, commands
-
-SKIP: List[str] = ["ctx"]
+SKIP: list[str] = ["ctx"]
 """Parameters that should be skipped while generating command localization files"""
 
 
-def _load_locale(locale_path: str) -> Dict[str, Union[dict, str]]:
+def _load_locale(locale_path: str) -> dict[str, dict | str]:
     """
     Loads localization files. Merges all namespaces into nested dictonary
     Parameters
@@ -80,7 +80,7 @@ def _load_locale(locale_path: str) -> Dict[str, Union[dict, str]]:
     return _
 
 
-def _update_locale(locale: str, localization_strings: Dict[str, Union[dict, str]]):
+def _update_locale(locale: str, localization_strings: dict[str, dict | str]):
     """
     Writes localization files to drive
 
@@ -103,7 +103,7 @@ def _update_locale(locale: str, localization_strings: Dict[str, Union[dict, str]
                 file.write(json.dumps(localization_strings[key], indent=4, ensure_ascii=False))
 
 
-def _generate(localization: dict, name: str, obj: Command) -> Dict[str, Union[dict, str]]:
+def _generate(localization: dict, name: str, obj: Command) -> dict[str, dict | str]:
     """
     Generates basic localization dictonary with registered commands
 
@@ -217,7 +217,7 @@ def update_all_localizations(locale_path: str = "locale") -> None:
 def translate(
     key: str,
     locale: str,
-    _namespace: Optional[Union[str, List[str]]] = None,
+    _namespace: Optional[str | list[str]] = None,
     _bot: Optional[str] = None,
     default: Optional[str] = None,
     **kwargs,

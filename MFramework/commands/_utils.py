@@ -1,6 +1,6 @@
 import re
 
-from typing import List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from MFramework import (
     Interaction,
@@ -35,7 +35,7 @@ DEFAULTS = {
 _FIRST_CHAR = re.compile("^")
 
 
-def get_name(data: Union[Message, Interaction]) -> str:
+def get_name(data: Message | Interaction) -> str:
     """Retrieves command name from arguments"""
     if type(data) is Interaction:
         if data.type is not Interaction_Type.MODAL_SUBMIT:
@@ -50,7 +50,7 @@ def get_name(data: Union[Message, Interaction]) -> str:
     return name
 
 
-def get_arguments(client: "Bot", message: Message) -> List[str]:
+def get_arguments(client: "Bot", message: Message) -> list[str]:
     """Retrieve list of arguments from text"""
     if message.guild_id:
         alias = client.cache[message.guild_id].alias
@@ -69,7 +69,7 @@ def get_arguments(client: "Bot", message: Message) -> List[str]:
     return kwargs
 
 
-def retrieve_command(data: Union[Message, Interaction]) -> Command:
+def retrieve_command(data: Message | Interaction) -> Command:
     name = get_name(data)
 
     cmd = commands.get(name)
@@ -112,7 +112,7 @@ def get_original_cmd(_name: str) -> str:
     return aliasList.get(_name.lower(), _name)
 
 
-def set_context(client: "Bot", cmd: Command, data: Union[Message, Interaction]) -> "Context":
+async def set_context(client: "Bot", cmd: Command, data: Message | Interaction) -> "Context":
     """Sets Context. Raises MissingPermissions"""
     ctx: "Context" = client._Context(client.cache, client, data, cmd=cmd)
 

@@ -7,7 +7,6 @@ Interaction commands registery & execution framework
 
 :copyright: (c) 2021-2022 Mmesek
 """
-from typing import List
 
 from mlib import arguments
 
@@ -121,7 +120,7 @@ async def register_commands(client: Bot, guild: Guild = None):
         client.registered_commands = registered
 
 
-async def get_commands(client: Bot, guild: Guild = None) -> List[Application_Command]:
+async def get_commands(client: Bot, guild: Guild = None) -> list[Application_Command]:
     if guild:
         return await client.get_guild_application_commands(client.application.id, guild.id, True)
     return await client.get_global_application_commands(client.application.id, True)
@@ -197,8 +196,8 @@ async def delete_command(client: Bot, cmd: Application_Command, guild: Guild = N
 
 
 async def overwrite_commands(
-    client: Bot, commands: List[Application_Command] = [], guild: Guild = None
-) -> List[Application_Command]:
+    client: Bot, commands: list[Application_Command] = [], guild: Guild = None
+) -> list[Application_Command]:
     if guild:
         log.info(
             "Overwriting Guild [%s] commands [%s] on bot %s",

@@ -1,6 +1,15 @@
 import sys
 
 from mlib import arguments
+from os.path import dirname, isfile, realpath
+
+from mlib.config import ConfigToDict
+from mlib.import_functions import import_from, import_modules
+
+import MFramework
+
+from MFramework.cache import Cache
+from MFramework.cache.listeners import create_cache_listeners
 
 arguments.add(
     "-clear_interactions",
@@ -40,10 +49,6 @@ arguments.add(
     default="extensions",
 )
 
-from mlib.import_functions import import_from, import_modules
-
-import MFramework
-
 try:
     for path in arguments.parse().paths:
         import_from(path)
@@ -56,10 +61,6 @@ if "-generate-translation" in sys.argv or "-update-translation" in sys.argv:
 
     update_all_localizations()
     exit()
-
-from os.path import dirname, isfile, realpath
-
-from mlib.config import ConfigToDict
 
 default_cfg = {"DiscordTokens": {"bot": "YOUR_TOKEN"}, "bot": {"alias": "!"}}
 
@@ -88,8 +89,6 @@ db.sql.create_tables()
 cache = {0: {}}  # MFramework.database.cache.MainCache(cfg)
 # cache = MFramework.Cache(cfg)
 
-from MFramework.cache import Cache
-from MFramework.cache.listeners import create_cache_listeners
 
 create_cache_listeners(Cache)
 

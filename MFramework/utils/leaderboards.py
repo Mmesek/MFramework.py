@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable
 
 from MFramework import Context, Embed, Guild_Member, Snowflake, User
 
@@ -53,15 +53,15 @@ class Leaderboard:
 
     postion_str: str = "{position}. {value}"
     marked_str: str = "__{}__"
-    _leaderboard: List[str] = []
-    _iterable: List[Leaderboard_Entry] = []
+    _leaderboard: list[str] = []
+    _iterable: list[Leaderboard_Entry] = []
     _user_stats: Leaderboard_Entry = None
 
     def __init__(
         self,
         ctx: Context,
         user_id: Snowflake,
-        iterable: List[Leaderboard_Entry],
+        iterable: list[Leaderboard_Entry],
         limit: int = 10,
         error: str = "No results",
         skip_invalid: bool = False,
@@ -82,7 +82,7 @@ class Leaderboard:
         return "\n".join(self.leaderboard)
 
     @property
-    def leaderboard(self) -> List:
+    def leaderboard(self) -> list[str]:
         """Sorted List of strings"""
         self._leaderboard = []
         for x, rank in enumerate(self._iterable, 1):

@@ -1,5 +1,4 @@
 from random import SystemRandom as random
-from typing import List
 
 from MFramework import Bot, Message, onDispatch
 
@@ -17,12 +16,12 @@ def command(cls=None):
 
 
 @command
-async def react(ctx: Bot, data: Message, r: List[str], x: int):
+async def react(ctx: Bot, data: Message, r: list[str], x: int):
     await data.react(r[x + 1])
 
 
 @command
-async def message(ctx: Bot, data: Message, r: List[str], x: int):
+async def message(ctx: Bot, data: Message, r: list[str], x: int):
     if "{OR}" in r[x + 1]:
         options = r[x + 1].split("{OR}")
         content = random().choice(options)
@@ -32,7 +31,7 @@ async def message(ctx: Bot, data: Message, r: List[str], x: int):
 
 
 @command
-async def reply(ctx: Bot, data: Message, r: List[str], x: int):
+async def reply(ctx: Bot, data: Message, r: list[str], x: int):
     if "{OR}" in r[x + 1]:
         options = r[x + 1].split("{OR}")
         content = random().choice(options)
@@ -42,12 +41,12 @@ async def reply(ctx: Bot, data: Message, r: List[str], x: int):
 
 
 @command
-async def delete(ctx: Bot, data: Message, r: List[str], x: int):
+async def delete(ctx: Bot, data: Message, r: list[str], x: int):
     await data.delete()
 
 
 @command
-async def chance(ctx: Bot, data: Message, r: List[str], x: int) -> int:
+async def chance(ctx: Bot, data: Message, r: list[str], x: int) -> int:
     if random().random() < (r[x + 1] / 100):
         return 0
     return 1
