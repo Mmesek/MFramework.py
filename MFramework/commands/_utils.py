@@ -58,7 +58,7 @@ def get_arguments(client: "Bot", message: Message) -> list[str]:
         alias = _FIRST_CHAR
 
     if not alias.search(message.content):
-        raise SoftError()
+        raise SoftError("Message does not contain alias to trigger command")
 
     args = alias.split(message.content, 1)[-1].strip()
     args = args.split(" ")
@@ -87,7 +87,7 @@ def retrieve_command(data: Message | Interaction) -> Command:
     #    cmd = components.get(name)
 
     if not cmd:
-        raise CommandNotFound(name)
+        raise CommandNotFound("Command %s not found", name)
 
     if cmd.only_accept and cmd.only_accept is not type(data):
         raise WrongContext(type(data), cmd.only_accept)
@@ -115,6 +115,7 @@ def get_original_cmd(_name: str) -> str:
 async def set_context(client: "Bot", cmd: Command, data: Message | Interaction) -> "Context":
     """Sets Context. Raises MissingPermissions"""
     ctx: "Context" = client._Context(client.cache, client, data, cmd=cmd)
+    await ctx.init()
 
     if not ctx.permission_group.can_use(cmd.group):
         raise MissingPermissions(ctx.permission_group, cmd.group)
