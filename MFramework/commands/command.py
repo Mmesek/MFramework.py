@@ -92,7 +92,7 @@ class Parameter(Localizable):
         self.description = description
         self.choices = choices
         self.kind = kind
-        self.name = name
+        self.name = name.strip("_")
         self.is_autocomplete = True if type is FunctionType else False
         self.autocomplete = autocomplete
 
