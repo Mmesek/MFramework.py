@@ -65,18 +65,20 @@ if "-generate-translation" in sys.argv or "-update-translation" in sys.argv:
 default_cfg = {"DiscordTokens": {"bot": "YOUR_TOKEN"}, "bot": {"alias": "!"}}
 
 if isfile("/proc/self/cgroup") and any("docker" in line for line in open("/proc/self/cgroup")):
-    default_cfg.update({
-        "redis": {"host": "redis"},
-        "Database": {
-            "db": "postgresql+psycopg2",
-            "user": "postgres",
-            "password": "postgres",
-            "location": "postgres",
-            "name": "postgres",
-            "port": 5432,
-            "echo": False,
-        },
-    })
+    default_cfg.update(
+        {
+            "redis": {"host": "redis"},
+            "Database": {
+                "db": "postgresql+psycopg2",
+                "user": "postgres",
+                "password": "postgres",
+                "location": "postgres",
+                "name": "postgres",
+                "port": 5432,
+                "echo": False,
+            },
+        }
+    )
 
 path = dirname(realpath("__file__")) + f"/{arguments.parse().cfg}"
 cfg = ConfigToDict(path, default_cfg)
