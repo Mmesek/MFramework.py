@@ -6,6 +6,7 @@ from mdiscord.types import Gateway_Events
 from MFramework import Bot, Guild, log, onDispatch
 
 from ._internal import models
+from . import check
 
 
 @onDispatch
@@ -15,6 +16,7 @@ async def guild_create(bot: Bot, guild: Guild):
         bot.cache[guild.id] = bot._Cache(bot=bot, guild=guild)
         with bot.db.sql.session() as session:
             await bot.cache[guild.id].initialize(bot=bot, session=session, guild=guild)
+        check(bot.cache[guild.id])
         log.info("Guild %s initialized in %s", guild.id, time.time() - start)
     if await bot.cache[guild.id].members.length() < 50:
         await bot.request_guild_members(guild.id)
