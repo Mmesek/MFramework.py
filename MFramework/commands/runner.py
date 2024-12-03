@@ -92,7 +92,7 @@ async def parse_modal_submit(interaction: Interaction):
 async def run(client: "Bot", data: Message | Interaction) -> bool:
     cmd = retrieve_command(data)
 
-    ctx = set_context(client, cmd, data)
+    ctx = await set_context(client, cmd, data)
 
     if type(data) is Interaction and data.type is Interaction_Type.MODAL_SUBMIT:
         inputs = await parse_modal_submit(data)
