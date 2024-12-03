@@ -65,7 +65,6 @@ class Context(Sendable, Localizable):
         self.guild_id = data.guild_id
         if data.guild_id:
             self.guild = self.cache.guild
-            self.channel = self.cache.channels[data.channel_id]  # FIXME: .channels is async
             self.language = self.cache.language  # FIXME?
         self.channel_id = data.channel_id
         self.message_id = data.id
@@ -109,6 +108,10 @@ class Context(Sendable, Localizable):
     @property
     def is_dm(self):
         return not self.guild_id
+
+    async def init(self):
+        if self.data.guild_id:
+            self.channel = await self.cache.channels[self.data.channel_id]
 
     async def get_dm(self, user_id: Snowflake = None):
         if not user_id or user_id == self.user_id:
