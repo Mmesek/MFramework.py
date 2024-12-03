@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass, asdict
 from functools import partial
 
 from mdiscord.types import Button_Styles, Emoji, Select_Option, Text_Input_Styles
+from mdiscord.utils.serializer import as_dict
 
 from MFramework import (
     Component_Types,
@@ -88,6 +89,9 @@ class MetaCommand:
         not_selected: list[Select_Option] = None,
     ):
         pass
+
+    def as_dict(self):
+        return {k: as_dict(v) for k, v in asdict(self).items()}
 
 
 components: dict[str, MetaCommand] = {}
