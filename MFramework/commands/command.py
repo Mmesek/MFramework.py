@@ -1,20 +1,11 @@
 import enum
-
 from inspect import Signature, signature
 from types import FunctionType
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Generator,
-    Optional,
-    Tuple,
-    Type,
-)
+from typing import TYPE_CHECKING, Any, Generator, Optional, Tuple, Type
 
 import msgspec
-
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from MFramework import (
     Allowed_Mentions,
@@ -458,8 +449,8 @@ def parse_arguments(_command: Command) -> list[str]:
         for choice in _i.choices:
             _choice = Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice])
             _choice.name_localizations = {
-                l: _command.translate(l, f"arguments.{i.lower()}.choices.{choice.lower()}", choice)[:100]
-                for l in LOCALIZATIONS
+                locale: _command.translate(locale, f"arguments.{i.lower()}.choices.{choice.lower()}", choice)[:100]
+                for locale in LOCALIZATIONS
             }
 
             if _i.type in {int, bool}:
@@ -478,11 +469,12 @@ def parse_arguments(_command: Command) -> list[str]:
             autocomplete=_i.is_autocomplete,
         )
         a.name_localizations = {
-            l: _command.translate(l, f"arguments.{i.lower()}.name", default=i)[:100] for l in LOCALIZATIONS
+            locale: _command.translate(locale, f"arguments.{i.lower()}.name", default=i)[:100]
+            for locale in LOCALIZATIONS
         }
         a.description_localizations = {
-            l: _command.translate(l, f"arguments.{i.lower()}.description", default=_i.description)[:100]
-            for l in LOCALIZATIONS
+            locale: _command.translate(locale, f"arguments.{i.lower()}.description", default=_i.description)[:100]
+            for locale in LOCALIZATIONS
         }
 
         a.type = _types.get(
@@ -504,11 +496,12 @@ def parse_arguments(_command: Command) -> list[str]:
             choices=[],
         )
         a.name_localizations = {
-            l: _command.translate(l, f"sub_commands.{i.name}.name", default=i.name)[:100] for l in LOCALIZATIONS
+            locale: _command.translate(locale, f"sub_commands.{i.name}.name", default=i.name)[:100]
+            for locale in LOCALIZATIONS
         }
         a.description_localizations = {
-            l: _command.translate(l, f"sub_commands.{i.name}.description", default=i.description)[:100]
-            for l in LOCALIZATIONS
+            locale: _command.translate(locale, f"sub_commands.{i.name}.description", default=i.description)[:100]
+            for locale in LOCALIZATIONS
         }
 
         options.append(a)
@@ -530,11 +523,35 @@ def iterate_commands(
             continue
         _command = commands[command]
         options = parse_arguments(_command)
+        _cmd = None
         for i in registered:
             if command == i.name:
-                if i.options != options:
-                    break
+                if i.options != msgspec.UNSET and i.options != options:
+                    for a, b in zip(i.options, options):
+                        if compare(a, b):
+                            break
         else:
             if any(command == i.name for i in registered):
                 continue
         yield command, _command, options
+
+
+def compare(o: object, other: object) -> bool:
+    diffs = []
+    for name in o.__annotations__:
+        a = getattr(o, name)
+        b = getattr(other, name)
+        if a == msgspec.UNSET and not b:
+            continue
+        elif b == msgspec.UNSET and not a:
+            continue
+        if a != msgspec.UNSET and b != msgspec.UNSET and a != b:
+            if type(a) is list and type(b) is list:
+                for _a, _b in zip(a, b):
+                    if compare(_a, _b):
+                        diffs.append(name)
+            else:
+                diffs.append(name)
+    if diffs:
+        return True
+    return False
