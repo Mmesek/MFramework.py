@@ -33,7 +33,7 @@ try:
             if locale not in Locales:
                 continue
             log.debug("Found directory for locale %s", locale)
-            LOCALIZATIONS.append(locale)
+            LOCALIZATIONS.append(Locales(locale))
 
     if len(LOCALIZATIONS) == 1:
         log.debug("Found only one %s locale. Setting up as default", LOCALIZATIONS[0])
