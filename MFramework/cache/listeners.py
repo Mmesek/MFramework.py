@@ -1,12 +1,12 @@
 import time
 
-from mdiscord.websocket.opcodes import DISPATCH
 from mdiscord.types import Gateway_Events
+from mdiscord.websocket.opcodes import DISPATCH
 
 from MFramework import Bot, Guild, log, onDispatch
 
-from ._internal import models
 from . import check
+from ._internal import models
 
 
 @onDispatch
@@ -14,7 +14,7 @@ async def guild_create(bot: Bot, guild: Guild):
     if guild.id not in bot.cache:
         start = time.time()
         bot.cache[guild.id] = bot._Cache(bot=bot, guild=guild)
-        with bot.db.sql.session() as session:
+        async with bot.db.sql.session() as session:
             await bot.cache[guild.id].initialize(bot=bot, session=session, guild=guild)
         check(bot.cache[guild.id])
         log.info("Guild %s initialized in %s", guild.id, time.time() - start)

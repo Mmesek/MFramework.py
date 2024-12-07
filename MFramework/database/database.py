@@ -2,6 +2,8 @@ import datetime
 
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
+from mlib.database import AsyncSQL
+from mlib.rest_client import Client
 
 from MFramework import log
 
@@ -62,7 +64,7 @@ class Influx(InfluxBase):
     __slots__ = ("influx", "write_api", "query_api")
 
     def __init__(self, cfg: dict):
-        influx = cfg.get("influx2", {})
+        cfg = cfg.get("influx2", {})
         self.influx = InfluxDBClient(cfg.get("url", None), cfg.get("token", None), org=cfg.get("org", None))
         self.write_api = self.influx.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.influx.query_api()
@@ -190,10 +192,6 @@ class Influx(InfluxBase):
         return self.influx.health()
 
 
-from mlib.database import SQL
-from mlib.rest_client import Client
-
-
 class Supabase(Client):
     async def rpc(self, func: str, method: str = "POST", **kwargs):
         return await self.api_call(path="rest/v1/rpc/" + func, method=method, **kwargs)
@@ -204,7 +202,7 @@ class Supabase(Client):
 
 class Database:
     def __init__(self, config: dict):
-        self.sql = SQL(**config.get("Database", {}))
+        self.sql = AsyncSQL(**config.get("Database", {}))
         if "influx2" in config:
             self.influx = Influx(config["influx2"])
         else:
