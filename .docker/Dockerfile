@@ -1,4 +1,4 @@
-FROM python:3.11-slim as base
+FROM python:3.12-slim as base
 
 ENV PYTHONUNBUFFERED 1
 
@@ -14,7 +14,7 @@ COPY requirements.txt ./
 RUN python -m pip --disable-pip-version-check --no-cache-dir install -r requirements.txt \
     && rm -rf requirements.txt
 
-COPY ["setup.py", "README.md", "requirements.txt", "./pkg/"]
+COPY ["pyproject.toml", "requirements.txt", "./pkg/"]
 COPY MFramework ./pkg/MFramework
 RUN python -m pip --disable-pip-version-check --no-cache-dir install ./pkg \
     && rm -rf ./pkg
