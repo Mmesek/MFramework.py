@@ -1,63 +1,51 @@
 from datetime import timedelta
+from typing import Annotated
 
-from sqlalchemy import BigInteger, Column, ForeignKey
-from sqlalchemy.orm import declared_attr, relationship
+from sqlalchemy import BigInteger, ForeignKey, orm
+from sqlalchemy.orm import declared_attr
+from sqlalchemy.orm import mapped_column as Column
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import Interval
 
-from typing import Annotated
-from sqlalchemy import orm
+int_pk = Annotated[int, Column(BigInteger, primary_key=True, autoincrement=False, nullable=False)]
 
 
-int_pk = Annotated[int, orm.mapped_column(BigInteger, primary_key=True, autoincrement=False, nullable=False)]
-
-
-class Snowflake:
-    # id: int  # = Column(BigInteger, primary_key=True, autoincrement=False, nullable=False)
+class Snowflake(orm.MappedAsDataclass):
     id: orm.Mapped[int_pk]
 
 
-class Cooldown:
-    cooldown: timedelta = Column(Interval)
+class Cooldown(orm.MappedAsDataclass):
+    cooldown: orm.Mapped[timedelta] = Column(Interval)
 
 
 class ForeignMixin:
     _table: str = None
 
 
-class TypeID:
+class TypeID(orm.MappedAsDataclass):
+    type_id: orm.Mapped[int] = Column(ForeignKey("Type.id", nullable=True))
+
+
+class ServerID(orm.MappedAsDataclass):
+    server_id: orm.Mapped[int] = Column(
+        BigInteger, ForeignKey("Server.id", ondelete="Cascade", onupdate="Cascade"), primary_key=False, nullable=False
+    )
+
     @declared_attr
-    def type_id(cls) -> int:
-        return Column(ForeignKey("Type.id"), nullable=False)
+    def server(cls):
+        return relationship("Server", foreign_keys=f"{cls.__name__}.server_id", lazy=True)
 
 
-class ServerID:
-    @declared_attr
-    def server_id(cls) -> int:
-        return Column(
-            ForeignKey("Server.id", ondelete="Cascade", onupdate="Cascade"),
-            primary_key=False,
-            nullable=False,
-        )
-
-    # @declared_attr
-    # def server(cls):
-    #    return relationship("Server", foreign_keys=f"{cls.__name__}.server_id", lazy=True)
-
-
-class RoleID:
-    @declared_attr
-    def role_id(cls) -> int:
-        return Column(ForeignKey("Role.id", ondelete="Cascade", onupdate="Cascade"))
+class RoleID(orm.MappedAsDataclass):
+    role_id: orm.Mapped[int] = Column(BigInteger, ForeignKey("Role.id", ondelete="Cascade", onupdate="Cascade"))
 
     @declared_attr
     def role(cls):
         return relationship("Role", foreign_keys=f"{cls.__name__}.role_id", lazy=True)
 
 
-class ChannelID:
-    @declared_attr
-    def channel_id(cls) -> int:
-        return Column(ForeignKey("Channel.id", ondelete="Cascade", onupdate="Cascade"))
+class ChannelID(orm.MappedAsDataclass):
+    channel_id: orm.Mapped[int] = Column(BigInteger, ForeignKey("Channel.id", ondelete="Cascade", onupdate="Cascade"))
 
     @declared_attr
     def channel(cls):
