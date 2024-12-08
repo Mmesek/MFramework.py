@@ -64,7 +64,6 @@ class Influx(InfluxBase):
     __slots__ = ("influx", "write_api", "query_api")
 
     def __init__(self, cfg: dict):
-        cfg = cfg.get("influx2", {})
         self.influx = InfluxDBClient(cfg.get("url", None), cfg.get("token", None), org=cfg.get("org", None))
         self.write_api = self.influx.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.influx.query_api()
