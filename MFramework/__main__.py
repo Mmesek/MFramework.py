@@ -1,13 +1,12 @@
+import asyncio
 import sys
-
-from mlib import arguments
 from os.path import dirname, isfile, realpath
 
+from mlib import arguments
 from mlib.config import ConfigToDict
 from mlib.import_functions import import_from, import_modules
 
 import MFramework
-
 from MFramework.cache import Cache
 from MFramework.cache.listeners import create_cache_listeners
 
@@ -84,7 +83,6 @@ path = dirname(realpath("__file__")) + f"/{arguments.parse().cfg}"
 cfg = ConfigToDict(path, default_cfg)
 
 db = MFramework.Database(cfg)
-db.sql.create_tables()
 
 cache = {0: {}}  # MFramework.database.cache.MainCache(cfg)
 # cache = MFramework.Cache(cfg)
@@ -93,8 +91,13 @@ cache = {0: {}}  # MFramework.database.cache.MainCache(cfg)
 create_cache_listeners(Cache)
 
 
+async def runner(name):
+    await db.sql.create_tables()
+    await MFramework.Bot.runner(name=name, cfg=cfg, db=db, cache=cache)
+
+
 def run(name):
-    MFramework.Bot.run(name=name, cfg=cfg, db=db, cache=cache)
+    asyncio.run(runner(name))
 
 
 if __name__ == "__main__":
