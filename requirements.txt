@@ -1,5 +1,5 @@
-git+https://github.com/Mmesek/mdiscord.git
-git+https://github.com/Mmesek/mlib.git
+mdiscord @ git+https://github.com/Mmesek/mdiscord.git
+mlib @ git+https://github.com/Mmesek/mlib.git
 msgspec
 sqlalchemy
 psycopg2-binary
