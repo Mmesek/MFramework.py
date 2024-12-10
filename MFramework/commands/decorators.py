@@ -373,7 +373,7 @@ def menu(name: str = None, private_response: bool = None):
 
     def inner(f):
         log.debug("Registering Menu button [%s] for function [%s]", name, f.__name__)
-        cmd = getattr(f, "_cmd", None)
+        cmd: Command | None = getattr(f, "_cmd", None)
         if not cmd:
             # NOTE: Perhaps create/register a command here if it's missing instead?
             raise NameError("Command is not yet registered!")

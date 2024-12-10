@@ -1,4 +1,5 @@
 import enum
+from functools import partial
 from inspect import Signature, signature
 from types import FunctionType
 from typing import TYPE_CHECKING, Any, Generator, Optional, Tuple, Type
@@ -37,11 +38,16 @@ from MFramework import (
 )
 
 from . import Groups
-from .components import Component, Modal, Row, Text_Input_Styles, TextInput
+from .components import Button, Component, Modal, Row, Text_Input_Styles, TextInput
 from .exceptions import CooldownError, Error
 
 if TYPE_CHECKING:
     from MFramework import Context
+
+
+class Attributes:
+    _cmd: "Command"
+    button: partial[Button]
 
 
 class Localizable:
@@ -90,7 +96,7 @@ class Parameter(Localizable):
 
 class Command(Localizable):
     name: str
-    func: object
+    func: Attributes
     description: str
     arguments: dict[str, Parameter]
     interaction: bool
