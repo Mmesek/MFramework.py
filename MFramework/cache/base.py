@@ -1,11 +1,10 @@
 import re
 from dataclasses import dataclass
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from MFramework import Snowflake
 from MFramework.commands import Groups
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from MFramework import Bot
@@ -94,6 +93,10 @@ class RuntimeCommands(BasicCache):
     """`Trigger`s objects look-up table"""
     responses: dict[Groups, re.Pattern]
     """Regular expression with compiled triggers"""
+
+    def __init__(self, **kwargs):
+        self.responses = {}
+        super().__init__(**kwargs)
 
     def recompile_triggers(self, triggers: list[Trigger]) -> None:
         """Compiles list of known triggers for `commands.parser` commands
