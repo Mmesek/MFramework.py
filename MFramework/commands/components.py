@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from functools import partial
+from typing import TYPE_CHECKING, Optional
 
 from mdiscord.types import Button_Styles, Emoji, Select_Option, Text_Input_Styles
 from mdiscord.utils.serializer import as_dict
@@ -17,7 +17,6 @@ from MFramework import (
 )
 
 from .exceptions import CooldownError
-
 
 if TYPE_CHECKING:
     from MFramework import Bot, Context
@@ -370,8 +369,9 @@ def button(name: str = None, style: Button_Styles = Button_Styles.PRIMARY, emoji
             data: str,
             values: list[str] = None,
             not_selected: list[Select_Option] = None,
+            **kwargs,
         ):
-            return await f(ctx)
+            return await f(ctx, **kwargs)
 
         if components:
             f.modal = Modal(
