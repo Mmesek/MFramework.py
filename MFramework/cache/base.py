@@ -11,9 +11,11 @@ if TYPE_CHECKING:
 
 
 class BasicCache:
-    def __init__(self, **kwargs) -> None:
+    _client: "Bot"
+
+    def __init__(self, bot: "Bot", **kwargs) -> None:
         """Regular cache initialization"""
-        pass
+        self._client = bot
 
     async def initialize(self, **kwargs) -> None:
         """Async cache initialization (External cache, database, loading resources etc)"""

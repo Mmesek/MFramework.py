@@ -183,7 +183,7 @@ class Logging(GuildCache, BotMeta):
         self.logging = defaultdict(lambda: aInvalid)
         _classes = {i.__name__.lower(): i for i in all_subclasses(Log)}
         for name, sub in filter(lambda x: x[0] in _classes, subscriptions.items()):
-            self.logging[name] = _classes[name](self.bot, self.guild_id, name, sub.id, sub.token, sub.thread_id)
+            self.logging[name] = _classes[name](self._client, self.guild_id, name, sub.id, sub.token, sub.thread_id)
 
 
 class Localization(GuildCache):
