@@ -8,8 +8,8 @@ from mdiscord import (
     onDispatch,
 )
 
-from MFramework.context import Context
 from MFramework.cache import Cache
+from MFramework.context import Context
 from MFramework.database.database import Database
 
 
@@ -48,11 +48,12 @@ class Bot(Client):
         super().__init__(name, cfg, shard=shard, total_shards=total_shards)
 
     async def dispatch(self, data: Gateway_Payload):
-        await super().dispatch(data)
+        await super().prepare_payload(data)
         if hasattr(data.d, "guild_id") or isinstance(data.d, Guild):
             id = data.d.guild_id if hasattr(data.d, "guild_id") else data.d.id
             if id and id in self.cache:
                 await self.cache[id].logging[data.t.lower()](data.d)
+        await super().dispatch(data)
 
 
 @onDispatch
