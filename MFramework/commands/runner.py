@@ -5,7 +5,6 @@ from mdiscord.types import (
     Application_Command_Option_Choice,
     Interaction_Application_Command_Callback_Data,
     Interaction_Callback_Type,
-    Interaction_Response,
 )
 
 from MFramework import (
@@ -148,9 +147,7 @@ async def autocomplete_response(client: "Bot", interaction: Interaction):
     await client.create_interaction_response(
         interaction_id=interaction.id,
         interaction_token=interaction.token,
-        response=Interaction_Response(
-            type=Interaction_Callback_Type.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
-            data=Interaction_Application_Command_Callback_Data(choices=choices),
-        ),
+        type=Interaction_Callback_Type.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+        data=Interaction_Application_Command_Callback_Data(choices=choices),
     )
     return True
