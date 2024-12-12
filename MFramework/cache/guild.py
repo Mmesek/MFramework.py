@@ -1,9 +1,10 @@
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, DefaultDict, Optional
 
+from mlib.database import ASession as Session
 from mlib.types import aInvalid
 from mlib.utils import all_subclasses
-from sqlalchemy.orm import Session
 
 from MFramework import Guild, Guild_Member, Role, Snowflake
 from MFramework.commands import Groups
@@ -157,24 +158,32 @@ class Permissions(BotMeta):
         raise NotImplementedError
 
 
+@dataclass
+class Webhook:
+    id: Snowflake
+    token: str
+    thread_id: Snowflake
+
+
 class Logging(GuildCache, BotMeta):
     logging: DefaultDict[str, Log]
     """Mapping of logger name to Log objects"""
-    webhooks: dict[str, tuple[Snowflake, str]] = {}
-    """Mapping of webhook name to Webhook ID & Token"""
+    # webhooks: dict[str, tuple[Snowflake, str]] = {}
+    # """Mapping of webhook name to Webhook ID & Token"""
 
     async def initialize(self, bot: "Bot", guild: Guild, session: Session, **kwargs) -> None:
-        self.webhooks = {}  # TODO
-        self.logging = defaultdict(lambda: aInvalid)
         await super().initialize(bot=bot, guild=guild, session=session, **kwargs)
-        await self.set_loggers()
+        self.set_loggers(await self.get_subscriptions(session))
 
-    async def set_loggers(self) -> None:
+    async def get_subscriptions(self, session: Session) -> dict[str, Webhook]:
+        return {}
+
+    def set_loggers(self, subscriptions: dict[str, Webhook]) -> None:
         """Maps loggers inheriting from `Log` to Webhooks that shares name & instantiates each"""
         self.logging = defaultdict(lambda: aInvalid)
         _classes = {i.__name__.lower(): i for i in all_subclasses(Log)}
-        for webhook in filter(lambda x: x in _classes, self.webhooks):
-            self.logging[webhook] = _classes[webhook](self.bot, self.guild_id, webhook, *self.webhooks[webhook])
+        for name, sub in filter(lambda x: x[0] in _classes, subscriptions.items()):
+            self.logging[name] = _classes[name](self.bot, self.guild_id, name, sub.id, sub.token, sub.thread_id)
 
 
 class Localization(GuildCache):

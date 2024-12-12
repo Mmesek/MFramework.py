@@ -32,12 +32,14 @@ class Log:
         type: str,
         id: MFramework.Snowflake,
         token: str,
+        thread_id: MFramework.Snowflake,
     ) -> None:
         self.bot = bot
         self._type = self.__class__.__name__.lower()
         self.guild_id = guild_id
         self.webhook_id = id
         self.webhook_token = token
+        self.thread_id = thread_id
 
     async def __call__(self, *args, **kwargs):
         return await self.log(*args, **kwargs)
@@ -71,7 +73,7 @@ class Log:
             avatar_url=avatar or self.avatar,
             embeds=embeds,
             components=components,
-            thread_id=thread_id,
+            thread_id=thread_id or self.thread_id,
             wait=wait,
         )
 
@@ -112,13 +114,12 @@ class Message(Log):
 
     async def get_cached_message(self, key: MFramework.Snowflake) -> MFramework.Message:
         return await self.bot.cache[self.guild_id].messages[key]
-        # return self.bot.cache[self.guild_id].messages.get(key, None) #getMessage(message_id, channel_id)
 
     async def cached_message(self, msg: MFramework.Message) -> MFramework.Embed:
         cached = await self.get_cached_message(f"{msg.guild_id}.{msg.channel_id}.{msg.id}")
         if cached:
             embed = self.set_metadata(cached)
-            if cached.attachments != None:
+            if cached.attachments:
                 attachments = ""
                 for attachment in cached.attachments:
                     attachments += attachment.filename + "\n"
@@ -263,7 +264,7 @@ class Muted_Change(Guild_Member_Update):
             if len(diff) == 0:
                 return
             elif any(i in data.roles for i in diff):
-                case = f"has been muted"
+                case = "has been muted"
             else:
                 case = "has been unmuted"
             muted = False
