@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from typing import Union, MutableMapping, TypeVar, Any
+from typing import Any, MutableMapping, TypeVar, Union
 
-from mdiscord import Snowflake, Presence_Update, Message, Channel, Role, Guild_Member
+from mdiscord import Channel, Guild_Member, Message, Presence_Update, Role, Snowflake
+
 from MFramework import log
 
 from .backends import Dictionary, Redis
@@ -77,6 +78,8 @@ class Collection(MutableMapping[KT, VT]):
     async def __getitem__(self, id: Snowflake) -> VT:
         r = await self._cache.get(self._combine(id))
         if type(r) is dict:
+            if hasattr(self._cls, "from_dict"):
+                return self._cls.from_dict(**r)
             return self._cls(**r)
         return r
 
