@@ -55,7 +55,7 @@ class Log:
 
     async def _log(
         self,
-        content: str = "",
+        content: str = None,
         embeds: list[MFramework.Embed] = None,
         components: list[MFramework.Component] = None,
         *,
@@ -80,7 +80,7 @@ class Log:
     async def _log_dm(
         self,
         user_id: MFramework.Snowflake,
-        content: str = "",
+        content: str = None,
         embeds: list[MFramework.Embed] = None,
         components: list[MFramework.Component] = None,
     ) -> MFramework.Message:
@@ -104,8 +104,7 @@ class Message(Log):
         embed.setFooter(f"ID: {msg.author.id}")
         embed.setAuthor(
             f"{msg.author.username}#{msg.author.discriminator}",
-            None,
-            msg.author.get_avatar(),
+            icon_url=msg.author.get_avatar(),
         )
         return embed
 
