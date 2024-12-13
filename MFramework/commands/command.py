@@ -177,6 +177,21 @@ class Command(Localizable):
         self.private_response = private_response
         self.bot = bot
 
+    def compare_with_application_command(self, cmd: Application_Command):
+        """Returns True if there's a difference"""
+        args = parse_arguments(self)
+        if (
+            (args and cmd.options is msgspec.UNSET)
+            or (not args and cmd.options is not msgspec.UNSET)
+            or self.description != cmd.description
+        ):
+            return True
+
+        for option in cmd.options or []:
+            arg = next(filter(lambda x: x.name == option.name, args), None)
+            if compare(arg, option):
+                return True
+
     def add_subcommand(self, cmd: "Command"):
         self.sub_commands.append(cmd)
 
@@ -435,7 +450,7 @@ _types = {
 }
 
 
-def parse_arguments(_command: Command) -> list[str]:
+def parse_arguments(_command: Command) -> list[Application_Command_Option]:
     from MFramework.utils.localizations import LOCALIZATIONS
 
     options = []
@@ -521,25 +536,18 @@ def iterate_commands(
 ) -> Generator[Tuple[str, Command, list[str]], None, None]:
     for command, cmd in commands.items():
         if (
-            guild_id != cmd.guild
+            not cmd.interaction
             or (cmd.master_command and not cmd.is_menu)
-            or not cmd.interaction
+            or cmd.guild != guild_id
             or (cmd.bot and cmd.bot != bot_id)
         ):
             continue
-        _command = commands[command]
-        options = parse_arguments(_command)
-        _cmd = None
-        for i in registered:
-            if command == i.name:
-                if i.options != msgspec.UNSET and i.options != options:
-                    for a, b in zip(i.options, options):
-                        if compare(a, b):
-                            break
-        else:
-            if any(command == i.name for i in registered):
-                continue
-        yield command, _command, options
+        options = parse_arguments(cmd)
+        i = next(filter(lambda x: command == x.name, registered), None)
+        if i and not cmd.compare_with_application_command(i):
+            # No difference, we don't yield
+            continue
+        yield command, cmd, options
 
 
 def compare(o: object, other: object) -> bool:
