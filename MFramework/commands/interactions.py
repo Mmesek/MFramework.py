@@ -8,6 +8,7 @@ Interaction commands registery & execution framework
 :copyright: (c) 2021-2022 Mmesek
 """
 
+from mdiscord.exceptions import BadRequest
 from mlib import arguments
 
 from MFramework import (
@@ -78,9 +79,12 @@ async def register_commands(client: Bot, guild: Guild = None):
             options=options,
             default_permission=_command.group == Groups.GLOBAL,
         )
-        cmd.name_localizations = {l: _command.translate(l, "name", default=command)[:100] for l in LOCALIZATIONS}
+        cmd.name_localizations = {
+            locale: _command.translate(locale, "name", default=command)[:100] for locale in LOCALIZATIONS
+        }
         cmd.description_localizations = {
-            l: _command.translate(l, "description", default=_command.description)[:100] for l in LOCALIZATIONS
+            locale: _command.translate(locale, "description", default=_command.description)[:100]
+            for locale in LOCALIZATIONS
         }
 
         if len(options) == 1 and options[0].type is Application_Command_Option_Type.USER:
@@ -106,9 +110,15 @@ async def register_commands(client: Bot, guild: Guild = None):
         _cmds = await overwrite_commands(client, new_commands + updated_commands, guild)
     else:
         for cmd in new_commands:
-            _cmds.append(await add_command(client, cmd, guild))
+            try:
+                _cmds.append(await add_command(client, cmd, guild))
+            except BadRequest as ex:
+                log.warning("Couldn't create command %s", cmd.name, exc_info=ex)
         for cmd in updated_commands:
-            _cmds.append(await edit_command(client, cmd, guild))
+            try:
+                _cmds.append(await edit_command(client, cmd, guild))
+            except BadRequest as ex:
+                log.warning("Couldn't update command %s", cmd.name, exc_info=ex)
 
     if guild:
         _cmds = registered + _cmds
