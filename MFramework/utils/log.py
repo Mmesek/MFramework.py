@@ -24,6 +24,11 @@ class Log:
     username: str = "Basic Logger"
     avatar: str = None
     _type: str = "all"
+    supported_channel_types: list[MFramework.Channel_Types] = [
+        MFramework.Channel_Types.GUILD_TEXT,
+        MFramework.Channel_Types.PRIVATE_THREAD,
+        MFramework.Channel_Types.PUBLIC_THREAD,
+    ]
 
     def __init__(
         self,
