@@ -84,7 +84,7 @@ class Parameter(Localizable):
         self.default = default
         self.type = getattr(type, "__mbase__", type)
         if types and types != [""]:
-            types = [Channel_Types.get("GUILD_" + i.upper()).value for i in types]
+            types = [Channel_Types.get(i.upper()) for i in types]
         self.type_args = types or getattr(type, "__args__", [])
         self.description = description
         self.choices = choices
@@ -224,13 +224,11 @@ class Command(Localizable):
                 await ctx.bot.create_interaction_response(
                     ctx.data.id,
                     ctx.data.token,
-                    Interaction_Response(
-                        type=Interaction_Callback_Type.MODAL,
-                        data=Interaction_Application_Command_Callback_Data(
-                            title=r.title,
-                            custom_id=r.custom_id,
-                            components=r.components,
-                        ),
+                    Interaction_Callback_Type.MODAL,
+                    Interaction_Application_Command_Callback_Data(
+                        title=r.title,
+                        custom_id=r.custom_id,
+                        components=r.components,
                     ),
                 )
 
@@ -252,7 +250,9 @@ class Command(Localizable):
 
             elif callable(r):
                 if hasattr(r, "_cmd"):
-                    await ctx.bot.create_interaction_response(ctx.data.id, ctx.data.token, r._cmd.modal)
+                    await ctx.bot.create_interaction_response(
+                        ctx.data.id, ctx.data.token, r._cmd.modal.type, r._cmd.modal.data
+                    )
 
             elif r:
                 await self.maybe_reply(ctx, str(r), prefix="")
@@ -369,9 +369,9 @@ def parse_signature(f: FunctionType, docstring: dict[str, Any]) -> dict[str, Par
             or type(sig[parameter].annotation) is enum.EnumMeta
             else type(sig[parameter].annotation),
             description=docstring.get(sig[parameter].name, "MISSING DOCSTRING").strip(),
-            choices=docstring.get("choices").get(
+            choices=docstring.get("choices", {}).get(
                 sig[parameter].name,
-                []
+                {}
                 if (
                     type(sig[parameter].annotation) is FunctionType
                     or type(sig[parameter].annotation) is not dict
@@ -467,8 +467,8 @@ def parse_arguments(_command: Command) -> list[Application_Command_Option]:
         _i = _command.arguments[i]
         choices = []
 
-        for choice in _i.choices:
-            _choice = Application_Command_Option_Choice(name=choice.strip(), value=_i.choices[choice])
+        for choice, value in _i.choices.items():
+            _choice = Application_Command_Option_Choice(name=choice.strip(), value=str(value))
             _choice.name_localizations = {
                 locale: _command.translate(locale, f"arguments.{i.lower()}.choices.{choice.lower()}", choice)[:100]
                 for locale in LOCALIZATIONS
