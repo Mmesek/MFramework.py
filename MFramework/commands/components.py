@@ -51,6 +51,15 @@ async def run_function(cmd: "MetaCommand", ctx: "Context", **kwargs):
                 Interaction_Callback_Type.MODAL,
                 r._cmd.modal,
             )
+    elif isinstance(r, Message):
+        await ctx.reply(
+            r.content,
+            r.embeds,
+            r.components,
+            r.attachments,
+            message_reference=r.message_reference,
+            private=r.is_private,
+        )
     elif r:
         await ctx.reply(str(r))
 
