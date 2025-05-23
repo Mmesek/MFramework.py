@@ -8,6 +8,7 @@ from mdiscord.utils.serializer import as_dict
 from MFramework import (
     Component_Types,
     Embed,
+    Message,
     Interaction,
     Interaction_Application_Command_Callback_Data,
     Interaction_Callback_Type,
