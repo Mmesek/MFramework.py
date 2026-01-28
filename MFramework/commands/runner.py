@@ -128,8 +128,13 @@ async def autocomplete_response(client: "Bot", interaction: Interaction):
     cmd = retrieve_command(interaction)
 
     focused = next(filter(lambda x: x.focused, interaction.data.options))
+    f = cmd.arguments[focused.name].autocomplete
+    if "session" in cmd.arguments[focused.name].autocomplete_parameters:
+        async with client.db.sql.session() as session:
+            choices = await f(interaction, focused.value, session)
+    else:
+        choices = await f(interaction, focused.value)
 
-    choices = await cmd.arguments[focused.name].autocomplete(interaction, focused.value)
     if not choices:
         return
 

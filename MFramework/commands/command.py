@@ -69,6 +69,7 @@ class Parameter(Localizable):
     name: str
     is_autocomplete: bool
     autocomplete: FunctionType
+    autocomplete_parameters: dict[str, "Parameter"]
 
     def __init__(
         self,
@@ -83,6 +84,8 @@ class Parameter(Localizable):
     ) -> None:
         self.default = default
         self.type = getattr(type, "__mbase__", type)
+        if types == [""]:
+            types = None
         if types and types != [""]:
             types = [Channel_Types.get(i.upper()) for i in types]
         self.type_args = types or getattr(type, "__args__", [])
@@ -92,6 +95,20 @@ class Parameter(Localizable):
         self.name = name.strip("_")
         self.is_autocomplete = True if type is FunctionType else False
         self.autocomplete = autocomplete
+        if self.is_autocomplete:
+            self.autocomplete_parameters = parse_signature(autocomplete, {}) if self.is_autocomplete else None
+
+
+async def run_func(func, ctx: "Context", arguments: dict[str, Parameter], kwargs: dict[str, Any]):
+    if "session" in arguments and issubclass(arguments.get("session").type, Session):
+        with ctx.db.sql.session() as session:
+            kwargs.update({"session": session})
+            return await func(**kwargs)
+    elif "session" in arguments and issubclass(arguments.get("session").type, AsyncSession):
+        async with ctx.db.sql.session() as session:
+            kwargs.update({"session": session})
+            return await func(**kwargs)
+    return await func(**kwargs)
 
 
 class Command(Localizable):
@@ -200,17 +217,7 @@ class Command(Localizable):
 
     async def execute(self, ctx: "Context", kwargs: dict[str, Any]):
         try:
-            if "session" in self.arguments and self.arguments.get("session").type is Session:
-                with ctx.db.sql.session() as session:
-                    kwargs.update({"session": session})
-                    r = await self.func(**kwargs)
-            elif "session" in self.arguments and self.arguments.get("session").type is AsyncSession:
-                async with ctx.db.sql.session() as session:
-                    kwargs.update({"session": session})
-                    r = await self.func(**kwargs)
-            else:
-                r = await self.func(**kwargs)
-
+            r = await run_func(self.func, ctx, self.arguments, kwargs)
             if isinstance(r, Message):
                 await self.maybe_reply(
                     ctx, r.content, embeds=r.embeds, components=r.components, attachments=r.attachments
