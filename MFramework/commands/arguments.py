@@ -149,13 +149,11 @@ class Arguments:
 
     def _set_defaults(self):
         """Sets default arguments when they are missing"""
-        self.kwargs.update(
-            {
-                k: getattr(self.ctx, DEFAULTS.get(v.type, "None"), None)
-                for k, v in self.cmd.arguments.items()
-                if k not in self.kwargs
-            }
-        )
+        self.kwargs.update({
+            k: getattr(self.ctx, DEFAULTS.get(v.type, "None"), None)
+            for k, v in self.cmd.arguments.items()
+            if k not in self.kwargs
+        })
 
     def _add_extra(self, **kwargs):
         """Set extra arguments like built-in/library ones like language"""

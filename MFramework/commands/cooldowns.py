@@ -113,7 +113,8 @@ class DatabaseCooldown(Cooldown):
     def last_action(self) -> datetime:
         session = self.ctx.db.sql.session()
         r = (
-            session.query(self.table)
+            session
+            .query(self.table)
             .filter(
                 self.table.user_id == self.ctx.user_id,
                 self.table.server_id == self.ctx.guild_id,
@@ -125,7 +126,8 @@ class DatabaseCooldown(Cooldown):
     def add_cooldown(self) -> None:
         session = self.ctx.db.sql.session()
         r = (
-            session.query(self.table)
+            session
+            .query(self.table)
             .filter(
                 self.table.user_id == self.ctx.user_id,
                 self.table.server_id == self.ctx.guild_id,
@@ -231,9 +233,9 @@ def cooldown(
     """
 
     def inner(f):
-        import asyncio
+        import inspect
 
-        if asyncio.iscoroutinefunction(logic):
+        if inspect.iscoroutinefunction(logic):
 
             @wraps(f)
             async def wrapped(ctx: "Context" = None, **kwargs):

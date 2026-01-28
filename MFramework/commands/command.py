@@ -364,9 +364,12 @@ def parse_signature(f: FunctionType, docstring: dict[str, Any]) -> dict[str, Par
         arg = Parameter(
             default=sig[parameter].default,
             type=sig[parameter].annotation
-            if type(sig[parameter].annotation) is type
-            or issubclass(sig[parameter].annotation, msgspec.Struct)
-            or type(sig[parameter].annotation) is enum.EnumMeta
+            if not (type(sig[parameter].annotation) is FunctionType)
+            and (
+                type(sig[parameter].annotation) is type
+                or type(sig[parameter].annotation) is enum.EnumMeta
+                or issubclass(sig[parameter].annotation, msgspec.Struct)
+            )
             else type(sig[parameter].annotation),
             description=docstring.get(sig[parameter].name, "MISSING DOCSTRING").strip(),
             choices=docstring.get("choices", {}).get(
