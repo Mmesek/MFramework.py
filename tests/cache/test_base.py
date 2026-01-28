@@ -10,7 +10,7 @@ class TestBot:
 
 
 def test_cached_roles():
-    cache = Base()
+    cache = Base(bot=None)
 
     assert cache.cached_roles([]) != Groups.ADMIN
 
