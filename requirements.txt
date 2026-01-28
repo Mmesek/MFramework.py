@@ -1,9 +1,11 @@
-mdiscord @ git+https://github.com/Mmesek/mdiscord.git
-mlib @ git+https://github.com/Mmesek/mlib.git
+#mdiscord @ git+https://github.com/Mmesek/mdiscord.git
+#mlib @ git+https://github.com/Mmesek/mlib.git
 msgspec
 sqlalchemy
+asyncpg
 psycopg2-binary
 redis
 influxdb-client
 python-git
 python-i18n
+orjson
